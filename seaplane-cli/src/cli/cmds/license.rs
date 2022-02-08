@@ -10,7 +10,7 @@ static THIRD_PARTY_LICENSES: &str = include_str!("../../../../share/third_party_
 // are other locations in the code may benefit as well; if the uncompressed sum of those becomes
 // greater than code required to do the compression, we may look at compressing these large strings
 // to keep the binary size minimal.
-static SELF_LICENSE: &str = include_str!("../../../../LiCENSE");
+static SELF_LICENSE: &str = include_str!("../../../../LICENSE");
 
 #[derive(Parser)]
 pub struct SeaplaneLicenseArgs {

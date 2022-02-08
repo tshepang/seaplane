@@ -5,7 +5,7 @@ use std::env;
 use anyhow::Result;
 use clap::{crate_authors, AppSettings, Parser, Subcommand};
 
-use crate::cli::cmds::*;
+pub use crate::cli::cmds::*;
 use crate::context::Ctx;
 
 static VERSION: &str = env!("SEAPLANE_GIT_HASH");
@@ -83,7 +83,6 @@ impl SeaplaneArgs {
             SeaplaneCmds::Config(args) => {
                 todo!("SeaplaneConfigArgs::run")
             }
-            SeaplaneCmds::Dev(args) => args.run(ctx),
             SeaplaneCmds::Formation(args) => {
                 todo!("SeaplaneFormationArgs::run")
             }
@@ -91,6 +90,9 @@ impl SeaplaneArgs {
                 todo!("SeaplaneImageArgs::run")
             }
             SeaplaneCmds::License(args) => args.run(ctx),
+          
+            // Internal for now...used for local development
+            SeaplaneCmds::Dev(args) => args.run(ctx),
         }
     }
 
@@ -103,7 +105,8 @@ impl SeaplaneArgs {
         // be no color output, because clap will evaluate both `--color` and `--no-color` to `true`
         // (i.e. used) even though they override each-other.
         //
-        // So we err on the side of no providing color by only checking the --no-color flag.
+        // So we err on the side of not providing color by only checking the --no-color flag (since
+        // showing color is *on* by default).
         ctx.color = !self.no_color;
 
         Ok(())
@@ -118,7 +121,6 @@ pub enum SeaplaneCmds {
     Formation(SeaplaneFormationArgs),
     Image(SeaplaneImageArgs),
     License(SeaplaneLicenseArgs),
-
-    // Internal...will potentially separate
+    // Local Development/Internal...will potentially separate
     Dev(SeaplaneDevArgs),
 }

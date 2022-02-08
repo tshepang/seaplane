@@ -1,9 +1,11 @@
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{AppSettings, Parser, Subcommand};
 
 use crate::Ctx;
 
+/// Used for local development as an internal command
 #[derive(Parser)]
+#[clap(setting(AppSettings::Hidden))]
 pub struct SeaplaneDevArgs {
     #[clap(subcommand)]
     cmd: SeaplaneDevCmds,

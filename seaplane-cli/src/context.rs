@@ -19,7 +19,7 @@
 //! After these steps the final Context is what is used to make runtime decisions.
 use anyhow::Result;
 
-use crate::config::Config;
+use crate::config::RawConfig;
 
 // The source of truth "Context" that is passed to all runtime processes to make decisions based
 // on user configuration
@@ -30,22 +30,34 @@ pub struct Ctx {
     //
     // Should be display ANSI color codes in output?
     pub color: bool,
+  
+    // Internal only for now...
+    pub dev: Option<DevCtx>,
 }
 
 impl Default for Ctx {
     fn default() -> Self {
-        Self { color: true }
+        Self {
+            color: true,
+            dev: None,
+        }
     }
 }
 
 impl Ctx {
-    pub fn from_config(cfg: &Config) -> Result<Self> {
-        //todo!("impl Ctx::from_config")
+    pub fn from_config(cfg: &RawConfig) -> Result<Self> {
+        // @TODO this just gets it compiling. Using `todo!` blocks progress since loading the
+        // context happens at program startup, so we cannot panic on unimplemented
+
         Ok(Self::default())
     }
 
     pub fn update_from_env(&mut self) -> Result<()> {
-        //todo!("impl Ctx::update_from_env")
+        // @TODO this just gets it compiling. Using `todo!` blocks progress since loading the
+        // context happens at program startup, so we cannot panic on unimplemented
         Ok(())
     }
 }
+
+pub struct DevCtx;
+

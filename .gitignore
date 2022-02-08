@@ -4,8 +4,13 @@ target/**
 # Don't keep the lib Cargo Lock file
 seaplane/Cargo.lock
 
-# macoS
+# macOS
 .DS_Store
 
 # VIM Swap Files
 .*~
+
+# Backup and formatting files
+*.orig
+*.bak
+

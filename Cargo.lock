@@ -489,6 +489,7 @@ dependencies = [
  "log",
  "pretty_env_logger",
  "seaplane",
+ "serde",
  "toml",
 ]
 
