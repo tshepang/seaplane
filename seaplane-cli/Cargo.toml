@@ -1,0 +1,24 @@
+[package]
+name = "seaplane-cli"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[[bin]]
+name = "seaplane"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "3.0.14", default-features = false, features = ["std", "color", "unicode", "derive", "cargo", "wrap_help"] }
+clap_complete = "3.0.6"
+seaplane = { path = "../seaplane" }
+pretty_env_logger = { version = "0.4", optional = true }
+log = "0.4.14"
+env_logger = "0.9"
+directories = "4.0.1"
+toml = "0.5.8"
+
+[features]
+default = ["color"]
+color = ["pretty_env_logger"]

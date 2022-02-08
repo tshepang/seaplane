@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "seaplane",
+    "seaplane-cli",
+]
