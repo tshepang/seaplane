@@ -30,7 +30,7 @@ pub struct Ctx {
     //
     // Should be display ANSI color codes in output?
     pub color: bool,
-  
+
     // Internal only for now...
     pub dev: Option<DevCtx>,
 }
@@ -49,7 +49,13 @@ impl Ctx {
         // @TODO this just gets it compiling. Using `todo!` blocks progress since loading the
         // context happens at program startup, so we cannot panic on unimplemented
 
-        Ok(Self::default())
+        Ok(Self {
+            // We default to using color. Later when the context is updated from the CLI args, this
+            // may change.
+            color: true,
+            // For now there are no [dev] config fields, so don't do anything fancy
+            dev: cfg.dev.clone().map(|_| DevCtx),
+        })
     }
 
     pub fn update_from_env(&mut self) -> Result<()> {
@@ -60,4 +66,3 @@ impl Ctx {
 }
 
 pub struct DevCtx;
-

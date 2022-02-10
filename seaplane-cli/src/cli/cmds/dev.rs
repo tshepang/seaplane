@@ -7,8 +7,12 @@ use crate::Ctx;
 #[derive(Parser)]
 #[clap(setting(AppSettings::Hidden))]
 pub struct SeaplaneDevArgs {
+    // Unlike normal subcommands we have to wrap this one with an Option so that clap doesn't
+    // preempt us and display a "error: no subcommand found" when in fact the dev subcommand
+    // should be disabled. This allows the parsing to continue, and we handle the "error: the 'dev'
+    // command is disabled" error manually in the SeaplaneArgs::run method.
     #[clap(subcommand)]
-    cmd: SeaplaneDevCmds,
+    cmd: Option<SeaplaneDevCmds>,
 }
 
 impl SeaplaneDevArgs {

@@ -27,6 +27,9 @@ fn main() -> Result<()> {
 
     if cfg.dev.is_some() {
         if let Some(sc) = app.get_subcommands_mut().find(|sc| sc.get_name() == "dev") {
+            // We replace the "hidden" command with a re-built command that is does not have that
+            // Hidden setting set. We have to go through this memory dance because clap does not
+            // provide a way to mutate a subcommand through a mutable reference, only through a move.
             let _ = mem::replace(
                 sc,
                 SeaplaneDevArgs::into_app()
@@ -38,7 +41,7 @@ fn main() -> Result<()> {
 
     let args = SeaplaneArgs::from_arg_matches(&app.get_matches())?;
 
-    let mut ctx = Ctx::from_config(&RawConfig::load()?)?;
+    let mut ctx = Ctx::from_config(&cfg)?;
 
     ctx.update_from_env()?;
 

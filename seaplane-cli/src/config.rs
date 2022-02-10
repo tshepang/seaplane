@@ -88,14 +88,6 @@ fn search_directories() -> Vec<PathBuf> {
     dirs
 }
 
-// #[derive(Debug, Default, Serialize, Deserialize)]
-// #[cfg_attr(test, derive(PartialEq))]
-// pub struct DevCfg;
-
-// #[derive(Default, Debug, Serialize, Deserialize)]
-// #[cfg_attr(test, derive(PartialEq))]
-// pub struct AccountCfg;
-
 #[cfg(test)]
 mod test {
     use super::*;

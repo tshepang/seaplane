@@ -2,7 +2,7 @@ pub mod cmds;
 
 use std::env;
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use clap::{crate_authors, AppSettings, Parser, Subcommand};
 
 pub use crate::cli::cmds::*;
@@ -90,9 +90,15 @@ impl SeaplaneArgs {
                 todo!("SeaplaneImageArgs::run")
             }
             SeaplaneCmds::License(args) => args.run(ctx),
-          
+
             // Internal for now...used for local development
-            SeaplaneCmds::Dev(args) => args.run(ctx),
+            SeaplaneCmds::Dev(args) => {
+                if ctx.dev.is_none() {
+                    bail!("The 'dev' command is disabled.");
+                }
+
+                args.run(ctx)
+            }
         }
     }
 
