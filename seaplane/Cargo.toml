@@ -6,6 +6,5 @@ license = "Apache-2.0"
 authors = ["Seaplane IO, Inc."]
 
 [dependencies]
-jsonwebtoken = "8.0.1"
 serde = {version = "1.0", features = ["derive"]}
 thiserror = "1.0"

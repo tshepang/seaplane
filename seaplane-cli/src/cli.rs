@@ -92,13 +92,8 @@ impl SeaplaneArgs {
             SeaplaneCmds::License(args) => args.run(ctx),
 
             // Internal for now...used for local development
-            SeaplaneCmds::Dev(args) => {
-                if ctx.dev.is_none() {
-                    bail!("The 'dev' command is disabled.");
-                }
-
-                args.run(ctx)
-            }
+            #[cfg(feature = "dev")]
+            SeaplaneCmds::Dev(args) => args.run(ctx),
         }
     }
 
@@ -128,5 +123,6 @@ pub enum SeaplaneCmds {
     Image(SeaplaneImageArgs),
     License(SeaplaneLicenseArgs),
     // Local Development/Internal...will potentially separate
+    #[cfg(feature = "dev")]
     Dev(SeaplaneDevArgs),
 }

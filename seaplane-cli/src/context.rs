@@ -17,12 +17,14 @@
 //!   parent should be finalized.
 //!
 //! After these steps the final Context is what is used to make runtime decisions.
-use anyhow::Result;
+mod dev;
 
 use crate::config::RawConfig;
+use anyhow::Result;
 
 // The source of truth "Context" that is passed to all runtime processes to make decisions based
 // on user configuration
+#[derive(Debug)]
 pub struct Ctx {
     // @TODO we may need to get more granular than binary yes/no. For example, there may be times
     // when the answer is "yes...but only if the stream is a TTY." In these cases an enum of Never,
@@ -32,14 +34,14 @@ pub struct Ctx {
     pub color: bool,
 
     // Internal only for now...
-    pub dev: Option<DevCtx>,
+    pub dev: dev::DevCtx,
 }
 
 impl Default for Ctx {
     fn default() -> Self {
         Self {
             color: true,
-            dev: None,
+            dev: dev::DevCtx::default(),
         }
     }
 }
@@ -53,8 +55,7 @@ impl Ctx {
             // We default to using color. Later when the context is updated from the CLI args, this
             // may change.
             color: true,
-            // For now there are no [dev] config fields, so don't do anything fancy
-            dev: cfg.dev.clone().map(|_| DevCtx),
+            dev: dev::DevCtx::from(&cfg.dev),
         })
     }
 
@@ -64,5 +65,3 @@ impl Ctx {
         Ok(())
     }
 }
-
-pub struct DevCtx;

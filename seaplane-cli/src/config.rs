@@ -26,6 +26,8 @@
 //! configuration to be considered and not any of those in the filesystem.
 //!
 //! See also the CONFIGURATION_SPEC.md in this repository
+pub mod dev;
+
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -36,10 +38,15 @@ use serde::{Deserialize, Serialize};
 
 static SEAPLANE_CONFIG_FILE: &str = "seaplane.toml";
 
+/// Extends a configuration instance with overriding config
+pub trait ExtendConfig {
+    fn extend(&mut self, other: &Self);
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct RawConfig {
-    pub dev: Option<HashMap<String, String>>,
+    pub dev: Option<dev::DevConfig>,
 }
 
 impl RawConfig {
@@ -62,11 +69,13 @@ impl RawConfig {
     fn update<P: AsRef<Path>>(&mut self, p: P) -> Result<()> {
         let mut new_cfg: RawConfig = toml::from_str(&fs::read_to_string(p)?)?;
 
-        let mut map = self.dev.take().unwrap_or_default();
-
-        if new_cfg.dev.is_some() {
-            map.extend(new_cfg.dev.take().unwrap());
-            self.dev = Some(map);
+        // Extend or replace existing dev config
+        if let Some(dev) = &mut self.dev {
+            if let Some(new_dev) = &new_cfg.dev {
+                dev.extend(new_dev);
+            }
+        } else {
+            self.dev = new_cfg.dev.take();
         }
 
         Ok(())
