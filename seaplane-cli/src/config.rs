@@ -26,8 +26,6 @@
 //! configuration to be considered and not any of those in the filesystem.
 //!
 //! See also the CONFIGURATION_SPEC.md in this repository
-pub mod dev;
-
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -46,7 +44,6 @@ pub trait ExtendConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct RawConfig {
-    pub dev: Option<dev::DevConfig>,
 }
 
 impl RawConfig {
@@ -67,16 +64,9 @@ impl RawConfig {
     }
 
     fn update<P: AsRef<Path>>(&mut self, p: P) -> Result<()> {
-        let mut new_cfg: RawConfig = toml::from_str(&fs::read_to_string(p)?)?;
+        let _new_cfg: RawConfig = toml::from_str(&fs::read_to_string(p)?)?;
 
-        // Extend or replace existing dev config
-        if let Some(dev) = &mut self.dev {
-            if let Some(new_dev) = &new_cfg.dev {
-                dev.extend(new_dev);
-            }
-        } else {
-            self.dev = new_cfg.dev.take();
-        }
+        // Extend or replace existing config items
 
         Ok(())
     }
@@ -100,21 +90,6 @@ fn search_directories() -> Vec<PathBuf> {
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn deser_empty_config_dev() {
-        let cfg_str = r#"
-        [dev]
-        "#;
-
-        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
-        assert_eq!(
-            cfg,
-            RawConfig {
-                dev: Some(HashMap::new())
-            }
-        )
-    }
 
     #[test]
     fn deser_empty_config() {

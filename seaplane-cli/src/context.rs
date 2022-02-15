@@ -17,8 +17,6 @@
 //!   parent should be finalized.
 //!
 //! After these steps the final Context is what is used to make runtime decisions.
-mod dev;
-
 use crate::config::RawConfig;
 use anyhow::Result;
 
@@ -32,16 +30,12 @@ pub struct Ctx {
     //
     // Should be display ANSI color codes in output?
     pub color: bool,
-
-    // Internal only for now...
-    pub dev: dev::DevCtx,
 }
 
 impl Default for Ctx {
     fn default() -> Self {
         Self {
             color: true,
-            dev: dev::DevCtx::default(),
         }
     }
 }
@@ -55,7 +49,6 @@ impl Ctx {
             // We default to using color. Later when the context is updated from the CLI args, this
             // may change.
             color: true,
-            dev: dev::DevCtx::from(&cfg.dev),
         })
     }
 

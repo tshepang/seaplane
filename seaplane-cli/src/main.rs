@@ -1,7 +1,6 @@
 mod cli;
 mod config;
 mod context;
-mod dev;
 
 use anyhow::Result;
 use clap::{AppSettings, FromArgMatches, IntoApp, Parser};

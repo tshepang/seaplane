@@ -90,10 +90,6 @@ impl SeaplaneArgs {
                 todo!("SeaplaneImageArgs::run")
             }
             SeaplaneCmds::License(args) => args.run(ctx),
-
-            // Internal for now...used for local development
-            #[cfg(feature = "dev")]
-            SeaplaneCmds::Dev(args) => args.run(ctx),
         }
     }
 
@@ -122,7 +118,4 @@ pub enum SeaplaneCmds {
     Formation(SeaplaneFormationArgs),
     Image(SeaplaneImageArgs),
     License(SeaplaneLicenseArgs),
-    // Local Development/Internal...will potentially separate
-    #[cfg(feature = "dev")]
-    Dev(SeaplaneDevArgs),
 }
