@@ -83,9 +83,11 @@ impl FormationsRequestBuilder {
         })
     }
 
+    // TODO: make a "testing" feature (#[cfg(test)] does not work in integration tests)
+    //
     // Used in testing to manually set the URL
-    #[cfg(test)]
-    fn base_url<S: AsRef<str>>(mut self, url: S) -> Self {
+    #[doc(hidden)]
+    pub fn base_url<S: AsRef<str>>(mut self, url: S) -> Self {
         self.base_url = Some(url.as_ref().parse().unwrap());
         self
     }
@@ -229,13 +231,12 @@ impl FormationsRequest {
         if let Some(source) = source {
             url.query_pairs_mut().append_pair("source", source);
         }
-        self.client
-            .post(url)
-            .bearer_auth(&self.token)
-            .body(serde_json::to_string(&configuration)?)
-            .send()?
-            .json::<Vec<Uuid>>()
-            .map_err(Into::into)
+        let req = if let Some(ref cfg) = configuration {
+            self.client.post(url).bearer_auth(&self.token).json(cfg)
+        } else {
+            self.client.post(url).bearer_auth(&self.token)
+        };
+        req.send()?.json::<Vec<Uuid>>().map_err(Into::into)
     }
 
     // TODO: Distinguish errors:
@@ -350,7 +351,7 @@ impl FormationsRequest {
             .delete(url)
             .bearer_auth(&self.token)
             .send()?
-            .json::<String>()
+            .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
     }
@@ -400,7 +401,7 @@ impl FormationsRequest {
         if self.name.is_none() {
             return Err(SeaplaneError::MissingFormationName);
         }
-        let url = self.base_url.join(&format!(
+        let url = self.endpoint_url.join(&format!(
             "formations/{}/activeConfiguration?force={force}",
             self.name()
         ))?;
@@ -412,7 +413,7 @@ impl FormationsRequest {
             .bearer_auth(&self.token)
             .body(serde_json::to_string(&configs)?)
             .send()?
-            .json::<String>()
+            .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
     }
@@ -444,7 +445,7 @@ impl FormationsRequest {
             return Err(SeaplaneError::MissingFormationName);
         }
         let url = self
-            .base_url
+            .endpoint_url
             .join(&format!("formations/{}/containers", self.name()))?;
         self.client
             .get(url)

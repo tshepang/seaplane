@@ -242,7 +242,7 @@ impl FormationConfigurationBuilder {
 /// Represents a single configuration of a Formation. A Formation may have many
 /// [`ActiveConfiguration`]s at once which will have traffic ballanced between them based on their
 /// `traffic_weight` values.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct FormationConfiguration {
     #[serde(default)]
     affinity: Vec<String>,
@@ -371,7 +371,7 @@ impl FlightBuilder {
 /// Flights are logically a single container. However, Seaplane spins up many actual backing
 /// *container instances* around the globe (with your Formation's `regions_allowed` map) and load
 /// balances traffic between them.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Flight {
     name: String,
     image: Url,
@@ -408,7 +408,7 @@ impl Flight {
 }
 
 /// The response from the `GET /formations` API call ([`FormationsRequest::list_names`])
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(transparent)]
 pub struct FormationNames {
     inner: Vec<FormationName>,
@@ -416,14 +416,14 @@ pub struct FormationNames {
 
 /// A single Formation name in the response from the `GET /formations` API call
 /// ([`FormationsRequest::list_names`])
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct FormationName {
     name: String,
 }
 
 /// The response from the `GET /formations/<NAME>/activeConfiguration` API call
 /// ([`FormationsRequest::get_active_configurations`])
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(transparent)]
 pub struct ActiveConfigurations {
     inner: Vec<ActiveConfiguration>,
@@ -472,6 +472,13 @@ impl ActiveConfiguration {
     /// Create a new builder
     pub fn builder() -> ActiveConfigurationBuilder {
         ActiveConfigurationBuilder::default()
+    }
+}
+
+// Impl manaully because we only need to check the UUID
+impl PartialEq<Self> for ActiveConfiguration {
+    fn eq(&self, other: &Self) -> bool {
+        self.configuration_id == other.configuration_id
     }
 }
 

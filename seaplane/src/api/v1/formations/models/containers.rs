@@ -10,7 +10,7 @@ pub enum ContainerStatus {
 }
 
 /// The response from `GET /formations`
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(transparent)]
 pub struct Containers {
     inner: Vec<Container>,
@@ -47,4 +47,11 @@ pub struct Container {
     /// Total number of CPU seconds this container has used
     #[serde(default)]
     cpu_usage: Option<u64>,
+}
+
+// We don't derive the trait because we only need to check the UUID to determine equivalence
+impl PartialEq<Self> for Container {
+    fn eq(&self, other: &Self) -> bool {
+        self.uuid == other.uuid
+    }
 }
