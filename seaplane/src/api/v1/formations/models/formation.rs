@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use getset::{CopyGetters, Getters};
 use serde::{Deserialize, Serialize};
 use url::Url;
 use uuid::Uuid;
@@ -7,7 +8,7 @@ use uuid::Uuid;
 #[cfg(doc)]
 use crate::api::v1::FormationsRequest;
 use crate::{
-    api::v1::{Architecture, EndpointKey, EndpointValue, Provider, Region},
+    api::v1::{Architecture, EndpointKey, EndpointValue, ImageReference, Provider, Region},
     error::{Result, SeaplaneError},
 };
 
@@ -276,10 +277,10 @@ impl FormationConfiguration {
 #[derive(Debug, Default)]
 pub struct FlightBuilder {
     name: Option<String>,
-    image: Option<Url>,
+    image: Option<ImageReference>,
     minimum: u64,
     maximum: Option<u64>,
-    architecture: Vec<Architecture>,
+    architecture: HashSet<Architecture>,
     api_permission: bool,
 }
 
@@ -289,7 +290,7 @@ impl FlightBuilder {
         Self::default()
     }
 
-    /// The [`Flight`] name, which must be unique within the Formation
+    /// The human readable [`Flight`] name, which must be unique within the Formation
     #[must_use]
     pub fn name<S: Into<String>>(mut self, name: S) -> Self {
         self.name = Some(name.into());
@@ -297,9 +298,19 @@ impl FlightBuilder {
     }
 
     /// A container image registry URL which points to the container image this [`Flight`] should uses
+    ///
+    /// # Panics
+    ///
+    /// This method `panic!`s if the `image_ref` provided cannot be parsed into a valid
+    /// [`ImageReference`]
     #[must_use]
-    pub fn image<U: Into<Url>>(mut self, url: U) -> Self {
-        self.image = Some(url.into());
+    pub fn image<R: AsRef<str>>(mut self, image_ref: R) -> Self {
+        self.image = Some(
+            image_ref
+                .as_ref()
+                .parse::<ImageReference>()
+                .expect("Failed to parse image reference"),
+        );
         self
     }
 
@@ -348,11 +359,11 @@ impl FlightBuilder {
         if self.name.is_none() {
             return Err(SeaplaneError::MissingFlightName);
         } else if self.image.is_none() {
-            return Err(SeaplaneError::MissingFlightImageUrl);
+            return Err(SeaplaneError::MissingFlightImageReference);
         }
 
         if self.architecture.is_empty() {
-            self.architecture.push(Architecture::AMD64);
+            self.architecture.insert(Architecture::AMD64);
         }
 
         Ok(Flight {
@@ -371,16 +382,30 @@ impl FlightBuilder {
 /// Flights are logically a single container. However, Seaplane spins up many actual backing
 /// *container instances* around the globe (with your Formation's `regions_allowed` map) and load
 /// balances traffic between them.
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Getters, CopyGetters)]
+#[getset(get_copy = "pub")]
 pub struct Flight {
+    /// Returns the human readable name of the [`Flight`], which is unique with a Formation
+    #[getset(skip)] // skip to provide manually as a ref
     name: String,
-    image: Url,
+
+    #[getset(skip)] // skip to provide manually as a ref
+    image: ImageReference,
+
+    /// Returns the minimum number of instances this [`Flight`] should ever have running.
     #[serde(default)]
     minimum: u64,
+
+    /// Returns the maximum number of instances this [`Flight`] should ever have running. Returning
+    /// `None` means "infinite" or "As many as required to service incoming traffic"
     #[serde(default)]
     maximum: Option<u64>,
+
     #[serde(default)]
-    architecture: Vec<Architecture>,
+    #[getset(skip)] // skip to provide a slice getter manually
+    architecture: HashSet<Architecture>,
+
+    /// Returns `true` if this [`Flight`] should have access to Seaplane's APIs.
     #[serde(default)]
     api_permission: bool,
 }
@@ -394,16 +419,45 @@ impl Flight {
     /// Creates a new [`Flight`] with the two required bits of information, a `name` which must be
     /// unique within the Formation, and a container image registry URL which points to the
     /// container image to use.
-    pub fn new<S, U>(name: S, image: U) -> Flight
+    ///
+    /// # Panics
+    ///
+    /// This method `panic!`s if the `image_ref` provided cannot be parsed into a valid
+    /// [`ImageReference`]
+    pub fn new<S, R>(name: S, image_ref: R) -> Flight
     where
         S: Into<String>,
-        U: Into<Url>,
+        R: AsRef<str>,
     {
         FlightBuilder::new()
             .name(name)
-            .image(image)
+            .image(image_ref)
             .build()
             .unwrap()
+    }
+
+    /// Returns the human readable [`Flight`] name, which is unique within the Formation
+    #[inline]
+    pub fn name(&self) -> &str {
+        &*self.name
+    }
+
+    /// Returns the container image reference this [`Flight`] uses, as a [`String`]
+    #[inline]
+    pub fn image_str(&self) -> String {
+        self.image.to_string()
+    }
+
+    /// Returns the container image reference this [`Flight`] uses, as an [`ImageReference`]
+    #[inline]
+    pub fn image(&self) -> &ImageReference {
+        &self.image
+    }
+
+    /// Returns the [`Architecture`]s this [`Flight`] can be run on.
+    #[inline]
+    pub fn architecture(&self) -> &[Architecture] {
+        self.architecture.as_ref()
     }
 }
 

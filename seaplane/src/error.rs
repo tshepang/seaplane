@@ -26,8 +26,8 @@ pub enum SeaplaneError {
     EmptyFlights,
     #[error("missing required Flight name")]
     MissingFlightName,
-    #[error("missing required Flight image URL")]
-    MissingFlightImageUrl,
+    #[error("missing required Flight image reference")]
+    MissingFlightImageReference,
     #[error("the requirements specified in the builder are in conflict and invalid")]
     ConflictingRequirements,
 }

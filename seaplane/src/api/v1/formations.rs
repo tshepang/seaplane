@@ -164,7 +164,6 @@ impl FormationsRequest {
     ///
     /// ```no_run
     /// # use seaplane::api::v1::{FormationsRequest, FormationConfiguration, Flight};
-    /// # use reqwest::Url;
     /// let req = FormationsRequest::builder()
     ///     .token("abc123")
     ///     .name("foo")
@@ -174,7 +173,7 @@ impl FormationsRequest {
     /// let config = FormationConfiguration::builder()
     ///     .add_flight(Flight::builder()
     ///         .name("myflight")
-    ///         .image("my/image/url".parse::<Url>().unwrap())
+    ///         .image("my/image:latest")
     ///         .build().unwrap())
     ///     .build()
     ///     .unwrap();
@@ -640,7 +639,6 @@ impl FormationsRequest {
     ///
     /// ```no_run
     /// # use seaplane::api::v1::{FormationsRequest, FormationConfiguration, Flight};
-    /// # use reqwest::Url;
     /// let req = FormationsRequest::builder()
     ///     .token("abc123")
     ///     .name("foo")
@@ -650,7 +648,7 @@ impl FormationsRequest {
     /// let config = FormationConfiguration::builder()
     ///     .add_flight(Flight::builder()
     ///         .name("myflight")
-    ///         .image("my/image/url".parse::<Url>().unwrap())
+    ///         .image("my/image:latest")
     ///         .build().unwrap())
     ///     .build()
     ///     .unwrap();

@@ -1,19 +1,23 @@
 mod containers;
 mod endpoint;
 mod formation;
+mod image_ref;
 
 pub use containers::*;
 pub use endpoint::*;
 pub use formation::*;
+pub use image_ref::*;
 
 use serde::{Deserialize, Serialize};
 use strum::EnumString;
 
 /// The processor architecture a [`Flight`] wants to run on
-#[derive(Debug, Serialize, Deserialize, Hash, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Serialize, Deserialize, Hash, Eq, PartialEq, Copy, Clone, strum::Display)]
 #[serde(rename_all = "lowercase")]
 pub enum Architecture {
+    #[strum(serialize = "amd64")]
     AMD64,
+    #[strum(serialize = "arm64")]
     ARM64,
 }
 
