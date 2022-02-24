@@ -19,7 +19,7 @@ fn main() {
         };
 
     println!(
-        "cargo:rustc-env=SEAPLANE_GIT_HASH='v{} ({})'",
+        "cargo:rustc-env=SEAPLANE_GIT_HASH=v{} ({})",
         env!("CARGO_PKG_VERSION"),
         &git_hash[..10]
     );

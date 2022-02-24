@@ -17,44 +17,68 @@
 //!   parent should be finalized.
 //!
 //! After these steps the final Context is what is used to make runtime decisions.
-use crate::config::RawConfig;
+use std::path::PathBuf;
+
 use anyhow::Result;
+use crate::{
+    config::RawConfig,
+    fs::data_dir,
+    printer::{ColorChoice, OutputFormat},
+};
+
+const FLIGHTS_FILE: &str = "flights.json";
+const FORMATIONS_FILE: &str = "formations.json";
 
 // The source of truth "Context" that is passed to all runtime processes to make decisions based
 // on user configuration
 #[derive(Debug)]
 pub struct Ctx {
-    // @TODO we may need to get more granular than binary yes/no. For example, there may be times
-    // when the answer is "yes...but only if the stream is a TTY." In these cases an enum of Never,
-    // Auto, Always would be more appropriate
-    //
     // Should be display ANSI color codes in output?
-    pub color: bool,
+    pub color: ColorChoice,
+
+    // The platform specific path to a data location
+    pub data_dir: PathBuf,
+
+    // How to display output
+    pub out_format: OutputFormat,
 }
 
 impl Default for Ctx {
     fn default() -> Self {
         Self {
-            color: true,
+            color: ColorChoice::Auto,
+            data_dir: data_dir(),
+            out_format: OutputFormat::default(),
         }
     }
 }
 
 impl Ctx {
-    pub fn from_config(cfg: &RawConfig) -> Result<Self> {
-        // @TODO this just gets it compiling. Using `todo!` blocks progress since loading the
+    pub fn from_config(_cfg: &RawConfig) -> Result<Self> {
+        // TODO: this just gets it compiling. Using `todo!` blocks progress since loading the
         // context happens at program startup, so we cannot panic on unimplemented
 
         Ok(Self {
             // We default to using color. Later when the context is updated from the CLI args, this
             // may change.
-            color: true,
+            color: ColorChoice::Auto,
+            data_dir: data_dir(),
         })
     }
 
     pub fn update_from_env(&mut self) -> Result<()> {
-        // @TODO this just gets it compiling. Using `todo!` blocks progress since loading the
+        // TODO: this just gets it compiling. Using `todo!` blocks progress since loading the
         // context happens at program startup, so we cannot panic on unimplemented
         Ok(())
     }
+
+    pub fn flights_file(&self) -> PathBuf {
+        self.data_dir.join(FLIGHTS_FILE)
+    }
+
+    pub fn formations_file(&self) -> PathBuf {
+        self.data_dir.join(FORMATIONS_FILE)
+    }
+}
+
 }

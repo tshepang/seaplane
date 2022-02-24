@@ -26,13 +26,15 @@
 //! configuration to be considered and not any of those in the filesystem.
 //!
 //! See also the CONFIGURATION_SPEC.md in this repository
-use std::collections::HashMap;
+
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use anyhow::Result;
 use log::debug;
 use serde::{Deserialize, Serialize};
+
+use crate::fs::conf_dirs;
 
 static SEAPLANE_CONFIG_FILE: &str = "seaplane.toml";
 
@@ -43,14 +45,13 @@ pub trait ExtendConfig {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
-pub struct RawConfig {
-}
+pub struct RawConfig {}
 
 impl RawConfig {
     pub fn load() -> Result<Self> {
         let mut cfg = RawConfig::default();
 
-        for dir in search_directories() {
+        for dir in conf_dirs() {
             let maybe_file = dir.join(SEAPLANE_CONFIG_FILE);
 
             debug!("Looking for configuration file at {:?}", maybe_file);
@@ -70,21 +71,6 @@ impl RawConfig {
 
         Ok(())
     }
-}
-
-fn search_directories() -> Vec<PathBuf> {
-    let mut dirs = Vec::new();
-    if let Some(proj_dirs) = directories::ProjectDirs::from("io", "Seaplane", "seaplane") {
-        dirs.push(proj_dirs.config_dir().to_owned());
-    }
-    if let Some(base_dirs) = directories::BaseDirs::new() {
-        // On Linux ProjectDirs already adds ~/.config/seaplane, but not on macOS or Windows
-        if !cfg!(target_os = "linux") {
-            dirs.push(base_dirs.home_dir().join(".config/seaplane"));
-        }
-        dirs.push(base_dirs.home_dir().join(".seaplane"));
-    }
-    dirs
 }
 
 #[cfg(test)]
