@@ -19,12 +19,13 @@
 //! After these steps the final Context is what is used to make runtime decisions.
 use std::path::PathBuf;
 
-use anyhow::Result;
 use crate::{
     config::RawConfig,
-    fs::data_dir,
+    data::flight::generate_name,
+    fs,
     printer::{ColorChoice, OutputFormat},
 };
+use anyhow::Result;
 
 const FLIGHTS_FILE: &str = "flights.json";
 const FORMATIONS_FILE: &str = "formations.json";
@@ -47,7 +48,6 @@ pub struct Ctx {
 
     // Try to force the operation to happen
     pub force: bool,
-
 }
 
 impl Default for Ctx {
@@ -94,6 +94,4 @@ impl Ctx {
     pub fn data_dir(&self) -> &Path {
         &self.data_dir
     }
-}
-
 }

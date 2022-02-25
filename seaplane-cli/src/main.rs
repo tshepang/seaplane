@@ -16,9 +16,6 @@ use crate::{
 };
 
 fn main() -> Result<()> {
-    // Load a configuration file, we will check the raw values that can change aspects of the CLI.
-    let _cfg = RawConfig::load()?;
-
     let args = SeaplaneArgs::parse();
     // Normally, this would be in the SeapalneArgs::run method, however setting up logging has to
     // happen super early in the process lifetime

@@ -3,10 +3,11 @@ mod completion;
 mod config;
 mod formation;
 mod image;
+mod init;
 mod license;
 
 pub use self::{
     account::SeaplaneAccountArgs, completion::SeaplaneShellCompletionArgs,
-    config::SeaplaneConfigArgs, formation::SeaplaneFormationArgs, image::SeaplaneImageArgs,
-    license::SeaplaneLicenseArgs,
+    config::SeaplaneConfigArgs, flight::SeaplaneFlightArgs, formation::SeaplaneFormationArgs,
+    image::SeaplaneImageArgs, init::SeaplaneInitArgs, license::SeaplaneLicenseArgs,
 };

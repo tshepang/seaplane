@@ -76,23 +76,18 @@ More uses suppresses higher levels of output
 
 impl SeaplaneArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        use SeaplaneCmds::*;
+
         self.update_ctx(ctx)?;
 
         match &self.cmd {
-            SeaplaneCmds::Account(args) => {
-                todo!("SeaplaneAccountArgs::run")
-            }
-            SeaplaneCmds::ShellCompletion(args) => args.run(ctx),
-            SeaplaneCmds::Config(args) => {
-                todo!("SeaplaneConfigArgs::run")
-            }
-            SeaplaneCmds::Formation(args) => {
-                todo!("SeaplaneFormationArgs::run")
-            }
-            SeaplaneCmds::Image(args) => {
-                todo!("SeaplaneImageArgs::run")
-            }
-            SeaplaneCmds::License(args) => args.run(ctx),
+            Account(args) => args.run(ctx),
+            ShellCompletion(args) => args.run(ctx),
+            Config(args) => args.run(ctx),
+            Formation(args) => args.run(ctx),
+            Image(args) => args.run(ctx),
+            Init(args) => args.run(ctx),
+            License(args) => args.run(ctx),
         }
     }
 
@@ -122,5 +117,6 @@ pub enum SeaplaneCmds {
     Config(SeaplaneConfigArgs),
     Formation(SeaplaneFormationArgs),
     Image(SeaplaneImageArgs),
+    Init(SeaplaneInitArgs),
     License(SeaplaneLicenseArgs),
 }
