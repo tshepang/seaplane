@@ -36,6 +36,7 @@ pub enum ColorChoice {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
+#[allow(dead_code)]
 pub enum Color {
     Black,
     Blue,
@@ -149,7 +150,6 @@ mod _printer {
                 Color::Magenta => TermColorColor::Magenta,
                 Color::Yellow => TermColorColor::Yellow,
                 Color::White => TermColorColor::White,
-                _ => unimplemented!("Unimplementedd color option"), // Should be unreachable
             }
         }
     }

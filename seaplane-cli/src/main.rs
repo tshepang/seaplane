@@ -5,16 +5,15 @@ mod config;
 mod context;
 mod data;
 mod fs;
+mod log;
 mod printer;
-
-use std::{env, io::Write};
 
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{cli::SeaplaneArgs, config::RawConfig, context::Ctx, printer::OutputFormat};
-
-static DEFAULT_LOG_VAR: &str = "SEAPLANE_LOG";
+use crate::{
+    cli::SeaplaneArgs, config::RawConfig, context::Ctx, log::LogLevel, printer::OutputFormat,
+};
 
 fn main() -> Result<()> {
     // Load a configuration file, we will check the raw values that can change aspects of the CLI.
@@ -25,18 +24,14 @@ fn main() -> Result<()> {
     // happen super early in the process lifetime
     match args.verbose {
         0 => match args.quiet {
-            0 => env::set_var(DEFAULT_LOG_VAR, "info"),
-            1 => env::set_var(DEFAULT_LOG_VAR, "warn"),
-            2 => env::set_var(DEFAULT_LOG_VAR, "error"),
-            _ => env::set_var(DEFAULT_LOG_VAR, "off"),
+            0 => crate::log::LOG_LEVEL.set(LogLevel::Info).unwrap(),
+            1 => crate::log::LOG_LEVEL.set(LogLevel::Warn).unwrap(),
+            2 => crate::log::LOG_LEVEL.set(LogLevel::Error).unwrap(),
+            _ => crate::log::LOG_LEVEL.set(LogLevel::Off).unwrap(),
         },
-        1 => env::set_var(DEFAULT_LOG_VAR, "debug"),
-        _ => env::set_var(DEFAULT_LOG_VAR, "trace"),
+        1 => crate::log::LOG_LEVEL.set(LogLevel::Debug).unwrap(),
+        _ => crate::log::LOG_LEVEL.set(LogLevel::Trace).unwrap(),
     }
-
-    env_logger::Builder::from_env(DEFAULT_LOG_VAR)
-        .format(|buf, record| writeln!(buf, "{}: {}", record.level(), record.args()))
-        .init();
 
     let mut ctx = Ctx::from_config(&RawConfig::load()?)?;
     ctx.update_from_env()?;

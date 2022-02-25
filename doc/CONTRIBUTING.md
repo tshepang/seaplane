@@ -52,6 +52,13 @@ $ cargo test --workspace
 [.. snip ..]
 ```
 
+If your changes affect the output, or CLI you should also run the UI tests with:
+
+```sh
+$ cargo test --features ui_tests
+[.. snip ..]
+```
+
 Keep in mind that our tool ships on several operating systems, and system architectures so if you
 have the ability to test in those environments as well that's wonderful! However, if you don't
 that's no problem; ensuring the tests pass on your local machine is a great starting place where we

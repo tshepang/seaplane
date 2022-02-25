@@ -25,10 +25,17 @@ pub fn conf_dirs() -> Vec<PathBuf> {
 }
 
 /// A utility function to get the correct data directory
+#[cfg(not(feature = "ui_tests"))]
 #[inline]
 pub fn data_dir() -> PathBuf {
     project_dirs()
         .expect("Failed to determine usable directories")
         .data_dir()
         .to_owned()
+}
+
+#[cfg(feature = "ui_tests")]
+#[inline]
+pub fn data_dir() -> PathBuf {
+    std::env::current_dir().unwrap()
 }

@@ -2,22 +2,24 @@ pub mod cmds;
 
 use std::env;
 
-use anyhow::{bail, Result};
-use clap::{crate_authors, AppSettings, Parser, Subcommand};
+use anyhow::Result;
+use clap::{crate_authors, Parser, Subcommand};
 
 pub use crate::cli::cmds::*;
-use crate::context::Ctx;
+use crate::{context::Ctx, printer::ColorChoice};
 
 static VERSION: &str = env!("SEAPLANE_GIT_HASH");
 static AUTHORS: &str = crate_authors!();
 
 #[derive(Parser)]
+// Unset any term-width detection for UI tests
+#[cfg_attr(feature = "ui_tests", clap(term_width = 0))]
 #[clap(
+    name = "seaplane",
     author = AUTHORS,
     version = VERSION,
-    global_setting(AppSettings::PropagateVersion),
-    global_setting(AppSettings::DisableColoredHelp),
-    global_setting(AppSettings::UseLongFormatForHelpSubcommand),
+    propagate_version = true,
+    disable_colored_help = true,
 )]
 pub struct SeaplaneArgs {
     /// Display more verbose output
@@ -25,6 +27,7 @@ pub struct SeaplaneArgs {
         short,
         long,
         parse(from_occurrences),
+        global = true,
         long_help = "Display more verbose output
 
 More uses displays more verbose output
@@ -38,6 +41,7 @@ More uses displays more verbose output
         short,
         long,
         parse(from_occurrences),
+        global = true,
         long_help = "Suppress output at a specific level and below
 
 More uses suppresses higher levels of output
@@ -47,12 +51,22 @@ More uses suppresses higher levels of output
     )]
     pub quiet: u8,
 
-    /// Use ANSI color codes in output
-    #[clap(long, global = true, overrides_with = "no_color")]
-    pub color: bool,
-
-    /// Do not use ANSI color codes in output
-    #[clap(long, global = true, overrides_with = "color")]
+    /// Should the output include color?
+    #[clap(
+        long,
+        global = true,
+        overrides_with_all = &["color", "no_color"],
+        default_value = "auto",
+        arg_enum
+    )]
+    pub color: ColorChoice,
+    /// Do not color output (alias for --color=never)
+    #[clap(
+        long,
+        global = true,
+        overrides_with_all = &["color", "no_color"],
+        overrides_with = "color",
+    )]
     pub no_color: bool,
 
     // Subcommands
@@ -62,17 +76,6 @@ More uses suppresses higher levels of output
 
 impl SeaplaneArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        match self.verbose {
-            0 => match self.quiet {
-                0 => env::set_var("RUST_LOG", "seaplane=info"),
-                1 => env::set_var("RUST_LOG", "seaplane=warn"),
-                2 => env::set_var("RUST_LOG", "seaplane=error"),
-                _ => env::set_var("RUST_LOG", "seaplane=off"),
-            },
-            1 => env::set_var("RUST_LOG", "seaplane=debug"),
-            _ => env::set_var("RUST_LOG", "seaplane=trace"),
-        }
-
         self.update_ctx(ctx)?;
 
         match &self.cmd {
@@ -98,13 +101,15 @@ impl SeaplaneArgs {
         // overrides (yeah...niche) if two mutually exclusive flags that override each-other are
         // used at different nesting levels, the overrides do not happen.
         //
-        // For us this means doing `seaplane --no-color SUBCOMMAND --color` effectively there will
-        // be no color output, because clap will evaluate both `--color` and `--no-color` to `true`
-        // (i.e. used) even though they override each-other.
+        // For us this means doing `seaplane --no-color SUBCOMMAND --color=auto` effectively there
+        // will be no color output, because clap will evaluate `--no-color` to `true` (i.e. used)
+        // even though they override each-other.
         //
-        // So we err on the side of not providing color by only checking the --no-color flag (since
-        // showing color is *on* by default).
-        ctx.color = !self.no_color;
+        // So we err on the side of not providing color since that is the safer option
+        ctx.color = match (self.color, self.no_color) {
+            (_, true) => ColorChoice::Never,
+            (choice, _) => choice,
+        };
 
         Ok(())
     }

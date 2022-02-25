@@ -31,7 +31,6 @@ use std::fs;
 use std::path::Path;
 
 use anyhow::Result;
-use log::debug;
 use serde::{Deserialize, Serialize};
 
 use crate::fs::conf_dirs;
@@ -54,9 +53,9 @@ impl RawConfig {
         for dir in conf_dirs() {
             let maybe_file = dir.join(SEAPLANE_CONFIG_FILE);
 
-            debug!("Looking for configuration file at {:?}", maybe_file);
+            cli_debugln!("Looking for configuration file at {:?}", maybe_file);
             if maybe_file.exists() {
-                debug!("Found configuration file {:?}", maybe_file);
+                cli_debugln!("Found configuration file {:?}", maybe_file);
                 cfg.update(maybe_file)?;
             }
         }

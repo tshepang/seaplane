@@ -15,16 +15,12 @@ atty = { version = "0.2.14", optional = true }
 clap = { version = "3.1.2", default-features = false, features = ["std", "unicode", "derive", "cargo", "wrap_help"] }
 clap_complete = "3.0.6"
 directories = "4.0.1"
-env_logger = "0.9"
-log = "0.4.14"
 seaplane = { path = "../seaplane" }
 serde = { version = "1.0", features = ["derive"]}
 toml = "0.5.8"
 tabwriter = "1.1.2"
 once_cell = "1.9.0"
 termcolor = { version = "1.1.2", optional = true }
-# Not until pretty_env_logger updates to env_logger>=0.9
-#pretty_env_logger = { version = "0.4", optional = true }
 
 [dev-dependencies]
 trycmd = "0.12.2"
