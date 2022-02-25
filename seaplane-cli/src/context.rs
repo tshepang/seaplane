@@ -17,7 +17,21 @@
 //!   parent should be finalized.
 //!
 //! After these steps the final Context is what is used to make runtime decisions.
-use std::path::PathBuf;
+//!
+//! The context struct itself contains "global" values or those that apply in many scenarios or to
+//! many commands. It also contains specialized contexts that contain values only relevant to those
+//! commands or processes that need them. These specialized contexts should be lazily derived.
+use std::{
+    path::{Path, PathBuf},
+    sync::{Mutex, MutexGuard, PoisonError},
+};
+
+use anyhow::Result;
+use once_cell::sync::OnceCell;
+use seaplane::api::{
+    v1::formations::{Architecture, Flight as FlightModel, ImageReference},
+    COMPUTE_API_URL,
+};
 
 use crate::{
     config::RawConfig,
@@ -25,7 +39,6 @@ use crate::{
     fs,
     printer::{ColorChoice, OutputFormat},
 };
-use anyhow::Result;
 
 const FLIGHTS_FILE: &str = "flights.json";
 const FORMATIONS_FILE: &str = "formations.json";
@@ -48,6 +61,9 @@ pub struct Ctx {
 
     // Try to force the operation to happen
     pub force: bool,
+
+    // Context relate to exclusively to Flight operations and commands
+    pub flight: LateInit<FlightCtx>,
 }
 
 impl Default for Ctx {
@@ -57,6 +73,7 @@ impl Default for Ctx {
             data_dir: fs::data_dir(),
             out_format: OutputFormat::default(),
             force: false,
+            flight: LateInit::default(),
         }
     }
 }
@@ -73,6 +90,7 @@ impl Ctx {
             data_dir: fs::data_dir(),
             force: false,
             out_format: OutputFormat::default(),
+            flight: LateInit::default(),
         })
     }
 
@@ -90,8 +108,88 @@ impl Ctx {
         self.data_dir.join(FORMATIONS_FILE)
     }
 
+    pub fn flight_ctx(&self) -> MutexGuard<'_, FlightCtx> {
+        self.flight
+            .inner
+            .get_or_init(|| Mutex::new(FlightCtx::default()))
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+    }
+
     #[inline]
     pub fn data_dir(&self) -> &Path {
         &self.data_dir
+    }
+}
+
+// Not deriving Clone or Debug on purpose due to cyclic OnceCells
+pub struct FlightCtx {
+    pub image: Option<ImageReference>,
+    pub name: String,
+    pub minimum: u64,
+    pub maximum: Option<u64>,
+    pub architecture: Vec<Architecture>,
+    pub api_permission: bool,
+}
+
+impl Default for FlightCtx {
+    fn default() -> Self {
+        Self {
+            name: generate_name(),
+            image: None,
+            minimum: 0,
+            maximum: None,
+            architecture: Vec::new(),
+            api_permission: false,
+        }
+    }
+}
+
+impl FlightCtx {
+    /// Creates a new seaplane::api::v1::Flight from the contained values
+    pub fn model(&self) -> FlightModel {
+        // Create the new Flight model from the CLI inputs
+        let mut flight_model = FlightModel::builder()
+            .name(self.name.clone())
+            .api_permission(self.api_permission)
+            .minimum(self.minimum);
+
+        if let Some(image) = self.image.clone() {
+            flight_model = flight_model.image_reference(image);
+        }
+
+        // Due to Option<T> nature we conditionally a max
+        if let Some(n) = self.maximum {
+            flight_model = flight_model.maximum(n);
+        }
+
+        // Add all the architectures. In the CLI they're a Vec but in the Model they're a HashSet
+        // which is the reason for the slightlly awkward loop
+        for arch in &self.architecture {
+            flight_model = flight_model.add_architecture(*arch);
+        }
+
+        // Create a new Flight struct we can add to our local JSON "DB"
+        flight_model
+            .build()
+            .expect("Failed to build Flight from inputs")
+    }
+}
+
+pub struct LateInit<T> {
+    inner: OnceCell<Mutex<T>>,
+}
+
+impl<T> Default for LateInit<T> {
+    fn default() -> Self {
+        Self {
+            inner: OnceCell::default(),
+        }
+    }
+}
+
+impl<T> LateInit<T> {
+    pub fn init(&self, val: T) {
+        assert!(self.inner.set(Mutex::new(val)).is_ok())
     }
 }

@@ -3,7 +3,7 @@ Without any arguments
 ```console
 $ seaplane
 ? 2
-seaplane v[..] ([..])
+seaplane [PKGVER]
 Seaplane IO, Inc.
 
 USAGE:

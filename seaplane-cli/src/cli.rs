@@ -87,6 +87,7 @@ impl SeaplaneArgs {
             Formation(args) => args.run(ctx),
             Image(args) => args.run(ctx),
             Init(args) => args.run(ctx),
+            Flight(args) => args.run(ctx),
             License(args) => args.run(ctx),
         }
     }
@@ -119,4 +120,5 @@ pub enum SeaplaneCmds {
     Image(SeaplaneImageArgs),
     Init(SeaplaneInitArgs),
     License(SeaplaneLicenseArgs),
+    Flight(Box<SeaplaneFlightArgs>),
 }

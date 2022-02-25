@@ -9,22 +9,42 @@ pub use formation::*;
 pub use image_ref::*;
 
 use serde::{Deserialize, Serialize};
-use strum::EnumString;
+use strum::{EnumString, EnumVariantNames};
 
 /// The processor architecture a [`Flight`] wants to run on
-#[derive(Debug, Serialize, Deserialize, Hash, Eq, PartialEq, Copy, Clone, strum::Display)]
-#[serde(rename_all = "lowercase")]
+#[derive(
+    Debug,
+    Serialize,
+    Deserialize,
+    Hash,
+    Eq,
+    PartialEq,
+    Copy,
+    Clone,
+    strum::Display,
+    EnumString,
+    EnumVariantNames,
+)]
+#[strum(serialize_all = "lowercase")]
 pub enum Architecture {
-    #[strum(serialize = "amd64")]
     AMD64,
-    #[strum(serialize = "arm64")]
     ARM64,
 }
 
 /// A backing cloud provider that a [`Flight`] can run on. These are utilized in
 /// [`FormationConfiguration`] to tell the scheduler where we can run your [`Flight`]s
 #[derive(
-    Debug, EnumString, strum::Display, Serialize, Deserialize, Hash, Eq, PartialEq, Copy, Clone,
+    Debug,
+    Serialize,
+    Deserialize,
+    Hash,
+    Eq,
+    PartialEq,
+    Copy,
+    Clone,
+    strum::Display,
+    EnumString,
+    EnumVariantNames,
 )]
 #[allow(clippy::upper_case_acronyms)]
 pub enum Provider {

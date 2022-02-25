@@ -1,6 +1,7 @@
 mod account;
 mod completion;
 mod config;
+mod flight;
 mod formation;
 mod image;
 mod init;

@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use getset::{CopyGetters, Getters};
 use serde::{Deserialize, Serialize};
-use url::Url;
+
 use uuid::Uuid;
 
 #[cfg(doc)]
@@ -297,7 +297,8 @@ impl FlightBuilder {
         self
     }
 
-    /// A container image registry URL which points to the container image this [`Flight`] should uses
+    /// A container image registry reference which points to the container image this [`Flight`]
+    /// should uses
     ///
     /// # Panics
     ///
@@ -311,6 +312,17 @@ impl FlightBuilder {
                 .parse::<ImageReference>()
                 .expect("Failed to parse image reference"),
         );
+        self
+    }
+
+    /// A container image registry reference which points to the container image this [`Flight`]
+    /// should uses.
+    ///
+    /// This method allows providing a pre-parsed [`ImageReference`] instead of a string which can
+    /// `panic!` on parsing in [`FlightBuilder::image`].
+    #[must_use]
+    pub fn image_reference(mut self, image_ref: ImageReference) -> Self {
+        self.image = Some(image_ref);
         self
     }
 
@@ -341,7 +353,7 @@ impl FlightBuilder {
     /// **NOTE:** This method can be called multiple times.
     #[must_use]
     pub fn add_architecture<A: Into<Architecture>>(mut self, arch: A) -> Self {
-        self.architecture.push(arch.into());
+        self.architecture.insert(arch.into());
         self
     }
 
@@ -355,15 +367,11 @@ impl FlightBuilder {
     }
 
     /// Perform validation checks and construct a [`Flight`]
-    pub fn build(mut self) -> Result<Flight> {
+    pub fn build(self) -> Result<Flight> {
         if self.name.is_none() {
             return Err(SeaplaneError::MissingFlightName);
         } else if self.image.is_none() {
             return Err(SeaplaneError::MissingFlightImageReference);
-        }
-
-        if self.architecture.is_empty() {
-            self.architecture.insert(Architecture::AMD64);
         }
 
         Ok(Flight {
@@ -456,8 +464,8 @@ impl Flight {
 
     /// Returns the [`Architecture`]s this [`Flight`] can be run on.
     #[inline]
-    pub fn architecture(&self) -> &[Architecture] {
-        self.architecture.as_ref()
+    pub fn architecture(&self) -> impl Iterator<Item = &Architecture> {
+        self.architecture.iter()
     }
 }
 

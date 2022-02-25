@@ -1,10 +1,19 @@
+use anyhow::Result;
 use clap::{Parser, Subcommand};
+
+use crate::context::Ctx;
 
 #[derive(Parser)]
 pub struct SeaplaneAccountArgs {
     // subcommands
     #[clap(subcommand)]
     cmd: SeaplaneAccountCmds,
+}
+
+impl SeaplaneAccountArgs {
+    pub fn run(&self, _ctx: &Ctx) -> Result<()> {
+        todo!("impl SeaplaneAccountArgs")
+    }
 }
 
 #[derive(Subcommand)]

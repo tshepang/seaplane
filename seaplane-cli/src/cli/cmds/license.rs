@@ -20,7 +20,7 @@ pub struct SeaplaneLicenseArgs {
 }
 
 impl SeaplaneLicenseArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
+    pub fn run(&self, _ctx: &mut Ctx) -> Result<()> {
         if self.third_party {
             println!("{}", THIRD_PARTY_LICENSES);
         } else {

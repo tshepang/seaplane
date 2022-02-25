@@ -1,7 +1,7 @@
 use std::io;
 
 use anyhow::Result;
-use clap::{IntoApp, Parser};
+use clap::{CommandFactory, Parser};
 
 use crate::cli::SeaplaneArgs;
 use crate::Ctx;
@@ -114,8 +114,8 @@ pub struct SeaplaneShellCompletionArgs {
 }
 
 impl SeaplaneShellCompletionArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let mut app = SeaplaneArgs::into_app();
+    pub fn run(&self, _ctx: &mut Ctx) -> Result<()> {
+        let mut app = SeaplaneArgs::command();
 
         clap_complete::generate(self.shell, &mut app, "seaplane", &mut io::stdout());
 

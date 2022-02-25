@@ -1,0 +1,202 @@
+
+With no additional arguments an error is displayed about a missing required argument.
+
+```console
+$ seaplane flight create
+? 2
+error: The following required arguments were not provided:
+    --image=<IMAGE_SPEC>
+
+USAGE:
+seaplane flight create --image=<IMAGE_SPEC> [OPTIONS]
+
+For more information try --help
+
+```
+
+The short help message with `-h`:
+
+```console
+$ seaplane flight create -h
+seaplane-flight-create [PKGVER]
+Create a new Flight definition
+
+USAGE:
+    seaplane flight create --image=<IMAGE_SPEC> [OPTIONS]
+
+OPTIONS:
+        --api-permission                 This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+        --architecture <ARCHITECTURE>    The architectures this flight is capable of running on [default: amd64] [aliases: arch, arches] [possible values: amd64, arm64]
+        --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+    -f, --force                          Override any existing Flights with the same <NAME>
+    -h, --help                           Print help information
+        --image <IMG_SPEC>               The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
+        --maximum <MAXIMUM>              The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
+        --minimum <MINIMUM>              The minimum number of container instances that should ever be running [default: 0] [aliases: min]
+    -n, --name <NAME>                    A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
+        --no-api-permission              This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+        --no-color                       Do not color output (alias for --color=never)
+    -q, --quiet                          Suppress output at a specific level and below
+    -v, --verbose                        Display more verbose output
+    -V, --version                        Print version information
+
+IMAGE SPEC
+
+    NOTE that at this point the only domain supported is `registry.seaplanet.io`. Other registries
+    may be added in the future.
+
+    Valid images can be defined using the grammar
+
+ 	reference                       := name [ ":" tag ] [ "@" digest ]
+	name                            := [domain '/'] path-component ['/' path-component]*
+	domain                          := domain-component ['.' domain-component]* [':' port-number]
+	domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
+	port-number                     := /[0-9]+/
+	path-component                  := alpha-numeric [separator alpha-numeric]*
+ 	alpha-numeric                   := /[a-z0-9]+/
+	separator                       := /[_.]|__|[-]*/
+
+	tag                             := /[\w][\w.-]{0,127}/
+
+	digest                          := digest-algorithm ":" digest-hex
+	digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
+	digest-algorithm-separator      := /[+.-_]/
+	digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
+	digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
+
+	identifier                      := /[a-f0-9]{64}/
+	short-identifier                := /[a-f0-9]{6,64}/
+
+    EXAMPLES
+
+    registry.seaplanet.io/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
+    registry.seaplanet.io/seaplane/busybox:latest
+
+```
+
+The long help message with `--help`:
+
+```console
+$ seaplane flight create --help
+seaplane-flight-create [PKGVER]
+Create a new Flight definition
+
+USAGE:
+    seaplane flight create --image=<IMAGE_SPEC> [OPTIONS]
+
+OPTIONS:
+        --api-permission
+            This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+
+        --architecture <ARCHITECTURE>
+            The architectures this flight is capable of running on
+            
+            [default: amd64]
+            [aliases: arch, arches]
+            [possible values: amd64, arm64]
+
+        --color <COLOR>
+            Should the output include color?
+            
+            [default: auto]
+            [possible values: always, ansi, auto, never]
+
+    -f, --force
+            Override any existing Flights with the same <NAME>
+
+    -h, --help
+            Print help information
+
+        --image <IMG_SPEC>
+            The container image registry reference that this Flight will use (See IMAGE SPEC below)
+            
+            All image references using the 'registry.seaplanet.io' registry may omit the domain portions of the
+            image reference as it is implied. For example, 'registry.seaplanet.io/USER/myimage:latest' can be
+            supplied simply as 'USER/myimage:latest'
+            
+            NOTE at this time the only registry supported is registry.seaplanet.io. In the future when other
+            registries are supported, you must specificy the full registry domain and path if using those
+            alternate registries in order to properly reference your image.
+            
+            [aliases: img]
+
+        --maximum <MAXIMUM>
+            The maximum number of container instances that should ever be running (default: infinite)
+            
+            [aliases: max]
+
+        --minimum <MINIMUM>
+            The minimum number of container instances that should ever be running
+            
+            [default: 0]
+            [aliases: min]
+
+    -n, --name <NAME>
+            A human readable name for the Flight (must be unique within any Formation it
+            
+            Rules for a valid name are as follows:
+            
+              - may only include 0-9, a-z, A-Z, and '-' (hyphen)
+              - hyphens ('-') may not be repeated (i.e. '--')
+              - no more than three (3) total hyphens
+              - the total length must be <= 27
+            
+            Some of these restrictions may be lifted in the future.
+
+        --no-api-permission
+            This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+
+        --no-color
+            Do not color output (alias for --color=never)
+
+    -q, --quiet
+            Suppress output at a specific level and below
+            
+            More uses suppresses higher levels of output
+                -q:   Only display WARN messages and above
+                -qq:  Only display ERROR messages
+                -qqq: Suppress all output
+
+    -v, --verbose
+            Display more verbose output
+            
+            More uses displays more verbose output
+                -v:  Display debug info
+                -vv: Display trace info
+
+    -V, --version
+            Print version information
+
+IMAGE SPEC
+
+    NOTE that at this point the only domain supported is `registry.seaplanet.io`. Other registries
+    may be added in the future.
+
+    Valid images can be defined using the grammar
+
+ 	reference                       := name [ ":" tag ] [ "@" digest ]
+	name                            := [domain '/'] path-component ['/' path-component]*
+	domain                          := domain-component ['.' domain-component]* [':' port-number]
+	domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
+	port-number                     := /[0-9]+/
+	path-component                  := alpha-numeric [separator alpha-numeric]*
+ 	alpha-numeric                   := /[a-z0-9]+/
+	separator                       := /[_.]|__|[-]*/
+
+	tag                             := /[\w][\w.-]{0,127}/
+
+	digest                          := digest-algorithm ":" digest-hex
+	digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
+	digest-algorithm-separator      := /[+.-_]/
+	digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
+	digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
+
+	identifier                      := /[a-f0-9]{64}/
+	short-identifier                := /[a-f0-9]{6,64}/
+
+    EXAMPLES
+
+    registry.seaplanet.io/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
+    registry.seaplanet.io/seaplane/busybox:latest
+
+```
