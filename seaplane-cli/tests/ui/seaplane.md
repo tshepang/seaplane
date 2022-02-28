@@ -20,7 +20,7 @@ OPTIONS:
 SUBCOMMANDS:
     account             
     config              
-    flight              Operate on Seaplane Flights (locial containers), which are the core component of Formations
+    flight              Operate on Seaplane Flights (logical containers), which are the core component of Formations
     formation           Operate on Seaplane Formations
     help                Print this message or the help of the given subcommand(s)
     image               

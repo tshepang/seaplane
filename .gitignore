@@ -14,3 +14,5 @@ seaplane/Cargo.lock
 *.orig
 *.bak
 
+# UI Test working dirs
+*/tests/ui/**/*.in/*.json

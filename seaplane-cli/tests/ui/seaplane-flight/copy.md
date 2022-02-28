@@ -30,16 +30,16 @@ ARGS:
 
 OPTIONS:
         --api-permission                 This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
-        --architecture <ARCHITECTURE>    The architectures this flight is capable of running on [default: amd64] [aliases: arch, arches] [possible values: amd64, arm64]
+        --architecture <ARCHITECTURE>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches] [possible values: amd64, arm64]
         --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -h, --help                           Print help information
         --image <IMG_SPEC>               The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
         --maximum <MAXIMUM>              The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
-        --minimum <MINIMUM>              The minimum number of container instances that should ever be running [default: 0] [aliases: min]
+        --minimum <MINIMUM>              The minimum number of container instances that should ever be running [default: 1] [aliases: min]
     -n, --name <NAME>                    A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
-        --no-api-permission              This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+        --no-api-permission              This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
         --no-color                       Do not color output (alias for --color=never)
-        --no-maximum                     Remove any value set as the maximum number of instances [aliases: no-max]
+        --no-maximum                     There is no maximum number of instances [aliases: no-max]
     -q, --quiet                          Suppress output at a specific level and below
     -v, --verbose                        Display more verbose output
     -V, --version                        Print version information
@@ -99,9 +99,8 @@ OPTIONS:
             This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
 
         --architecture <ARCHITECTURE>
-            The architectures this flight is capable of running on
+            The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
             
-            [default: amd64]
             [aliases: arch, arches]
             [possible values: amd64, arm64]
 
@@ -122,7 +121,7 @@ OPTIONS:
             supplied simply as 'USER/myimage:latest'
             
             NOTE at this time the only registry supported is registry.seaplanet.io. In the future when other
-            registries are supported, you must specificy the full registry domain and path if using those
+            registries are supported, you must specify the full registry domain and path if using those
             alternate registries in order to properly reference your image.
             
             [aliases: img]
@@ -135,7 +134,7 @@ OPTIONS:
         --minimum <MINIMUM>
             The minimum number of container instances that should ever be running
             
-            [default: 0]
+            [default: 1]
             [aliases: min]
 
     -n, --name <NAME>
@@ -151,13 +150,13 @@ OPTIONS:
             Some of these restrictions may be lifted in the future.
 
         --no-api-permission
-            This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+            This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
 
         --no-color
             Do not color output (alias for --color=never)
 
         --no-maximum
-            Remove any value set as the maximum number of instances
+            There is no maximum number of instances
             
             [aliases: no-max]
 

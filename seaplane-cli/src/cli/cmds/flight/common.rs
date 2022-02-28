@@ -82,11 +82,11 @@ Some of these restrictions may be lifted in the future."
     pub name: Option<String>,
 
     /// The minimum number of container instances that should ever be running
-    #[clap(long, default_value = "0", visible_alias = "min")]
+    #[clap(long, default_value = "1", visible_alias = "min")]
     pub minimum: u64,
 
     /// The maximum number of container instances that should ever be running (default: infinite)
-    #[clap(long, visible_alias = "max")]
+    #[clap(long, visible_alias = "max", overrides_with = "no-maximum")]
     pub maximum: Option<u64>,
 
     /// The architectures this flight is capable of running on. No value means it will be auto
@@ -99,10 +99,14 @@ Some of these restrictions may be lifted in the future."
     #[clap(long, overrides_with = "no_api_permission", alias = "api-permissions")]
     pub api_permission: bool,
 
-    /// This Flight should be allowed to hit Seaplane API endpoints and will be provided a
+    /// This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a
     /// 'SEAPLANE_API_TOKEN' environment variable at runtime
     #[clap(long, overrides_with = "api_permission", alias = "no-api-permissions")]
     pub no_api_permission: bool,
+
+    /// There is no maximum number of instances
+    #[clap(long, visible_alias = "no-max", overrides_with = "maximum")]
+    no_maximum: bool,
 }
 
 impl SeaplaneFlightCommonArgs {
@@ -132,7 +136,9 @@ impl SeaplaneFlightCommonArgs {
             minimum: self.minimum,
             maximum: self.maximum,
             architecture: self.architecture.clone(),
-            api_permission: self.api_permission || !self.no_api_permission,
+            // because of clap overrides we only have to check api_permissions
+            api_permission: self.api_permission,
+            reset_maximum: self.no_maximum,
         }
     }
 }

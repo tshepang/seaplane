@@ -130,6 +130,7 @@ pub struct FlightCtx {
     pub maximum: Option<u64>,
     pub architecture: Vec<Architecture>,
     pub api_permission: bool,
+    pub reset_maximum: bool,
 }
 
 impl Default for FlightCtx {
@@ -141,6 +142,7 @@ impl Default for FlightCtx {
             maximum: None,
             architecture: Vec::new(),
             api_permission: false,
+            reset_maximum: false,
         }
     }
 }

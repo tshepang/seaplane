@@ -53,13 +53,27 @@ impl SeaplaneFlightCreateArgs {
         let mut flights = Flights::load_from_disk(ctx.flights_file())?.unwrap_or_default();
 
         // Check for duplicates and suggest `seaplane flight edit`
-        if flights.is_ambiguous_or_die(new_flight.name(), !self.force) {
+        let matches = flights.indices_of_matches(new_flight.name());
+        if !matches.is_empty() {
             // TODO: We should check if these ones we remove are referenced remote or not
 
+            if !self.force {
+                cli_eprint!(@Red, "error: ");
+                cli_eprint!("a Flight with the name '");
+                cli_eprint!(@Yellow, "{}", needle);
+                cli_eprintln!("' already exists");
+                cli_eprint!("(hint: try '");
+                cli_eprint!(@Green, "seaplane flight edit {}", needle);
+                cli_eprintln!("' instead)");
+
+                std::process::exit(1);
+            }
             // We have duplicates, but the user passed --force. So first we remove the existing
             // Flights and "re-add" them
 
-            flights.remove_indices(&flights.indices_of_matches(new_flight.name()));
+            // TODO: if more than one flight has the exact same name, we remove them all; that's
+            // *probably* what we want? But more thought should go into this...
+            flights.remove_indices(&matches);
         }
 
         let new_flight_name = new_flight.name().to_owned();
@@ -69,7 +83,7 @@ impl SeaplaneFlightCreateArgs {
         flights.inner.push(new_flight);
 
         // Write out an entirely new JSON file with the new Flight included
-        flights.save_to_disk(ctx.flights_file())?;
+        flights.save_to_disk()?;
 
         cli_print!("Successfully created Flight '");
         cli_print!(@Green, "{}", new_flight_name);

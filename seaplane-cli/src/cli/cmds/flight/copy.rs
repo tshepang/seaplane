@@ -25,10 +25,6 @@ pub struct SeaplaneFlightCopyArgs {
     #[clap(short = 'x', long)]
     exact: bool,
 
-    /// Remove any value set as the maximum number of instances
-    #[clap(long, visible_alias = "no-max")]
-    no_maximum: bool,
-
     // So we don't have to define the same args over and over with commands that use the same ones
     #[clap(flatten)]
     shared: SeaplaneFlightCommonArgs,
@@ -117,12 +113,11 @@ impl SeaplaneFlightCopyArgs {
         {
             dest_flight = dest_flight.add_architecture(*arch);
         }
-        let cli_api_perms = self.shared.api_permission || !self.shared.no_api_permission;
+        let cli_api_perms = self.shared.api_permission;
         let src_api_perms = src_flight.model.api_permission();
         match (src_api_perms, cli_api_perms) {
-            (true, false) | (false, true) => {
-                dest_flight = dest_flight.api_permission(cli_api_perms)
-            }
+            (true, false) => dest_flight = dest_flight.api_permission(false),
+            (false, true) => dest_flight = dest_flight.api_permission(true),
             _ => (),
         }
 

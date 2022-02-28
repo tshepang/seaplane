@@ -1,16 +1,3 @@
-With no arguments a list of Flights is displayed in `table` format:
-
-```console
-$ seaplane init
-...
-$ seaplane flight create --image seaplane/busybox:latest --name foo-bar
-...
-$ seaplane flight list
-LOCAL ID  NAME     IMAGE                    MIN  MAX  ARCH   API PERMS
-[..]      foo-bar  seaplane/busybox:latest  0    INF  amd64  true
-
-```
-
 The short help message with `-h`:
 
 ```console

@@ -73,7 +73,7 @@ impl SeaplaneFlightDeleteArgs {
         });
 
         // Write out an entirely new JSON file with the Flight(s) deleted
-        flights.save_to_disk(ctx.flights_file())?;
+        flights.save_to_disk()?;
 
         cli_println!(
             "\nSuccessfully removed {} item{}",

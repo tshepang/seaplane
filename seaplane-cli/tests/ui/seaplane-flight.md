@@ -4,7 +4,7 @@ Be default, `seaplane flight` will display the help text:
 $ seaplane flight
 ? 2
 seaplane-flight [PKGVER]
-Operate on Seaplane Flights (locial containers), which are the core component of Formations
+Operate on Seaplane Flights (logical containers), which are the core component of Formations
 
 USAGE:
     seaplane flight [OPTIONS] <SUBCOMMAND>
