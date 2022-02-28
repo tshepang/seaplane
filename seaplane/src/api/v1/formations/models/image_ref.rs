@@ -129,6 +129,13 @@ pub fn parse(input: &str) -> Result<ImageReference, ImageReferenceError> {
         }
     };
 
+    // TODO: Consider how to handle invalid domain. In docker, a name with
+    // invalid domain is considered to be docker.io/name. Do we want to do the
+    // same? For now, error out and requires user to input a valid domain name.
+    if let Err(err) = validate_domain(&reference.domain) {
+        return Err(err);
+    }
+
     if reference.domain.len() + reference.path.len() > NAME_TOTAL_LENGTH_MAX {
         return Err(ImageReferenceError::ErrNameTooLong);
     }
@@ -243,10 +250,24 @@ fn validate_digest(input: &str) -> Result<(), ImageReferenceError> {
     Ok(())
 }
 
+fn validate_domain(input: &str) -> Result<(), ImageReferenceError> {
+    // Check if domain containers a `.` or a `:` or the domain is exactly `localhost`.
+    if !input.chars().any(|c| c == '.' || c == ':') && input != "localhost" {
+        return Err(ImageReferenceError::ErrDomainInvalidFormat(
+            input.to_string(),
+        ));
+    }
+
+    Ok(())
+}
+
 #[derive(Debug, Error, PartialEq)]
 pub enum ImageReferenceError {
     #[error("invalid reference format")]
     ErrReferenceInvalidFormat,
+
+    #[error("invalid domain format: `{0}`")]
+    ErrDomainInvalidFormat(String),
 
     #[error("invalid tag format: `{0}`")]
     ErrTagInvalidFormat(String),
@@ -367,5 +388,19 @@ mod tests {
             split_domain("domain/path1/path2"),
             Ok(("", ("domain", "path1/path2")))
         );
+    }
+
+    #[test]
+    fn test_validate_domain() {
+        assert_eq!(
+            parse("seaplane/busybox:latest"),
+            Err(ImageReferenceError::ErrDomainInvalidFormat(
+                "seaplane".to_string()
+            ))
+        );
+        assert_eq!(validate_domain("docker.io"), Ok(()));
+        assert_eq!(validate_domain("registry.seaplanet.io"), Ok(()));
+        assert_eq!(validate_domain("localhost"), Ok(()));
+        assert_eq!(validate_domain("localhost:80"), Ok(()));
     }
 }
