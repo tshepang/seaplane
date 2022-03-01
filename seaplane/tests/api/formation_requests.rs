@@ -4,7 +4,6 @@ use seaplane::api::v1::{
     ActiveConfiguration, ActiveConfigurations, Flight, FormationConfiguration, FormationsRequest,
 };
 use serde_json::json;
-use url::Url;
 use uuid::Uuid;
 
 static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
@@ -106,15 +105,11 @@ fn build_configuration() -> FormationConfiguration {
     FormationConfiguration::builder()
         .add_flight(Flight::new(
             "Pequod",
-            "https://hub.docker.com/_/alpine:latest"
-                .parse::<Url>()
-                .unwrap(),
+            "registry.seaplanet.io/Stubb/alpine:latest",
         ))
         .add_flight(Flight::new(
             "Flask",
-            "https://hub.docker.com/_/alpine:latest"
-                .parse::<Url>()
-                .unwrap(),
+            "registry.seaplanet.io/Stubb/alpine:latest",
         ))
         .build()
         .unwrap()

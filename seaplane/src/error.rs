@@ -8,6 +8,8 @@ pub type Result<T> = std::result::Result<T, SeaplaneError>;
 pub enum SeaplaneError {
     #[error("http request error")]
     Http(#[from] reqwest::Error),
+    #[error("request did not include a required API key")]
+    MissingRequestApiKey,
     #[error("request did not include a required authorization token")]
     MissingRequestAuthToken,
     #[error("request did not include the required formation name")]

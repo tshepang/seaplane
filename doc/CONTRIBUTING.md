@@ -52,6 +52,14 @@ $ cargo test --workspace
 [.. snip ..]
 ```
 
+If your changes affect the Seaplane library and it's use of the Seaplane APIs you should also run
+the API tests with:
+
+```sh
+$ cargo test --features api_tests
+[.. snip ..]
+```
+
 If your changes affect the output, or CLI you should also run the UI tests with:
 
 ```sh

@@ -27,3 +27,4 @@ url = { version = "2.2.2", features = ["serde"] }
 [features]
 default = ["api_v1"]
 api_v1 = []
+api_tests = [] # enables mock API tests

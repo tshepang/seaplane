@@ -65,7 +65,15 @@ impl FormationsRequestBuilder {
             header::HeaderValue::from_static("application/json"),
         );
 
-        let builder = blocking::Client::builder().default_headers(headers);
+        #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
+        let mut builder = blocking::Client::builder()
+            .default_headers(headers)
+            .https_only(true);
+
+        #[cfg(feature = "api_tests")]
+        {
+            builder = builder.https_only(false);
+        }
 
         let url = if let Some(url) = self.base_url {
             url.join("v1/formations")?
@@ -83,10 +91,9 @@ impl FormationsRequestBuilder {
         })
     }
 
-    // TODO: make a "testing" feature (#[cfg(test)] does not work in integration tests)
-    //
     // Used in testing to manually set the URL
-    #[doc(hidden)]
+    #[cfg(feature = "api_tests")]
+    #[cfg_attr(feature = "api_tests", doc(hidden))]
     pub fn base_url<S: AsRef<str>>(mut self, url: S) -> Self {
         self.base_url = Some(url.as_ref().parse().unwrap());
         self
