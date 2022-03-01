@@ -19,7 +19,79 @@ Using the following target triples:
 - `aarch64-unknown-linux-gnu`
 - `aarch64-apple-darwin`
 
+## Code Tour
+
+This section covers the top level code structure. Further details can be found in each of the
+dedicated sections about their internal structure.
+
+- `.github/`: CI rules and Github specific metadata
+- `doc/`: Documentation relating to the entire project
+- `share/`: Additional information, such as third party licenses.
+
+### Seaplane Library
+
+`seaplane/` is the library which interacts with the Seaplane API. This library contains functions
+  and models for making calls against the Seaplane remote system.
+
+- `tests/`: All Seaplane library integration tests
+- `src/api/`: Types and Functions for interacting with the Seaplane API
+- `src/error.rs`: Custom error types that can be matched against and utilized when
+   consuming the Seaplane library.
+
+### Seaplane CLI
+
+`seaplane-cli/` is the command line tool that interacts consumes the `seaplane/` library as
+reference in how one could utilize the library and Seaplane API to build something. This tool
+also functions as the canonical way to interact with the Seaplane System.
+
+- `tests/`: All integration tests for the CLI.
+  - `tests/ui/`: These are UI tests that ensure the input and output of the CLI is functioning as
+  intended, or doesn't change without us being aware.
+- `src/main.rs`: The program entry point
+- `src/cli/`: All definitions and entry points for the CLI itself. 
+  - `cli/cmds/`: The actual CLI command definitions form a tree that mostly matches their
+  command hierarchy
+  - `cli/error.rs`: Defines common errors with their contexts to de-duplicate many commands
+needing to return the same or similar errors.
+- `src/ops/`: The meat of program which interacts with `seaplane/` library performs the useful
+  functions.
+- `src/config.rs`: Handles loading and (de)serialization of the configuration file
+- `src/context.rs`: The "source of truth" for runtime configuration options. This is responsible
+for deconflicting mutually exclusive items, and combining all inputs (configuration file,
+environment, CLI arguments, etc.) into a single structure that code can use at runtime to make a
+decision.
+- `src/error.rs`: Provides a custom CLI error and result type for fine grained control over the
+errors, and how they get displayed to the user.
+- `src/fs.rs`: Utility functions for interacting with the file system in a platform agnostic
+manner.
+- `src/log.rs`: Provides logging levels to allow messages to be suppressed or not using
+configuration options.
+- `src/macros.rs`: Provides printing macros that allow fine grained control over output and their
+colors analogous to the `(e)print(ln)!` and `log::{trace,debug,info,warn,error}` macros.
+- `src/printer.rs`: Controls how text is sent to STDTOUT or STDERR, including color management.
+
 ## CLI
+
+### Code Structure
+
+Code inside `src/cli.rs` and the corresponding `src/cli/` tree should be responsible for handling
+the actual CLI itself, and functions related to it (such as displaying errors with the appropriate
+CLI flags and options, etc.).
+
+Where possible, code in this tree should not be doing the *actual work*. Sometimes this gets
+blurry, especially early in the projects life as shortcuts are taken up front and cleaned up later.
+There are also times where *some* real work does need to happen within this tree, but these times
+should be limited to when that *real work* is directly related to the CLI in some fashion.
+
+Following this will allow the CLI to function as *an* interface to the program, but not *the*
+interface. Meaning at some point in future there could be other interfaces, such as web, TUI, etc.
+
+Ideally, all of these interfaces would call into the exact same modules to do the real work of the
+program. A code smell would be the TUI tree (in a hypothetical `src/tui/`) having to reach into
+`src/cli/` to perform some action.
+
+The real work, where possible should reside in `src/ops/`. All CLI `run()` functions, should be
+calling out to structures and functions inside `src/ops/` to actually perform some action.
 
 ### Type Naming Conventions
 
