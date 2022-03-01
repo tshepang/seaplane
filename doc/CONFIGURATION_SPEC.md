@@ -36,9 +36,18 @@ The `seaplane` configuration file is in [TOML][toml] format and consists of the 
 !!! Note
     Most sections may be omitted, and their default values will be used.
 
-### The `[dev]` Section
+### The `[account]` Section
 
-The `[dev]` section defines values related to the local-development `seaplane dev` command.
+The first section in a `seaplane.toml` is the `[account]` table which contains your account
+information for accessing Seaplane resources and APIs.
+
+#### The `api-key` Field
+
+Your API key is used to authenticate yourself to the Seaplane Authentication APIs which in turn
+send back a short lived Authentication Token which authorizes actions against resources you own
+such as your Formations and Flights.
+
+The `api-key` field is a string.
 
 [//]: # (links)
 
