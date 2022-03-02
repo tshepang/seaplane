@@ -29,7 +29,6 @@ use std::{
 use once_cell::sync::OnceCell;
 use seaplane::api::{
     v1::formations::{Architecture, Flight as FlightModel, ImageReference},
-    COMPUTE_API_URL,
 };
 
 use crate::{
@@ -62,6 +61,10 @@ pub struct Ctx {
     // Try to force the operation to happen
     pub force: bool,
 
+    /// The API Key associated with an account provided by the CLI, env, or Config used to request
+    /// access tokens
+    pub api_key: Option<String>,
+
     // Context relate to exclusively to Flight operations and commands
     pub flight: LateInit<FlightCtx>,
 }
@@ -73,16 +76,14 @@ impl Default for Ctx {
             data_dir: fs::data_dir(),
             out_format: OutputFormat::default(),
             force: false,
+            api_key: None,
             flight: LateInit::default(),
         }
     }
 }
 
 impl Ctx {
-    pub fn from_config(_cfg: &RawConfig) -> Result<Self> {
-        // TODO: this just gets it compiling. Using `todo!` blocks progress since loading the
-        // context happens at program startup, so we cannot panic on unimplemented
-
+    pub fn from_config(cfg: &RawConfig) -> Result<Self> {
         Ok(Self {
             // We default to using color. Later when the context is updated from the CLI args, this
             // may change.
@@ -90,6 +91,7 @@ impl Ctx {
             data_dir: fs::data_dir(),
             force: false,
             out_format: OutputFormat::default(),
+            api_key: cfg.account.api_key.clone(),
             flight: LateInit::default(),
         })
     }

@@ -11,7 +11,7 @@ path = "src/main.rs"
 
 [dependencies]
 atty = { version = "0.2.14", optional = true }
-clap = { version = "3.1.2", default-features = false, features = ["std", "unicode", "derive", "cargo", "wrap_help"] }
+clap = { version = "3.1.2", default-features = false, features = ["std", "unicode", "derive", "cargo", "wrap_help", "env"] }
 clap_complete = "3.0.6"
 directories = "4.0.1"
 seaplane = { path = "../seaplane" }

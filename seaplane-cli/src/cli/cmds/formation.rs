@@ -9,13 +9,7 @@ mod traffic_configuration;
 
 use clap::{Parser, Subcommand};
 
-use self::{
-    configuration::SeaplaneFormationConfigurationArgs,
-    container_stats::SeaplaneFormationContainerStatisticsArgs, create::SeaplaneFormationCreateArgs,
-    delete::SeaplaneFormationDeleteArgs, list::SeaplaneFormationListArgs,
-    stop::SeaplaneFormationStopArgs, template::SeaplaneFormationTemplateArgs,
-    traffic_configuration::SeaplaneFormationTrafficConfigurationArgs,
-};
+
 use crate::{error::Result, Ctx};
 
 /// Operate on Seaplane Formations
@@ -27,7 +21,7 @@ pub struct SeaplaneFormationArgs {
 
 impl SeaplaneFormationArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        use SeaplaneFormationCmds::*;
+        
 
         self.update_ctx(ctx)?;
 

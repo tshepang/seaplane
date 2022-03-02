@@ -30,7 +30,7 @@ pub fn wrap_cli_context(err: CliError, has_exact: bool, has_all: bool) -> Result
         _ => err,
     };
 
-    return Err(e);
+    Err(e)
 }
 
 pub fn no_matching_item(item: String, has_exact: bool) -> Result<()> {

@@ -4,6 +4,8 @@ use std::{
     result::Result as StdResult,
 };
 
+use seaplane::error::SeaplaneError;
+
 use crate::{
     log::{log_level, LogLevel},
     printer::{eprinter, Color},
@@ -52,13 +54,13 @@ impl<T> Context for StdResult<T, CliError> {
     fn context<S: Into<String>>(self, msg: S) -> Self {
         match self {
             Ok(t) => Ok(t),
-            Err(mut cli_err) => Err(cli_err.context(msg)),
+            Err(cli_err) => Err(cli_err.context(msg)),
         }
     }
     fn color_context<S: Into<String>>(self, color: Color, msg: S) -> Self {
         match self {
             Ok(t) => Ok(t),
-            Err(mut cli_err) => Err(cli_err.color_context(color, msg)),
+            Err(cli_err) => Err(cli_err.color_context(color, msg)),
         }
     }
     fn with_context<F, S>(self, f: F) -> Self
@@ -68,7 +70,7 @@ impl<T> Context for StdResult<T, CliError> {
     {
         match self {
             Ok(t) => Ok(t),
-            Err(mut cli_err) => Err(cli_err.context(f())),
+            Err(cli_err) => Err(cli_err.context(f())),
         }
     }
 
@@ -79,7 +81,7 @@ impl<T> Context for StdResult<T, CliError> {
     {
         match self {
             Ok(t) => Ok(t),
-            Err(mut cli_err) => {
+            Err(cli_err) => {
                 let (color, msg) = f();
                 Err(cli_err.color_context(color, msg))
             }
@@ -193,6 +195,7 @@ macro_rules! impl_err {
 // about
 impl_err!(serde_json::Error, SerdeJson);
 impl_err!(toml::de::Error, Toml);
+impl_err!(seaplane::error::SeaplaneError, Seaplane);
 
 impl From<io::Error> for CliError {
     fn from(e: io::Error) -> Self {
@@ -231,9 +234,11 @@ pub enum CliErrorKind {
     SerdeJson(serde_json::Error),
     Toml(toml::de::Error),
     UnknownWithContext(&'static str),
+    Seaplane(SeaplaneError),
     MissingPath,
     Unknown,
     PermissionDenied,
+    MissingApiKey,
 }
 
 impl CliErrorKind {
@@ -277,6 +282,12 @@ impl CliErrorKind {
             Unknown => {
                 cli_eprintln!("unknown")
             }
+            MissingApiKey => {
+                cli_eprintln!("no API key was found or provided")
+            }
+            Seaplane(e) => {
+                cli_eprintln!("seaplane: {}", e)
+            }
         }
     }
 
@@ -294,16 +305,18 @@ impl PartialEq<Self> for CliErrorKind {
         use CliErrorKind::*;
 
         match self {
-            DuplicateFlight(_) => matches!(rhs, DuplicateFlight(_)),
-            NoMatchingItem(_) => matches!(rhs, NoMatchingItem(_)),
             AmbiguousItem(_) => matches!(rhs, AmbiguousItem(_)),
-            MissingPath => matches!(rhs, MissingPath),
-            PermissionDenied => matches!(rhs, PermissionDenied),
+            DuplicateFlight(_) => matches!(rhs, DuplicateFlight(_)),
             Io(_) => matches!(rhs, Io(_)),
+            MissingApiKey => matches!(rhs, MissingApiKey),
+            MissingPath => matches!(rhs, MissingPath),
+            NoMatchingItem(_) => matches!(rhs, NoMatchingItem(_)),
+            PermissionDenied => matches!(rhs, PermissionDenied),
+            Seaplane(_) => matches!(rhs, Seaplane(_)),
             SerdeJson(_) => matches!(rhs, SerdeJson(_)),
             Toml(_) => matches!(rhs, Toml(_)),
-            UnknownWithContext(_) => matches!(rhs, UnknownWithContext(_)),
             Unknown => matches!(rhs, Unknown),
+            UnknownWithContext(_) => matches!(rhs, UnknownWithContext(_)),
         }
     }
 }

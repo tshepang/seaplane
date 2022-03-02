@@ -1,7 +1,10 @@
 pub mod cmds;
 pub mod errors;
 
-use std::env;
+use std::{
+    env,
+    io::{self, BufRead},
+};
 
 use clap::{crate_authors, Parser, Subcommand};
 
@@ -60,6 +63,7 @@ More uses suppresses higher levels of output
         arg_enum
     )]
     pub color: ColorChoice,
+
     /// Do not color output (alias for --color=never)
     #[clap(
         long,
@@ -68,6 +72,22 @@ More uses suppresses higher levels of output
         overrides_with = "color",
     )]
     pub no_color: bool,
+
+    /// The API key associated with your account used to access Seaplane API endpoints
+    #[clap(
+        short = 'A',
+        long,
+        global = true,
+        value_name = "STRING",
+        env = "SEAPLANE_API_KEY",
+        hide_env_values = true,
+        long_help = "The API key associated with your account used to access Seaplane API endpoints
+
+The value provided here will override any provided in any configuration files.
+A CLI provided value also overrides any environment variables.
+One can use a special value of '-' to signal the value should be read from STDIN."
+    )]
+    pub api_key: Option<String>,
 
     // Subcommands
     #[clap(subcommand)]
@@ -106,6 +126,18 @@ impl SeaplaneArgs {
             (_, true) => ColorChoice::Never,
             (choice, _) => choice,
         };
+
+        if let Some(key) = &self.api_key {
+            if key == "-" {
+                let stdin = io::stdin();
+                let mut lines = stdin.lock().lines();
+                if let Some(line) = lines.next() {
+                    ctx.api_key = Some(line?);
+                }
+            } else {
+                ctx.api_key = Some(key.to_owned());
+            }
+        }
 
         Ok(())
     }

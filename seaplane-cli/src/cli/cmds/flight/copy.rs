@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use seaplane::api::v1::Flight as FlightModel;
+
 
 use crate::{
     cli::{
@@ -8,9 +8,9 @@ use crate::{
         errors::wrap_cli_context,
     },
     context::{Ctx, FlightCtx},
-    error::{CliErrorKind, Context, Result},
-    ops::flight::{generate_name, Flight, Flights},
-    printer::{Color, Printer},
+    error::{Result},
+    ops::flight::{Flights},
+    printer::{Printer},
 };
 
 // TODO: add --from

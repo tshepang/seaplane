@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use seaplane::api::v1::Flight as FlightModel;
+
 
 use crate::{
     cli::{
@@ -9,7 +9,7 @@ use crate::{
     },
     context::{Ctx, FlightCtx},
     error::Result,
-    ops::flight::{Flight, Flights},
+    ops::flight::{Flights},
     printer::Printer,
 };
 

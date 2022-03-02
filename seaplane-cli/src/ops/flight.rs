@@ -234,9 +234,9 @@ impl Flights {
             self.indices_of_left_matches(src)
         };
         match indices.len() {
-            0 => Err(CliErrorKind::NoMatchingItem(src.into()).into_err())?,
+            0 => return Err(CliErrorKind::NoMatchingItem(src.into()).into_err()),
             1 => (),
-            _ => Err(CliErrorKind::AmbiguousItem(src.into()).into_err())?,
+            _ => return Err(CliErrorKind::AmbiguousItem(src.into()).into_err()),
         }
 
         Ok(self.remove_indices(&indices).pop().unwrap())

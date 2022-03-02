@@ -98,24 +98,24 @@ macro_rules! cli_bail {
 macro_rules! cli_warn {
     (@prefix, @$color:ident, $($args:tt)+) => {{
         if $crate::log::log_level() <= &$crate::log::LogLevel::Warn {
-            _print!(@Yellow, printer, "warn: ")
-            _print!(@$color, printer, $($args)+)
+            _print!(@Yellow, printer, "warn: ");
+            _print!(@$color, printer, $($args)+);
         }
     }};
     (@prefix, $($args:tt)+) => {{
         if $crate::log::log_level() <= &$crate::log::LogLevel::Warn {
-            _print!(printer, "warn: ")
-            _print!(printer, $($args)+)
+            _print!(printer, "warn: ");
+            _print!(printer, $($args)+);
         }
     }};
     (@$color:ident, $($args:tt)+) => {{
         if $crate::log::log_level() <= &$crate::log::LogLevel::Warn {
-            _print!(@$color, printer, $($args)+)
+            _print!(@$color, printer, $($args)+);
         }
     }};
     ($($args:tt)+) => {{
         if $crate::log::log_level() <= &$crate::log::LogLevel::Warn {
-            _print!(printer, $($args)+)
+            _print!(printer, $($args)+);
         }
     }};
 }
