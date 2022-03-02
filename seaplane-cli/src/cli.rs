@@ -1,12 +1,12 @@
 pub mod cmds;
+pub mod errors;
 
 use std::env;
 
-use anyhow::Result;
 use clap::{crate_authors, Parser, Subcommand};
 
 pub use crate::cli::cmds::*;
-use crate::{context::Ctx, printer::ColorChoice};
+use crate::{context::Ctx, error::Result, printer::ColorChoice};
 
 static VERSION: &str = env!("SEAPLANE_GIT_HASH");
 static AUTHORS: &str = crate_authors!();

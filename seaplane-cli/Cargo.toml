@@ -10,7 +10,6 @@ name = "seaplane"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1.0"
 atty = { version = "0.2.14", optional = true }
 clap = { version = "3.1.2", default-features = false, features = ["std", "unicode", "derive", "cargo", "wrap_help"] }
 clap_complete = "3.0.6"

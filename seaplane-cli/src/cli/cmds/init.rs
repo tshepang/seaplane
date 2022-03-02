@@ -1,9 +1,8 @@
 use std::fs;
 
-use anyhow::Result;
 use clap::Parser;
 
-use crate::context::Ctx;
+use crate::{context::Ctx, error::Result};
 
 /// Create the Seaplane directory structure at the appropriate locations
 #[derive(Parser)]

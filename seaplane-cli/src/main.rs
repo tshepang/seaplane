@@ -3,19 +3,20 @@ mod macros;
 mod cli;
 mod config;
 mod context;
-mod data;
+mod error;
 mod fs;
 mod log;
+mod ops;
 mod printer;
 
-use anyhow::Result;
 use clap::Parser;
 
 use crate::{
-    cli::SeaplaneArgs, config::RawConfig, context::Ctx, log::LogLevel, printer::OutputFormat,
+    cli::SeaplaneArgs, config::RawConfig, context::Ctx, error::Result, log::LogLevel,
+    printer::OutputFormat,
 };
 
-fn main() -> Result<()> {
+fn try_main() -> Result<()> {
     let args = SeaplaneArgs::parse();
     // Normally, this would be in the SeapalneArgs::run method, however setting up logging has to
     // happen super early in the process lifetime
@@ -34,4 +35,10 @@ fn main() -> Result<()> {
     ctx.update_from_env()?;
 
     args.run(&mut ctx)
+}
+
+fn main() {
+    if let Err(e) = try_main() {
+        e.exit();
+    }
 }

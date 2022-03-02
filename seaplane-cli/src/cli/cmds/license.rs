@@ -1,7 +1,6 @@
-use anyhow::Result;
 use clap::Parser;
 
-use crate::Ctx;
+use crate::{error::Result, Ctx};
 
 static THIRD_PARTY_LICENSES: &str = include_str!("../../../../share/third_party_licenses.md");
 

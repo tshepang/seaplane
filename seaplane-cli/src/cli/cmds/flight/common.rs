@@ -6,7 +6,7 @@ use seaplane::{
 
 use crate::{
     context::FlightCtx,
-    data::flight::{generate_name, validate_name},
+    ops::flight::{generate_name, validate_name},
 };
 
 pub static IMAGE_SPEC: &str = r#"IMAGE SPEC

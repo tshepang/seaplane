@@ -26,7 +26,6 @@ use std::{
     sync::{Mutex, MutexGuard, PoisonError},
 };
 
-use anyhow::Result;
 use once_cell::sync::OnceCell;
 use seaplane::api::{
     v1::formations::{Architecture, Flight as FlightModel, ImageReference},
@@ -35,8 +34,9 @@ use seaplane::api::{
 
 use crate::{
     config::RawConfig,
-    data::flight::generate_name,
+    error::Result,
     fs,
+    ops::flight::generate_name,
     printer::{ColorChoice, OutputFormat},
 };
 

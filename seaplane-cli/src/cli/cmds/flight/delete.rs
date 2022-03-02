@@ -1,8 +1,7 @@
-use anyhow::Result;
 use clap::Parser;
 use hex::ToHex;
 
-use crate::{data::flight::Flights, printer::Printer, Ctx};
+use crate::{cli::errors, error::Result, ops::flight::Flights, printer::Printer, Ctx};
 
 /// Delete a Flight definition
 #[derive(Parser)]
@@ -32,7 +31,8 @@ impl SeaplaneFlightDeleteArgs {
         Printer::init(ctx.color);
 
         // Load the known Flights from the local JSON "DB"
-        let mut flights = Flights::load_from_disk(ctx.flights_file())?.unwrap_or_default();
+        let flights_file = ctx.flights_file();
+        let mut flights = Flights::load_from_disk(&flights_file).unwrap_or_default();
 
         // TODO: find remote Flights too to check references
 
@@ -44,25 +44,12 @@ impl SeaplaneFlightDeleteArgs {
         };
 
         match indices.len() {
-            0 => {
-                cli_eprint!(@Red, "error: ");
-                cli_eprint!("the NAME or ID '");
-                cli_eprint!(@Green, "{}", self.flight);
-                cli_eprintln!("' didn't match anything");
-                std::process::exit(1);
-            }
+            0 => errors::no_matching_item(self.flight.clone(), self.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
                 if !self.all {
-                    cli_eprint!(@Red, "error: ");
-                    cli_eprint!("the name or hash '");
-                    cli_eprint!(@Yellow, "{}", self.flight);
-                    cli_eprintln!("' is ambiguous and matches more than one item");
-                    cli_eprint!("(hint: try adding '");
-                    cli_eprint!(@Green, "--all");
-                    cli_eprintln!("' to remove all matching items)");
-                    std::process::exit(1);
+                    errors::ambiguous_item(self.flight.clone(), true)?;
                 }
             }
         }

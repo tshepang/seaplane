@@ -1,9 +1,6 @@
-use anyhow::Result;
 use clap::Parser;
 
-use crate::{
-    Ctx,
-};
+use crate::{error::Result, Ctx};
 
 /// Generate a new template skeleton for a Flight definition
 #[derive(Parser)]

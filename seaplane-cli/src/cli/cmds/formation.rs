@@ -1,7 +1,22 @@
-use anyhow::Result;
+mod configuration;
+mod container_stats;
+mod create;
+mod delete;
+mod list;
+mod stop;
+mod template;
+mod traffic_configuration;
+
 use clap::{Parser, Subcommand};
 
-use crate::Ctx;
+use self::{
+    configuration::SeaplaneFormationConfigurationArgs,
+    container_stats::SeaplaneFormationContainerStatisticsArgs, create::SeaplaneFormationCreateArgs,
+    delete::SeaplaneFormationDeleteArgs, list::SeaplaneFormationListArgs,
+    stop::SeaplaneFormationStopArgs, template::SeaplaneFormationTemplateArgs,
+    traffic_configuration::SeaplaneFormationTrafficConfigurationArgs,
+};
+use crate::{error::Result, Ctx};
 
 /// Operate on Seaplane Formations
 #[derive(Parser)]

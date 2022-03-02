@@ -1,11 +1,11 @@
-use anyhow::Result;
 use clap::Parser;
 
 use crate::{
     cli::cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
     context::FlightCtx,
-    data::flight::{Flight, Flights},
-    printer::Printer,
+    error::{CliErrorKind, Context, Result},
+    ops::flight::{Flight, Flights},
+    printer::{Color, Printer},
     Ctx,
 };
 
@@ -50,30 +50,29 @@ impl SeaplaneFlightCreateArgs {
         let new_flight = ctx.flight_ctx().model();
 
         // Load the known Flights from the local JSON "DB"
-        let mut flights = Flights::load_from_disk(ctx.flights_file())?.unwrap_or_default();
+        let flights_file = ctx.flights_file();
+        let mut flights = Flights::load_from_disk(&flights_file)?;
 
         // Check for duplicates and suggest `seaplane flight edit`
-        let matches = flights.indices_of_matches(new_flight.name());
-        if !matches.is_empty() {
+        let name = new_flight.name();
+        let indices = flights.indices_of_matches(name);
+        if !indices.is_empty() {
             // TODO: We should check if these ones we remove are referenced remote or not
 
             if !self.force {
-                cli_eprint!(@Red, "error: ");
-                cli_eprint!("a Flight with the name '");
-                cli_eprint!(@Yellow, "{}", needle);
-                cli_eprintln!("' already exists");
-                cli_eprint!("(hint: try '");
-                cli_eprint!(@Green, "seaplane flight edit {}", needle);
-                cli_eprintln!("' instead)");
-
-                std::process::exit(1);
+                return Err(CliErrorKind::DuplicateFlight(name.into())
+                    .into_err()
+                    .context("(hint: try '")
+                    .color_context(Color::Green, format!("seaplane flight edit {}", name))
+                    .context("' instead)\n"));
             }
+
             // We have duplicates, but the user passed --force. So first we remove the existing
             // Flights and "re-add" them
 
             // TODO: if more than one flight has the exact same name, we remove them all; that's
             // *probably* what we want? But more thought should go into this...
-            flights.remove_indices(&matches);
+            flights.remove_indices(&indices);
         }
 
         let new_flight_name = new_flight.name().to_owned();

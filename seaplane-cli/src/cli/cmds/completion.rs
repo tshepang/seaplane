@@ -1,10 +1,8 @@
 use std::io;
 
-use anyhow::Result;
 use clap::{CommandFactory, Parser};
 
-use crate::cli::SeaplaneArgs;
-use crate::Ctx;
+use crate::{cli::SeaplaneArgs, error::Result, Ctx};
 
 // @TODO @SIZE this str is ~3.5kb, it can be stored compressed at around 1.4kb. However that would
 // require a code to do the compression/decompression which is larger than the 2.1kb savings. There

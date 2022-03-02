@@ -1,7 +1,6 @@
-use anyhow::Result;
 use clap::Parser;
 
-use crate::context::Ctx;
+use crate::{context::Ctx, error::Result};
 
 #[derive(Parser)]
 pub struct SeaplaneConfigArgs;

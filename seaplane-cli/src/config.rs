@@ -30,10 +30,9 @@
 use std::fs;
 use std::path::Path;
 
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use crate::fs::conf_dirs;
+use crate::{error::Result, fs::conf_dirs};
 
 static SEAPLANE_CONFIG_FILE: &str = "seaplane.toml";
 

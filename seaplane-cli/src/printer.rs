@@ -3,11 +3,10 @@ use std::{
     sync::{Mutex, MutexGuard, PoisonError},
 };
 
-use anyhow::Result;
 use clap::ArgEnum;
 use once_cell::sync::OnceCell;
 
-use crate::Ctx;
+use crate::{error::Result, Ctx};
 
 static GLOBAL_PRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();
 static GLOBAL_EPRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();

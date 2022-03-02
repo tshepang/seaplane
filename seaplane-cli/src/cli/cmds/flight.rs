@@ -6,7 +6,6 @@ mod edit;
 mod list;
 mod template;
 
-use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use crate::{
@@ -20,6 +19,7 @@ use crate::{
         template::SeaplaneFlightTemplateArgs,
     },
     context::Ctx,
+    error::Result,
 };
 
 /// Operate on Seaplane Flights (logical containers), which are the core component of Formations

@@ -2,3 +2,4 @@
 //! that is only relevant for the CLI or purposes of consuming the API.
 
 pub mod flight;
+pub mod formation;
