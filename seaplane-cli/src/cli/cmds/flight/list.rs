@@ -1,8 +1,9 @@
 use clap::Parser;
 
 use crate::{
+    error::Result,
+    fs::FromDisk,
     ops::flight::Flights,
-    error::{Result},
     printer::{Output, Printer},
     Ctx, OutputFormat,
 };
@@ -23,7 +24,7 @@ impl SeaplaneFlightListArgs {
         self.update_ctx(ctx)?;
         Printer::init(ctx.color);
 
-        let flights = Flights::load_from_disk(ctx.flights_file())?;
+        let flights: Flights = FromDisk::load(ctx.flights_file())?;
 
         // TOOD: get remote flights too
 

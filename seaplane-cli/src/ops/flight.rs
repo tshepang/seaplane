@@ -14,6 +14,7 @@ use tabwriter::TabWriter;
 use crate::{
     context::{Ctx, FlightCtx},
     error::{CliError, CliErrorKind, Context, Result},
+    fs::{FromDisk, ToDisk},
     printer::{Color, Output},
 };
 
@@ -126,44 +127,19 @@ pub struct Flights {
     pub inner: Vec<Flight>,
 }
 
+impl FromDisk for Flights {
+    fn set_loaded_from<P: AsRef<Path>>(&mut self, p: P) {
+        self.loaded_from = Some(p.as_ref().into());
+    }
+
+    fn loaded_from(&self) -> Option<&Path> {
+        self.loaded_from.as_ref().map(|p| &**p)
+    }
+}
+
+impl ToDisk for Flights {}
+
 impl Flights {
-    /// Loads Flights from the given path or returns `Ok(None)` if path does not exist
-    pub fn load_from_disk<P: AsRef<Path>>(p: P) -> Result<Self> {
-        let path = p.as_ref();
-
-        let mut flights: Flights = serde_json::from_str(
-            &fs::read_to_string(&path)
-                .map_err(CliError::from)
-                .context("\n\tpath: ")
-                .with_color_context(|| (Color::Yellow, format!("{:?}\n", path)))
-                .context("\n(hint: try '")
-                .color_context(Color::Green, "seaplane init")
-                .context("' if the files are missing)\n")?,
-        )?;
-        flights.loaded_from = Some(path.into());
-
-        Ok(flights)
-    }
-
-    /// Serializes itself to the given path
-    pub fn save_to_disk(&self) -> Result<()> {
-        let path = &self
-            .loaded_from
-            .as_ref()
-            .expect("Flights created without manually (de)serializing 'loaded_from'");
-
-        // TODO: make atomic so that we don't lose or currupt data
-        // TODO: long term consider something like SQLite
-        serde_json::to_writer(
-            File::create(path)
-                .map_err(CliError::from)
-                .context("\n\tpath: ")
-                .with_color_context(|| (Color::Yellow, format!("{:?}\n", path)))?,
-            self,
-        )
-        .map_err(CliError::from)
-    }
-
     /// Removes any Flight definitions from the matching indices and returns a Vec of all removed
     /// Flights
     pub fn remove_indices(&mut self, indices: &[usize]) -> Vec<Flight> {

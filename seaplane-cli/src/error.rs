@@ -194,7 +194,8 @@ macro_rules! impl_err {
 // These are placeholders until we get around to writing distinct errors for the cases we care
 // about
 impl_err!(serde_json::Error, SerdeJson);
-impl_err!(toml::de::Error, Toml);
+impl_err!(toml::de::Error, TomlDe);
+impl_err!(toml::ser::Error, TomlSer);
 impl_err!(seaplane::error::SeaplaneError, Seaplane);
 
 impl From<io::Error> for CliError {
@@ -232,9 +233,11 @@ pub enum CliErrorKind {
     AmbiguousItem(String),
     Io(io::Error),
     SerdeJson(serde_json::Error),
-    Toml(toml::de::Error),
+    TomlDe(toml::de::Error),
+    TomlSer(toml::ser::Error),
     UnknownWithContext(&'static str),
     Seaplane(SeaplaneError),
+    ExistingValue(&'static str),
     MissingPath,
     Unknown,
     PermissionDenied,
@@ -273,7 +276,10 @@ impl CliErrorKind {
             SerdeJson(e) => {
                 cli_eprintln!("json: {}", e)
             }
-            Toml(e) => {
+            TomlDe(e) => {
+                cli_eprintln!("toml: {}", e)
+            }
+            TomlSer(e) => {
                 cli_eprintln!("toml: {}", e)
             }
             UnknownWithContext(e) => {
@@ -287,6 +293,9 @@ impl CliErrorKind {
             }
             Seaplane(e) => {
                 cli_eprintln!("seaplane: {}", e)
+            }
+            ExistingValue(value) => {
+                cli_eprintln!("{value} already exists");
             }
         }
     }
@@ -314,9 +323,11 @@ impl PartialEq<Self> for CliErrorKind {
             PermissionDenied => matches!(rhs, PermissionDenied),
             Seaplane(_) => matches!(rhs, Seaplane(_)),
             SerdeJson(_) => matches!(rhs, SerdeJson(_)),
-            Toml(_) => matches!(rhs, Toml(_)),
+            TomlSer(_) => matches!(rhs, TomlSer(_)),
+            TomlDe(_) => matches!(rhs, TomlDe(_)),
             Unknown => matches!(rhs, Unknown),
             UnknownWithContext(_) => matches!(rhs, UnknownWithContext(_)),
+            ExistingValue(_) => matches!(rhs, ExistingValue(_)),
         }
     }
 }

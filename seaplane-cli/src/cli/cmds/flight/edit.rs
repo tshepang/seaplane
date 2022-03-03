@@ -1,7 +1,5 @@
 use clap::Parser;
 
-
-
 use crate::{
     cli::{
         cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
@@ -9,7 +7,8 @@ use crate::{
     },
     context::{Ctx, FlightCtx},
     error::Result,
-    ops::flight::{Flights},
+    fs::{FromDisk, ToDisk},
+    ops::flight::Flights,
     printer::Printer,
 };
 
@@ -40,7 +39,7 @@ impl SeaplaneFlightEditArgs {
 
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
-        let mut flights = Flights::load_from_disk(&flights_file)?;
+        let mut flights: Flights = FromDisk::load(&flights_file)?;
 
         // Now we just edit the newly copied Flight to match the given CLI params...
         let flight_ctx = self.shared.flight_ctx();
@@ -49,7 +48,7 @@ impl SeaplaneFlightEditArgs {
         }
 
         // Write out an entirely new JSON file with the new Flight included
-        flights.save_to_disk()?;
+        flights.persist()?;
 
         cli_print!("Successfully editted Flight '");
         cli_print!(@Yellow, "{}", self.source);

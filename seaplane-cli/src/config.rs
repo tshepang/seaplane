@@ -27,13 +27,17 @@
 //!
 //! See also the CONFIGURATION_SPEC.md in this repository
 
-use std::{fs, path::Path};
+use std::{
+    fs::{self, File},
+    path::{Path, PathBuf},
+};
 
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
-    error::{Result},
-    fs::conf_dirs,
+    error::{CliError, CliErrorKind, Context, Result},
+    fs::{conf_dirs, FromDisk, ToDisk},
+    printer::Color,
 };
 
 static SEAPLANE_CONFIG_FILE: &str = "seaplane.toml";
@@ -47,6 +51,9 @@ pub trait ExtendConfig {
 #[cfg_attr(test, derive(PartialEq))]
 #[serde(rename_all = "kebab-case")]
 pub struct RawConfig {
+    #[serde(skip)]
+    pub loaded_from: Vec<PathBuf>,
+
     // Used to signal we already found a valid conifg and to warn the user we will be overriding
     #[serde(skip)]
     found: bool,
@@ -56,39 +63,96 @@ pub struct RawConfig {
 }
 
 impl RawConfig {
-    pub fn load() -> Result<Self> {
+    /// Loads the Raw configuration file (not deconflicted with the CLI or ENV yet)
+    ///
+    /// Loads configs from all platform specific locations, overriding values at each step
+    pub fn load_all() -> Result<Self> {
         let mut cfg = RawConfig::default();
 
         for dir in conf_dirs() {
             let maybe_file = dir.join(SEAPLANE_CONFIG_FILE);
 
-            cli_debugln!("Looking for configuration file at {:?}", maybe_file);
-            if maybe_file.exists() {
-                cli_debugln!("Found configuration file {:?}", maybe_file);
-                cfg.update(maybe_file)?;
+            let new_cfg = match RawConfig::load(&maybe_file) {
+                Ok(cfg) => cfg,
+                Err(e) => {
+                    if e.kind() == &CliErrorKind::MissingPath {
+                        continue;
+                    }
+                    return Err(e);
+                }
+            };
+
+            if cfg.found {
+                cli_warn!(@Yellow, "warn: ");
+                cli_warnln!(@noprefix,
+                    "overriding previous configuration options with {:?}",
+                    maybe_file
+                );
+                cli_warn!("(hint: use ");
+                cli_warn!(@Green, "--verbose ");
+                cli_warnln!(@noprefix, "for more info)");
             }
+
+            cfg.update(new_cfg)?;
+            cfg.found = true;
         }
 
         Ok(cfg)
     }
 
-    fn update<P: AsRef<Path>>(&mut self, p: P) -> Result<()> {
-        if self.found {
-            cli_warnln!(
-                "overriding previous configuration options with {:?} (use --verbose for more info)",
-                p.as_ref()
-            );
-        }
-
-        let new_cfg: RawConfig = toml::from_str(&fs::read_to_string(p)?)?;
-
+    fn update(&mut self, new_cfg: RawConfig) -> Result<()> {
         // TODO: as we get more keys and tables we'll need a better way to do this
         if let Some(key) = new_cfg.account.api_key {
             self.account.api_key = Some(key);
         }
-
-        self.found = true;
+        self.loaded_from.extend(new_cfg.loaded_from);
         Ok(())
+    }
+}
+
+impl FromDisk for RawConfig {
+    fn set_loaded_from<P: AsRef<Path>>(&mut self, p: P) {
+        self.loaded_from.push(p.as_ref().into());
+    }
+
+    fn loaded_from(&self) -> Option<&Path> {
+        self.loaded_from.get(0).map(|p| &**p)
+    }
+
+    fn load<P: AsRef<Path>>(p: P) -> Result<Self>
+    where
+        Self: Sized + DeserializeOwned,
+    {
+        let path = p.as_ref();
+
+        cli_debugln!("Looking for configuration file at {:?}", path);
+        if !path.exists() {
+            return Err(CliErrorKind::MissingPath.into_err());
+        }
+
+        cli_debugln!("Found configuration file {:?}", path);
+        let mut cfg: RawConfig = toml::from_str(&fs::read_to_string(&p)?)?;
+        cfg.set_loaded_from(p);
+        Ok(cfg)
+    }
+}
+
+impl ToDisk for RawConfig {
+    fn persist(&self) -> Result<()>
+    where
+        Self: Sized + Serialize,
+    {
+        if let Some(path) = self.loaded_from.get(0) {
+            let toml_str = toml::to_string_pretty(self)?;
+
+            // TODO: make atomic so that we don't lose or currupt data
+            // TODO: long term consider something like SQLite
+            fs::write(path, toml_str).map_err(CliError::from)
+        } else {
+            Err(CliErrorKind::MissingPath
+                .into_err()
+                .context("to persist to disk"))
+        }
     }
 }
 
@@ -103,7 +167,6 @@ pub struct RawAccountConfig {
 #[cfg(test)]
 mod test {
     use super::*;
-    
 
     #[test]
     fn deser_empty_config() {

@@ -1,16 +1,15 @@
 use clap::Parser;
 
-
-
 use crate::{
     cli::{
         cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
         errors::wrap_cli_context,
     },
     context::{Ctx, FlightCtx},
-    error::{Result},
-    ops::flight::{Flights},
-    printer::{Printer},
+    error::Result,
+    fs::{FromDisk, ToDisk},
+    ops::flight::Flights,
+    printer::Printer,
 };
 
 // TODO: add --from
@@ -40,7 +39,7 @@ impl SeaplaneFlightCopyArgs {
 
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
-        let mut flights = Flights::load_from_disk(&flights_file)?;
+        let mut flights: Flights = FromDisk::load(&flights_file)?;
 
         let mut dest_flight = match flights.clone_flight(&self.source, self.exact) {
             Ok(f) => f,
@@ -58,7 +57,7 @@ impl SeaplaneFlightCopyArgs {
         flights.inner.push(dest_flight);
 
         // Write out an entirely new JSON file with the new Flight included
-        flights.save_to_disk()?;
+        flights.persist()?;
 
         cli_print!("Successfully copied Flight '");
         cli_print!(@Yellow, "{}", self.source);

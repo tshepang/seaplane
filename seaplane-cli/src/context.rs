@@ -27,9 +27,7 @@ use std::{
 };
 
 use once_cell::sync::OnceCell;
-use seaplane::api::{
-    v1::formations::{Architecture, Flight as FlightModel, ImageReference},
-};
+use seaplane::api::v1::formations::{Architecture, Flight as FlightModel, ImageReference};
 
 use crate::{
     config::RawConfig,
@@ -67,6 +65,9 @@ pub struct Ctx {
 
     // Context relate to exclusively to Flight operations and commands
     pub flight: LateInit<FlightCtx>,
+
+    // Where the configuration files were loaded from
+    pub conf_files: Vec<PathBuf>,
 }
 
 impl Default for Ctx {
@@ -78,6 +79,7 @@ impl Default for Ctx {
             force: false,
             api_key: None,
             flight: LateInit::default(),
+            conf_files: Vec::new(),
         }
     }
 }
@@ -93,6 +95,7 @@ impl Ctx {
             out_format: OutputFormat::default(),
             api_key: cfg.account.api_key.clone(),
             flight: LateInit::default(),
+            conf_files: cfg.loaded_from.clone(),
         })
     }
 
@@ -121,6 +124,10 @@ impl Ctx {
     #[inline]
     pub fn data_dir(&self) -> &Path {
         &self.data_dir
+    }
+
+    pub fn conf_files(&self) -> &[PathBuf] {
+        &*self.conf_files
     }
 }
 

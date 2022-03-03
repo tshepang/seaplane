@@ -31,7 +31,7 @@ fn try_main() -> Result<()> {
         _ => crate::log::LOG_LEVEL.set(LogLevel::Trace).unwrap(),
     }
 
-    let mut ctx = Ctx::from_config(&RawConfig::load()?)?;
+    let mut ctx = Ctx::from_config(&RawConfig::load_all()?)?;
     ctx.update_from_env()?;
 
     args.run(&mut ctx)

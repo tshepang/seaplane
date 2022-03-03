@@ -4,6 +4,7 @@ use crate::{
     cli::cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
     context::FlightCtx,
     error::{CliErrorKind, Context, Result},
+    fs::{FromDisk, ToDisk},
     ops::flight::{Flight, Flights},
     printer::{Color, Printer},
     Ctx,
@@ -51,7 +52,7 @@ impl SeaplaneFlightCreateArgs {
 
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
-        let mut flights = Flights::load_from_disk(&flights_file)?;
+        let mut flights: Flights = FromDisk::load(&flights_file)?;
 
         // Check for duplicates and suggest `seaplane flight edit`
         let name = new_flight.name();
@@ -82,7 +83,7 @@ impl SeaplaneFlightCreateArgs {
         flights.inner.push(new_flight);
 
         // Write out an entirely new JSON file with the new Flight included
-        flights.save_to_disk()?;
+        flights.persist()?;
 
         cli_print!("Successfully created Flight '");
         cli_print!(@Green, "{}", new_flight_name);

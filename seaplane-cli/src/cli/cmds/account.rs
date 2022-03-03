@@ -1,10 +1,14 @@
+use std::io::{self, BufRead};
+
 use clap::{Parser, Subcommand};
 use seaplane::api::TokenRequest;
 
 use crate::{
+    config::RawConfig,
     context::Ctx,
-    error::{CliError, CliErrorKind, Result},
-    printer::Printer,
+    error::{CliError, CliErrorKind, Context, Result},
+    fs::{FromDisk, ToDisk},
+    printer::{Color, Printer},
 };
 
 /// Operate on your Seaplane account, including access tokens
@@ -17,10 +21,11 @@ pub struct SeaplaneAccountArgs {
 }
 
 impl SeaplaneAccountArgs {
-    pub fn run(&self, ctx: &Ctx) -> Result<()> {
+    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
         use SeaplaneAccountCmds::*;
 
         match &self.cmd {
+            Login(args) => args.run(ctx),
             Token(args) => args.run(ctx),
         }
     }
@@ -28,6 +33,7 @@ impl SeaplaneAccountArgs {
 
 #[derive(Subcommand)]
 pub enum SeaplaneAccountCmds {
+    Login(SeaplaneAccountLoginArgs),
     Token(SeaplaneAccountTokenArgs),
 }
 
@@ -48,6 +54,62 @@ impl SeaplaneAccountTokenArgs {
             .map_err(CliError::from)?;
 
         cli_println!("{}", t.access_token().map_err(CliError::from)?);
+
+        Ok(())
+    }
+}
+
+#[derive(Parser)]
+pub struct SeaplaneAccountLoginArgs {
+    /// Override any existing API key
+    #[clap(short, long)]
+    force: bool,
+}
+
+impl SeaplaneAccountLoginArgs {
+    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        Printer::init(ctx.color);
+
+        let mut cfg = RawConfig::load(ctx.conf_files().first().ok_or_else(|| {
+            CliErrorKind::MissingPath
+                .into_err()
+                .context("Context: no configuration file found\n")
+                .context("(hint: try '")
+                .color_context(Color::Green, "seaplane init")
+                .context("' if the files are missing)\n")
+        })?)?;
+
+        if let Some(key) = cfg.account.api_key {
+            if self.force {
+                cli_warn!(@Yellow, "warn: ");
+                cli_warn!("overwriting API key ");
+                cli_warn!(@Green, "{} ", key);
+                cli_warn!("due to ");
+                cli_warnln!(@noprefix, @Green, "--force");
+            } else {
+                return Err(CliErrorKind::ExistingValue("an API key")
+                    .into_err()
+                    .context("(hint: add '")
+                    .color_context(Color::Green, "--force")
+                    .context("' to overwrite it)\n"));
+            }
+        }
+        cli_println!("Enter your API key below.");
+        cli_print!("(hint: it can be found by visiting ");
+        cli_print!(@Green, "https://flightdeck.seaplanet.io/");
+        cli_println!(")\n");
+
+        let stdin = io::stdin();
+        let mut lines = stdin.lock().lines();
+        if let Some(line) = lines.next() {
+            ctx.api_key = Some(line?);
+        }
+
+        cfg.account.api_key = ctx.api_key.clone();
+
+        cfg.persist()?;
+
+        cli_println!("Successfully saved the API key!");
 
         Ok(())
     }

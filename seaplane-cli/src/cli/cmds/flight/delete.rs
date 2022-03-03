@@ -1,7 +1,14 @@
 use clap::Parser;
 use hex::ToHex;
 
-use crate::{cli::errors, error::Result, ops::flight::Flights, printer::Printer, Ctx};
+use crate::{
+    cli::errors,
+    error::Result,
+    fs::{FromDisk, ToDisk},
+    ops::flight::Flights,
+    printer::Printer,
+    Ctx,
+};
 
 /// Delete a Flight definition
 #[derive(Parser)]
@@ -32,7 +39,7 @@ impl SeaplaneFlightDeleteArgs {
 
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
-        let mut flights = Flights::load_from_disk(&flights_file).unwrap_or_default();
+        let mut flights: Flights = FromDisk::load(&flights_file).unwrap_or_default();
 
         // TODO: find remote Flights too to check references
 
@@ -60,7 +67,7 @@ impl SeaplaneFlightDeleteArgs {
         });
 
         // Write out an entirely new JSON file with the Flight(s) deleted
-        flights.save_to_disk()?;
+        flights.persist()?;
 
         cli_println!(
             "\nSuccessfully removed {} item{}",
