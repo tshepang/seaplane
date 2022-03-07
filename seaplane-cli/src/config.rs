@@ -28,15 +28,15 @@
 //! See also the CONFIGURATION_SPEC.md in this repository
 
 use std::{
-    fs::{self},
+    fs,
     path::{Path, PathBuf},
 };
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
-    error::{CliError, CliErrorKind, Result},
-    fs::{conf_dirs, FromDisk, ToDisk},
+    error::{CliError, CliErrorKind, Context, Result},
+    fs::{conf_dirs, AtomicFile, FromDisk, ToDisk},
 };
 
 static SEAPLANE_CONFIG_FILE: &str = "seaplane.toml";
@@ -142,11 +142,12 @@ impl ToDisk for RawConfig {
         Self: Sized + Serialize,
     {
         if let Some(path) = self.loaded_from.get(0) {
+            let file = AtomicFile::new(path)?;
             let toml_str = toml::to_string_pretty(self)?;
 
-            // TODO: make atomic so that we don't lose or corrupt data
+            // TODO: make atomic so that we don't lose or currupt data
             // TODO: long term consider something like SQLite
-            fs::write(path, toml_str).map_err(CliError::from)
+            fs::write(file.temp_path(), toml_str).map_err(CliError::from)
         } else {
             Err(CliErrorKind::MissingPath.into_err())
         }

@@ -27,6 +27,7 @@ tabwriter = "1.1.2"
 termcolor = { version = "1.1.2", optional = true }
 toml = "0.5.8"
 uuid = { version = "0.8.2", features = ["v4", "serde"] }
+tempfile = "3.3.0"
 
 [dev-dependencies]
 trycmd = "0.12.2"

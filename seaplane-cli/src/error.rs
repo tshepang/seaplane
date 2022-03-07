@@ -1,6 +1,7 @@
 use std::{
     error::Error,
     io::{self, Write},
+    path::PathBuf,
     result::Result as StdResult,
 };
 
@@ -211,9 +212,27 @@ impl From<io::Error> for CliError {
                 ..Default::default()
             },
             _ => CliError {
-                kind: CliErrorKind::Io(e),
+                kind: CliErrorKind::Io(e, None),
                 ..Default::default()
             },
+        }
+    }
+}
+
+impl From<tempfile::PersistError> for CliError {
+    fn from(e: tempfile::PersistError) -> Self {
+        Self {
+            kind: CliErrorKind::Io(e.error, Some(e.file.path().to_path_buf())),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<tempfile::PathPersistError> for CliError {
+    fn from(e: tempfile::PathPersistError) -> Self {
+        Self {
+            kind: CliErrorKind::Io(e.error, Some(e.path.to_path_buf())),
+            ..Default::default()
         }
     }
 }
@@ -232,7 +251,7 @@ pub enum CliErrorKind {
     DuplicateName(String),
     NoMatchingItem(String),
     AmbiguousItem(String),
-    Io(io::Error),
+    Io(io::Error, Option<PathBuf>),
     SerdeJson(serde_json::Error),
     TomlDe(toml::de::Error),
     TomlSer(toml::ser::Error),
@@ -276,8 +295,13 @@ impl CliErrorKind {
             ImageReference(e) => {
                 cli_eprintln!("seaplane: {}", e)
             }
-            Io(e) => {
-                cli_eprintln!("io: {}", e)
+            Io(e, Some(path)) => {
+                cli_eprintln!("io: {}", e);
+                cli_eprint!("\tpath: ");
+                cli_eprintln!(@Yellow, "{:?}", path);
+            }
+            Io(e, None) => {
+                cli_eprintln!("io: {}", e);
             }
             SerdeJson(e) => {
                 cli_eprintln!("json: {}", e)
@@ -326,8 +350,8 @@ impl PartialEq<Self> for CliErrorKind {
 
         match self {
             AmbiguousItem(_) => matches!(rhs, AmbiguousItem(_)),
+            Io(_, _) => matches!(rhs, Io(_, _)),
             DuplicateName(_) => matches!(rhs, DuplicateName(_)),
-            Io(_) => matches!(rhs, Io(_)),
             MissingApiKey => matches!(rhs, MissingApiKey),
             MissingPath => matches!(rhs, MissingPath),
             NoMatchingItem(_) => matches!(rhs, NoMatchingItem(_)),

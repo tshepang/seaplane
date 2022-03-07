@@ -1,10 +1,12 @@
 use std::{
     fs::{self, File},
+    io,
     path::{Path, PathBuf},
 };
 
 use directories::ProjectDirs;
 use serde::{de::DeserializeOwned, Serialize};
+use tempfile::NamedTempFile;
 
 use crate::{
     error::{CliError, CliErrorKind, Context, Result},
@@ -49,6 +51,59 @@ pub fn data_dir() -> PathBuf {
     std::env::current_dir().unwrap()
 }
 
+/// A struct that writes to a tempfile and persists to a given location atomically on Drop
+pub struct AtomicFile<'p> {
+    path: &'p Path,
+    temp_file: Option<NamedTempFile>,
+}
+
+impl<'p> AtomicFile<'p> {
+    /// Creates a new temporary file that will eventually be persisted to path `p`
+    pub fn new(p: &'p Path) -> Result<Self> {
+        Ok(Self {
+            path: p,
+            temp_file: Some(NamedTempFile::new()?),
+        })
+    }
+
+    /// Gives a chance to persist the file and retrieve the error if any
+    pub fn persist(mut self) -> Result<()> {
+        let tf = self.temp_file.take().unwrap();
+        tf.persist(self.path).map(|_| ()).map_err(CliError::from)
+    }
+
+    /// Returns the `Path` of the underlying temporary file
+    pub fn temp_path(&self) -> &Path {
+        self.temp_file.as_ref().unwrap().path()
+    }
+}
+
+impl<'p> io::Write for AtomicFile<'p> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        if let Some(ref mut tf) = &mut self.temp_file {
+            return tf.write(buf);
+        }
+
+        Ok(0)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        if let Some(ref mut tf) = &mut self.temp_file {
+            return tf.flush();
+        }
+
+        Ok(())
+    }
+}
+
+impl<'p> Drop for AtomicFile<'p> {
+    fn drop(&mut self) {
+        // Swallow the error
+        let tf = self.temp_file.take().unwrap();
+        let _ = tf.persist(self.path);
+    }
+}
+
 // TODO: make the deserializer generic
 pub trait FromDisk {
     /// Allows one to save or deserialize what path the item was loaded from
@@ -69,8 +124,6 @@ pub trait FromDisk {
         let mut item: Self = serde_json::from_str(
             &fs::read_to_string(&path)
                 .map_err(CliError::from)
-                .context("\n\tpath: ")
-                .with_color_context(|| (Color::Yellow, format!("{:?}\n", path)))
                 .context("\n(hint: try '")
                 .color_context(Color::Green, "seaplane init")
                 .context("' if the files are missing)\n")?,
@@ -90,16 +143,9 @@ pub trait ToDisk: FromDisk {
         Self: Sized + Serialize,
     {
         if let Some(path) = self.loaded_from() {
-            // TODO: make atomic so that we don't lose or currupt data
+            let mut file = AtomicFile::new(path)?;
             // TODO: long term consider something like SQLite
-            serde_json::to_writer(
-                File::create(path)
-                    .map_err(CliError::from)
-                    .context("\n\tpath: ")
-                    .with_color_context(|| (Color::Yellow, format!("{:?}\n", path)))?,
-                self,
-            )
-            .map_err(CliError::from)
+            Ok(serde_json::to_writer(file, self)?)
         } else {
             Err(CliErrorKind::MissingPath.into_err())
         }
