@@ -1,5 +1,4 @@
 use clap::Parser;
-use hex::ToHex;
 
 use crate::{
     cli::errors,
@@ -14,12 +13,12 @@ use crate::{
 #[derive(Parser)]
 #[clap(visible_aliases = &["del", "remove", "rm"], override_usage = "seaplane flight delete <NAME|ID> [OPTIONS]")]
 pub struct SeaplaneFlightDeleteArgs {
-    /// The name or hash of the Flight to remove, must be unambiguous
+    /// The name or ID of the Flight to remove, must be unambiguous
     #[clap(value_name = "NAME|ID")]
     flight: String,
 
     /// Delete this Flight even if referenced by a Formation (removes any references in
-    /// Formations), or deletes ALL Flights referencedd by <FLIGHT> even if ambiguous
+    /// Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous
     #[clap(long)]
     force: bool,
 
@@ -35,8 +34,6 @@ pub struct SeaplaneFlightDeleteArgs {
 
 impl SeaplaneFlightDeleteArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        Printer::init(ctx.color);
-
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
         let mut flights: Flights = FromDisk::load(&flights_file).unwrap_or_default();
@@ -63,7 +60,7 @@ impl SeaplaneFlightDeleteArgs {
 
         // Remove the flights
         flights.remove_indices(&indices).iter().for_each(|flight| {
-            cli_println!("Deleted Flight {}", &flight.id.encode_hex::<String>());
+            cli_println!("Deleted Flight {}", &flight.id.to_string());
         });
 
         // Write out an entirely new JSON file with the Flight(s) deleted

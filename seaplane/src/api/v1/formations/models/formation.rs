@@ -1,8 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use getset::{CopyGetters, Getters};
 use serde::{Deserialize, Serialize};
-
 use uuid::Uuid;
 
 #[cfg(doc)]
@@ -32,7 +30,7 @@ impl FormationConfigurationBuilder {
     /// Adds the name of another Formation that this Formation has an affinity for.
     ///
     /// This is a hint to the scheduler to place containers that run in each of these formations
-    /// "close" to eachother (for some version of close including but not limited to latency).
+    /// "close" to each other (for some version of close including but not limited to latency).
     ///
     /// **NOTE:** This method can be called multiple times. All values will be utilized.
     #[must_use]
@@ -48,7 +46,7 @@ impl FormationConfigurationBuilder {
 
     /// Adds the name of another Formation that this Formation is connected to. Two Formations can
     /// communicate over their `FormationConfigurationBuilder::formation_endpoints` if and only if
-    /// both formations opt in to that connection by adding eachother to their connection mapping.
+    /// both formations opt in to that connection by adding each other to their connection mapping.
     ///
     /// **NOTE:** This method can be called multiple times. All values will be utilized.
     #[must_use]
@@ -76,7 +74,7 @@ impl FormationConfigurationBuilder {
         self.flights.clear();
     }
 
-    /// Adds an entry to `public_endpoint` map whose keys describe the publically exposed endpoints
+    /// Adds an entry to `public_endpoint` map whose keys describe the publicly exposed endpoints
     /// of this Formation. The keys take the form `http:{endpoint_route}`.
     ///
     /// The values take the form `{flight_name}:{port}` and describe where traffic hitting this
@@ -143,7 +141,7 @@ impl FormationConfigurationBuilder {
     }
 
     /// Add a [`Provider`] which the scheduler is allowed to schedule [`Flight`]s of this formation
-    /// to run on. By default all [`Provider`]s are allowed. Adding an entry here effevtively
+    /// to run on. By default all [`Provider`]s are allowed. Adding an entry here effectively
     /// restricts the [`Flight`]s of this Formation to only the listed [`Provider`]s.
     ///
     /// If this conflicts with `providers_denied`
@@ -241,7 +239,7 @@ impl FormationConfigurationBuilder {
 }
 
 /// Represents a single configuration of a Formation. A Formation may have many
-/// [`ActiveConfiguration`]s at once which will have traffic ballanced between them based on their
+/// [`ActiveConfiguration`]s at once which will have traffic balanced between them based on their
 /// `traffic_weight` values.
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct FormationConfiguration {
@@ -270,6 +268,187 @@ impl FormationConfiguration {
     /// Create a [`FormationConfigurationBuilder`] to build a new configuration
     pub fn builder() -> FormationConfigurationBuilder {
         FormationConfigurationBuilder::default()
+    }
+
+    /// The names of another Formation that this Formation has an affinity for.
+    ///
+    /// This is a hint to the scheduler to place containers that run in each of these formations
+    /// "close" to each other (for some version of close including but not limited to latency).
+    pub fn affinities(&self) -> &[String] {
+        &*self.affinity
+    }
+
+    /// The names of another Formation that this Formation has an affinity for.
+    ///
+    /// This is a hint to the scheduler to place containers that run in each of these formations
+    /// "close" to each other (for some version of close including but not limited to latency).
+    pub fn set_affinities(&mut self, affinities: Vec<String>) {
+        self.affinity = affinities;
+    }
+
+    /// Adds the name of another Formation that this Formation is connected to. Two Formations can
+    /// communicate over their `FormationConfigurationBuilder::formation_endpoints` if and only if
+    /// both formations opt in to that connection by adding each other to their connection mapping.
+    pub fn set_connections(&mut self, connections: Vec<String>) {
+        self.connections = connections;
+    }
+
+    /// The names of another Formation that this Formation is connected to. Two Formations can
+    /// communicate over their `FormationConfigurationBuilder::formation_endpoints` if and only if
+    /// both formations opt in to that connection by adding each other to their connection mapping.
+    pub fn connections(&self) -> &[String] {
+        &*self.connections
+    }
+
+    /// Add a [`Flight`] to the makeup of this Formation Configuration.
+    pub fn add_flight(&mut self, flight: Flight) {
+        self.flights.push(flight);
+    }
+
+    /// Set the [`Flight`]s that makeup this Formation Configuration.
+    pub fn set_flights(&mut self, flights: Vec<Flight>) {
+        self.flights = flights;
+    }
+
+    /// Set the [`Flight`]s that makeup this Formation Configuration.
+    pub fn flights(&self) -> &[Flight] {
+        &*self.flights
+    }
+
+    /// Adds an entry to `public_endpoint` map whose keys describe the publicly exposed endpoints
+    /// of this Formation.
+    pub fn add_public_endpoint(&mut self, path: String, value: EndpointValue) {
+        self.public_endpoints
+            .insert(EndpointKey::Http { path }, value);
+    }
+
+    /// Returns an iterator to all publicly exposed endpoints of this Formation.
+    pub fn public_endpoints(&self) -> impl Iterator<Item = (&EndpointKey, &EndpointValue)> {
+        self.public_endpoints.iter()
+    }
+
+    /// Adds an entry to the `formation_endpoints` map, which describes the privately exposed
+    /// endpoints of this formation. These private endpoints are those that this formation exposes
+    /// to other formations listed in is's `connection` mapping
+    /// ([`FormationConfigurationBuilder::add_connection`]).
+    ///
+    /// If this conflicts with `flight_endpoints` map
+    /// ([`FormationConfigurationBuilder::add_flight_endpoint`]) the configuration will be
+    /// rejected upon API request.
+    pub fn add_formation_endpoint(&mut self, key: EndpointKey, value: EndpointValue) {
+        self.formation_endpoints.insert(key, value);
+    }
+
+    /// Returns an iterator to the Formation Endpoints, which describes the privately exposed
+    /// endpoints of this formation. These private endpoints are those that this formation exposes
+    /// to other formations listed in is's `connection` mapping
+    /// ([`FormationConfigurationBuilder::add_connection`]).
+    pub fn formation_endpoints(
+        &self,
+        _key: EndpointKey,
+        _value: EndpointValue,
+    ) -> impl Iterator<Item = (&EndpointKey, &EndpointValue)> {
+        self.formation_endpoints.iter()
+    }
+
+    /// Adds an entry to the `flight_endpoints` map, which describes the endpoints which *this
+    /// Formation's* containers can hit to communicate with one another.
+    ///
+    /// Containers within a Formation can always communicate directly to one another but these
+    /// endpoints are load-balanced and allow for much more simple usage in many cases.
+    ///
+    /// If this conflicts with `formation_endpoints`
+    /// ([`FormationConfigurationBuilder::add_formation_endpoint`]) the configuration will be
+    /// rejected upon API request.
+    pub fn add_flight_endpoint(&mut self, key: EndpointKey, value: EndpointValue) {
+        self.flight_endpoints.insert(key, value);
+    }
+
+    /// Returns an iterator to the Flight Endpoints, which describes the endpoints which *this
+    /// Formation's* containers can hit to communicate with one another.
+    ///
+    /// Containers within a Formation can always communicate directly to one another but these
+    /// endpoints are load-balanced and allow for much more simple usage in many cases.
+    pub fn flight_endpoints(&self) -> impl Iterator<Item = (&EndpointKey, &EndpointValue)> {
+        self.flight_endpoints.iter()
+    }
+
+    /// Add a [`Provider`] which the scheduler is allowed to schedule [`Flight`]s of this formation
+    /// to run on. By default all [`Provider`]s are allowed. Adding an entry here effectively
+    /// restricts the [`Flight`]s of this Formation to only the listed [`Provider`]s.
+    ///
+    /// If this conflicts with `providers_denied`
+    /// ([`FormationConfigurationBuilder::add_denied_provider`]) (e.g. [`Provider::GCP`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    pub fn add_allowed_provider<P: Into<Provider>>(mut self, provider: P) {
+        self.providers_allowed.insert(provider.into());
+    }
+
+    /// Add a [`Provider`] which the scheduler is allowed to schedule [`Flight`]s of this formation
+    /// to run on. By default all [`Provider`]s are allowed. Adding an entry here effectively
+    /// restricts the [`Flight`]s of this Formation to only the listed [`Provider`]s.
+    ///
+    /// If this conflicts with `providers_denied`
+    /// ([`FormationConfigurationBuilder::add_denied_provider`]) (e.g. [`Provider::GCP`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    pub fn allowed_providers(&self) -> impl Iterator<Item = &Provider> {
+        self.providers_allowed.iter()
+    }
+
+    /// The inverse of [`FormationConfigurationBuilder::add_allowed_provider`] which specifies
+    /// [`Provider`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation to
+    /// run on. By default no [`Provider`]s are denied.
+    ///
+    /// If this conflicts with `providers_allowed`
+    /// ([`FormationConfigurationBuilder::add_allowed_provider`]) (e.g. [`Provider::GCP`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    pub fn add_denied_provider<P: Into<Provider>>(&mut self, provider: P) {
+        self.providers_denied.insert(provider.into());
+    }
+
+    /// Returns an iterator of the Denied Providers which specifies [`Provider`] which the
+    /// scheduler is prohibited from scheduling [`Flight`]s of this formation to run on. By default
+    /// no [`Provider`]s are denied.
+    pub fn denied_providers(&self) -> impl Iterator<Item = &Provider> {
+        self.providers_denied.iter()
+    }
+
+    /// Add a [`Region`] which the scheduler is allowed to schedule [`Flight`]s of this formation
+    /// to run within. By default all [`Region`]s are allowed. Adding an entry here effectively
+    /// restricts the [`Flight`]s of this Formation to only the listed [`Region`]s.
+    ///
+    /// If this conflicts with `regions_denied`
+    /// ([`FormationConfigurationBuilder::add_denied_region`]) (e.g. [`Region::XN`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    pub fn add_allowed_region<R: Into<Region>>(&mut self, region: R) {
+        self.regions_allowed.insert(region.into());
+    }
+
+    /// Returns an iterator of the Allowed [`Region`]s which the scheduler is allowed to schedule
+    /// [`Flight`]s of this formation to run within. By default all [`Region`]s are allowed. Adding
+    /// an entry here effectively restricts the [`Flight`]s of this Formation to only the listed
+    /// [`Region`]s.
+    pub fn allowed_regions(&self) -> impl Iterator<Item = &Region> {
+        self.regions_allowed.iter()
+    }
+
+    /// The inverse of [`FormationConfigurationBuilder::add_allowed_region`] which specifies
+    /// [`Region`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation to
+    /// run within. By default no [`Region`]s are denied.
+    ///
+    /// If this conflicts with `regions_allowed`
+    /// ([`FormationConfigurationBuilder::add_allowed_region`]) (e.g. [`Region::XN`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    pub fn add_denied_region<R: Into<Region>>(mut self, region: R) {
+        self.regions_denied.insert(region.into());
+    }
+
+    /// Returns an iterator of the Denied Regions
+    /// ([`FormationConfigurationBuilder::add_denied_region`]) which specifies [`Region`] which the
+    /// scheduler is prohibited from scheduling [`Flight`]s of this formation to run within. By
+    /// default no [`Region`]s are denied.
+    pub fn denied_region(&self) -> impl Iterator<Item = &Region> {
+        self.regions_denied.iter()
     }
 }
 
@@ -390,14 +569,11 @@ impl FlightBuilder {
 /// Flights are logically a single container. However, Seaplane spins up many actual backing
 /// *container instances* around the globe (with your Formation's `regions_allowed` map) and load
 /// balances traffic between them.
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Getters, CopyGetters)]
-#[getset(get_copy = "pub")]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Flight {
     /// Returns the human readable name of the [`Flight`], which is unique with a Formation
-    #[getset(skip)] // skip to provide manually as a ref
     name: String,
 
-    #[getset(skip)] // skip to provide manually as a ref
     image: ImageReference,
 
     /// Returns the minimum number of instances this [`Flight`] should ever have running.
@@ -410,7 +586,6 @@ pub struct Flight {
     maximum: Option<u64>,
 
     #[serde(default)]
-    #[getset(skip)] // skip to provide a slice getter manually
     architecture: HashSet<Architecture>,
 
     /// Returns `true` if this [`Flight`] should have access to Seaplane's APIs.
@@ -450,6 +625,11 @@ impl Flight {
         &*self.name
     }
 
+    /// A human readable [`Flight`] name, which is unique within the Formation
+    pub fn set_name<S: Into<String>>(&mut self, name: S) {
+        self.name = name.into();
+    }
+
     /// Returns the container image reference this [`Flight`] uses, as a [`String`]
     #[inline]
     pub fn image_str(&self) -> String {
@@ -467,6 +647,43 @@ impl Flight {
     pub fn architecture(&self) -> impl Iterator<Item = &Architecture> {
         self.architecture.iter()
     }
+
+    /// Add an [`Architecture`]s this [`Flight`] can be run on.
+    pub fn add_architecture(&mut self, arch: Architecture) {
+        self.architecture.insert(arch);
+    }
+
+    /// Returns the minimum number of instances this [`Flight`] should ever have running.
+    pub fn minimum(&self) -> u64 {
+        self.minimum
+    }
+
+    /// Set the minimum number of instances this [`Flight`] should ever have running.
+    pub fn set_minimum(&mut self, min: u64) {
+        self.minimum = min;
+    }
+
+    /// Returns the maximum number of instances this [`Flight`] should ever have running. Returning
+    /// `None` means "infinite" or "As many as required to service incoming traffic"
+    pub fn maximum(&self) -> Option<u64> {
+        self.maximum
+    }
+
+    /// Returns the maximum number of instances this [`Flight`] should ever have running. Returning
+    /// `None` means "infinite" or "As many as required to service incoming traffic"
+    pub fn set_maximum(&mut self, max: Option<u64>) {
+        self.maximum = max
+    }
+
+    /// Returns `true` if this [`Flight`] should have access to Seaplane's APIs.
+    pub fn api_permission(&self) -> bool {
+        self.api_permission
+    }
+
+    /// Set if this [`Flight`] should have access to Seaplane's APIs.
+    pub fn set_api_permission(&mut self, yes: bool) {
+        self.api_permission = yes;
+    }
 }
 
 /// The response from the `GET /formations` API call ([`FormationsRequest::list_names`])
@@ -474,6 +691,13 @@ impl Flight {
 #[serde(transparent)]
 pub struct FormationNames {
     inner: Vec<FormationName>,
+}
+
+impl FormationNames {
+    /// Returns the inner `Vec<String>` of Formation Names
+    pub fn into_inner(self) -> Vec<String> {
+        self.inner.into_iter().map(|x| x.name).collect()
+    }
 }
 
 /// A single Formation name in the response from the `GET /formations` API call
@@ -495,6 +719,10 @@ impl ActiveConfigurations {
     /// Creates a new [`ActiveConfigurations`] empty container
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &ActiveConfiguration> {
+        self.inner.iter()
     }
 
     /// Add an [`ActiveConfiguration`] via the Builder Pattern style
@@ -535,9 +763,22 @@ impl ActiveConfiguration {
     pub fn builder() -> ActiveConfigurationBuilder {
         ActiveConfigurationBuilder::default()
     }
+
+    /// Returns the UUID of the [`FormationConfiguration`] this [`ActiveConfiguration`] is
+    /// referring to
+    pub fn uuid(&self) -> &Uuid {
+        &self.configuration_id
+    }
+
+    /// The proportional weight of traffic this configuration should get. For each endpoint we take
+    /// the sum of the weights of every configuration with that endpoint exposed and divide traffic
+    /// according to the percentage of that sum each configuration's weight has.
+    pub fn traffic_weight(&self) -> Option<u32> {
+        self.traffic_weight
+    }
 }
 
-// Impl manaully because we only need to check the UUID
+// Impl manually because we only need to check the UUID
 impl PartialEq<Self> for ActiveConfiguration {
     fn eq(&self, other: &Self) -> bool {
         self.configuration_id == other.configuration_id

@@ -121,10 +121,17 @@ impl FormationsRequest {
     ///
     /// **WARNING:** Because this request lacks a formation name, it is *not* valid for all
     /// endpoints. To create a `FormationsRequest` which is valid for all endpoints use
-    /// `FormationsRequest::buildler()`
+    /// `FormationsRequest::builder()`
     pub fn new<S: Into<String>>(token: S) -> Self {
         FormationsRequest::builder().token(token).build().unwrap()
     }
+
+    //TODO: add the following methods:
+    //  - start: sets all current configurations to active
+    //  - start_configuration: sets given config to active along with all other already active
+    //    configs
+    //  - stop_configuration: sets only the given configuration to inactive, all others remain
+    //    active
 
     // TODO: Distinguish errors:
     //   - [ ] 401 - Not logged in (Can't happen?)
@@ -132,7 +139,7 @@ impl FormationsRequest {
     //   - [ ] 500 - Internal
     /// Returns a list of the names of all Formations you have access to
     ///
-    /// **NOTE:** This is the only endpoint that does not requirea Formation name as part of the
+    /// **NOTE:** This is the only endpoint that does not require a Formation name as part of the
     /// request.
     ///
     /// # Examples
@@ -232,7 +239,7 @@ impl FormationsRequest {
         }
         let mut url = self
             .endpoint_url
-            // We have to add "formations" because that's how URL's join() method workds
+            // We have to add "formations" because that's how URL's join() method works
             .join(&format!("formations/{}?active={active}", self.name()))?;
         if let Some(source) = source {
             url.query_pairs_mut().append_pair("source", source);

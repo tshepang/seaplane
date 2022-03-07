@@ -1,11 +1,8 @@
 use clap::Parser;
 
 use crate::{
-    cli::{
-        cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
-        errors::wrap_cli_context,
-    },
-    context::{Ctx, FlightCtx},
+    cli::{cmds::flight::SeaplaneFlightCommonArgs, errors::wrap_cli_context, specs::IMAGE_SPEC},
+    context::Ctx,
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::flight::Flights,
@@ -35,7 +32,6 @@ pub struct SeaplaneFlightCopyArgs {
 impl SeaplaneFlightCopyArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
         self.update_ctx(ctx)?;
-        Printer::init(ctx.color);
 
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
@@ -47,10 +43,9 @@ impl SeaplaneFlightCopyArgs {
         };
 
         // Now we just edit the newly copied Flight to match the given CLI params...
-        let flight_ctx = self.shared.flight_ctx();
-        dest_flight.update_from(&flight_ctx)?;
+        dest_flight.update_from(&ctx.flight_ctx())?;
 
-        let id = &hex::encode(dest_flight.id)[..8].to_owned();
+        let id = dest_flight.id.to_string();
         let name = dest_flight.model.name().to_owned();
 
         // Add the new Flight
@@ -64,18 +59,14 @@ impl SeaplaneFlightCopyArgs {
         cli_print!("' to new Flight '");
         cli_print!(@Green, "{}", name);
         cli_print!("' with ID '");
-        cli_print!(@Green, "{}", id);
+        cli_print!(@Green, "{}", &id[..8]);
         cli_println!("'");
 
         Ok(())
     }
 
     fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.flight.init(self.flight_ctx());
+        ctx.flight.init(self.shared.flight_ctx()?);
         Ok(())
-    }
-
-    fn flight_ctx(&self) -> FlightCtx {
-        self.shared.flight_ctx()
     }
 }

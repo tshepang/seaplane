@@ -22,11 +22,10 @@ pub struct SeaplaneFlightListArgs {
 impl SeaplaneFlightListArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
         self.update_ctx(ctx)?;
-        Printer::init(ctx.color);
 
         let flights: Flights = FromDisk::load(ctx.flights_file())?;
 
-        // TOOD: get remote flights too
+        // TODO: get remote flights too
 
         match ctx.out_format {
             OutputFormat::Json => flights.print_json(ctx)?,

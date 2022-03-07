@@ -33,7 +33,7 @@ OPTIONS:
         --architecture <ARCHITECTURE>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches] [possible values: amd64, arm64]
         --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -h, --help                           Print help information
-        --image <IMG_SPEC>               The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
+        --image <SPEC>               The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
         --maximum <MAXIMUM>              The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
         --minimum <MINIMUM>              The minimum number of container instances that should ever be running [default: 1] [aliases: min]
     -n, --name <NAME>                    A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned

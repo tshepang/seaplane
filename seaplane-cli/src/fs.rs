@@ -101,9 +101,7 @@ pub trait ToDisk: FromDisk {
             )
             .map_err(CliError::from)
         } else {
-            Err(CliErrorKind::MissingPath
-                .into_err()
-                .context("to persist to disk"))
+            Err(CliErrorKind::MissingPath.into_err())
         }
     }
 }

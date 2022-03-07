@@ -1,5 +1,7 @@
 pub mod cmds;
 pub mod errors;
+pub mod specs;
+pub mod validator;
 
 use std::{
     env,
@@ -9,7 +11,11 @@ use std::{
 use clap::{crate_authors, Parser, Subcommand};
 
 pub use crate::cli::cmds::*;
-use crate::{context::Ctx, error::Result, printer::ColorChoice};
+use crate::{
+    context::Ctx,
+    error::Result,
+    printer::{ColorChoice, Printer},
+};
 
 static VERSION: &str = env!("SEAPLANE_GIT_HASH");
 static AUTHORS: &str = crate_authors!();
@@ -100,6 +106,9 @@ impl SeaplaneArgs {
 
         self.update_ctx(ctx)?;
 
+        // Initilize the printer now that we have all the color choices
+        Printer::init(ctx.color);
+
         match &self.cmd {
             Account(args) => args.run(ctx),
             ShellCompletion(args) => args.run(ctx),
@@ -148,7 +157,7 @@ pub enum SeaplaneCmds {
     Account(SeaplaneAccountArgs),
     ShellCompletion(SeaplaneShellCompletionArgs),
     Config(SeaplaneConfigArgs),
-    Formation(SeaplaneFormationArgs),
+    Formation(Box<SeaplaneFormationArgs>),
     Image(SeaplaneImageArgs),
     Init(SeaplaneInitArgs),
     License(SeaplaneLicenseArgs),

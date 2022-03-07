@@ -48,7 +48,7 @@ also functions as the canonical way to interact with the Seaplane System.
   - `tests/ui/`: These are UI tests that ensure the input and output of the CLI is functioning as
   intended, or doesn't change without us being aware.
 - `src/main.rs`: The program entry point
-- `src/cli/`: All definitions and entry points for the CLI itself. 
+- `src/cli/`: All definitions and entry points for the CLI itself.
   - `cli/cmds/`: The actual CLI command definitions form a tree that mostly matches their
   command hierarchy
   - `cli/error.rs`: Defines common errors with their contexts to de-duplicate many commands
@@ -68,7 +68,7 @@ manner.
 configuration options.
 - `src/macros.rs`: Provides printing macros that allow fine grained control over output and their
 colors analogous to the `(e)print(ln)!` and `log::{trace,debug,info,warn,error}` macros.
-- `src/printer.rs`: Controls how text is sent to STDTOUT or STDERR, including color management.
+- `src/printer.rs`: Controls how text is sent to STDOUT or STDERR, including color management.
 
 ## CLI
 

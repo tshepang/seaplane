@@ -5,7 +5,7 @@ use crate::{
         cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
         errors::wrap_cli_context,
     },
-    context::{Ctx, FlightCtx},
+    context::Ctx,
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::flight::Flights,
@@ -35,22 +35,20 @@ pub struct SeaplaneFlightEditArgs {
 impl SeaplaneFlightEditArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
         self.update_ctx(ctx)?;
-        Printer::init(ctx.color);
 
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
         let mut flights: Flights = FromDisk::load(&flights_file)?;
 
         // Now we just edit the newly copied Flight to match the given CLI params...
-        let flight_ctx = self.shared.flight_ctx();
-        if let Err(e) = flights.update_flight(&self.source, self.exact, &flight_ctx) {
+        if let Err(e) = flights.update_flight(&self.source, self.exact, &ctx.flight_ctx()) {
             return wrap_cli_context(e, self.exact, false);
         }
 
         // Write out an entirely new JSON file with the new Flight included
         flights.persist()?;
 
-        cli_print!("Successfully editted Flight '");
+        cli_print!("Successfully edited Flight '");
         cli_print!(@Yellow, "{}", self.source);
         cli_println!("'");
 
@@ -58,11 +56,7 @@ impl SeaplaneFlightEditArgs {
     }
 
     fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.flight.init(self.flight_ctx());
+        ctx.flight.init(self.shared.flight_ctx()?);
         Ok(())
-    }
-
-    fn flight_ctx(&self) -> FlightCtx {
-        self.shared.flight_ctx()
     }
 }

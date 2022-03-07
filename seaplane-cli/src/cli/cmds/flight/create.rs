@@ -2,7 +2,6 @@ use clap::Parser;
 
 use crate::{
     cli::cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
-    context::FlightCtx,
     error::{CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
     ops::flight::{Flight, Flights},
@@ -14,13 +13,13 @@ use crate::{
 /// Create a new Flight definition
 #[derive(Parser)]
 #[clap(visible_aliases = &["add"], after_help = IMAGE_SPEC, override_usage =
-"seaplane flight create --image=<IMAGE_SPEC> [OPTIONS]")]
+"seaplane flight create --image=<SPEC> [OPTIONS]")]
 pub struct SeaplaneFlightCreateArgs {
     // So we don't have to define the same args over and over with commands that use the same ones
     #[clap(flatten)]
     shared: SeaplaneFlightCommonArgs,
 
-    /// Override any existing Flights with the same <NAME>
+    /// Override any existing Flights with the same NAME
     #[clap(short, long)]
     force: bool,
 }
@@ -28,7 +27,6 @@ pub struct SeaplaneFlightCreateArgs {
 impl SeaplaneFlightCreateArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
         self.update_ctx(ctx)?;
-        Printer::init(ctx.color);
 
         // In the shared args --image is optional, because not all commands need it to be
         // mandatory.
@@ -38,10 +36,10 @@ impl SeaplaneFlightCreateArgs {
             // We emulate clap errors so as to provide a cohesive experience
             cli_print!(@Red, "error: ");
             cli_println!("The following required arguments were not provided:");
-            cli_println!(@Green, "    --image=<IMAGE_SPEC>");
+            cli_println!(@Green, "    --image=<SPEC>");
             cli_println!("");
             cli_println!("USAGE:");
-            cli_println!("seaplane flight create --image=<IMAGE_SPEC> [OPTIONS]");
+            cli_println!("seaplane flight create --image=<SPEC> [OPTIONS]");
             cli_println!("");
             cli_print!("For more information try ");
             cli_println!(@Green, "--help");
@@ -61,7 +59,7 @@ impl SeaplaneFlightCreateArgs {
             // TODO: We should check if these ones we remove are referenced remote or not
 
             if !self.force {
-                return Err(CliErrorKind::DuplicateFlight(name.into())
+                return Err(CliErrorKind::DuplicateName(name.into())
                     .into_err()
                     .context("(hint: try '")
                     .color_context(Color::Green, format!("seaplane flight edit {}", name))
@@ -79,7 +77,7 @@ impl SeaplaneFlightCreateArgs {
         let new_flight_name = new_flight.name().to_owned();
         // Add the new Flight
         let new_flight = Flight::new(new_flight);
-        let id = hex::encode(new_flight.id);
+        let id = new_flight.id.to_string();
         flights.inner.push(new_flight);
 
         // Write out an entirely new JSON file with the new Flight included
@@ -95,11 +93,7 @@ impl SeaplaneFlightCreateArgs {
     }
 
     fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.flight.init(self.flight_ctx());
+        ctx.flight.init(self.shared.flight_ctx()?);
         Ok(())
-    }
-
-    fn flight_ctx(&self) -> FlightCtx {
-        self.shared.flight_ctx()
     }
 }

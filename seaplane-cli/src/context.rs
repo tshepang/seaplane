@@ -21,52 +21,59 @@
 //! The context struct itself contains "global" values or those that apply in many scenarios or to
 //! many commands. It also contains specialized contexts that contain values only relevant to those
 //! commands or processes that need them. These specialized contexts should be lazily derived.
+
+pub mod flight;
+pub use flight::FlightCtx;
+pub mod formation;
+pub use formation::{FormationCfgCtx, FormationCtx};
+
 use std::{
     path::{Path, PathBuf},
     sync::{Mutex, MutexGuard, PoisonError},
 };
 
 use once_cell::sync::OnceCell;
-use seaplane::api::v1::formations::{Architecture, Flight as FlightModel, ImageReference};
 
 use crate::{
     config::RawConfig,
     error::Result,
     fs,
-    ops::flight::generate_name,
     printer::{ColorChoice, OutputFormat},
 };
 
 const FLIGHTS_FILE: &str = "flights.json";
 const FORMATIONS_FILE: &str = "formations.json";
 
-// The source of truth "Context" that is passed to all runtime processes to make decisions based
-// on user configuration
+/// The source of truth "Context" that is passed to all runtime processes to make decisions based
+/// on user configuration
 pub struct Ctx {
     // @TODO we may need to get more granular than binary yes/no. For example, there may be times
-    // when the answer is "yes...but only if the stream is a TTY." In these cases an enum of Never,
-    // Auto, Always would be more appropriate
-    //
-    // Should be display ANSI color codes in output?
+    /// when the answer is "yes...but only if the stream is a TTY." In these cases an enum of Never,
+    /// Auto, Always would be more appropriate
+    ///
+    /// Should be display ANSI color codes in output?
     pub color: ColorChoice,
 
-    // The platform specific path to a data location
+    /// The platform specific path to a data location
     data_dir: PathBuf,
 
-    // How to display output
+    /// How to display output
     pub out_format: OutputFormat,
 
-    // Try to force the operation to happen
+    /// Try to force the operation to happen
     pub force: bool,
 
     /// The API Key associated with an account provided by the CLI, env, or Config used to request
     /// access tokens
     pub api_key: Option<String>,
 
-    // Context relate to exclusively to Flight operations and commands
+    /// Context relate to exclusively to Flight operations and commands
     pub flight: LateInit<FlightCtx>,
 
-    // Where the configuration files were loaded from
+    /// Context relate to exclusively to Formation operations and commands
+    pub formation: LateInit<FormationCtx>,
+
+    /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
 }
 
@@ -79,6 +86,7 @@ impl Default for Ctx {
             force: false,
             api_key: None,
             flight: LateInit::default(),
+            formation: LateInit::default(),
             conf_files: Vec::new(),
         }
     }
@@ -95,6 +103,7 @@ impl Ctx {
             out_format: OutputFormat::default(),
             api_key: cfg.account.api_key.clone(),
             flight: LateInit::default(),
+            formation: LateInit::default(),
             conf_files: cfg.loaded_from.clone(),
         })
     }
@@ -121,6 +130,14 @@ impl Ctx {
             .unwrap_or_else(PoisonError::into_inner)
     }
 
+    pub fn formation_ctx(&self) -> MutexGuard<'_, FormationCtx> {
+        self.formation
+            .inner
+            .get_or_init(|| Mutex::new(FormationCtx::default()))
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+    }
+
     #[inline]
     pub fn data_dir(&self) -> &Path {
         &self.data_dir
@@ -128,62 +145,6 @@ impl Ctx {
 
     pub fn conf_files(&self) -> &[PathBuf] {
         &*self.conf_files
-    }
-}
-
-// Not deriving Clone or Debug on purpose due to cyclic OnceCells
-pub struct FlightCtx {
-    pub image: Option<ImageReference>,
-    pub name: String,
-    pub minimum: u64,
-    pub maximum: Option<u64>,
-    pub architecture: Vec<Architecture>,
-    pub api_permission: bool,
-    pub reset_maximum: bool,
-}
-
-impl Default for FlightCtx {
-    fn default() -> Self {
-        Self {
-            name: generate_name(),
-            image: None,
-            minimum: 0,
-            maximum: None,
-            architecture: Vec::new(),
-            api_permission: false,
-            reset_maximum: false,
-        }
-    }
-}
-
-impl FlightCtx {
-    /// Creates a new seaplane::api::v1::Flight from the contained values
-    pub fn model(&self) -> FlightModel {
-        // Create the new Flight model from the CLI inputs
-        let mut flight_model = FlightModel::builder()
-            .name(self.name.clone())
-            .api_permission(self.api_permission)
-            .minimum(self.minimum);
-
-        if let Some(image) = self.image.clone() {
-            flight_model = flight_model.image_reference(image);
-        }
-
-        // Due to Option<T> nature we conditionally a max
-        if let Some(n) = self.maximum {
-            flight_model = flight_model.maximum(n);
-        }
-
-        // Add all the architectures. In the CLI they're a Vec but in the Model they're a HashSet
-        // which is the reason for the slightlly awkward loop
-        for arch in &self.architecture {
-            flight_model = flight_model.add_architecture(*arch);
-        }
-
-        // Create a new Flight struct we can add to our local JSON "DB"
-        flight_model
-            .build()
-            .expect("Failed to build Flight from inputs")
     }
 }
 

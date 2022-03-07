@@ -32,7 +32,7 @@ impl SeaplaneInitArgs {
         cli_debugln!("Creating directory {:?}", ctx.data_dir());
         fs::create_dir_all(ctx.data_dir())?;
 
-        // We only creat the first (most preferred) configuration dir. If the user creates more
+        // We only create the first (most preferred) configuration dir. If the user creates more
         // down our search path, that's fine, but we only create and advertise the first.
         let conf_dir = &conf_dirs()[0];
         cli_debugln!("Creating directory {:?}", conf_dir);
@@ -44,6 +44,7 @@ impl SeaplaneInitArgs {
             (ctx.formations_file(), "{}", "formations"),
             (ctx.flights_file(), "[]", "flights"),
         ];
+        // TODO: @security create the file with limited permissions
         for (file, empty_bytes, opt) in to_create {
             if file.exists() {
                 match (ctx.force, &self.overwrite) {
@@ -57,7 +58,7 @@ impl SeaplaneInitArgs {
                     }
                     _ => {
                         // We only want to advertise the *least* destructive option, not --force or
-                        // --ovewrite=all. The user can find those on their own.
+                        // --overwrite=all. The user can find those on their own.
                         cli_warn!(@Yellow, "warn: ");
                         cli_warn!("{:?} ", file);
                         cli_warnln!(@noprefix, "already exists");

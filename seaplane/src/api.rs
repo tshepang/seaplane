@@ -17,3 +17,7 @@ pub static COMPUTE_API_URL: &str = "https://compute.seaplanet.io/";
 ///
 /// FlightDeck contains endpoints for things such as Authentication
 pub static FLIGHTDECK_API_URL: &str = "https://flightdeck.seaplanet.io/";
+
+/// The OCI registry URL. The `https://` is omitted because that is not part of an OCI registry
+/// reference.
+pub static IMAGE_REGISTRY_URL: &str = "registry.seaplanet.io/";

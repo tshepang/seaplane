@@ -73,7 +73,7 @@ mod test_value {
     fn test_invalid() {
         let strings = ["foo", "1234", "foo:bar", "foo:100000"];
         for s in strings {
-            assert!(serde_json::from_str::<EndpointValue>(&s).is_err());
+            assert!(serde_json::from_str::<EndpointValue>(s).is_err());
         }
     }
 }
@@ -197,7 +197,7 @@ mod test_key {
             "udp:100000",
         ];
         for s in strings {
-            assert!(serde_json::from_str::<EndpointKey>(&s).is_err());
+            assert!(serde_json::from_str::<EndpointKey>(s).is_err());
         }
     }
 }

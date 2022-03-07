@@ -28,16 +28,15 @@
 //! See also the CONFIGURATION_SPEC.md in this repository
 
 use std::{
-    fs::{self, File},
+    fs::{self},
     path::{Path, PathBuf},
 };
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
-    error::{CliError, CliErrorKind, Context, Result},
+    error::{CliError, CliErrorKind, Result},
     fs::{conf_dirs, FromDisk, ToDisk},
-    printer::Color,
 };
 
 static SEAPLANE_CONFIG_FILE: &str = "seaplane.toml";
@@ -54,7 +53,7 @@ pub struct RawConfig {
     #[serde(skip)]
     pub loaded_from: Vec<PathBuf>,
 
-    // Used to signal we already found a valid conifg and to warn the user we will be overriding
+    // Used to signal we already found a valid config and to warn the user we will be overriding
     #[serde(skip)]
     found: bool,
 
@@ -63,7 +62,7 @@ pub struct RawConfig {
 }
 
 impl RawConfig {
-    /// Loads the Raw configuration file (not deconflicted with the CLI or ENV yet)
+    /// Loads the Raw configuration file (not de-conflicted with the CLI or ENV yet)
     ///
     /// Loads configs from all platform specific locations, overriding values at each step
     pub fn load_all() -> Result<Self> {
@@ -145,13 +144,11 @@ impl ToDisk for RawConfig {
         if let Some(path) = self.loaded_from.get(0) {
             let toml_str = toml::to_string_pretty(self)?;
 
-            // TODO: make atomic so that we don't lose or currupt data
+            // TODO: make atomic so that we don't lose or corrupt data
             // TODO: long term consider something like SQLite
             fs::write(path, toml_str).map_err(CliError::from)
         } else {
-            Err(CliErrorKind::MissingPath
-                .into_err()
-                .context("to persist to disk"))
+            Err(CliErrorKind::MissingPath.into_err())
         }
     }
 }
@@ -178,7 +175,7 @@ mod test {
     }
 
     #[test]
-    fn deser_empty_acount_config() {
+    fn deser_empty_account_config() {
         let cfg_str = r#"
         [account]
         "#;
@@ -200,6 +197,7 @@ mod test {
             cfg,
             RawConfig {
                 found: false,
+                loaded_from: Vec::new(),
                 account: RawAccountConfig {
                     api_key: Some("abc123def456".into())
                 }

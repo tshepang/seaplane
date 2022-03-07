@@ -1,7 +1,7 @@
 use std::io::{self, BufRead};
 
 use clap::{Parser, Subcommand};
-use seaplane::api::TokenRequest;
+use seaplane::api::{TokenRequest, FLIGHTDECK_API_URL};
 
 use crate::{
     config::RawConfig,
@@ -42,8 +42,6 @@ pub struct SeaplaneAccountTokenArgs;
 
 impl SeaplaneAccountTokenArgs {
     pub fn run(&self, ctx: &Ctx) -> Result<()> {
-        Printer::init(ctx.color);
-
         let t = TokenRequest::builder()
             .api_key(
                 ctx.api_key
@@ -68,8 +66,6 @@ pub struct SeaplaneAccountLoginArgs {
 
 impl SeaplaneAccountLoginArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        Printer::init(ctx.color);
-
         let mut cfg = RawConfig::load(ctx.conf_files().first().ok_or_else(|| {
             CliErrorKind::MissingPath
                 .into_err()
@@ -96,7 +92,7 @@ impl SeaplaneAccountLoginArgs {
         }
         cli_println!("Enter your API key below.");
         cli_print!("(hint: it can be found by visiting ");
-        cli_print!(@Green, "https://flightdeck.seaplanet.io/");
+        cli_print!(@Green, "{}", FLIGHTDECK_API_URL);
         cli_println!(")\n");
 
         let stdin = io::stdin();

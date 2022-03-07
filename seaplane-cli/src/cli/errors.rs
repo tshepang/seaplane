@@ -14,15 +14,18 @@ pub fn wrap_cli_context(err: CliError, has_exact: bool, has_all: bool) -> Result
                 err.context("(hint: remove '")
                     .color_context(Color::Yellow, "--exact")
                     .context("' to allow partial matches)\n")
+                    .context("(hint: try '")
+                    .color_context(Color::Yellow, "seaplane formation fetch-remote")
+                    .context("' to update remote Formation definitions)\n")
             } else {
                 err
             }
         }
         AmbiguousItem(_) => {
             if has_all {
-                err.context("(hint: remove '")
-                    .color_context(Color::Yellow, "--exact")
-                    .context("' to allow partial matches)\n")
+                err.context("(hint: add '")
+                    .color_context(Color::Yellow, "--all")
+                    .context("' operation on every match)\n")
             } else {
                 err
             }

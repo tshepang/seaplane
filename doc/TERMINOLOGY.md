@@ -68,7 +68,7 @@ A `flight` is logically a single container. However, under the hood we spin up m
 
 When your users send traffic to Seaplane, it gets routed to the appropriate `formation` who's
 configuration describes the actual `flight`s it is made up of, and who ultimately receive and
-process the user traffic. 
+process the user traffic.
 
 ```mermaid
 graph LR
@@ -102,8 +102,8 @@ backend components all may need to network with one another to form the entire s
 If we translate this into Seaplane terms we still get the exact same diagram, but we would describe
 it like so:
 
-- A "Landing Gear Website" `formation` 
-- The `formation`s `configuration` would specify 
+- A "Landing Gear Website" `formation`
+- The `formation`s `configuration` would specify
   - That it is made up of three `flight`s
     - A "webserver" `flight`
     - A "database" `flight`
@@ -203,7 +203,7 @@ most part, you can let Seaplane handle the details of how they get distributed. 
 possible to network between physical container instances individually when coordination is
 necessary. Doing so is outside the scope of this guide, and is normally handled out-of-band.
 
-## Container Image 
+## Container Image
 
 Just like the container images you know an love from all your standard OCI compliant tools. There
 is nothing fancy here. We instantiate your container instances, which make up your `flight`s and

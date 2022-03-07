@@ -4,7 +4,7 @@ use std::{
     result::Result as StdResult,
 };
 
-use seaplane::error::SeaplaneError;
+use seaplane::{api::v1::ImageReferenceError, error::SeaplaneError};
 
 use crate::{
     log::{log_level, LogLevel},
@@ -24,7 +24,7 @@ pub trait Context {
     /// A simple context
     fn context<S: Into<String>>(self, msg: S) -> Self;
 
-    /// A contex that is evaluated lazily when called. This is useful if building the context is
+    /// A context that is evaluated lazily when called. This is useful if building the context is
     /// expensive or allocates
     fn with_context<F, S>(self, f: F) -> Self
     where
@@ -38,7 +38,7 @@ pub trait Context {
     /// context is colored.
     fn color_context<S: Into<String>>(self, color: Color, msg: S) -> Self;
 
-    /// A contex that will color the output and that is evaluated lazily when called. This is
+    /// A context that will color the output and that is evaluated lazily when called. This is
     /// useful if building the context is expensive or allocates
     ///
     /// **NOTE:** The color is reset at the end of this context even if there is no trailing
@@ -197,6 +197,7 @@ impl_err!(serde_json::Error, SerdeJson);
 impl_err!(toml::de::Error, TomlDe);
 impl_err!(toml::ser::Error, TomlSer);
 impl_err!(seaplane::error::SeaplaneError, Seaplane);
+impl_err!(seaplane::api::v1::ImageReferenceError, ImageReference);
 
 impl From<io::Error> for CliError {
     fn from(e: io::Error) -> Self {
@@ -228,7 +229,7 @@ impl From<CliErrorKind> for CliError {
 
 #[derive(Debug)]
 pub enum CliErrorKind {
-    DuplicateFlight(String),
+    DuplicateName(String),
     NoMatchingItem(String),
     AmbiguousItem(String),
     Io(io::Error),
@@ -238,10 +239,12 @@ pub enum CliErrorKind {
     UnknownWithContext(&'static str),
     Seaplane(SeaplaneError),
     ExistingValue(&'static str),
+    ImageReference(ImageReferenceError),
     MissingPath,
     Unknown,
     PermissionDenied,
     MissingApiKey,
+    MultipleAtStdin,
 }
 
 impl CliErrorKind {
@@ -249,8 +252,8 @@ impl CliErrorKind {
         use CliErrorKind::*;
 
         match &*self {
-            DuplicateFlight(name) => {
-                cli_eprint!("a Flight with the name '");
+            DuplicateName(name) => {
+                cli_eprint!("an item with the name '");
                 cli_eprint!(@Yellow, "{}", name);
                 cli_eprintln!("' already exists");
             }
@@ -269,6 +272,9 @@ impl CliErrorKind {
             }
             PermissionDenied => {
                 cli_eprintln!("permission denied when accessing file or directory");
+            }
+            ImageReference(e) => {
+                cli_eprintln!("seaplane: {}", e)
             }
             Io(e) => {
                 cli_eprintln!("io: {}", e)
@@ -291,6 +297,11 @@ impl CliErrorKind {
             MissingApiKey => {
                 cli_eprintln!("no API key was found or provided")
             }
+            MultipleAtStdin => {
+                cli_eprint!("more than one '");
+                cli_print!(@Yellow, "@-");
+                cli_println!("' values were provided and only one is allowed");
+            }
             Seaplane(e) => {
                 cli_eprintln!("seaplane: {}", e)
             }
@@ -308,19 +319,20 @@ impl CliErrorKind {
     }
 }
 
-// Impl PartialEq manaully so we can just match on kind, and not the associated data
+// Impl PartialEq manually so we can just match on kind, and not the associated data
 impl PartialEq<Self> for CliErrorKind {
     fn eq(&self, rhs: &Self) -> bool {
         use CliErrorKind::*;
 
         match self {
             AmbiguousItem(_) => matches!(rhs, AmbiguousItem(_)),
-            DuplicateFlight(_) => matches!(rhs, DuplicateFlight(_)),
+            DuplicateName(_) => matches!(rhs, DuplicateName(_)),
             Io(_) => matches!(rhs, Io(_)),
             MissingApiKey => matches!(rhs, MissingApiKey),
             MissingPath => matches!(rhs, MissingPath),
             NoMatchingItem(_) => matches!(rhs, NoMatchingItem(_)),
             PermissionDenied => matches!(rhs, PermissionDenied),
+            MultipleAtStdin => matches!(rhs, MultipleAtStdin),
             Seaplane(_) => matches!(rhs, Seaplane(_)),
             SerdeJson(_) => matches!(rhs, SerdeJson(_)),
             TomlSer(_) => matches!(rhs, TomlSer(_)),
@@ -328,15 +340,16 @@ impl PartialEq<Self> for CliErrorKind {
             Unknown => matches!(rhs, Unknown),
             UnknownWithContext(_) => matches!(rhs, UnknownWithContext(_)),
             ExistingValue(_) => matches!(rhs, ExistingValue(_)),
+            ImageReference(_) => matches!(rhs, ImageReference(_)),
         }
     }
 }
 
 impl CliError {
-    // Essentially destructure the cli_*! macros which actually also reduces the branches
+    /// Essentially destructure the cli_*! macros which actually also reduces the branches
     pub fn print(&self) {
         if log_level() <= &LogLevel::Error {
-            // Scope for aquiring Mutex on global printer
+            // Scope for acquiring Mutex on global printer
             {
                 let mut ptr = eprinter();
                 ptr.set_color(Color::Red);
@@ -344,10 +357,10 @@ impl CliError {
                 ptr.reset();
             }
 
-            // This function will try to re-aquire the mutex
+            // This function will try to reacquire the mutex
             self.kind.print();
 
-            // Re-aquire mutex lock
+            // Reacquire mutex lock
             let mut ptr = eprinter();
             for ColorString { color, msg } in &self.context {
                 if let Some(c) = color {

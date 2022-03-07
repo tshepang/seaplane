@@ -1,45 +1,12 @@
 use clap::Parser;
-use seaplane::{
-    api::v1::{Architecture, ImageReference},
-    rexports::strum::VariantNames,
-};
+use seaplane::{api::v1::Architecture, rexports::strum::VariantNames};
 
 use crate::{
+    cli::{cmds::flight::str_to_image_ref, validator::validate_name},
     context::FlightCtx,
-    ops::flight::{generate_name, validate_name},
+    error::Result,
+    ops::generate_name,
 };
-
-pub static IMAGE_SPEC: &str = r#"IMAGE SPEC
-
-    NOTE that at this point the only domain supported is `registry.seaplanet.io`. Other registries
-    may be added in the future.
-
-    Valid images can be defined using the grammar
-
- 	reference                       := name [ ":" tag ] [ "@" digest ]
-	name                            := [domain '/'] path-component ['/' path-component]*
-	domain                          := domain-component ['.' domain-component]* [':' port-number]
-	domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
-	port-number                     := /[0-9]+/
-	path-component                  := alpha-numeric [separator alpha-numeric]*
- 	alpha-numeric                   := /[a-z0-9]+/
-	separator                       := /[_.]|__|[-]*/
-
-	tag                             := /[\w][\w.-]{0,127}/
-
-	digest                          := digest-algorithm ":" digest-hex
-	digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
-	digest-algorithm-separator      := /[+.-_]/
-	digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
-	digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
-
-	identifier                      := /[a-f0-9]{64}/
-	short-identifier                := /[a-f0-9]{6,64}/
-
-    EXAMPLES
-
-    registry.seaplanet.io/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
-    registry.seaplanet.io/seaplane/busybox:latest"#;
 
 #[derive(Parser)]
 pub struct SeaplaneFlightCommonArgs {
@@ -49,7 +16,7 @@ pub struct SeaplaneFlightCommonArgs {
     #[clap(
         long,
         visible_alias = "img",
-        value_name = "IMG_SPEC",
+        value_name = "SPEC",
         long_help = "The container image registry reference that this Flight will use (See IMAGE SPEC below)
 
 All image references using the 'registry.seaplanet.io' registry may omit the domain portions of the
@@ -60,7 +27,7 @@ NOTE at this time the only registry supported is registry.seaplanet.io. In the f
 registries are supported, you must specify the full registry domain and path if using those
 alternate registries in order to properly reference your image."
     )]
-    pub image: Option<ImageReference>,
+    pub image: Option<String>, // we use a string because we allow elision of the domain
 
     /// A human readable name for the Flight (must be unique within any Formation it is a part of)
     /// if omitted a pseudo random name will be assigned
@@ -110,19 +77,7 @@ Some of these restrictions may be lifted in the future."
 }
 
 impl SeaplaneFlightCommonArgs {
-    pub fn flight_ctx(&self) -> FlightCtx {
-        let image = if let Some(mut image) = self.image.clone() {
-            // TODO: TEMPORARY FIX until bug in ImageReference parsing is fixed
-            // (https://github.com/seaplane-io/eng/issues/1847)
-            if !image.domain.contains('.') {
-                image.path = format!("{}/{}", image.domain, image.path);
-                image.domain = "registry.seaplanet.io".into();
-            }
-            Some(image)
-        } else {
-            None
-        };
-
+    pub fn flight_ctx(&self) -> Result<FlightCtx> {
         // We generate a random name if one is not provided
         let name = if let Some(name) = &self.name {
             name.to_owned()
@@ -130,7 +85,13 @@ impl SeaplaneFlightCommonArgs {
             generate_name()
         };
 
-        FlightCtx {
+        let image = if let Some(img_str) = &self.image {
+            Some(str_to_image_ref(img_str)?)
+        } else {
+            None
+        };
+
+        Ok(FlightCtx {
             image,
             name,
             minimum: self.minimum,
@@ -139,6 +100,6 @@ impl SeaplaneFlightCommonArgs {
             // because of clap overrides we only have to check api_permissions
             api_permission: self.api_permission,
             reset_maximum: self.no_maximum,
-        }
+        })
     }
 }

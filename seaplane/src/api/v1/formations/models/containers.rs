@@ -37,7 +37,7 @@ pub struct Container {
     private_ingress_usage: Option<u64>,
     /// Number of bytes sent to other container instances
     #[serde(default)]
-    private_egrees_usage: Option<u64>,
+    private_egress_usage: Option<u64>,
     /// Number of bytes used by this container's disk
     #[serde(default)]
     disk_usage: Option<u64>,

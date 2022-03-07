@@ -1,62 +1,24 @@
 use std::{
-    fs::{self, File},
     io::Write,
     path::{Path, PathBuf},
-    result::Result as StdResult,
 };
 
-use hex::ToHex;
-use rand::Rng;
-use seaplane::api::v1::formations::Flight as FlightModel;
+use seaplane::api::{v1::formations::Flight as FlightModel, IMAGE_REGISTRY_URL};
 use serde::{Deserialize, Serialize};
 use tabwriter::TabWriter;
 
 use crate::{
     context::{Ctx, FlightCtx},
-    error::{CliError, CliErrorKind, Context, Result},
+    error::{CliError, CliErrorKind, Result},
     fs::{FromDisk, ToDisk},
-    printer::{Color, Output},
+    ops::Id,
+    printer::Output,
 };
 
-pub fn generate_name() -> String {
-    // TODO: Maybe set an upper bound on the number of iterations and don't expect
-    names::Generator::default()
-        .find(|name| validate_name(name).is_ok())
-        .expect("Failed to generate a random name")
-}
-
-// For now, somewhat arbitrary naming rules to ensure we don't go over the 63 char limit for
-// hostnames in a URL (while considering how Seaplane combines the tenant name and expands `-`)
-// Current Rules:
-//  - may only include 0-9, a-z, A-Z, and '-' (hyphen)
-//  - hyphens ('-') may not be repeated (i.e. '--')
-//  - no more than three (3) total hyphens
-//  - the total length must be <= 27
-pub fn validate_name(name: &str) -> StdResult<(), String> {
-    if name.len() > 27 {
-        return Err("Flight name too long, must be <= 27 in length".into());
-    }
-    if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') {
-        return Err("illegal character in Flight name".into());
-    }
-    if name.chars().filter(|c| *c == '-').count() > 3 {
-        return Err("no more than three hyphens ('-') allowed in Flight name".into());
-    }
-    if name.contains("--") {
-        return Err("repeated hyphens ('--') not allowed in Flight name".into());
-    }
-
-    Ok(())
-}
-
-// A wrapper round a Flight model
+/// A wrapper round a Flight model
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Flight {
-    #[serde(
-        serialize_with = "hex::serde::serialize",
-        deserialize_with = "hex::serde::deserialize"
-    )]
-    pub id: [u8; 32],
+    pub id: Id,
     #[serde(flatten)]
     pub model: FlightModel,
 }
@@ -64,16 +26,20 @@ pub struct Flight {
 impl Flight {
     pub fn new(model: FlightModel) -> Self {
         Self {
-            id: rand::thread_rng().gen(),
+            id: Id::new(),
             model,
         }
     }
 
-    pub fn starts_with(&self, s: &str) -> bool {
-        hex::encode(self.id).starts_with(s) || self.model.name().starts_with(s)
+    pub fn from_json(s: &str) -> Result<Flight> {
+        serde_json::from_str(s).map_err(CliError::from)
     }
 
-    // Applies the non-default differences from `ctx`
+    pub fn starts_with(&self, s: &str) -> bool {
+        self.id.to_string().starts_with(s) || self.model.name().starts_with(s)
+    }
+
+    /// Applies the non-default differences from `ctx`
     pub fn update_from(&mut self, ctx: &FlightCtx) -> Result<()> {
         let mut dest_builder = FlightModel::builder();
 
@@ -133,7 +99,7 @@ impl FromDisk for Flights {
     }
 
     fn loaded_from(&self) -> Option<&Path> {
-        self.loaded_from.as_ref().map(|p| &**p)
+        self.loaded_from.as_deref()
     }
 }
 
@@ -171,7 +137,7 @@ impl Flights {
             .iter()
             .enumerate()
             .filter(|(_idx, flight)| {
-                hex::encode(flight.id) == needle || flight.model.name() == needle
+                flight.id.to_string() == needle || flight.model.name() == needle
             })
             .map(|(idx, _flight)| idx)
             .collect()
@@ -191,9 +157,38 @@ impl Flights {
         Ok(Flight::new(model))
     }
 
+    pub fn update_or_create_flight(&mut self, model: FlightModel) -> Vec<(String, Id)> {
+        let found = false;
+        let mut ret = Vec::new();
+        for flight in self
+            .inner
+            .iter_mut()
+            .filter(|f| f.model.name() == model.name() && f.model.image_str() == model.image_str())
+        {
+            flight.model.set_minimum(model.minimum());
+            flight.model.set_maximum(model.maximum());
+
+            for arch in model.architecture() {
+                flight.model.add_architecture(*arch);
+            }
+
+            flight.model.set_api_permission(model.api_permission());
+
+            ret.push((flight.model.name().to_owned(), flight.id));
+        }
+
+        if !found {
+            let f = Flight::new(model);
+            ret.push((f.model.name().to_owned(), f.id));
+            self.inner.push(f);
+        }
+
+        ret
+    }
+
     pub fn update_flight(&mut self, src: &str, exact: bool, ctx: &FlightCtx) -> Result<()> {
         let mut src_flight = self.remove_flight(src, exact)?;
-        src_flight.update_from(ctx);
+        src_flight.update_from(ctx)?;
 
         // Re add the source flight
         self.inner.push(src_flight);
@@ -216,6 +211,16 @@ impl Flights {
         }
 
         Ok(self.remove_indices(&indices).pop().unwrap())
+    }
+
+    pub fn find_name(&self, name: &str) -> Option<&Flight> {
+        self.inner.iter().find(|f| f.model.name() == name)
+    }
+
+    pub fn find_name_or_partial_id(&self, needle: &str) -> Option<&Flight> {
+        self.inner
+            .iter()
+            .find(|f| f.model.name() == needle || f.id.to_string().starts_with(needle))
     }
 }
 
@@ -241,12 +246,12 @@ impl Output for Flights {
             writeln!(
                 tw,
                 "{}\t{}\t{}\t{}\t{}\t{}\t{}",
-                &flight.id.encode_hex::<String>()[..8], // TODO: make sure length is not ambiguous
+                &flight.id.to_string()[..8], // TODO: make sure length is not ambiguous
                 flight.model.name(),
                 flight
                     .model
                     .image_str()
-                    .trim_start_matches("registry.seaplanet.io/"), // TODO: provide opt-in/out way to collapse long names
+                    .trim_start_matches(IMAGE_REGISTRY_URL), // TODO: provide opt-in/out way to collapse long names
                 flight.model.minimum(),
                 flight
                     .model

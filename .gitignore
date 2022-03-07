@@ -16,3 +16,6 @@ seaplane/Cargo.lock
 
 # UI Test working dirs
 */tests/ui/**/*.in/*.json
+
+# IDE files
+.vscode/
