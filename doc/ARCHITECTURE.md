@@ -8,6 +8,7 @@ The Seaplane CLI and SDK library are supported on the following Operating System
 Architectures:
 
 |         | Linux | Windows | macOS |
+| :-:     | :-:   | :-:     | :-:   |
 | x86_64  | Y     | Y       | Y     |
 | aarch64 | Y     | N       | Y     |
 

@@ -4,7 +4,20 @@
 [![crates.io][crate-image]][crate-link]
 [![Dependency Status][deps-image]][deps-link]
 
-The [Seaplane] CLI and SDK.
+The [Seaplane] [CLI] and [SDK].
+
+## What is Seaplane?
+
+Seaplane is the global platform for building and scaling your application stack
+without complexity of managing cloud infrastructure.
+
+The CLI is a simple and intuitive way to interact with our run your workloads
+on the Seaplane cloud and interact with our public APIs. The CLI utilizes our
+SDK internally. As such it also serves as a reference application for how our
+SDK and an APIs can be utilized.
+
+Not sure where to go to quickly run a workload on Seaplane? See our [Getting
+Started] guide.
 
 ## License
 
@@ -21,3 +34,6 @@ Licensed under the Apache License, Version 2.0, [LICENSE](LICENSE). Copyright 20
 [//]: # (Links)
 
 [Seaplane]: https://seaplane.io/
+[CLI]: https://github.com/seaplane-io/seaplane/tree/main/seaplane-cli
+[SDK]: https://github.com/seaplane-io/seaplane/tree/main/seaplane
+[Getting Started]: https://github.com/seaplane-io/seaplane/blob/main/doc/GETTING_STARTED.md
