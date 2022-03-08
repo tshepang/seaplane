@@ -1,10 +1,15 @@
 use std::{
     io,
+    result::Result as StdResult,
     sync::{Mutex, MutexGuard, PoisonError},
 };
 
 use clap::ArgEnum;
 use once_cell::sync::OnceCell;
+use serde::{
+    de::{self, Deserialize, Deserializer},
+    Serialize,
+};
 
 use crate::{error::Result, Ctx};
 
@@ -25,12 +30,25 @@ impl Default for OutputFormat {
     }
 }
 
-#[derive(ArgEnum, Copy, Clone, Debug, PartialEq)]
+#[derive(ArgEnum, Copy, Clone, Debug, PartialEq, Serialize)]
 pub enum ColorChoice {
     Always,
     Ansi,
     Auto,
     Never,
+}
+
+impl Default for ColorChoice {
+    fn default() -> Self {
+        ColorChoice::Auto
+    }
+}
+
+impl<'de> Deserialize<'de> for ColorChoice {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> StdResult<Self, D::Error> {
+        let s = <&str>::deserialize(deserializer)?;
+        ColorChoice::from_str(s, true).map_err(de::Error::custom)
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

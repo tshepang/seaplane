@@ -5,7 +5,7 @@ use crate::{
     error::{CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
     ops::flight::{Flight, Flights},
-    printer::{Color, Printer},
+    printer::Color,
     Ctx,
 };
 

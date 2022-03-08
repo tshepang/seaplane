@@ -133,7 +133,13 @@ impl SeaplaneArgs {
         // So we err on the side of not providing color since that is the safer option
         ctx.color = match (self.color, self.no_color) {
             (_, true) => ColorChoice::Never,
-            (choice, _) => choice,
+            (choice, _) => {
+                if choice != ColorChoice::Auto {
+                    choice
+                } else {
+                    ctx.color
+                }
+            }
         };
 
         if let Some(key) = &self.api_key {

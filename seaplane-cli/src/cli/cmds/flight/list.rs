@@ -1,11 +1,7 @@
 use clap::Parser;
 
 use crate::{
-    error::Result,
-    fs::FromDisk,
-    ops::flight::Flights,
-    printer::{Output, Printer},
-    Ctx, OutputFormat,
+    error::Result, fs::FromDisk, ops::flight::Flights, printer::Output, Ctx, OutputFormat,
 };
 
 // TODO: add sorting

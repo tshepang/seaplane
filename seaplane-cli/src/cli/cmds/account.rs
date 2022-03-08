@@ -8,7 +8,7 @@ use crate::{
     context::Ctx,
     error::{CliError, CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
-    printer::{Color, Printer},
+    printer::Color,
 };
 
 /// Operate on your Seaplane account, including access tokens

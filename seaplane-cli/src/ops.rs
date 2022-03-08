@@ -6,7 +6,6 @@ pub mod formation;
 
 use std::{fmt, result::Result as StdResult};
 
-
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 

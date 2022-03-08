@@ -1,11 +1,7 @@
 use clap::Parser;
 
 use crate::{
-    error::Result,
-    fs::FromDisk,
-    ops::formation::Formations,
-    printer::{Output, Printer},
-    Ctx, OutputFormat,
+    error::Result, fs::FromDisk, ops::formation::Formations, printer::Output, Ctx, OutputFormat,
 };
 
 /// List your Seaplane Formations

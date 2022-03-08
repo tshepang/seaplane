@@ -9,7 +9,6 @@ use crate::{
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::flight::Flights,
-    printer::Printer,
 };
 
 // TODO: add --no-maximum or similar

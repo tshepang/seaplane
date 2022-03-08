@@ -5,7 +5,6 @@ use crate::{
     error::{Context, Result},
     fs::{FromDisk, ToDisk},
     ops::formation::Formations,
-    printer::Color,
     Ctx,
 };
 

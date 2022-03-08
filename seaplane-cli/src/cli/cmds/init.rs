@@ -2,7 +2,7 @@ use std::fs;
 
 use clap::Parser;
 
-use crate::{context::Ctx, error::Result, fs::conf_dirs};
+use crate::{config::RawConfig, context::Ctx, error::Result, fs::conf_dirs};
 
 /// Create the Seaplane directory structure at the appropriate locations
 #[derive(Parser)]
@@ -40,9 +40,13 @@ impl SeaplaneInitArgs {
 
         // Tuple below is: (File, "empty" bytes, it's --force=OPTION)
         let to_create = &[
-            (conf_dir.join("seaplane.toml"), "[account]\n", "config"),
-            (ctx.formations_file(), "{}", "formations"),
-            (ctx.flights_file(), "[]", "flights"),
+            (
+                conf_dir.join("seaplane.toml"),
+                toml::to_string_pretty(&RawConfig::default()).unwrap(),
+                "config",
+            ),
+            (ctx.formations_file(), "{}".to_string(), "formations"),
+            (ctx.flights_file(), "[]".to_string(), "flights"),
         ];
         // TODO: @security create the file with limited permissions
         for (file, empty_bytes, opt) in to_create {

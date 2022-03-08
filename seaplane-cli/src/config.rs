@@ -35,8 +35,9 @@ use std::{
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
-    error::{CliError, CliErrorKind, Context, Result},
+    error::{CliError, CliErrorKind, Result},
     fs::{conf_dirs, AtomicFile, FromDisk, ToDisk},
+    printer::ColorChoice,
 };
 
 static SEAPLANE_CONFIG_FILE: &str = "seaplane.toml";
@@ -56,6 +57,9 @@ pub struct RawConfig {
     // Used to signal we already found a valid config and to warn the user we will be overriding
     #[serde(skip)]
     found: bool,
+
+    #[serde(default)]
+    pub seaplane: RawSeaplaneConfig,
 
     #[serde(default)]
     pub account: RawAccountConfig,
@@ -103,6 +107,9 @@ impl RawConfig {
         // TODO: as we get more keys and tables we'll need a better way to do this
         if let Some(key) = new_cfg.account.api_key {
             self.account.api_key = Some(key);
+        }
+        if let Some(choice) = new_cfg.seaplane.color {
+            self.seaplane.color = Some(choice);
         }
         self.loaded_from.extend(new_cfg.loaded_from);
         Ok(())
@@ -157,6 +164,14 @@ impl ToDisk for RawConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
 #[serde(rename_all = "kebab-case")]
+pub struct RawSeaplaneConfig {
+    #[serde(default)]
+    pub color: Option<ColorChoice>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[cfg_attr(test, derive(PartialEq))]
+#[serde(rename_all = "kebab-case")]
 pub struct RawAccountConfig {
     #[serde(default)]
     pub api_key: Option<String>,
@@ -186,6 +201,16 @@ mod test {
     }
 
     #[test]
+    fn deser_empty_seaplane_config() {
+        let cfg_str = r#"
+        [seaplane]
+        "#;
+
+        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
+        assert_eq!(cfg, RawConfig::default())
+    }
+
+    #[test]
     fn deser_api_key() {
         let cfg_str = r#"
         [account]
@@ -199,9 +224,32 @@ mod test {
             RawConfig {
                 found: false,
                 loaded_from: Vec::new(),
+                seaplane: RawSeaplaneConfig::default(),
                 account: RawAccountConfig {
                     api_key: Some("abc123def456".into())
                 }
+            }
+        )
+    }
+
+    #[test]
+    fn deser_color_key() {
+        let cfg_str = r#"
+        [seaplane]
+        color = "always"
+        "#;
+
+        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
+
+        assert_eq!(
+            cfg,
+            RawConfig {
+                found: false,
+                loaded_from: Vec::new(),
+                seaplane: RawSeaplaneConfig {
+                    color: Some(ColorChoice::Always),
+                },
+                account: RawAccountConfig::default(),
             }
         )
     }

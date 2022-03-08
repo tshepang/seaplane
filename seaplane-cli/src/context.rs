@@ -97,7 +97,7 @@ impl Ctx {
         Ok(Self {
             // We default to using color. Later when the context is updated from the CLI args, this
             // may change.
-            color: ColorChoice::Auto,
+            color: cfg.seaplane.color.unwrap_or_default(),
             data_dir: fs::data_dir(),
             force: false,
             out_format: OutputFormat::default(),

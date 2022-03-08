@@ -1,5 +1,5 @@
 use std::{
-    fs::{self, File},
+    fs::{self},
     io,
     path::{Path, PathBuf},
 };
@@ -143,7 +143,7 @@ pub trait ToDisk: FromDisk {
         Self: Sized + Serialize,
     {
         if let Some(path) = self.loaded_from() {
-            let mut file = AtomicFile::new(path)?;
+            let file = AtomicFile::new(path)?;
             // TODO: long term consider something like SQLite
             Ok(serde_json::to_writer(file, self)?)
         } else {
