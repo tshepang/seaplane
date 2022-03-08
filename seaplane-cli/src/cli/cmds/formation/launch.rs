@@ -68,6 +68,10 @@ pub struct SeaplaneFormationLaunchArgs {
     /// Fetch remote Formation definitions prior to attempting to launch this Formation
     #[clap(short = 'F', long)]
     fetch: bool,
+
+    /// Upload the configuration(s) to Seaplane but *DO NOT* set them to active
+    #[clap(long)]
+    grounded: bool,
 }
 
 impl SeaplaneFormationLaunchArgs {
@@ -119,30 +123,45 @@ impl SeaplaneFormationLaunchArgs {
                 }
             }
 
-            // Get all configurations for this Formation
-            let list_cfg_uuids_req = build_request(Some(&formation.name.as_ref().unwrap()), ctx)?;
-            let cfg_uuids = list_cfg_uuids_req
-                .list_configuration_ids()
-                .map_err(CliError::from)
-                .context("Context: failed to retrieve Formation Configuration IDs\n")?;
-            let mut active_configs = ActiveConfigurations::new();
-            for uuid in cfg_uuids {
-                active_configs.add_configuration_mut(
-                    ActiveConfiguration::builder()
-                        .uuid(uuid)
-                        .traffic_weight(1)
-                        .build()?,
+            let mut cfg_uuids = Vec::new();
+            // If the user pasaed `--grounded` they don't want the configuration to be set to
+            // active
+            if !self.grounded {
+                // Get all configurations for this Formation
+                let list_cfg_uuids_req =
+                    build_request(Some(&formation.name.as_ref().unwrap()), ctx)?;
+                cfg_uuids.extend(
+                    list_cfg_uuids_req
+                        .list_configuration_ids()
+                        .map_err(CliError::from)
+                        .context("Context: failed to retrieve Formation Configuration IDs\n")?,
                 );
+                let mut active_configs = ActiveConfigurations::new();
+                for uuid in &cfg_uuids {
+                    active_configs.add_configuration_mut(
+                        ActiveConfiguration::builder()
+                            .uuid(*uuid)
+                            .traffic_weight(1)
+                            .build()?,
+                    );
+                }
+                let set_cfgs_req = build_request(Some(&formation.name.as_ref().unwrap()), ctx)?;
+                set_cfgs_req
+                    .set_active_configurations(active_configs, false)
+                    .map_err(CliError::from)
+                    .context("Context: failed to retrieve Formation Configuration IDs\n")?;
             }
-            let set_cfgs_req = build_request(Some(&formation.name.as_ref().unwrap()), ctx)?;
-            set_cfgs_req
-                .set_active_configurations(active_configs, false)
-                .map_err(CliError::from)
-                .context("Context: failed to retrieve Formation Configuration IDs\n")?;
 
             cli_print!("Successfully Launched Formation '");
             cli_print!(@Green, "{}", &self.formation);
-            cli_println!("'");
+            if cfg_uuids.is_empty() {
+                cli_println!("'");
+            } else {
+                cli_println!("' with Configuration UUIDs:");
+                for uuid in cfg_uuids {
+                    cli_println!(@Green, "{}", uuid);
+                }
+            }
         }
 
         // Write out an entirely new JSON file with the new Formation included

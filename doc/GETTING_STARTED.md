@@ -12,23 +12,23 @@ For the absolute fastest up-and-running version, see [Quickstart](#quickstart)
 * [Prerequisites](#prerequisites)
 * [Quickstart](#quickstart)
 * [Setup](#setup)
-	* [The Seaplane CLI Tool](#the-seaplane-cli-tool)
-	* [Initialize our Environment](#initialize-our-environment)
-		* [Setting `NO_COLOR`](#setting-no_color)
-		* [Using `--no-color` or setting `--color=never`](#using---no-color-or-setting---colornever)
-		* [Setting `color = "never"` in the configuration file](#setting-color--never-in-the-configuration-file)
-	* [Configure Your API Key](#configure-your-api-key)
-		* [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
-		* [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
-		* [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
-	* [Test!](#test)
+    * [The Seaplane CLI Tool](#the-seaplane-cli-tool)
+    * [Initialize our Environment](#initialize-our-environment)
+        * [Setting `NO_COLOR`](#setting-no_color)
+        * [Using `--no-color` or setting `--color=never`](#using---no-color-or-setting---colornever)
+        * [Setting `color = "never"` in the configuration file](#setting-color--never-in-the-configuration-file)
+    * [Configure Your API Key](#configure-your-api-key)
+        * [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
+        * [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
+        * [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
+    * [Test!](#test)
 * [Running Your Workload](#running-your-workload)
-	* [Upload a Container Image](#upload-a-container-image)
-	* [Crate and Launch a Formation with a Single Flight](#crate-and-launch-a-formation-with-a-single-flight)
-		* [Your First Workload](#your-first-workload)
-		* [Working with Local Flight Definitions](#working-with-local-flight-definitions)
-		* [Working with Local Formation Definitions](#working-with-local-formation-definitions)
-	* [See a Hello World Page](#see-a-hello-world-page)
+    * [Upload a Container Image](#upload-a-container-image)
+    * [Crate and Launch a Formation with a Single Flight](#crate-and-launch-a-formation-with-a-single-flight)
+        * [Your First Workload](#your-first-workload)
+        * [Working with Local Flight Definitions](#working-with-local-flight-definitions)
+        * [Working with Local Formation Definitions](#working-with-local-formation-definitions)
+    * [See a Hello World Page](#see-a-hello-world-page)
 
 <!-- vim-markdown-toc -->
 
@@ -63,7 +63,8 @@ $ seaplane formation create \
   --flight-image seaplane_demo/nginxdemos/hello:latest
 Successfully created Flight 'itchy-sweater' with ID '664954bb'
 Successfully created Formation 'few-actor' with ID 'b67437dc'
-Successfully launched Formation 'few-actor' with Configuration UUID 'd87938b6-c57d-47c4-8037-6e69026008ac'
+Successfully launched Formation 'few-actor' with Configuration UUIDs:
+    'd87938b6-c57d-47c4-8037-6e69026008ac'
 ```
 
 To see it working:
@@ -385,7 +386,8 @@ own tenant ID.
 $ seaplane formation create --flight-image seaplane_demo/nginxdemos/hello:latest --launch
 Successfully created Flight 'mellow-order' with ID 'd4e877b7'
 Successfully created Formation 'nimble-bike' with ID '8bfe5304'
-Successflly launched Formation 'nimble-bike' with Formation Configuration UUID 'c534dc48-03b6-400b-bc19-f7d28cfd1897'
+Successflly launched Formation 'nimble-bike' with Configuration UUIDs:
+    'c534dc48-03b6-400b-bc19-f7d28cfd1897'
 ```
 
 That's it!
