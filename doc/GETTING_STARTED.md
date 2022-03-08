@@ -54,13 +54,11 @@ You'll only need:
 - An API key you received from [Flightdeck]
 
 ```console
-$ seaplane init
-Successfully created Seaplane directories
-
 $ seaplane formation create \
   --api-key "mysuperspecialapikey" \
   --launch \
   --flight-image seaplane_demo/nginxdemos/hello:latest
+Successfully created Seaplane directories
 Successfully created Flight 'itchy-sweater' with ID '664954bb'
 Successfully created Formation 'few-actor' with ID 'b67437dc'
 Successfully launched Formation 'few-actor' with Configuration UUIDs:
@@ -165,8 +163,9 @@ Success!
 
 ### Initialize our Environment
 
-This step is somewhat optional, as you'll be prompted to do it later if you
-forget, but since we're still learning let's go ahead and tackle it now.
+This step is somewhat optional as the Seaplane tool will try to auto-initialize
+for you when possible. However, since we're still learning let's go ahead and
+do it manually since it will show a few key areas we can configure.
 
 Here we will create all the necessary files and directories used by the
 Seaplane CLI. These directories are platform specific and only located within

@@ -5,7 +5,7 @@ use clap::Parser;
 use crate::{config::RawConfig, context::Ctx, error::Result, fs::conf_dirs};
 
 /// Create the Seaplane directory structure at the appropriate locations
-#[derive(Parser)]
+#[derive(Parser, Default)]
 pub struct SeaplaneInitArgs {
     /// Force create the files and directories (DANGER: will overwrite existing files)
     #[clap(

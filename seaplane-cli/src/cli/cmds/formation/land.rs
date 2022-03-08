@@ -53,7 +53,7 @@ impl SeaplaneFormationLandArgs {
             let formation = formations.get_formation_mut(idx).unwrap();
 
             // re unwrap: We got the formation from the local DB so it has to have a name
-            let stop_req = build_request(Some(&formation.name.as_ref().unwrap()), ctx)?;
+            let stop_req = build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
             stop_req.stop()?;
 
             // Move all configurations from in air to grounded

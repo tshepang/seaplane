@@ -9,8 +9,9 @@ use serde::{de::DeserializeOwned, Serialize};
 use tempfile::NamedTempFile;
 
 use crate::{
-    error::{CliError, CliErrorKind, Context, Result},
-    printer::Color,
+    cli::SeaplaneInitArgs,
+    context::Ctx,
+    error::{CliError, CliErrorKind, Result},
 };
 
 /// A utility function to get the correct "project" directories in a platform specific manner
@@ -121,13 +122,21 @@ pub trait FromDisk {
     {
         let path = p.as_ref();
 
-        let mut item: Self = serde_json::from_str(
-            &fs::read_to_string(&path)
-                .map_err(CliError::from)
-                .context("\n(hint: try '")
-                .color_context(Color::Green, "seaplane init")
-                .context("' if the files are missing)\n")?,
-        )?;
+        let flights_str = match fs::read_to_string(&path) {
+            Ok(s) => s,
+            Err(e) => {
+                // If it's a file missing error we try to auto-initialize, then return the error if
+                // it happens again
+                if e.kind() == io::ErrorKind::NotFound {
+                    let mut ctx = Ctx::default();
+                    SeaplaneInitArgs::default().run(&mut ctx)?;
+                    fs::read_to_string(&path).map_err(CliError::from)?
+                } else {
+                    return Err(CliError::from(e));
+                }
+            }
+        };
+        let mut item: Self = serde_json::from_str(&flights_str)?;
 
         item.set_loaded_from(p);
 

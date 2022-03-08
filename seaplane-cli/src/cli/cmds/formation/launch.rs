@@ -114,7 +114,7 @@ impl SeaplaneFormationLaunchArgs {
             // Add those configurations to this formation
             for id in cfgs_ids {
                 if let Some(cfg) = formations.get_configuration(id) {
-                    let add_cfg_req = build_request(Some(&formation.name.as_ref().unwrap()), ctx)?;
+                    let add_cfg_req = build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute
                     add_cfg_req.add_configuration(cfg.model.clone(), false)?;
@@ -129,7 +129,7 @@ impl SeaplaneFormationLaunchArgs {
             if !self.grounded {
                 // Get all configurations for this Formation
                 let list_cfg_uuids_req =
-                    build_request(Some(&formation.name.as_ref().unwrap()), ctx)?;
+                    build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
                 cfg_uuids.extend(
                     list_cfg_uuids_req
                         .list_configuration_ids()
@@ -145,7 +145,7 @@ impl SeaplaneFormationLaunchArgs {
                             .build()?,
                     );
                 }
-                let set_cfgs_req = build_request(Some(&formation.name.as_ref().unwrap()), ctx)?;
+                let set_cfgs_req = build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
                 set_cfgs_req
                     .set_active_configurations(active_configs, false)
                     .map_err(CliError::from)
