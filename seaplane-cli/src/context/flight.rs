@@ -13,6 +13,8 @@ pub struct FlightCtx {
     pub architecture: Vec<Architecture>,
     pub api_permission: bool,
     pub reset_maximum: bool,
+    // True if we randomly generated the name. False if the user provided it
+    pub generated_name: bool,
 }
 
 impl Default for FlightCtx {
@@ -25,6 +27,7 @@ impl Default for FlightCtx {
             architecture: Vec::new(),
             api_permission: false,
             reset_maximum: false,
+            generated_name: true,
         }
     }
 }

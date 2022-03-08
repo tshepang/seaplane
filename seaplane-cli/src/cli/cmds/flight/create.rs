@@ -17,11 +17,11 @@ use crate::{
 pub struct SeaplaneFlightCreateArgs {
     // So we don't have to define the same args over and over with commands that use the same ones
     #[clap(flatten)]
-    shared: SeaplaneFlightCommonArgs,
+    pub shared: SeaplaneFlightCommonArgs,
 
     /// Override any existing Flights with the same NAME
     #[clap(short, long)]
-    force: bool,
+    pub force: bool,
 }
 
 impl SeaplaneFlightCreateArgs {

@@ -230,7 +230,16 @@ impl Output for Formations {
             let local = formation.local.len();
             let in_air = formation.in_air.len();
             let grounded = formation.grounded.len();
-            let total = in_air + grounded + local;
+            let total = formation
+                .in_air
+                .union(
+                    &formation
+                        .grounded
+                        .union(&formation.local)
+                        .copied()
+                        .collect(),
+                )
+                .count();
 
             writeln!(
                 tw,

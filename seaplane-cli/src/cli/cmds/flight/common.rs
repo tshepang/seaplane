@@ -73,15 +73,17 @@ Some of these restrictions may be lifted in the future."
 
     /// There is no maximum number of instances
     #[clap(long, visible_alias = "no-max", overrides_with = "maximum")]
-    no_maximum: bool,
+    pub no_maximum: bool,
 }
 
 impl SeaplaneFlightCommonArgs {
     pub fn flight_ctx(&self) -> Result<FlightCtx> {
+        let mut generated_name = false;
         // We generate a random name if one is not provided
         let name = if let Some(name) = &self.name {
             name.to_owned()
         } else {
+            generated_name = true;
             generate_name()
         };
 
@@ -100,6 +102,7 @@ impl SeaplaneFlightCommonArgs {
             // because of clap overrides we only have to check api_permissions
             api_permission: self.api_permission,
             reset_maximum: self.no_maximum,
+            generated_name,
         })
     }
 }

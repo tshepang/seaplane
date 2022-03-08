@@ -42,7 +42,7 @@ impl SeaplaneFlightCopyArgs {
         };
 
         // Now we just edit the newly copied Flight to match the given CLI params...
-        dest_flight.update_from(&ctx.flight_ctx())?;
+        dest_flight.update_from(&ctx.flight_ctx(), false)?;
 
         let id = dest_flight.id.to_string();
         let name = dest_flight.model.name().to_owned();

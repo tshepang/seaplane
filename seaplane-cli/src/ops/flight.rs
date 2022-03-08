@@ -40,11 +40,15 @@ impl Flight {
     }
 
     /// Applies the non-default differences from `ctx`
-    pub fn update_from(&mut self, ctx: &FlightCtx) -> Result<()> {
+    pub fn update_from(&mut self, ctx: &FlightCtx, keep_src_name: bool) -> Result<()> {
         let mut dest_builder = FlightModel::builder();
 
         // Name
-        dest_builder = dest_builder.name(&ctx.name);
+        if keep_src_name {
+            dest_builder = dest_builder.name(self.model.name());
+        } else {
+            dest_builder = dest_builder.name(&ctx.name);
+        }
 
         if let Some(image) = ctx.image.clone() {
             dest_builder = dest_builder.image_reference(image);
@@ -188,7 +192,7 @@ impl Flights {
 
     pub fn update_flight(&mut self, src: &str, exact: bool, ctx: &FlightCtx) -> Result<()> {
         let mut src_flight = self.remove_flight(src, exact)?;
-        src_flight.update_from(ctx)?;
+        src_flight.update_from(ctx, ctx.generated_name)?;
 
         // Re add the source flight
         self.inner.push(src_flight);

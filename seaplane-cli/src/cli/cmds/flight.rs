@@ -12,16 +12,14 @@ use seaplane::api::{
     IMAGE_REGISTRY_URL,
 };
 
+pub use crate::cli::cmds::flight::{
+    common::SeaplaneFlightCommonArgs, copy::SeaplaneFlightCopyArgs,
+    create::SeaplaneFlightCreateArgs, delete::SeaplaneFlightDeleteArgs,
+    edit::SeaplaneFlightEditArgs, list::SeaplaneFlightListArgs,
+    template::SeaplaneFlightTemplateArgs,
+};
 use crate::{
-    cli::{
-        cmds::flight::{
-            common::SeaplaneFlightCommonArgs, copy::SeaplaneFlightCopyArgs,
-            create::SeaplaneFlightCreateArgs, delete::SeaplaneFlightDeleteArgs,
-            edit::SeaplaneFlightEditArgs, list::SeaplaneFlightListArgs,
-            template::SeaplaneFlightTemplateArgs,
-        },
-        specs::IMAGE_SPEC,
-    },
+    cli::specs::IMAGE_SPEC,
     context::Ctx,
     error::{CliError, Result},
 };

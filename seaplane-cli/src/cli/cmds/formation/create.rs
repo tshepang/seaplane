@@ -1,7 +1,14 @@
 use clap::Parser;
+use seaplane::{api::v1::Architecture, rexports::strum::VariantNames};
 
 use crate::{
-    cli::cmds::formation::{build_request, SeaplaneFormationCommonArgs},
+    cli::{
+        cmds::{
+            flight::{SeaplaneFlightCommonArgs, SeaplaneFlightCreateArgs},
+            formation::{build_request, SeaplaneFormationCommonArgs},
+        },
+        validator::validate_name,
+    },
     error::{CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
     ops::formation::{Formation, FormationConfiguration, Formations},
@@ -13,7 +20,13 @@ use crate::{
 #[derive(Parser)]
 #[clap(visible_aliases = &["add"], override_usage =
     "seaplane formation create [OPTIONS]
-    seaplane formation create --flight=SPEC... [FORMATION CFG OPTIONS]")]
+    seaplane formation create --flight=SPEC... [FORMATION CFG OPTIONS]
+    seaplane formation create --flight-image=SPEC [INLINE FLIGHT OPTIONS] [FORMATION CFG OPTIONS]",
+    long_about = "Create a Seaplane Formation
+
+When using the inline-flight-options (--flight-*) all options apply only to a single flight. Other
+Flights may be specified using the `--flight` flag, but those are totally independant of the
+`--flight-*` specified Flight.")]
 pub struct SeaplaneFormationCreateArgs {
     // So we don't have to define the same args over and over with commands that use the same ones
     #[clap(flatten)]
@@ -31,11 +44,108 @@ pub struct SeaplaneFormationCreateArgs {
     /// Override any existing Formation with the same NAME
     #[clap(long)]
     force: bool,
+
+    // TODO: allow omitting of USER (TENANT) portion of image spec too...but this requires a an API
+    // call to determine the TENANT id (at least until the `seaplane account login` command is done)
+    /// The container image registry reference that this Flight will use (See IMAGE SPEC below)
+    #[clap(
+        long,
+        help_heading = "INLINE FLIGHT OPTIONS",
+        visible_alias = "img",
+        value_name = "SPEC",
+        long_help = "The container image registry reference that this Flight will use (See IMAGE SPEC below)
+
+All image references using the 'registry.seaplanet.io' registry may omit the domain portions of the
+image reference as it is implied. For example, 'registry.seaplanet.io/USER/myimage:latest' can be
+supplied simply as 'USER/myimage:latest'
+
+NOTE at this time the only registry supported is registry.seaplanet.io. In the future when other
+registries are supported, you must specify the full registry domain and path if using those
+alternate registries in order to properly reference your image."
+    )]
+    pub flight_image: Option<String>, // we use a string because we allow elision of the domain
+
+    /// A human readable name for the Flight (must be unique within any Formation it is a part of)
+    /// if omitted a pseudo random name will be assigned
+    #[clap(
+        long,
+        help_heading = "INLINE FLIGHT OPTIONS",
+        requires = "flight-image",
+        validator = validate_name,
+        long_help = "A human readable name for the Flight (must be unique within any Formation it
+
+Rules for a valid name are as follows:
+
+  - may only include 0-9, a-z, A-Z, and '-' (hyphen)
+  - hyphens ('-') may not be repeated (i.e. '--')
+  - no more than three (3) total hyphens
+  - the total length must be <= 27
+
+Some of these restrictions may be lifted in the future."
+    )]
+    pub flight_name: Option<String>,
+
+    /// The minimum number of container instances that should ever be running
+    #[clap(
+        long,
+        requires = "flight-image",
+        help_heading = "INLINE FLIGHT OPTIONS",
+        default_value = "1",
+        visible_alias = "flight-min"
+    )]
+    pub flight_minimum: u64,
+
+    /// The maximum number of container instances that should ever be running (default: infinite)
+    #[clap(
+        long,
+        requires = "flight-image",
+        help_heading = "INLINE FLIGHT OPTIONS",
+        visible_alias = "flight-max"
+    )]
+    pub flight_maximum: Option<u64>,
+
+    /// The architectures this flight is capable of running on. No value means it will be auto
+    /// detected from the image definition.
+    #[clap(long,
+        requires = "flight-image",
+        help_heading = "INLINE FLIGHT OPTIONS",
+        visible_aliases = &["flight-arch", "flight-arches"], possible_values = Architecture::VARIANTS, value_delimiter = ',')]
+    pub flight_architecture: Vec<Architecture>,
+
+    /// This Flight should be allowed to hit Seaplane API endpoints and will be provided a
+    /// 'SEAPLANE_API_TOKEN' environment variable at runtime
+    #[clap(
+        long,
+        requires = "flight-image",
+        help_heading = "INLINE FLIGHT OPTIONS",
+        alias = "flight-api-permissions"
+    )]
+    pub flight_api_permission: bool,
 }
 
 impl SeaplaneFormationCreateArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
         self.update_ctx(ctx)?;
+
+        // We only need to check for `--flight-image` because clap ensures it was called if
+        // required
+        if let Some(img) = &self.flight_image {
+            // Create a Flight args struct so we can create the new flight
+            let flight_create_args = SeaplaneFlightCreateArgs {
+                shared: SeaplaneFlightCommonArgs {
+                    image: Some(img.to_string()), // we use a string because we allow elision of the domain
+                    name: self.flight_name.clone(),
+                    minimum: self.flight_minimum,
+                    maximum: self.flight_maximum,
+                    architecture: self.flight_architecture.clone(),
+                    api_permission: self.flight_api_permission,
+                    no_api_permission: false,
+                    no_maximum: false,
+                },
+                force: ctx.force,
+            };
+            flight_create_args.run(ctx)?;
+        }
 
         let formation_ctx = ctx.formation_ctx();
 
