@@ -9,13 +9,15 @@ USAGE:
     seaplane init [OPTIONS]
 
 OPTIONS:
-        --color <COLOR>    Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --force            Force create the files and directories (DANGER: will overwrite existing files)
-    -h, --help             Print help information
-        --no-color         Do not color output (alias for --color=never)
-    -q, --quiet            Suppress output at a specific level and below
-    -v, --verbose          Display more verbose output
-    -V, --version          Print version information
+    -A, --api-key <STRING>         The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+        --color <COLOR>            Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --force                    Force create the files and directories (DANGER: will overwrite existing files)
+    -h, --help                     Print help information
+        --no-color                 Do not color output (alias for --color=never)
+        --overwrite <OVERWRITE>    Overwrite select files or directories (DANGER: will overwrite existing data) [possible values: all, formations, flights, config]
+    -q, --quiet                    Suppress output at a specific level and below
+    -v, --verbose                  Display more verbose output
+    -V, --version                  Print version information
 
 ```
 
@@ -30,6 +32,15 @@ USAGE:
     seaplane init [OPTIONS]
 
 OPTIONS:
+    -A, --api-key <STRING>
+            The API key associated with your account used to access Seaplane API endpoints
+            
+            The value provided here will override any provided in any configuration files.
+            A CLI provided value also overrides any environment variables.
+            One can use a special value of '-' to signal the value should be read from STDIN.
+            
+            [env: SEAPLANE_API_KEY]
+
         --color <COLOR>
             Should the output include color?
             
@@ -38,12 +49,21 @@ OPTIONS:
 
         --force
             Force create the files and directories (DANGER: will overwrite existing files)
+            
+            Using --force is the same as using --overwrite=all
 
     -h, --help
             Print help information
 
         --no-color
             Do not color output (alias for --color=never)
+
+        --overwrite <OVERWRITE>
+            Overwrite select files or directories (DANGER: will overwrite existing data)
+            
+            Using --overwrite=all is the same as using --force
+            
+            [possible values: all, formations, flights, config]
 
     -q, --quiet
             Suppress output at a specific level and below

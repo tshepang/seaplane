@@ -25,18 +25,19 @@ USAGE:
     seaplane flight delete <NAME|ID> [OPTIONS]
 
 ARGS:
-    <NAME|ID>    The name or hash of the Flight to remove, must be unambiguous
+    <NAME|ID>    The name or ID of the Flight to remove, must be unambiguous
 
 OPTIONS:
-    -a, --all              Delete all matching Flights even when FLIGHT is ambiguous
-        --color <COLOR>    Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --force            Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referencedd by <FLIGHT> even if ambiguous
-    -h, --help             Print help information
-        --no-color         Do not color output (alias for --color=never)
-    -q, --quiet            Suppress output at a specific level and below
-    -v, --verbose          Display more verbose output
-    -V, --version          Print version information
-    -x, --exact            the given FLIGHT must be an exact match
+    -a, --all                 Delete all matching Flights even when FLIGHT is ambiguous
+    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+        --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --force               Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous
+    -h, --help                Print help information
+        --no-color            Do not color output (alias for --color=never)
+    -q, --quiet               Suppress output at a specific level and below
+    -v, --verbose             Display more verbose output
+    -V, --version             Print version information
+    -x, --exact               the given FLIGHT must be an exact match
 
 ```
 
@@ -52,11 +53,20 @@ USAGE:
 
 ARGS:
     <NAME|ID>
-            The name or hash of the Flight to remove, must be unambiguous
+            The name or ID of the Flight to remove, must be unambiguous
 
 OPTIONS:
     -a, --all
             Delete all matching Flights even when FLIGHT is ambiguous
+
+    -A, --api-key <STRING>
+            The API key associated with your account used to access Seaplane API endpoints
+            
+            The value provided here will override any provided in any configuration files.
+            A CLI provided value also overrides any environment variables.
+            One can use a special value of '-' to signal the value should be read from STDIN.
+            
+            [env: SEAPLANE_API_KEY]
 
         --color <COLOR>
             Should the output include color?
@@ -65,7 +75,7 @@ OPTIONS:
             [possible values: always, ansi, auto, never]
 
         --force
-            Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referencedd by <FLIGHT> even if ambiguous
+            Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous
 
     -h, --help
             Print help information

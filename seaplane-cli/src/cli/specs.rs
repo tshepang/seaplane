@@ -33,25 +33,25 @@ pub const IMAGE_SPEC: &str = r#"IMAGE SPEC
 
     Valid images can be defined using the grammar
 
- 	reference                       := name [ ":" tag ] [ "@" digest ]
-	name                            := [domain '/'] path-component ['/' path-component]*
-	domain                          := domain-component ['.' domain-component]* [':' port-number]
-	domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
-	port-number                     := /[0-9]+/
-	path-component                  := alpha-numeric [separator alpha-numeric]*
- 	alpha-numeric                   := /[a-z0-9]+/
-	separator                       := /[_.]|__|[-]*/
+    reference                       := name [ ":" tag ] [ "@" digest ]
+    name                            := [domain '/'] path-component ['/' path-component]*
+    domain                          := domain-component ['.' domain-component]* [':' port-number]
+    domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
+    port-number                     := /[0-9]+/
+    path-component                  := alpha-numeric [separator alpha-numeric]*
+    alpha-numeric                   := /[a-z0-9]+/
+    separator                       := /[_.]|__|[-]*/
 
-	tag                             := /[\w][\w.-]{0,127}/
+    tag                             := /[\w][\w.-]{0,127}/
 
-	digest                          := digest-algorithm ":" digest-hex
-	digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
-	digest-algorithm-separator      := /[+.-_]/
-	digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
-	digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
+    digest                          := digest-algorithm ":" digest-hex
+    digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
+    digest-algorithm-separator      := /[+.-_]/
+    digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
+    digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
 
-	identifier                      := /[a-f0-9]{64}/
-	short-identifier                := /[a-f0-9]{6,64}/
+    identifier                      := /[a-f0-9]{64}/
+    short-identifier                := /[a-f0-9]{6,64}/
 
     EXAMPLES
 

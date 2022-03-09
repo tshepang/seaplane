@@ -11,6 +11,7 @@ static THIRD_PARTY_LICENSES: &str = include_str!("../../../../share/third_party_
 // to keep the binary size minimal.
 static SELF_LICENSE: &str = include_str!("../../../../LICENSE");
 
+/// Print license information
 #[derive(Parser)]
 pub struct SeaplaneLicenseArgs {
     /// Display a list of third party libraries and their licenses

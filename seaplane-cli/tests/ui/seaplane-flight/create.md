@@ -5,10 +5,10 @@ With no additional arguments an error is displayed about a missing required argu
 $ seaplane flight create
 ? 2
 error: The following required arguments were not provided:
-    --image=<IMAGE_SPEC>
+    --image=<SPEC>
 
 USAGE:
-seaplane flight create --image=<IMAGE_SPEC> [OPTIONS]
+seaplane flight create --image=<SPEC> [OPTIONS]
 
 For more information try --help
 
@@ -22,15 +22,16 @@ seaplane-flight-create [PKGVER]
 Create a new Flight definition
 
 USAGE:
-    seaplane flight create --image=<IMAGE_SPEC> [OPTIONS]
+    seaplane flight create --image=<SPEC> [OPTIONS]
 
 OPTIONS:
+    -A, --api-key <STRING>               The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --api-permission                 This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
         --architecture <ARCHITECTURE>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches] [possible values: amd64, arm64]
         --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -f, --force                          Override any existing Flights with the same <NAME>
+    -f, --force                          Override any existing Flights with the same NAME
     -h, --help                           Print help information
-        --image <IMG_SPEC>               The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
+        --image <SPEC>                   The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
         --maximum <MAXIMUM>              The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
         --minimum <MINIMUM>              The minimum number of container instances that should ever be running [default: 1] [aliases: min]
     -n, --name <NAME>                    A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
@@ -48,25 +49,25 @@ IMAGE SPEC
 
     Valid images can be defined using the grammar
 
- 	reference                       := name [ ":" tag ] [ "@" digest ]
-	name                            := [domain '/'] path-component ['/' path-component]*
-	domain                          := domain-component ['.' domain-component]* [':' port-number]
-	domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
-	port-number                     := /[0-9]+/
-	path-component                  := alpha-numeric [separator alpha-numeric]*
- 	alpha-numeric                   := /[a-z0-9]+/
-	separator                       := /[_.]|__|[-]*/
+    reference                       := name [ ":" tag ] [ "@" digest ]
+    name                            := [domain '/'] path-component ['/' path-component]*
+    domain                          := domain-component ['.' domain-component]* [':' port-number]
+    domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
+    port-number                     := /[0-9]+/
+    path-component                  := alpha-numeric [separator alpha-numeric]*
+    alpha-numeric                   := /[a-z0-9]+/
+    separator                       := /[_.]|__|[-]*/
 
-	tag                             := /[\w][\w.-]{0,127}/
+    tag                             := /[\w][\w.-]{0,127}/
 
-	digest                          := digest-algorithm ":" digest-hex
-	digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
-	digest-algorithm-separator      := /[+.-_]/
-	digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
-	digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
+    digest                          := digest-algorithm ":" digest-hex
+    digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
+    digest-algorithm-separator      := /[+.-_]/
+    digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
+    digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
 
-	identifier                      := /[a-f0-9]{64}/
-	short-identifier                := /[a-f0-9]{6,64}/
+    identifier                      := /[a-f0-9]{64}/
+    short-identifier                := /[a-f0-9]{6,64}/
 
     EXAMPLES
 
@@ -83,9 +84,18 @@ seaplane-flight-create [PKGVER]
 Create a new Flight definition
 
 USAGE:
-    seaplane flight create --image=<IMAGE_SPEC> [OPTIONS]
+    seaplane flight create --image=<SPEC> [OPTIONS]
 
 OPTIONS:
+    -A, --api-key <STRING>
+            The API key associated with your account used to access Seaplane API endpoints
+            
+            The value provided here will override any provided in any configuration files.
+            A CLI provided value also overrides any environment variables.
+            One can use a special value of '-' to signal the value should be read from STDIN.
+            
+            [env: SEAPLANE_API_KEY]
+
         --api-permission
             This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
 
@@ -102,12 +112,12 @@ OPTIONS:
             [possible values: always, ansi, auto, never]
 
     -f, --force
-            Override any existing Flights with the same <NAME>
+            Override any existing Flights with the same NAME
 
     -h, --help
             Print help information
 
-        --image <IMG_SPEC>
+        --image <SPEC>
             The container image registry reference that this Flight will use (See IMAGE SPEC below)
             
             All image references using the 'registry.seaplanet.io' registry may omit the domain portions of the
@@ -179,25 +189,25 @@ IMAGE SPEC
 
     Valid images can be defined using the grammar
 
- 	reference                       := name [ ":" tag ] [ "@" digest ]
-	name                            := [domain '/'] path-component ['/' path-component]*
-	domain                          := domain-component ['.' domain-component]* [':' port-number]
-	domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
-	port-number                     := /[0-9]+/
-	path-component                  := alpha-numeric [separator alpha-numeric]*
- 	alpha-numeric                   := /[a-z0-9]+/
-	separator                       := /[_.]|__|[-]*/
+    reference                       := name [ ":" tag ] [ "@" digest ]
+    name                            := [domain '/'] path-component ['/' path-component]*
+    domain                          := domain-component ['.' domain-component]* [':' port-number]
+    domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
+    port-number                     := /[0-9]+/
+    path-component                  := alpha-numeric [separator alpha-numeric]*
+    alpha-numeric                   := /[a-z0-9]+/
+    separator                       := /[_.]|__|[-]*/
 
-	tag                             := /[\w][\w.-]{0,127}/
+    tag                             := /[\w][\w.-]{0,127}/
 
-	digest                          := digest-algorithm ":" digest-hex
-	digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
-	digest-algorithm-separator      := /[+.-_]/
-	digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
-	digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
+    digest                          := digest-algorithm ":" digest-hex
+    digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
+    digest-algorithm-separator      := /[+.-_]/
+    digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
+    digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
 
-	identifier                      := /[a-f0-9]{64}/
-	short-identifier                := /[a-f0-9]{6,64}/
+    identifier                      := /[a-f0-9]{64}/
+    short-identifier                := /[a-f0-9]{6,64}/
 
     EXAMPLES
 
