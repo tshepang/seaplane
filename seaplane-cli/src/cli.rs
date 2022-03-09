@@ -9,6 +9,7 @@ use std::{
 };
 
 use clap::{crate_authors, Parser, Subcommand};
+use const_format::concatcp;
 
 pub use crate::cli::cmds::*;
 use crate::{
@@ -17,7 +18,7 @@ use crate::{
     printer::{ColorChoice, Printer},
 };
 
-static VERSION: &str = env!("SEAPLANE_GIT_HASH");
+const VERSION: &str = env!("SEAPLANE_GIT_HASH");
 static AUTHORS: &str = crate_authors!();
 
 #[derive(Parser)]
@@ -29,6 +30,7 @@ static AUTHORS: &str = crate_authors!();
     version = VERSION,
     propagate_version = true,
     disable_colored_help = true,
+    long_version = concatcp!(VERSION, "\n", env!("SEAPLANE_BUILD_FEATURES")),
 )]
 pub struct SeaplaneArgs {
     /// Display more verbose output
@@ -111,13 +113,15 @@ impl SeaplaneArgs {
 
         match &self.cmd {
             Account(args) => args.run(ctx),
-            ShellCompletion(args) => args.run(ctx),
+            #[cfg(feature = "unstable")]
             Config(args) => args.run(ctx),
+            Flight(args) => args.run(ctx),
             Formation(args) => args.run(ctx),
+            #[cfg(feature = "unstable")]
             Image(args) => args.run(ctx),
             Init(args) => args.run(ctx),
-            Flight(args) => args.run(ctx),
             License(args) => args.run(ctx),
+            ShellCompletion(args) => args.run(ctx),
         }
     }
 
@@ -161,11 +165,13 @@ impl SeaplaneArgs {
 #[derive(Subcommand)]
 pub enum SeaplaneCmds {
     Account(SeaplaneAccountArgs),
-    ShellCompletion(SeaplaneShellCompletionArgs),
+    #[cfg(feature = "unstable")]
     Config(SeaplaneConfigArgs),
+    Flight(Box<SeaplaneFlightArgs>),
     Formation(Box<SeaplaneFormationArgs>),
+    #[cfg(feature = "unstable")]
     Image(SeaplaneImageArgs),
     Init(SeaplaneInitArgs),
     License(SeaplaneLicenseArgs),
-    Flight(Box<SeaplaneFlightArgs>),
+    ShellCompletion(SeaplaneShellCompletionArgs),
 }

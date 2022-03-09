@@ -1,5 +1,7 @@
 mod common;
+#[cfg(feature = "unstable")]
 mod configuration;
+#[cfg(feature = "unstable")]
 mod container_stats;
 mod create;
 mod delete;
@@ -7,19 +9,25 @@ mod fetch;
 mod land;
 mod launch;
 mod list;
+#[cfg(feature = "unstable")]
 mod load_balance;
+#[cfg(feature = "unstable")]
 mod template;
 
 use clap::{Parser, Subcommand};
 use seaplane::api::{v1::FormationsRequest, TokenRequest};
 
 use self::{
-    common::SeaplaneFormationCommonArgs, configuration::SeaplaneFormationConfigurationArgs,
-    container_stats::SeaplaneFormationContainerStatisticsArgs, create::SeaplaneFormationCreateArgs,
+    common::SeaplaneFormationCommonArgs, create::SeaplaneFormationCreateArgs,
     delete::SeaplaneFormationDeleteArgs, fetch::SeaplaneFormationFetchArgs,
     land::SeaplaneFormationLandArgs, launch::SeaplaneFormationLaunchArgs,
-    list::SeaplaneFormationListArgs, load_balance::SeaplaneFormationLoadBalanceArgs,
-    template::SeaplaneFormationTemplateArgs,
+    list::SeaplaneFormationListArgs,
+};
+#[cfg(feature = "unstable")]
+use self::{
+    configuration::SeaplaneFormationConfigurationArgs,
+    container_stats::SeaplaneFormationContainerStatisticsArgs,
+    load_balance::SeaplaneFormationLoadBalanceArgs, template::SeaplaneFormationTemplateArgs,
 };
 use crate::{
     error::{CliError, CliErrorKind, Context, Result},
@@ -87,16 +95,19 @@ impl SeaplaneFormationArgs {
         self.update_ctx(ctx)?;
 
         match &self.cmd {
+            #[cfg(feature = "unstable")]
+            Configuration(args) => args.run(ctx),
+            #[cfg(feature = "unstable")]
+            ContainerStatistics(args) => args.run(ctx),
             Create(args) => args.run(ctx),
             Delete(args) => args.run(ctx),
-            List(args) => args.run(ctx),
             FetchRemote(args) => args.run(ctx),
             Land(args) => args.run(ctx),
             Launch(args) => args.run(ctx),
-            // TODO:
-            Configuration(args) => args.run(ctx),
-            ContainerStatistics(args) => args.run(ctx),
+            List(args) => args.run(ctx),
+            #[cfg(feature = "unstable")]
             LoadBalance(args) => args.run(ctx),
+            #[cfg(feature = "unstable")]
             Template(args) => args.run(ctx),
         }
     }
@@ -108,7 +119,9 @@ impl SeaplaneFormationArgs {
 
 #[derive(Subcommand)]
 pub enum SeaplaneFormationCmds {
+    #[cfg(feature = "unstable")]
     Configuration(SeaplaneFormationConfigurationArgs),
+    #[cfg(feature = "unstable")]
     ContainerStatistics(SeaplaneFormationContainerStatisticsArgs),
     Create(Box<SeaplaneFormationCreateArgs>),
     Delete(SeaplaneFormationDeleteArgs),
@@ -116,6 +129,8 @@ pub enum SeaplaneFormationCmds {
     Land(SeaplaneFormationLandArgs),
     Launch(SeaplaneFormationLaunchArgs),
     List(SeaplaneFormationListArgs),
+    #[cfg(feature = "unstable")]
     Template(SeaplaneFormationTemplateArgs),
+    #[cfg(feature = "unstable")]
     LoadBalance(SeaplaneFormationLoadBalanceArgs),
 }

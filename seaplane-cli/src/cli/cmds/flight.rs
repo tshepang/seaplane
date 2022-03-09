@@ -4,6 +4,7 @@ mod create;
 mod delete;
 mod edit;
 mod list;
+#[cfg(feature = "unstable")]
 mod template;
 
 use clap::{Parser, Subcommand};
@@ -12,11 +13,12 @@ use seaplane::api::{
     IMAGE_REGISTRY_URL,
 };
 
-pub use crate::cli::cmds::flight::{
+#[cfg(feature = "unstable")]
+pub use self::template::SeaplaneFlightTemplateArgs;
+pub use self::{
     common::SeaplaneFlightCommonArgs, copy::SeaplaneFlightCopyArgs,
     create::SeaplaneFlightCreateArgs, delete::SeaplaneFlightDeleteArgs,
     edit::SeaplaneFlightEditArgs, list::SeaplaneFlightListArgs,
-    template::SeaplaneFlightTemplateArgs,
 };
 use crate::{
     cli::specs::IMAGE_SPEC,
@@ -53,7 +55,7 @@ impl SeaplaneFlightArgs {
             Edit(args) => args.run(ctx),
             Delete(args) => args.run(ctx),
             List(args) => args.run(ctx),
-            // TODO:
+            #[cfg(feature = "unstable")]
             Template(args) => args.run(ctx),
         }
     }
@@ -66,5 +68,6 @@ pub enum SeaplaneFlightCmds {
     Edit(SeaplaneFlightEditArgs),
     Delete(SeaplaneFlightDeleteArgs),
     List(SeaplaneFlightListArgs),
+    #[cfg(feature = "unstable")]
     Template(SeaplaneFlightTemplateArgs),
 }

@@ -1,14 +1,18 @@
 mod account;
 mod completion;
+#[cfg(feature = "unstable")]
 mod config;
 mod flight;
 mod formation;
+#[cfg(feature = "unstable")]
 mod image;
 mod init;
 mod license;
 
 pub use self::{
     account::SeaplaneAccountArgs, completion::SeaplaneShellCompletionArgs,
-    config::SeaplaneConfigArgs, flight::SeaplaneFlightArgs, formation::SeaplaneFormationArgs,
-    image::SeaplaneImageArgs, init::SeaplaneInitArgs, license::SeaplaneLicenseArgs,
+    flight::SeaplaneFlightArgs, formation::SeaplaneFormationArgs, init::SeaplaneInitArgs,
+    license::SeaplaneLicenseArgs,
 };
+#[cfg(feature = "unstable")]
+pub use self::{config::SeaplaneConfigArgs, image::SeaplaneImageArgs};
