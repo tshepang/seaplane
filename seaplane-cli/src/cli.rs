@@ -108,7 +108,7 @@ impl SeaplaneArgs {
 
         self.update_ctx(ctx)?;
 
-        // Initilize the printer now that we have all the color choices
+        // Initialize the printer now that we have all the color choices
         Printer::init(ctx.color);
 
         match &self.cmd {

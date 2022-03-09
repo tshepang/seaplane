@@ -67,7 +67,7 @@ impl SeaplaneInitArgs {
                         cli_warn!("{:?} ", file);
                         cli_warnln!(@noprefix, "already exists");
                         cli_warn!("(hint: use '");
-                        cli_warn!(@Green, "seaplane init --overwite={} ", opt);
+                        cli_warn!(@Green, "seaplane init --overwrite={} ", opt);
                         cli_warnln!(@noprefix, "to erase and overwrite it)\n");
                         continue;
                     }

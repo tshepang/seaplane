@@ -25,7 +25,7 @@ use crate::{
     long_about = "Create a Seaplane Formation
 
 When using the inline-flight-options (--flight-*) all options apply only to a single flight. Other
-Flights may be specified using the `--flight` flag, but those are totally independant of the
+Flights may be specified using the `--flight` flag, but those are totally independent of the
 `--flight-*` specified Flight.")]
 pub struct SeaplaneFormationCreateArgs {
     // So we don't have to define the same args over and over with commands that use the same ones

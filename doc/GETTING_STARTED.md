@@ -194,13 +194,13 @@ DEBUG: Looking for configuration file at "/Users/kevin/.seaplane/seaplane.toml"
 DEBUG: Creating directory "/Users/kevin/Library/Application Support/io.Seaplane.seaplane"
 DEBUG: Creating directory "/Users/kevin/Library/Application Support/io.Seaplane.seaplane"
 warn: "/Users/kevin/Library/Application Support/io.Seaplane.seaplane/seaplane.toml" already exists
-(hint: use 'seaplane init --overwite=config to erase and overwrite it)
+(hint: use 'seaplane init --overwrite=config to erase and overwrite it)
 
 warn: "/Users/kevin/Library/Application Support/io.Seaplane.seaplane/formations.json" already exists
-(hint: use 'seaplane init --overwite=formations to erase and overwrite it)
+(hint: use 'seaplane init --overwrite=formations to erase and overwrite it)
 
 warn: "/Users/kevin/Library/Application Support/io.Seaplane.seaplane/flights.json" already exists
-(hint: use 'seaplane init --overwite=flights to erase and overwrite it)
+(hint: use 'seaplane init --overwrite=flights to erase and overwrite it)
 
 Successfully created Seaplane directories
 ```

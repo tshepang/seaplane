@@ -216,7 +216,7 @@ each other in their connections map)")]
     pub exclude_region: Vec<Region>,
 
     // TODO: maybe allow omitting http:
-    /// A publically exposed endpoints of this Formations in the form of 'http:ROUTE->FLIGHT:PORT'
+    /// A publicly exposed endpoints of this Formations in the form of 'http:ROUTE->FLIGHT:PORT'
     #[clap(
         long,
         value_delimiter = ',',

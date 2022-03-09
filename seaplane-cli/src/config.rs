@@ -152,7 +152,7 @@ impl ToDisk for RawConfig {
             let file = AtomicFile::new(path)?;
             let toml_str = toml::to_string_pretty(self)?;
 
-            // TODO: make atomic so that we don't lose or currupt data
+            // TODO: make atomic so that we don't lose or corrupt data
             // TODO: long term consider something like SQLite
             fs::write(file.temp_path(), toml_str).map_err(CliError::from)
         } else {
