@@ -152,12 +152,12 @@ Some of these restrictions may be lifted in the future."
 
     /// This Formation configuration should be deployed and set it as active right away (requires a
     /// formation configuration)
-    #[clap(long, visible_alias = "active", overrides_with = "no-take-off")]
-    pub take_off: bool,
+    #[clap(long, visible_alias = "active", overrides_with = "no-launch")]
+    pub launch: bool,
 
-    /// The opposite of --take-off, and says that this Formation should not be active
-    #[clap(long, visible_alias = "no-active", overrides_with = "take-off")]
-    pub no_take_off: bool,
+    /// The opposite of --launch, and says that this Formation should not be active
+    #[clap(long, visible_alias = "no-active", overrides_with = "launch")]
+    pub no_launch: bool,
 
     /// A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)
     #[clap(long, value_delimiter = ',', validator = validate_name_id_path, value_name = "SPEC")]
@@ -368,10 +368,10 @@ impl SeaplaneFormationCommonArgs {
 
         Ok(FormationCtx {
             name: self.name.clone().unwrap_or_else(generate_name),
-            take_off: self.take_off,
+            launch: self.launch,
             deploy: false,
             cfg_ctx: FormationCfgCtx {
-                take_off: self.take_off,
+                launch: self.launch,
                 flight: flight_names.iter().map(|s| s.to_string()).collect(),
                 affinity: self.affinity.clone(),
                 connection: self.connection.clone(),

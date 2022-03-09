@@ -33,7 +33,7 @@ pub struct SeaplaneFormationCreateArgs {
     shared: SeaplaneFormationCommonArgs,
 
     /// Send this formation to Seaplane immediately (requires a Formation configuration) (implies
-    /// --take-off, if that is not the desired state use --no-take-off)
+    /// --launch, if that is not the desired state use --no-launch)
     #[clap(long, overrides_with = "no-deploy")]
     deploy: bool,
 
@@ -201,24 +201,23 @@ impl SeaplaneFormationCreateArgs {
         cli_println!("'");
 
         if let Some(cfg_id) = cfg_id {
-            cli_print!("Successfully created Formation Configuration with ID '");
-            cli_print!(@Green, "{}", &cfg_id.to_string()[..8]);
-            cli_println!("'");
-
             if formation_ctx.deploy {
                 let create_req = build_request(Some(&formation_ctx.name), ctx)?;
                 let cfg_uuids = create_req.create(
                     formation_ctx.configuration_model(ctx)?.unwrap(),
-                    formation_ctx.take_off,
+                    formation_ctx.launch,
                 )?;
-                for uuid in cfg_uuids.into_iter() {
-                    formations.add_uuid(&cfg_id, uuid);
-                }
-
-                if formation_ctx.take_off {
+                if formation_ctx.launch {
+                    cli_print!("Successfully launched Formation '");
+                    cli_print!(@Green, "{}", &cfg_id.to_string()[..8]);
+                    cli_println!("with Configuration UUIDs:");
                     formations.add_in_air_by_name(&formation_ctx.name, cfg_id);
                 } else {
                     formations.add_grounded_by_name(&formation_ctx.name, cfg_id);
+                }
+                for uuid in cfg_uuids.into_iter() {
+                    cli_println!(@Green, "{}", uuid);
+                    formations.add_uuid(&cfg_id, uuid);
                 }
             }
         }
@@ -231,8 +230,8 @@ impl SeaplaneFormationCreateArgs {
         ctx.formation.init(self.shared.formation_ctx(ctx)?);
         let mut fctx = ctx.formation_ctx();
         fctx.deploy = self.deploy;
-        if self.deploy && !self.shared.no_take_off {
-            fctx.take_off = true;
+        if self.deploy && !self.shared.no_launch {
+            fctx.launch = true;
         }
 
         Ok(())

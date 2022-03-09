@@ -24,7 +24,7 @@ use crate::{
 /// weights/activation statuses.
 pub struct FormationCtx {
     pub name: String,
-    pub take_off: bool,
+    pub launch: bool,
     pub deploy: bool,
     pub remote: bool,
     pub local: bool,
@@ -36,7 +36,7 @@ impl Default for FormationCtx {
     fn default() -> Self {
         Self {
             name: generate_name(),
-            take_off: false,
+            launch: false,
             deploy: false,
             cfg_ctx: FormationCfgCtx::default(),
             remote: false,
@@ -129,7 +129,7 @@ impl FormationCtx {
 
 #[derive(Default, Debug, Clone)]
 pub struct FormationCfgCtx {
-    pub take_off: bool,
+    pub launch: bool,
     /// `String` is a flight name because that's the only thing shared by both local and remote
     pub flight: Vec<String>,
     /// `String` is a flight name because that's the only thing shared by both local and remote
