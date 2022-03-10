@@ -22,7 +22,8 @@ jobs:
 
   api:
     name: Mock API Tests
-    runs-on: [X64, ARM64, windows-latest, macos-latest]    steps:
+    runs-on: [X64, ARM64, windows-latest, macos-latest]
+    steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 

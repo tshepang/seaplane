@@ -80,7 +80,7 @@ jobs:
         with:
           use-cross: ${{ matrix.cross }}
           command: build
-          args: --release --target x86_64-unknown-linux-musl
+          args: --release --target ${{ matrix.target }}
 
       - name: Make artifacts dir
         run: mkdir -p artifacts/share/doc/seaplane/

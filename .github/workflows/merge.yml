@@ -14,13 +14,13 @@ env:
 
 jobs:
   call-pr-workflow-lib:
-    uses: ./.github/workflows/pr-workflow.yml
+    uses: ./.github/workflows/workflow-pr.yml
     with:
       manifest_path: ./seaplane/Cargo.toml
       token: "${{ secrets.GITHUB_TOKEN }}"
 
   call-pr-workflow-cli:
-    uses: ./.github/workflows/pr-workflow.yml
+    uses: ./.github/workflows/workflow-pr.yml
     with:
       manifest_path: ./seaplane-cli/Cargo.toml
       token: "${{ secrets.GITHUB_TOKEN }}"
