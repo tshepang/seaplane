@@ -1,0 +1,70 @@
+# CI workflow for every merge to main.
+#
+# This workflow may also be triggered manually for testing purposes.
+name: Merge to main
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  call-pr-workflow-lib:
+    uses: ./.github/workflows/pr-workflow.yml
+    with:
+      manifest_path: ./seaplane/Cargo.toml
+      token: "${{ secrets.GITHUB_TOKEN }}"
+
+  call-pr-workflow-cli:
+    uses: ./.github/workflows/pr-workflow.yml
+    with:
+      manifest_path: ./seaplane-cli/Cargo.toml
+      token: "${{ secrets.GITHUB_TOKEN }}"
+
+  ui:
+    name: UI Tests
+    strategy:
+      matrix:
+        os: [X64, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: UI Tests
+      run: cargo test --features ui_tests --workspace
+
+  api:
+    name: Mock API Tests
+    strategy:
+      matrix:
+        os: [X64, ARM64 windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: Mock API Tests
+      run: cargo test --features api_tests --workspace

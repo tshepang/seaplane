@@ -1,0 +1,109 @@
+on:
+  push:
+    branches: main
+
+name: Nightly Release
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build Nightly Release
+
+    strategy:
+      matrix:
+        os: [X64, ARM64 windows-latest, macos-latest]
+        include:
+        - os: X64
+          target: [x86_64-unknown-linux-musl, x86_64-unknown-linux-gnu]
+          cross: false
+        - os: ARM64
+          target: [aarch64-unknown-linux-gnu, aarch64-unknown-linux-musl]
+          cross: false
+        - os: windows-latest
+          target: [x86_64-pc-windows-gnu]
+          cross: false
+        - os: macos-latest
+          target: x86_64-apple-darwin
+          cross: false
+        - os: macos-latest
+          target: aarch64-apple-darwin
+          cross: true
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          pdrofile: minimal
+          toolchain: nightly
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Compile
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: --release --target x86_64-unknown-linux-musl
+
+      - name: Make artifacts dir
+        run: mkdir -p artifacts/share/doc/seaplane/
+
+      - name: Copy all artifacts into dir
+        run: cp target/${{ matrix.target }}/release/seaplane artifacts/ && cp LICENSE share/third_party_licenses.md artifacts/share/doc/seaplane/
+
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+
+      - name: Create archive for Linux
+        run: cd artifacts/ && tar czf ../seaplane-${{ env.SHA }}-${{ matrix.target }}.tar.gz ./*
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
+
+      - name: Save Artifacts Archive
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.target }}-release
+          path: seaplane-${{ env.SHA }}-${{ matrix.target }}.tar.gz
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
+
+      - name: Remove previous Nightly Release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: true
+          tag_name: nightly
+          repo: seaplane-io/seaplane
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  release:
+    name: Create Nightly Release
+    runs-on: X64
+    needs: build
+    steps:
+      - name: Download all workflow release artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Create Nightly Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Seaplane CLI Nightly (${{ env.SHA }})
+          tag_name: nightly
+          prerelease: true
+          body_path: nightly-CHANGELOG.md
+          files: |
+            seaplane-${{ env.SHA }}-x86_64-unknown-linux-musl.tar.gz
+            seaplane-${{ env.SHA }}-x86_64-unknown-linux-gnu.tar.gz
+            seaplane-${{ env.SHA }}-aarch64-unknown-linux-gnu.tar.gz
+            seaplane-${{ env.SHA }}-aarch64-unknown-linux-musl.tar.gz
+            seaplane-${{ env.SHA }}-x86_64-pc-windows-gnu.tar.gz
+            seaplane-${{ env.SHA }}-x86_64-apple-darwin.tar.gz
+            seaplane-${{ env.SHA }}-aarch64-apple-darwin.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: seaplane-io/seaplane
+          SHA: ${{ steps.short-sha.outputs.sha }}

@@ -1,0 +1,39 @@
+name: SDK Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'seaplane/**'
+      - '!**.md'
+      - '!doc/**'
+      - '!share/**'
+      - "!LICENSE"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  call-pr-workflow:
+    uses: ./.github/workflows/workflow-pr.yml
+    with:
+      manifest_path: ./seaplane/Cargo.toml
+
+  api:
+    name: Mock API Tests
+    runs-on: [X64, ARM64, windows-latest, macos-latest]    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: Mock API Tests
+      run: cargo test --features api_tests --manifest-path ./seaplane/Cargo.toml

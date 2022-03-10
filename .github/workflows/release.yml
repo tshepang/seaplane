@@ -1,0 +1,97 @@
+on:
+  push:
+    tags:
+      - 'v*'
+
+name: Release
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build Release
+
+    strategy:
+      matrix:
+        os: [X64, ARM64 windows-latest, macos-latest]
+        include:
+        - os: X64
+          target: [x86_64-unknown-linux-musl, x86_64-unknown-linux-gnu]
+          cross: false
+        - os: ARM64
+          target: [aarch64-unknown-linux-gnu, aarch64-unknown-linux-musl]
+          cross: false
+        - os: windows-latest
+          target: [x86_64-pc-windows-gnu]
+          cross: false
+        - os: macos-latest
+          target: x86_64-apple-darwin
+          cross: false
+        - os: macos-latest
+          target: aarch64-apple-darwin
+          cross: true
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          pdrofile: minimal
+          toolchain: nightly
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Compile
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: --release --target x86_64-unknown-linux-musl
+
+      - name: Make artifacts dir
+        run: mkdir -p artifacts/share/doc/seaplane/
+
+      - name: Copy artifacts into dir
+        run: cp target/${{ matrix.target }}/release/seaplane artifacts/ && cp LICENSE share/third_party_licenses.md artifacts/share/doc/seaplane/
+
+      - name: Create archive
+        run: cd artifacts/  && tar czf ../seaplane-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tar.gz ./*
+
+      - name: Save Artifacts Archive
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.target }}-release
+          path: seaplane-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
+
+  release:
+    name: Create Release
+    runs-on: X64
+    needs: build
+    steps:
+      - name: Download all workflow release artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Seaplane (${{ env.SHA }})
+          files: |
+            seaplane-${{ steps.get_version.outputs.VERSION }}-x86_64-unknown-linux-musl.tar.gz
+            seaplane-${{ steps.get_version.outputs.VERSION }}-x86_64-unknown-linux-gnu.tar.gz
+            seaplane-${{ steps.get_version.outputs.VERSION }}-aarch64-unknown-linux-gnu.tar.gz
+            seaplane-${{ steps.get_version.outputs.VERSION }}-aarch64-unknown-linux-musl.tar.gz
+            seaplane-${{ steps.get_version.outputs.VERSION }}-x86_64-pc-windows-gnu.tar.gz
+            seaplane-${{ steps.get_version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
+            seaplane-${{ steps.get_version.outputs.VERSION }}-aarch64-apple-darwin.tar.gz
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_REPOSITORY: seaplane-io/seaplane
+
+

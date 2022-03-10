@@ -1,0 +1,43 @@
+name: CLI Pull Request CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'seaplane-cli/**'
+      - '!**.md'
+      - '!doc/**'
+      - '!share/**'
+      - "!LICENSE"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  call-pr-workflow:
+    uses: ./.github/workflows/workflow-pr.yml
+    with:
+      manifest_path: ./seaplane/Cargo.toml
+
+  ui:
+    name: UI Tests
+    strategy:
+      matrix:
+        os: [X64, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: UI Tests
+      run: cargo test --test ui --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml

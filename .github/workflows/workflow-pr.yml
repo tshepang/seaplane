@@ -1,0 +1,114 @@
+name: Pull Request CI
+
+on:
+  workflow_call:
+    inputs:
+      manifest_path:
+        type: string
+        required: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  ci:
+    name: CI
+    needs:
+      - linux-amd64-test
+      - linux-arm64-test
+      - win-macos-amd64-test
+      - docs
+      - rustfmt
+      - clippy
+    runs-on: X64
+    steps:
+      - name: Done
+        run: exit 0
+
+  linux-amd64-test:
+    uses: ./.github/workflows/workflow-test.yml
+    with:
+      runner: X64
+
+  linux-arm64-test:
+    uses: ./.github/workflows/workflow-test.yml
+    with:
+      runner: ARM64
+
+  win-macos-amd64-test:
+    uses: ./.github/workflows/workflow-test.yml
+    with:
+      runner: [macos-latest, windows-latest]
+
+  docs:
+    name: Docs
+    runs-on: [ARM64, X64, windows-latest, macos-latest]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: Check documentation
+      env:
+        RUSTDOCFLAGS: -D warnings
+      run: cargo doc --manifest-path ${{ inputs.manifest_path }} --all-features --no-deps --document-private-items
+
+  rustfmt:
+    name: rustfmt
+    runs-on: X64
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+        components: rustfmt
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: Check formatting
+      run: cargo fmt --all --manifest-path ${{ inputs.manifest_path }} -- --check
+
+  clippy:
+    name: clippy
+    strategy:
+      matrix:
+        build: [minimal, default, next]
+        rust: [stable, nightly]
+        include:
+        - build: minimal
+          features: "--no-default-features"
+        - build: default
+          features: ""
+        - build: next
+          features: "--features unstable"
+    continue-on-error: ${{ matrix.rust != 'stable' }}
+    runs-on: X64
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        profile: minimal
+        override: true
+        components: clippy
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: Lint (${{ matrix.build }})
+      run: cargo clippy ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --all-targets -- -D warnings

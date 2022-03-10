@@ -1,0 +1,21 @@
+name: Security Audit
+on:
+  pull_request:
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+  push:
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+  schedule:
+  - cron: '42 4 * * 2'
+jobs:
+  security_audit:
+    runs-on: X64
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - uses: actions-rs/audit-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
