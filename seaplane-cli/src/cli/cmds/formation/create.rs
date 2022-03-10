@@ -127,26 +127,6 @@ impl SeaplaneFormationCreateArgs {
     pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
         self.update_ctx(ctx)?;
 
-        // We only need to check for `--flight-image` because clap ensures it was called if
-        // required
-        if let Some(img) = &self.flight_image {
-            // Create a Flight args struct so we can create the new flight
-            let flight_create_args = SeaplaneFlightCreateArgs {
-                shared: SeaplaneFlightCommonArgs {
-                    image: Some(img.to_string()), // we use a string because we allow elision of the domain
-                    name: self.flight_name.clone(),
-                    minimum: self.flight_minimum,
-                    maximum: self.flight_maximum,
-                    architecture: self.flight_architecture.clone(),
-                    api_permission: self.flight_api_permission,
-                    no_api_permission: false,
-                    no_maximum: false,
-                },
-                force: ctx.force,
-            };
-            flight_create_args.run(ctx)?;
-        }
-
         let formation_ctx = ctx.formation_ctx();
 
         // Load the known formations from the local JSON "DB"
@@ -226,10 +206,31 @@ impl SeaplaneFormationCreateArgs {
     }
 
     fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
+        // We only need to check for `--flight-image` because clap ensures it was called if
+        // required
+        let mut shared = self.shared.clone();
+        if let Some(img) = &self.flight_image {
+            // Create a Flight args struct so we can create the new flight
+            let flight_create_args = SeaplaneFlightCreateArgs {
+                shared: SeaplaneFlightCommonArgs {
+                    image: Some(img.to_string()), // we use a string because we allow elision of the domain
+                    name: self.flight_name.clone(),
+                    minimum: self.flight_minimum,
+                    maximum: self.flight_maximum,
+                    architecture: self.flight_architecture.clone(),
+                    api_permission: self.flight_api_permission,
+                    no_api_permission: false,
+                    no_maximum: false,
+                },
+                force: ctx.force,
+            };
+            // Add the newly created inline Flight ID as if the user used --flight=ID
+            shared.flight.push(flight_create_args.run(ctx)?.to_string());
+        }
         ctx.force = self.force;
-        ctx.formation.init(self.shared.formation_ctx(ctx)?);
+        ctx.formation.init(shared.formation_ctx(ctx)?);
         let mut fctx = ctx.formation_ctx();
-        fctx.deploy = self.deploy;
+        fctx.deploy = self.deploy || shared.launch;
         if self.deploy && !self.shared.no_launch {
             fctx.launch = true;
         }

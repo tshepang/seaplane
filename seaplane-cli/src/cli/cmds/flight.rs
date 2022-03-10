@@ -50,7 +50,7 @@ impl SeaplaneFlightArgs {
         use SeaplaneFlightCmds::*;
 
         match &self.cmd {
-            Create(args) => args.run(ctx),
+            Create(args) => Ok(args.run(ctx).map(|_| ())?),
             Copy(args) => args.run(ctx),
             Edit(args) => args.run(ctx),
             Delete(args) => args.run(ctx),

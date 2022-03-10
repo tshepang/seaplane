@@ -4,7 +4,10 @@ use crate::{
     cli::cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
     error::{CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
-    ops::flight::{Flight, Flights},
+    ops::{
+        flight::{Flight, Flights},
+        Id,
+    },
     printer::Color,
     Ctx,
 };
@@ -25,7 +28,8 @@ pub struct SeaplaneFlightCreateArgs {
 }
 
 impl SeaplaneFlightCreateArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
+    /// Returns the ID of the created Flight
+    pub fn run(&self, ctx: &mut Ctx) -> Result<Id> {
         self.update_ctx(ctx)?;
 
         // In the shared args --image is optional, because not all commands need it to be
@@ -77,7 +81,7 @@ impl SeaplaneFlightCreateArgs {
         let new_flight_name = new_flight.name().to_owned();
         // Add the new Flight
         let new_flight = Flight::new(new_flight);
-        let id = new_flight.id.to_string();
+        let id = new_flight.id;
         flights.inner.push(new_flight);
 
         // Write out an entirely new JSON file with the new Flight included
@@ -86,10 +90,10 @@ impl SeaplaneFlightCreateArgs {
         cli_print!("Successfully created Flight '");
         cli_print!(@Green, "{}", new_flight_name);
         cli_print!("' with ID '");
-        cli_print!(@Green, "{}", &id[..8]);
+        cli_print!(@Green, "{}", &id.to_string()[..8]);
         cli_println!("'");
 
-        Ok(())
+        Ok(id)
     }
 
     fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {

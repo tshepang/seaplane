@@ -127,7 +127,7 @@ impl Into<RegionModel> for Region {
     }
 }
 
-#[derive(Parser)]
+#[derive(Parser, Clone)]
 #[clap(after_help = concatcp!(FLIGHT_SPEC, "\n\n", REGION_SPEC))]
 pub struct SeaplaneFormationCommonArgs {
     // TODO: add --from with support for @file and @- (stdin)
