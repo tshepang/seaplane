@@ -17,13 +17,11 @@ jobs:
     uses: ./.github/workflows/workflow-pr.yml
     with:
       manifest_path: ./seaplane/Cargo.toml
-      token: "${{ secrets.GITHUB_TOKEN }}"
 
   call-pr-workflow-cli:
     uses: ./.github/workflows/workflow-pr.yml
     with:
       manifest_path: ./seaplane-cli/Cargo.toml
-      token: "${{ secrets.GITHUB_TOKEN }}"
 
   ui:
     name: UI Tests
@@ -45,13 +43,13 @@ jobs:
     - uses: Swatinem/rust-cache@v1
 
     - name: UI Tests
-      run: cargo test --features ui_tests --workspace
+      run: cargo test --test ui --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
 
   api:
     name: Mock API Tests
     strategy:
       matrix:
-        os: [X64, ARM64 windows-latest, macos-latest]
+        os: [X64, ARM64, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
@@ -67,4 +65,4 @@ jobs:
     - uses: Swatinem/rust-cache@v1
 
     - name: Mock API Tests
-      run: cargo test --features api_tests --workspace
+      run: cargo test --features api_tests --manifest-path ./seaplane/Cargo.toml

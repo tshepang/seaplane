@@ -14,50 +14,13 @@ jobs:
 
     strategy:
       matrix:
-        os: [X64, ARM64 windows-latest, macos-latest]
-        libc: [musl, gnu, darwin]
-        exclude:
-        - os: X64
-          libc: darwin
-        - os: ARM64
-          libc: darwin
-        - os: windows-latest
-          libc: musl
-        - os: windows-latest
-          libc: darwin
-        - os: macos-latest
-          libc: musl
-        - os: macos-latest
-          libc: gnu
-        include:
-        - os: X64
-          libc: musl
-          target: x86_64-unknown-linux-musl
-          cross: false
-        - os: X64
-          libc: gnu
-          target: x86_64-unknown-linux-gnu
-          cross: false
-        - os: ARM64
-          libc: gnu
-          target: aarch64-unknown-linux-gnu
-          cross: false
-        - os: ARM64
-          libc: musl
-          target: aarch64-unknown-linux-musl
-          cross: false
-        - os: windows-latest
-          target: x86_64-pc-windows-gnu
-          libc: gnu
-          cross: false
-        - os: macos-latest
-          target: x86_64-apple-darwin
-          libc: darwin
-          cross: false
-        - os: macos-latest
-          libc: darwin
-          target: aarch64-apple-darwin
-          cross: true
+        - { os: X64, target: x86_64-unknown-linux-musl, bin_dir: 'x86_64-unknown-linux-musl/', cross: true }
+        - { os: X64, target: x86_64-unknown-linux-gnu, bin_dir: '', cross: false }
+        - { os: ARM64, target: x86_64-unknown-linux-musl, bin_dir: 'aarch64-unknown-linux-musl/', cross: true }
+        - { os: ARM64, target: x86_64-unknown-linux-gnu, bin_dir: '', cross: false }
+        - { os: windows-latest, target: x86_64-pc-windows-gnu, bin_dir: '', cross: false }
+        - { os: macos-latest, target: x86_64-apple-darwin, bin_dir: '', cross: false }
+        - { os: macos-latest, target: aarch64-apple-darwin, bin_dir: 'aarch64-apple-darwin/', cross: true }
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -81,7 +44,7 @@ jobs:
         run: mkdir -p artifacts/share/doc/seaplane/
 
       - name: Copy all artifacts into dir
-        run: cp target/${{ matrix.target }}/release/seaplane artifacts/ && cp LICENSE share/third_party_licenses.md artifacts/share/doc/seaplane/
+        run: cp target/${{ matrix.bin_dir }}release/seaplane artifacts/ && cp LICENSE share/third_party_licenses.md artifacts/share/doc/seaplane/
 
       - uses: benjlevesque/short-sha@v1.2
         id: short-sha
