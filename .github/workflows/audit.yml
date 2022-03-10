@@ -10,6 +10,8 @@ on:
       - '**/Cargo.lock'
   schedule:
   - cron: '42 4 * * 2'
+  workflow_dispatch:
+
 jobs:
   security_audit:
     runs-on: X64
