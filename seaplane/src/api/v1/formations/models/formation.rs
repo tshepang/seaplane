@@ -747,7 +747,7 @@ impl ActiveConfigurations {
 /// A single [`ActiveConfiguration`] from the response from the `GET
 /// /formations/<NAME>/activeConfigurations` API call
 /// ([`FormationsRequest::get_active_configurations`])
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct ActiveConfiguration {
     /// An ID of a configuration within the Formation
     configuration_id: Uuid,
@@ -785,8 +785,9 @@ impl PartialEq<Self> for ActiveConfiguration {
     }
 }
 
-/// A builder for creating a new [`ActiveConfiguration`]. This can be used to load ballance traffic
+/// A builder for creating a new [`ActiveConfiguration`]. This can be used to load balance traffic
 /// across different [`FormationConfiguration`]s within a Formation.
+#[derive(Copy, Clone, Debug)]
 pub struct ActiveConfigurationBuilder {
     configuration_id: Option<Uuid>,
     traffic_weight: u32,

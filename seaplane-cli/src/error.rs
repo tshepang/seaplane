@@ -101,7 +101,6 @@ pub struct CliError {
     kind: CliErrorKind,
     context: Vec<ColorString>,
     status: Option<i32>, // TODO: default to 1
-    fatal: bool,         // TODO: default to true
 }
 
 impl CliError {
@@ -162,7 +161,6 @@ impl Default for CliError {
             kind: CliErrorKind::Unknown,
             context: Vec::new(),
             status: None,
-            fatal: true,
         }
     }
 }

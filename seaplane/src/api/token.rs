@@ -11,7 +11,7 @@ use crate::{
     error::{Result, SeaplaneError},
 };
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct TokenRequestBuilder {
     // Required for Bearer Auth
     api_key: Option<String>,
@@ -82,6 +82,7 @@ impl TokenRequestBuilder {
 }
 
 /// For making requests against the `/token` APIs.
+#[derive(Debug)]
 pub struct TokenRequest {
     api_key: String,
     #[doc(hidden)]

@@ -18,7 +18,7 @@ pub use models::*;
 
 /// A builder struct for creating a [`FormationsRequest`] which will then be used for making a
 /// request against the `/formations` APIs
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct FormationsRequestBuilder {
     // The name of the formation (not required for GET /formations)
     name: Option<String>,
@@ -101,6 +101,7 @@ impl FormationsRequestBuilder {
 }
 
 /// For making requests against the `/formations` APIs.
+#[derive(Debug)]
 pub struct FormationsRequest {
     /// The name of the formation
     name: Option<String>,

@@ -17,7 +17,7 @@ pub struct Containers {
 }
 
 /// A single formation name in the response from `GET /formations`
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Container {
     /// ID of a particular container instance
     uuid: Uuid,
