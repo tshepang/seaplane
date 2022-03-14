@@ -1,0 +1,56 @@
+
+name: UI Test CI Workflow
+
+on:
+  workflow_call:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  api-test:
+    name: Mock API Tests
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: Mock API Tests
+      run: cargo test --features api_tests --manifest-path ./seaplane/Cargo.toml
+
+  api-test-self-hosted:
+    name: Mock API Tests
+    strategy:
+      matrix:
+        os: [[self-hosted, linux, x64], [self-hosted, linux, arm64]]
+    runs-on: ${{ matrix.os }}
+    container: rust:slim
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: Install OpenSSL Headers
+      run: apt-get update && apt-get install -y libssl-dev pkg-config
+      if: ${{ contains(matrix.os, 'self-hosted') }}
+
+    - name: Mock API Tests
+      run: cargo test --features api_tests --manifest-path ./seaplane/Cargo.toml

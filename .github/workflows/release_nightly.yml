@@ -1,67 +1,90 @@
 on:
   push:
-    branches: main
+    branches: [main]
   workflow_dispatch:
 
 name: Nightly Release
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build:
-    name: Build Nightly Release
-
-    strategy:
-      matrix:
-        - { os: X64, target: x86_64-unknown-linux-musl, bin_dir: 'x86_64-unknown-linux-musl/', cross: true }
-        - { os: X64, target: x86_64-unknown-linux-gnu, bin_dir: '', cross: false }
-        - { os: ARM64, target: x86_64-unknown-linux-musl, bin_dir: 'aarch64-unknown-linux-musl/', cross: true }
-        - { os: ARM64, target: x86_64-unknown-linux-gnu, bin_dir: '', cross: false }
-        - { os: windows-latest, target: x86_64-pc-windows-gnu, bin_dir: '', cross: false }
-        - { os: macos-latest, target: x86_64-apple-darwin, bin_dir: '', cross: false }
-        - { os: macos-latest, target: aarch64-apple-darwin, bin_dir: 'aarch64-apple-darwin/', cross: true }
-
-    runs-on: ${{ matrix.os }}
+  get_sha:
+    runs-on: [self-hosted, linux, x64]
+    container: ubuntu:focal
     steps:
       - uses: actions/checkout@v2
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          pdrofile: minimal
-          toolchain: nightly
-          override: true
-          target: ${{ matrix.target }}
-
-      - name: Compile
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: ${{ matrix.cross }}
-          command: build
-          args: --release --target ${{ matrix.target }}
-
-      - name: Make artifacts dir
-        run: mkdir -p artifacts/share/doc/seaplane/
-
-      - name: Copy all artifacts into dir
-        run: cp target/${{ matrix.bin_dir }}release/seaplane artifacts/ && cp LICENSE share/third_party_licenses.md artifacts/share/doc/seaplane/
-
       - uses: benjlevesque/short-sha@v1.2
         id: short-sha
 
-      - name: Create archive for Linux
-        run: cd artifacts/ && tar czf ../seaplane-${{ env.SHA }}-${{ matrix.target }}.tar.gz ./*
-        env:
-          SHA: ${{ steps.short-sha.outputs.sha }}
+  build-win-x64:
+    needs: get_sha
+    uses: ./.github/workflows/workflow-build-release.yml
+    with:
+      runner: "['windows-latest']"
+      target: x86_64-pc-windows-gnu
+      bin-id: ${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}
 
-      - name: Save Artifacts Archive
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.target }}-release
-          path: seaplane-${{ env.SHA }}-${{ matrix.target }}.tar.gz
-        env:
-          SHA: ${{ steps.short-sha.outputs.sha }}
+  build-mac-x64:
+    needs: get_sha
+    uses: ./.github/workflows/workflow-build-release.yml
+    with:
+      runner: "['macos-latest']"
+      target: x86_64-apple-darwin
+      bin-id: ${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}
 
+  # TODO: when M1 Runner is ready
+  # build-mac-aarch64:
+  #   needs: get_sha
+  #   uses: ./.github/workflows/workflow-build-release.yml
+  #   with:
+  #     runner: "['ARM64', 'macOS']"
+  #     target: aarch64-apple-darwin
+  #     bin-id: ${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}
+
+  build-linux-x64-gnu:
+    needs: get_sha
+    uses: ./.github/workflows/workflow-build-release.yml
+    with:
+      runner: "['self-hosted', 'linux', 'x64']"
+      target: x86_64-unknown-linux-gnu
+      bin-id: ${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}
+
+  # build-linux-x64-musl:
+  #   needs: get_sha
+  #   uses: ./.github/workflows/workflow-build-release.yml
+  #   with:
+  #     runner: "['linux', 'x64']"
+  #     target: x86_64-unknown-linux-musl
+  #     bin-id: ${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}
+
+  build-linux-aarch64-gnu:
+    needs: get_sha
+    uses: ./.github/workflows/workflow-build-release.yml
+    with:
+      runner: "['self-hosted', 'linux', 'arm64']"
+      target: aarch64-unknown-linux-gnu
+      bin-id: ${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}
+
+  # build-linux-aarch64-musl:
+  #   needs: get_sha
+  #   uses: ./.github/workflows/workflow-build-release.yml
+  #   with:
+  #     runner: "['linux', 'arm64']"
+  #     target: aarch64-unknown-linux-musl
+  #     bin-id: ${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}
+
+  release:
+    name: Create Nightly Release
+    runs-on: [self-hosted, linux, x64]
+    container: ubuntu:focal
+    needs:
+      - get_sha
+      - build-win-x64
+      - build-mac-x64
+      - build-linux-x64-gnu
+      - build-linux-aarch64-gnu
+        #- build-mac-aarch64
+        #- build-linux-x64-musl
+        #- build-linux-aarch64-musl
+    steps:
       - name: Remove previous Nightly Release
         uses: dev-drprasad/delete-tag-and-release@v0.2.0
         with:
@@ -71,30 +94,24 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
-  release:
-    name: Create Nightly Release
-    runs-on: X64
-    needs: build
-    steps:
       - name: Download all workflow release artifacts
         uses: actions/download-artifact@v3
 
       - name: Create Nightly Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Seaplane CLI Nightly (${{ env.SHA }})
+          name: Seaplane CLI Nightly (${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }})
           tag_name: nightly
           prerelease: true
           body_path: nightly-CHANGELOG.md
           files: |
-            seaplane-${{ env.SHA }}-x86_64-unknown-linux-musl.tar.gz
-            seaplane-${{ env.SHA }}-x86_64-unknown-linux-gnu.tar.gz
-            seaplane-${{ env.SHA }}-aarch64-unknown-linux-gnu.tar.gz
-            seaplane-${{ env.SHA }}-aarch64-unknown-linux-musl.tar.gz
-            seaplane-${{ env.SHA }}-x86_64-pc-windows-gnu.tar.gz
-            seaplane-${{ env.SHA }}-x86_64-apple-darwin.tar.gz
-            seaplane-${{ env.SHA }}-aarch64-apple-darwin.tar.gz
+            seaplane-${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}-x86_64-unknown-linux-gnu.tar.gz
+            seaplane-${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}-aarch64-unknown-linux-gnu.tar.gz
+            seaplane-${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}-x86_64-pc-windows-gnu.tar.gz
+            seaplane-${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}-x86_64-apple-darwin.tar.gz
+            # seaplane-${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}-aarch64-apple-darwin.tar.gz
+            # seaplane-${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}-x86_64-unknown-linux-musl.tar.gz
+            # seaplane-${{ needs.jobs.get_sha.steps.short-sha.outputs.sha }}-aarch64-unknown-linux-musl.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: seaplane-io/seaplane
-          SHA: ${{ steps.short-sha.outputs.sha }}

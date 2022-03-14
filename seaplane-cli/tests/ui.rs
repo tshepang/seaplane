@@ -11,7 +11,7 @@ fn cli_ui_tests() {
     )
     .unwrap();
 
-    let pkg_ver = format!("v{} ({})", env!("CARGO_PKG_VERSION"), &git_hash[..10]);
+    let pkg_ver = format!("v{} ({})", env!("CARGO_PKG_VERSION"), &git_hash[..8]);
 
     let t = trycmd::TestCases::new();
     t.case("tests/ui/**/*.md");

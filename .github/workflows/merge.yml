@@ -5,8 +5,7 @@ name: Merge to main
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -23,46 +22,8 @@ jobs:
     with:
       manifest_path: ./seaplane-cli/Cargo.toml
 
-  ui:
-    name: UI Tests
-    strategy:
-      matrix:
-        os: [X64, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+  call-ui-test-workflow:
+    uses: ./.github/workflows/workflow-ui-test.yml
 
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        profile: minimal
-        override: true
-
-    - uses: Swatinem/rust-cache@v1
-
-    - name: UI Tests
-      run: cargo test --test ui --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
-
-  api:
-    name: Mock API Tests
-    strategy:
-      matrix:
-        os: [X64, ARM64, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        profile: minimal
-        override: true
-
-    - uses: Swatinem/rust-cache@v1
-
-    - name: Mock API Tests
-      run: cargo test --features api_tests --manifest-path ./seaplane/Cargo.toml
+  call-api-test-workflow:
+    uses: ./.github/workflows/workflow-api-test.yml

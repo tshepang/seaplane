@@ -5,65 +5,83 @@ on:
 
 name: Release
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build:
-    name: Build Release
-
-    strategy:
-      matrix:
-        - { os: X64, target: x86_64-unknown-linux-musl, bin_dir: 'x86_64-unknown-linux-musl/', cross: true }
-        - { os: X64, target: x86_64-unknown-linux-gnu, bin_dir: '', cross: false }
-        - { os: ARM64, target: x86_64-unknown-linux-musl, bin_dir: 'aarch64-unknown-linux-musl/', cross: true }
-        - { os: ARM64, target: x86_64-unknown-linux-gnu, bin_dir: '', cross: false }
-        - { os: windows-latest, target: x86_64-pc-windows-gnu, bin_dir: '', cross: false }
-        - { os: macos-latest, target: x86_64-apple-darwin, bin_dir: '', cross: false }
-        - { os: macos-latest, target: aarch64-apple-darwin, bin_dir: 'aarch64-apple-darwin/', cross: true }
-
-    runs-on: ${{ matrix.os }}
-
+  get_version:
+    container: ubuntu:focal
+    runs-on: [self-hosted, linux, x64]
     steps:
-      - uses: actions/checkout@v2
-
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          pdrofile: minimal
-          toolchain: nightly
-          override: true
-          target: ${{ matrix.target }}
+  build-win-x64:
+    needs: get_version
+    uses: ./.github/workflows/workflow-build-release.yml
+    with:
+      runner: "['windows-latest']"
+      target: x86_64-pc-windows-gnu
+      bin-id: ${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}
 
-      - name: Compile
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: ${{ matrix.cross }}
-          command: build
-          args: --release --target ${{ matrix.target }}
+  build-mac-x64:
+    needs: get_version
+    uses: ./.github/workflows/workflow-build-release.yml
+    with:
+      runner: "['macos-latest']"
+      target: x86_64-apple-darwin
+      bin-id: ${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}
 
-      - name: Make artifacts dir
-        run: mkdir -p artifacts/share/doc/seaplane/
+  # TODO: when M1 Runner is ready
+  # build-mac-aarch64:
+  #   needs: get_version
+  #   uses: ./.github/workflows/workflow-build-release.yml
+  #   with:
+  #     runner: "['self-hosted', 'arm64', 'macOS']"
+  #     target: aarch64-apple-darwin
+  #     bin-id: ${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}
 
-      - name: Copy artifacts into dir
-        run: cp target/${{ matrix.bin_dir }}release/seaplane artifacts/ && cp LICENSE share/third_party_licenses.md artifacts/share/doc/seaplane/
+  build-linux-x64-gnu:
+    needs: get_version
+    uses: ./.github/workflows/workflow-build-release.yml
+    with:
+      bin-id: ${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}
 
-      - name: Create archive
-        run: cd artifacts/ && tar czf ../seaplane-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tar.gz ./*
+  # build-linux-x64-musl:
+  #   needs: get_version
+  #   uses: ./.github/workflows/workflow-build-release.yml
+  #   with:
+  #     target: x86_64-unknown-linux-musl
+  #     bin-id: ${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}
 
-      - name: Save Artifacts Archive
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.target }}-release
-          path: seaplane-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
+  build-linux-aarch64-gnu:
+    needs: get_version
+    uses: ./.github/workflows/workflow-build-release.yml
+    with:
+      runner: "['self-hosted', 'linux', 'arm64']"
+      target: aarch64-unknown-linux-gnu
+      bin-id: ${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}
+
+  # build-linux-aarch64-musl:
+  #   needs: get_version
+  #   uses: ./.github/workflows/workflow-build-release.yml
+  #   with:
+  #     runner: "['linux', 'arm64']"
+  #     target: aarch64-unknown-linux-musl
+  #     use-cross: true
+  #     bin-id: ${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}
 
   release:
     name: Create Release
-    runs-on: X64
-    needs: build
+    runs-on: [self-hosted, linux, x64]
+    container: ubuntu:focal
+    needs:
+      - get_version
+      - build-win-x64
+      - build-mac-x64
+      - build-linux-x64-gnu
+      - build-linux-aarch64-gnu
+        #- build-mac-aarch64
+        #- build-linux-x64-musl
+        #- build-linux-aarch64-musl
     steps:
       - name: Download all workflow release artifacts
         uses: actions/download-artifact@v3
@@ -71,17 +89,15 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Seaplane (${{ env.SHA }})
+          name: Seaplane (${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }})
           files: |
-            seaplane-${{ steps.get_version.outputs.VERSION }}-x86_64-unknown-linux-musl.tar.gz
-            seaplane-${{ steps.get_version.outputs.VERSION }}-x86_64-unknown-linux-gnu.tar.gz
-            seaplane-${{ steps.get_version.outputs.VERSION }}-aarch64-unknown-linux-gnu.tar.gz
-            seaplane-${{ steps.get_version.outputs.VERSION }}-aarch64-unknown-linux-musl.tar.gz
-            seaplane-${{ steps.get_version.outputs.VERSION }}-x86_64-pc-windows-gnu.tar.gz
-            seaplane-${{ steps.get_version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
-            seaplane-${{ steps.get_version.outputs.VERSION }}-aarch64-apple-darwin.tar.gz
+            seaplane-${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}-x86_64-unknown-linux-gnu.tar.gz
+            seaplane-${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}-aarch64-unknown-linux-gnu.tar.gz
+            seaplane-${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}-x86_64-pc-windows-gnu.tar.gz
+            seaplane-${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
+            # seaplane-${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}-aarch64-apple-darwin.tar.gz
+            # seaplane-${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}-x86_64-unknown-linux-musl.tar.gz
+            # seaplane-${{ needs.jobs.get_version.steps.get_version.outputs.VERSION }}-aarch64-unknown-linux-musl.tar.gz
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           GITHUB_REPOSITORY: seaplane-io/seaplane
-
-

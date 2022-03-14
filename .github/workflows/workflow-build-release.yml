@@ -1,0 +1,114 @@
+name: Release Workflow
+
+on:
+  workflow_call:
+    inputs:
+      # Target Runner (defaults to our self hosted X64 Linux runners)
+      # As a JSON array
+      runner:
+        type: string
+        default: X64
+        required: false
+      # Target Triple (defaults to x86_64-unknown-linux-gnu)
+      target:
+        type: string
+        required: false
+        default: x86_64-unknown-linux-gnu
+      # A version or short SHA
+      bin-id:
+        type: string
+        required: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-release-in-container:
+    name: Build Release Artifacts
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    container: rust:slim
+    if: contains(inputs.runner, 'self-hosted')
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          target: ${{ inputs.target }}
+
+      - name: Install Build Deps (Linux)
+        run: apt-get update && apt-get install -y git libssl-dev pkg-config
+        if: ${{ contains(inputs.runner, 'self-hosted') }}
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Make artifacts dir
+        run: mkdir -p artifacts/share/doc/seaplane/
+
+      - name: Copy all build artifacts into dir
+        run: cp target/release/seaplane artifacts/ || cp target/${{ inputs.target }}/release/seaplane artifacts/
+
+      - name: Copy extra artifacts into dir
+        run: cp LICENSE share/third_party_licenses.md artifacts/share/doc/seaplane/
+
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+
+      - name: Create archive for Linux
+        run: cd artifacts/ && tar czf ../seaplane-${{ inputs.bin-id }}-${{ inputs.target }}.tar.gz ./*
+
+      - name: Save Artifacts Archive
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.target }}-release
+          path: seaplane-${{ inputs.bin-id }}-${{ inputs.target }}.tar.gz
+
+  build-release-native:
+    name: Build Release Artifacts
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    if: ${{ !contains(inputs.runner, 'self-hosted') }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          target: ${{ inputs.target }}
+
+      - name: Install OpenSSL Headers (Linux)
+        run: apt-get update && apt-get install -y libssl-dev pkg-config
+        if: contains(inputs.runner, 'self-hosted')
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Make artifacts dir
+        run: mkdir -p artifacts/share/doc/seaplane/
+
+      - name: Copy all build artifacts into dir
+        run: cp target/release/seaplane artifacts/ || cp target/${{ inputs.target }}/release/seaplane artifacts/
+        if: ${{ !contains(inputs.runner, 'windows') }}
+
+      - name: Copy all build artifacts into dir (Win)
+        run: cp target/release/seaplane.exe artifacts/ || cp target/${{ inputs.target }}/release/seaplane.exe artifacts/
+        if: contains(inputs.runner, 'windows')
+
+      - name: Copy extra artifacts into dir
+        run: cp LICENSE share/third_party_licenses.md artifacts/share/doc/seaplane/
+
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+
+      - name: Create archive for Linux
+        run: cd artifacts/ && tar czf ../seaplane-${{ inputs.bin-id }}-${{ inputs.target }}.tar.gz ./*
+
+      - name: Save Artifacts Archive
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.target }}-release
+          path: seaplane-${{ inputs.bin-id }}-${{ inputs.target }}.tar.gz

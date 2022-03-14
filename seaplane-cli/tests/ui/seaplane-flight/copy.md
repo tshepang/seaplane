@@ -62,7 +62,7 @@ IMAGE SPEC
     alpha-numeric                   := /[a-z0-9]+/
     separator                       := /[_.]|__|[-]*/
 
-    tag                             := /[\w][\w.-]{0,127}/
+    tag                             := [..]
 
     digest                          := digest-algorithm ":" digest-hex
     digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
@@ -207,7 +207,7 @@ IMAGE SPEC
     alpha-numeric                   := /[a-z0-9]+/
     separator                       := /[_.]|__|[-]*/
 
-    tag                             := /[\w][\w.-]{0,127}/
+    tag                             := [..]
 
     digest                          := digest-algorithm ":" digest-hex
     digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*

@@ -14,10 +14,16 @@ on:
 
 jobs:
   security_audit:
-    runs-on: X64
+    name: Security Audit
+    container: rust:slim
+    runs-on: [self-hosted, linux, x64]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+
+    - name: Install Build Deps (Linux)
+      run: apt-get update && apt-get install -y git libssl-dev pkg-config
+
     - uses: actions-rs/audit-check@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}

@@ -24,15 +24,15 @@ fn main() {
     // version.
     let git_hash: String =
         if let Ok(output) = Command::new("git").args(&["rev-parse", "HEAD"]).output() {
-            String::from_utf8(output.stdout).unwrap()[..10].into()
+            String::from_utf8(output.stdout).unwrap_or_else(|_| "UNKNOWN  ".into())
         } else {
-            "UNKNOWN".into()
+            "UNKNOWN  ".into()
         };
 
     println!(
         "cargo:rustc-env=SEAPLANE_GIT_HASH=v{} ({})",
         env!("CARGO_PKG_VERSION"),
-        &git_hash[..10]
+        &git_hash[..8]
     );
     println!(
         "cargo:rustc-env=SEAPLANE_BUILD_FEATURES={}",

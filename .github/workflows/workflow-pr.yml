@@ -1,4 +1,4 @@
-name: Pull Request CI
+name: Pull Request CI Workflow
 
 on:
   workflow_call:
@@ -11,26 +11,13 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  ci:
-    name: CI
-    needs:
-      - linux-amd64-test
-      - linux-arm64-test
-      - win-macos-amd64-test
-      - docs
-      - rustfmt
-      - clippy
-    runs-on: X64
-    steps:
-      - name: Done
-        run: exit 0
-
-  linux-amd64-test:
-    name: Tests
+  test-linux-x64:
+    name: Tests Linux x64
     strategy:
       matrix:
         features: ["--no-default-features", "", "--features unstable"]
-    runs-on: X64
+    runs-on: [self-hosted, linux, x64]
+    container: rust:slim
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -40,22 +27,25 @@ jobs:
       with:
         toolchain: stable
         profile: minimal
-        override: true
 
     - uses: Swatinem/rust-cache@v1
 
+    - name: Install Build Deps (Linux)
+      run: apt-get update && apt-get install -y git libssl-dev pkg-config
+
     - name: Build
-      run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --no-run --all-targets
+      run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --no-run
 
     - name: Test
       run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }}
 
-  linux-arm64-test:
-    name: Tests
+  test-linux-aarch64:
+    name: Tests Linux arm64
     strategy:
       matrix:
         features: ["--no-default-features", "", "--features unstable"]
-    runs-on: ARM64
+    runs-on: [self-hosted, linux, arm64]
+    container: rust:slim
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -65,18 +55,20 @@ jobs:
       with:
         toolchain: stable
         profile: minimal
-        override: true
 
     - uses: Swatinem/rust-cache@v1
 
+    - name: Install Build Deps (Linux)
+      run: apt-get update && apt-get install -y git libssl-dev pkg-config
+
     - name: Build
-      run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --no-run --all-targets
+      run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --no-run
 
     - name: Test
       run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }}
 
-  win-macos-amd64-test:
-    name: Tests
+  test-win-macos-x64:
+    name: Tests (Mac/Win) x64
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
@@ -91,19 +83,39 @@ jobs:
       with:
         toolchain: stable
         profile: minimal
-        override: true
 
     - uses: Swatinem/rust-cache@v1
 
     - name: Build
-      run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --no-run --all-targets
+      run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --no-run
 
     - name: Test
       run: cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }}
 
+  # TODO: when M1 Runner is ready
+  # test-macos-aarch64:
+  #   name: Tests
+  #   strategy:
+  #     matrix:
+  #       features: ["--no-default-features", "", "--features unstable"]
+  #   runs-on: [self-hosted, macOS, arm64]
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
+  #   - uses: Swatinem/rust-cache@v1
+  #   - name: Build
+  #     run: ${HOME}/.cargo/bin/cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --no-run
+  #     shell: bash
+  #   - name: Test
+  #     run: ${HOME}/.cargo/bin/cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }}
+  #     shell: bash
+
   docs:
     name: Docs
-    runs-on: [ARM64, X64, windows-latest, macos-latest]
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -113,7 +125,6 @@ jobs:
       with:
         toolchain: stable
         profile: minimal
-        override: true
 
     - uses: Swatinem/rust-cache@v1
 
@@ -122,9 +133,15 @@ jobs:
         RUSTDOCFLAGS: -D warnings
       run: cargo doc --manifest-path ${{ inputs.manifest_path }} --all-features --no-deps --document-private-items
 
-  rustfmt:
-    name: rustfmt
-    runs-on: X64
+  docs-self-hosted:
+    name: Docs
+    strategy:
+      matrix:
+        # TODO: when M1 runner is ready
+        # os: [[self-hosted, linux, arm64], [self-hosted, linux, x64], [self-hosted, macOS, arm64]]
+        os: [[self-hosted, linux, arm64], [self-hosted, linux, x64]]
+    runs-on: ${{ matrix.os }}
+    container: rust:slim
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -134,10 +151,32 @@ jobs:
       with:
         toolchain: stable
         profile: minimal
-        override: true
-        components: rustfmt
 
     - uses: Swatinem/rust-cache@v1
+
+    - name: Install Build Deps (Linux)
+      run: apt-get update && apt-get install -y git libssl-dev pkg-config
+
+    - name: Check documentation
+      env:
+        RUSTDOCFLAGS: -D warnings
+      run: cargo doc --manifest-path ${{ inputs.manifest_path }} --all-features --no-deps --document-private-items
+
+  rustfmt:
+    name: rustfmt
+    runs-on: [self-hosted, linux, x64]
+    container: rust:slim
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - uses: Swatinem/rust-cache@v1
+
+    - name: Install Build Deps (Linux)
+      run: apt-get update && apt-get install -y git libssl-dev pkg-config
+
+    - name: Install rustfmt
+      run: rustup component add rustfmt
 
     - name: Check formatting
       run: cargo fmt --all --manifest-path ${{ inputs.manifest_path }} -- --check
@@ -156,20 +195,19 @@ jobs:
         - build: next
           features: "--features unstable"
     continue-on-error: ${{ matrix.rust != 'stable' }}
-    runs-on: X64
+    runs-on: [self-hosted, linux, x64]
+    container: rust:slim
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ matrix.rust }}
-        profile: minimal
-        override: true
-        components: clippy
-
     - uses: Swatinem/rust-cache@v1
 
+    - name: Install Build Deps (Linux)
+      run: apt-get update && apt-get install -y git libssl-dev pkg-config
+
+    - name: Install Clippy
+      run: rustup component add clippy
+
     - name: Lint (${{ matrix.build }})
-      run: cargo clippy ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --all-targets -- -D warnings
+      run: cargo clippy ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} -- -D warnings

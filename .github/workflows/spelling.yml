@@ -4,9 +4,11 @@ on: [pull_request]
 jobs:
   spelling:
     name: Spell Check with Typos
-    runs-on: X64
+    runs-on: [self-hosted, linux, x64]
+    container: ubuntu:focal
     steps:
     - name: Checkout Actions Repository
       uses: actions/checkout@v2
+
     - name: Spell Check Repo
       uses: crate-ci/typos@master
