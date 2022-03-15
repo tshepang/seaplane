@@ -24,15 +24,22 @@ fn main() {
     // version.
     let git_hash: String =
         if let Ok(output) = Command::new("git").args(&["rev-parse", "HEAD"]).output() {
-            String::from_utf8(output.stdout).unwrap_or_else(|_| "UNKNOWN  ".into())
+            // sha will be empty if there is no git info such as if `.git/` was deleted prior to
+            // building
+            let sha = String::from_utf8(output.stdout).unwrap();
+            if sha.is_empty() {
+                "(UNKNOWN)".into()
+            } else {
+                sha[..8].into()
+            }
         } else {
-            "UNKNOWN  ".into()
+            "(UNKNOWN)".into()
         };
 
     println!(
         "cargo:rustc-env=SEAPLANE_GIT_HASH=v{} ({})",
         env!("CARGO_PKG_VERSION"),
-        &git_hash[..8]
+        &git_hash
     );
     println!(
         "cargo:rustc-env=SEAPLANE_BUILD_FEATURES={}",

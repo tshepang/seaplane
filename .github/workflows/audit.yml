@@ -18,11 +18,11 @@ jobs:
     container: rust:slim
     runs-on: [self-hosted, linux, x64]
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
     - name: Install Build Deps (Linux)
       run: apt-get update && apt-get install -y git libssl-dev pkg-config
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
     - uses: actions-rs/audit-check@v1
       with:

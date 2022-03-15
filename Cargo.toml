@@ -3,3 +3,7 @@ members = [
     "seaplane",
     "seaplane-cli",
 ]
+
+[profile.release]
+strip = true
+lto = true

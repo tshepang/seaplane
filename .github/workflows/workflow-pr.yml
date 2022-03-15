@@ -20,7 +20,7 @@ jobs:
     container: rust:slim
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Rust
       uses: actions-rs/toolchain@v1
@@ -48,7 +48,7 @@ jobs:
     container: rust:slim
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Rust
       uses: actions-rs/toolchain@v1
@@ -76,7 +76,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Rust
       uses: actions-rs/toolchain@v1
@@ -101,7 +101,7 @@ jobs:
   #   runs-on: [self-hosted, macOS, arm64]
   #   steps:
   #   - name: Checkout repository
-  #     uses: actions/checkout@v2
+  #     uses: actions/checkout@v3
   #   - uses: Swatinem/rust-cache@v1
   #   - name: Build
   #     run: ${HOME}/.cargo/bin/cargo test ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} --no-run
@@ -118,7 +118,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Rust
       uses: actions-rs/toolchain@v1
@@ -144,7 +144,7 @@ jobs:
     container: rust:slim
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Rust
       uses: actions-rs/toolchain@v1
@@ -168,7 +168,7 @@ jobs:
     container: rust:slim
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - uses: Swatinem/rust-cache@v1
 
@@ -199,7 +199,7 @@ jobs:
     container: rust:slim
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - uses: Swatinem/rust-cache@v1
 
