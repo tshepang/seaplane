@@ -6,27 +6,27 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-jobs:
-  ui-test:
-    name: UI Tests
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+# jobs:
+#   ui-test:
+#     name: UI Tests
+#     strategy:
+#       matrix:
+#         os: [windows-latest, macos-latest]
+#     runs-on: ${{ matrix.os }}
+#     steps:
+#     - name: Checkout repository
+#       uses: actions/checkout@v3
 
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        profile: minimal
+#     - name: Install Rust
+#       uses: actions-rs/toolchain@v1
+#       with:
+#         toolchain: stable
+#         profile: minimal
 
-    - uses: Swatinem/rust-cache@v1
+#     - uses: Swatinem/rust-cache@v1
 
-    - name: UI Tests
-      run: cargo test --test ui --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
+#     - name: UI Tests
+#       run: cargo test --test ui --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
 
   ui-test-self-hosted:
     name: UI Tests
