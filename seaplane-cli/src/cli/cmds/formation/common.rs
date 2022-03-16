@@ -198,31 +198,33 @@ each other in their connections map)")]
     pub connection: Vec<String>,
 
     /// A provider that this Formation's Flights are permitted to run on
-    #[clap(long, default_value = "All", possible_values = Provider::VARIANTS)]
+    #[clap(long, ignore_case = true, value_delimiter = ',', visible_alias = "providers", value_name= "PROVIDER", default_value = "All", possible_values = Provider::VARIANTS)]
     pub provider: Vec<Provider>,
 
     /// A provider that this Formation's Flights are *NOT* permitted to run on. This will override any
     /// matching value given by via --provider
-    #[clap(long, default_value = "All", value_name = "PROVIDER", possible_values = Provider::VARIANTS)]
+    #[clap(long, ignore_case = true, value_delimiter = ',', visible_alias = "exclude-providers", value_name = "PROVIDER", possible_values = Provider::VARIANTS)]
     pub exclude_provider: Vec<Provider>,
 
     /// A region in which this Formation's Flights are allowed to run in (See REGION SPEC below)
-    #[clap(long, default_value = "All", possible_values = Region::VARIANTS)]
+    #[clap(long, ignore_case = true, value_name = "REGION", value_delimiter = ',', default_value = "All", visible_alias = "regions", possible_values = Region::VARIANTS)]
     pub region: Vec<Region>,
 
     /// A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC
     /// below)
-    #[clap(long, value_name = "REGION", possible_values = Region::VARIANTS)]
+    #[clap(long, ignore_case = true, value_name = "REGION", value_delimiter = ',', visible_alias = "exclude-regions", possible_values = Region::VARIANTS)]
     pub exclude_region: Vec<Region>,
 
     // TODO: maybe allow omitting http:
-    /// A publicly exposed endpoints of this Formations in the form of 'http:ROUTE->FLIGHT:PORT'
+    /// A publicly exposed endpoints of this Formation in the form of 'http:ROUTE=FLIGHT:PORT'
     #[clap(
         long,
         value_delimiter = ',',
+        visible_alias = "public-endpoints",
+        value_name = "http:ROUTE=FLIGHT:PORT",
         long_help = r#"A publicly exposed endpoints of this Formations
 
-Public Endpoints take the form 'http:{ROUTE}->{FLIGHT}:{PORT}'. Where
+Public Endpoints take the form 'http:{ROUTE}={FLIGHT}:{PORT}'. Where
 
 ROUTE  := An HTTP URL route
 FLIGHT := NAME or ID
@@ -232,7 +234,7 @@ This describes where traffic arriving at this endpoint's route should be sent.
 
 For example, consider:
 
-$ seaplane formation edit Foo --public-endpoint=http:/foo/bar->baz:1234
+$ seaplane formation edit Foo --public-endpoint=http:/foo/bar=baz:1234
 
 Would mean, route all traffic from the public internet arriving at the path 
 '/foo/bar' on the 'Foo' Formation's domain to this Formation's Flight named 
@@ -245,13 +247,15 @@ In the future, support for other protocols may be added in place of 'http'
 
     // TODO: maybe allow omitting the Flight's port if it's the same
     /// An endpoints exposed only to other Formations privately. In the form of
-    /// 'PROTO:TARGET->FLIGHT:PORT'
+    /// 'PROTO:TARGET=FLIGHT:PORT'
     #[clap(
         long,
         value_delimiter = ',',
+        visible_alias = "formation-endpoints",
+        value_name = "PROTO:TGT=FLIGHT:PORT",
         long_help = r#"A privately exposed endpoint of this Formations (only expose to other Formations)
 
-Formation Endpoints take the form '{PROTO}:{TARGET}->{FLIGHT}:{PORT}'. Where
+Formation Endpoints take the form '{PROTO}:{TARGET}={FLIGHT}:{PORT}'. Where
 
 PROTO  := http | tcp | udp
 TARGET := ROUTE | PORT
@@ -264,7 +268,7 @@ This describes where traffic arriving at this Formation's endpoint should be sen
 
 For example, consider:
 
-$ seaplane formation edit Foo --formation-endpoint=tcp:22->baz:2222
+$ seaplane formation edit Foo --formation-endpoint=tcp:22=baz:2222
 
 Would mean, route all traffic from the private network arriving on TCP/22 on the 'Foo' Formation's
 domain to the this Formation's Flight named 'baz' on port '2222'. The PROTO of the incoming traffic
@@ -275,14 +279,16 @@ will be used for the PROTO of the outgoing traffic to FLIGHT
 
     // TODO: maybe allow omitting the Flight's port if it's the same
     /// An endpoint exposed only to Flights within this Formation. In the form of
-    /// 'PROTO:TARGET->FLIGHT:PORT'
+    /// 'PROTO:TARGET=FLIGHT:PORT'
     #[clap(
         long,
         value_delimiter = ',',
+        visible_alias = "flight-endpoints",
+        value_name = "PROTO:TGT=FLIGHT:PORT",
         long_help = r#"A privately exposed endpoint of this Formations (only expose to other
 Flights within this Formation)
 
-Formation Endpoints take the form '{PROTO}:{TARGET}->{FLIGHT}:{PORT}'. Where
+Formation Endpoints take the form '{PROTO}:{TARGET}={FLIGHT}:{PORT}'. Where
 
 PROTO  := http | tcp | udp
 TARGET := ROUTE | PORT
@@ -295,7 +301,7 @@ This describes where traffic arriving at this Formation's endpoint should be sen
 
 For example, consider:
 
-$ seaplane formation edit Foo --flight-endpoint=udp:1234->baz:4321
+$ seaplane formation edit Foo --flight-endpoint=udp:1234=baz:4321
 
 Would mean, route all traffic from the Formation's private network arriving on UDP/1234 on the
 'Foo' Formation's domain to the this Formation's Flight named 'baz' on port '4321'. The PROTO of

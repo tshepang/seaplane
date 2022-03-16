@@ -109,7 +109,11 @@ Some of these restrictions may be lifted in the future."
     #[clap(long,
         requires = "flight-image",
         help_heading = "INLINE FLIGHT OPTIONS",
-        visible_aliases = &["flight-arch", "flight-arches"], possible_values = Architecture::VARIANTS, value_delimiter = ',')]
+        ignore_case = true,
+        value_delimiter = ',',
+        visible_aliases = &["flight-arch", "flight-arches", "flight-architectures"],
+        possible_values = Architecture::VARIANTS,
+        value_delimiter = ',')]
     pub flight_architecture: Vec<Architecture>,
 
     /// This Flight should be allowed to hit Seaplane API endpoints and will be provided a

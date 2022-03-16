@@ -16,11 +16,11 @@ pub struct SeaplaneFormationLandArgs {
     formation: String,
 
     /// Stop all matching Formations even when FORMATION is ambiguous
-    #[clap(short, long)]
+    #[clap(short, long, conflicts_with = "exact")]
     all: bool,
 
     /// the given FORMATION must be an exact match
-    #[clap(short = 'x', long)]
+    #[clap(short = 'x', long, conflicts_with = "all")]
     exact: bool,
 }
 

@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use crate::{
-    cli::errors,
+    cli::{errors, validator::validate_name_id},
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::flight::Flights,
@@ -13,7 +13,7 @@ use crate::{
 #[clap(visible_aliases = &["del", "remove", "rm"], override_usage = "seaplane flight delete <NAME|ID> [OPTIONS]")]
 pub struct SeaplaneFlightDeleteArgs {
     /// The name or ID of the Flight to remove, must be unambiguous
-    #[clap(value_name = "NAME|ID")]
+    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
     flight: String,
 
     /// Delete this Flight even if referenced by a Formation (removes any references in
@@ -22,11 +22,11 @@ pub struct SeaplaneFlightDeleteArgs {
     force: bool,
 
     /// the given FLIGHT must be an exact match
-    #[clap(short = 'x', long)]
+    #[clap(short = 'x', long, conflicts_with = "all")]
     exact: bool,
 
     /// Delete all matching Flights even when FLIGHT is ambiguous
-    #[clap(short, long)]
+    #[clap(short, long, conflicts_with = "exact")]
     all: bool,
     // TODO: add a --local[-only] flag or similar that combines with --force to only remove local
 }

@@ -340,15 +340,15 @@ impl FromStr for Endpoint {
     type Err = String;
 
     fn from_str(s: &str) -> StdResult<Self, Self::Err> {
-        let mut parts = s.split("->");
+        let mut parts = s.split("=");
         Ok(Self {
             src: parts
                 .next()
-                .ok_or_else(|| String::from("endpoint source"))?
+                .ok_or_else(|| String::from("invalid endpoint source"))?
                 .parse()?,
             dst: parts
                 .next()
-                .ok_or_else(|| String::from("endpoint destination"))?
+                .ok_or_else(|| String::from("invalid endpoint destination"))?
                 .parse()?,
         })
     }
@@ -435,7 +435,7 @@ mod endpoint_test {
 
     #[test]
     fn endpoint_valid_http() {
-        let ep: Endpoint = "http:/foo/bar->baz:1234".parse().unwrap();
+        let ep: Endpoint = "http:/foo/bar=baz:1234".parse().unwrap();
         assert_eq!(
             ep,
             Endpoint {
@@ -456,26 +456,26 @@ mod endpoint_test {
     // TODO: might remove and allow to elide
     #[test]
     fn endpoint_missing_http_proto() {
-        assert!("1234->baz:1234".parse::<Endpoint>().is_err());
-        assert!(":1234->baz:1234".parse::<Endpoint>().is_err());
-        assert!("/foo/bar->baz:1234".parse::<Endpoint>().is_err());
-        assert!("/foo/bar->baz:1234".parse::<Endpoint>().is_err());
-        assert!("->baz:1234".parse::<Endpoint>().is_err());
-        assert!(":->baz:1234".parse::<Endpoint>().is_err());
+        assert!("1234=baz:1234".parse::<Endpoint>().is_err());
+        assert!(":1234=baz:1234".parse::<Endpoint>().is_err());
+        assert!("/foo/bar=baz:1234".parse::<Endpoint>().is_err());
+        assert!("/foo/bar=baz:1234".parse::<Endpoint>().is_err());
+        assert!("=baz:1234".parse::<Endpoint>().is_err());
+        assert!(":=baz:1234".parse::<Endpoint>().is_err());
     }
 
     // TODO: might allow eliding destination port
     #[test]
     fn endpoint_missing_dst() {
-        assert!("tcp:1234->baz".parse::<Endpoint>().is_err());
-        assert!("udp:1234->:1234".parse::<Endpoint>().is_err());
-        assert!("http:/foo/bar->baz:".parse::<Endpoint>().is_err());
-        assert!("http:/foo/bar->".parse::<Endpoint>().is_err());
+        assert!("tcp:1234=baz".parse::<Endpoint>().is_err());
+        assert!("udp:1234=:1234".parse::<Endpoint>().is_err());
+        assert!("http:/foo/bar=baz:".parse::<Endpoint>().is_err());
+        assert!("http:/foo/bar=".parse::<Endpoint>().is_err());
     }
 
     #[test]
     fn endpoint_valid_tcp() {
-        let ep: Endpoint = "tcp:1234->baz:4321".parse().unwrap();
+        let ep: Endpoint = "tcp:1234=baz:4321".parse().unwrap();
         assert_eq!(
             ep,
             Endpoint {
@@ -490,8 +490,8 @@ mod endpoint_test {
 
     #[test]
     fn endpoint_invalid_tcp_udp() {
-        assert!("udp:/foo/bar->baz:1234".parse::<Endpoint>().is_err());
-        assert!("udp:1234->baz:9999999".parse::<Endpoint>().is_err());
-        assert!("udp:1234->baz:/foo".parse::<Endpoint>().is_err());
+        assert!("udp:/foo/bar=baz:1234".parse::<Endpoint>().is_err());
+        assert!("udp:1234=baz:9999999".parse::<Endpoint>().is_err());
+        assert!("udp:1234=baz:/foo".parse::<Endpoint>().is_err());
     }
 }

@@ -68,6 +68,7 @@ More uses suppresses higher levels of output
         global = true,
         overrides_with_all = &["color", "no_color"],
         default_value = "auto",
+        ignore_case = true,
         arg_enum
     )]
     pub color: ColorChoice,

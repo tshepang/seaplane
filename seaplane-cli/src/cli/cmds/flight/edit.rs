@@ -4,6 +4,7 @@ use crate::{
     cli::{
         cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
         errors::wrap_cli_context,
+        validator::validate_name_id,
     },
     context::Ctx,
     error::Result,
@@ -15,11 +16,10 @@ use crate::{
 // TODO: add --from
 /// Edit a Flight definition
 #[derive(Parser)]
-#[clap(visible_aliases = &["clone"], after_help = IMAGE_SPEC, override_usage =
-"seaplane flight edit <NAME|ID> [OPTIONS]")]
+#[clap(after_help = IMAGE_SPEC, override_usage = "seaplane flight edit <NAME|ID> [OPTIONS]")]
 pub struct SeaplaneFlightEditArgs {
     /// The source name or ID of the Flight to copy
-    #[clap(value_name = "NAME|ID")]
+    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
     source: String,
 
     /// the given SOURCE must be an exact match

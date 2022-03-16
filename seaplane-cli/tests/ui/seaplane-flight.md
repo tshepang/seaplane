@@ -22,7 +22,7 @@ SUBCOMMANDS:
     copy      Copy a Flight definition [aliases: clone]
     create    Create a new Flight definition [aliases: add]
     delete    Delete a Flight definition [aliases: del, remove, rm]
-    edit      Edit a Flight definition [aliases: clone]
+    edit      Edit a Flight definition
     help      Print this message or the help of the given subcommand(s)
     list      List the current Flight definitions [aliases: ls]
 

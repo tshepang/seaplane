@@ -14,7 +14,10 @@ pub fn validate_name_id_path(s: &str) -> StdResult<(), String> {
         .or_else(|_| validate_id(s))
         .or_else(|_| validate_at_path(s))
         .or_else(|_| validate_at_stdin(s))
-        .map_err(|e| e.to_owned())
+        .map_err(|_| {
+            "the value must be a NAME|ID|@PATH|@- where @PATH is a valid path or @- opens STDIN"
+                .to_owned()
+        })
 }
 
 /// The arg can be any of:

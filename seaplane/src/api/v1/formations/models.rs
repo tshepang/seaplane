@@ -26,6 +26,7 @@ use strum::{EnumString, EnumVariantNames};
     EnumVariantNames,
 )]
 #[strum(serialize_all = "lowercase")]
+#[strum(ascii_case_insensitive)]
 pub enum Architecture {
     AMD64,
     ARM64,
@@ -47,6 +48,7 @@ pub enum Architecture {
     EnumVariantNames,
 )]
 #[allow(clippy::upper_case_acronyms)]
+#[strum(ascii_case_insensitive)]
 pub enum Provider {
     AWS,
     Azure,
@@ -61,6 +63,7 @@ pub enum Provider {
     strum::Display, EnumString, Debug, Serialize, Deserialize, Hash, Eq, PartialEq, Copy, Clone,
 )]
 #[allow(clippy::upper_case_acronyms)]
+#[strum(ascii_case_insensitive)]
 pub enum Region {
     /// Asia
     XA,

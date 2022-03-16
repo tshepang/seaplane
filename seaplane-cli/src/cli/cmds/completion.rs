@@ -107,7 +107,7 @@ static COMPLETION_HELP: &str = "DISCUSSION:
 #[clap(after_help = COMPLETION_HELP)]
 pub struct SeaplaneShellCompletionArgs {
     /// The shell to generate completion scripts for
-    #[clap(arg_enum)]
+    #[clap(ignore_case = true, arg_enum)]
     shell: clap_complete::Shell,
 }
 

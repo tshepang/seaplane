@@ -27,7 +27,7 @@ USAGE:
 OPTIONS:
     -A, --api-key <STRING>               The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --api-permission                 This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
-        --architecture <ARCHITECTURE>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches] [possible values: amd64, arm64]
+        --architecture <ARCHITECTURE>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches, architectures] [possible values: amd64, arm64]
         --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -f, --force                          Override any existing Flights with the same NAME
     -h, --help                           Print help information
@@ -102,7 +102,7 @@ OPTIONS:
         --architecture <ARCHITECTURE>
             The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
             
-            [aliases: arch, arches]
+            [aliases: arch, arches, architectures]
             [possible values: amd64, arm64]
 
         --color <COLOR>

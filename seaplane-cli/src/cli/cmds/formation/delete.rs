@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use crate::{
-    cli::errors,
+    cli::{errors, validator::validate_name_id},
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::formation::Formations,
@@ -14,7 +14,7 @@ use crate::{
     override_usage = "seaplane formation delete <NAME|ID> [OPTIONS]")]
 pub struct SeaplaneFormationDeleteArgs {
     /// The name or ID of the Formation to remove, must be unambiguous
-    #[clap(value_name = "NAME|ID")]
+    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
     formation: String,
 
     /// Delete this Formation even if there are configurations In Flight (active), which will
@@ -23,7 +23,7 @@ pub struct SeaplaneFormationDeleteArgs {
     force: bool,
 
     /// Delete all matching Formations even when FORMATION is ambiguous
-    #[clap(short, long)]
+    #[clap(short, long, conflicts_with = "exact")]
     all: bool,
 
     /// Delete local Formations (this is set by the default, use --no-local to skip)
@@ -43,7 +43,7 @@ pub struct SeaplaneFormationDeleteArgs {
     no_remote: bool,
 
     /// the given FORMATION must be an exact match
-    #[clap(short = 'x', long)]
+    #[clap(short = 'x', long, conflicts_with = "all")]
     exact: bool,
     // TODO: add --recursive to handle configurations too
 }

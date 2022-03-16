@@ -58,17 +58,17 @@ Some of these restrictions may be lifted in the future."
 
     /// The architectures this flight is capable of running on. No value means it will be auto
     /// detected from the image definition.
-    #[clap(long, visible_aliases = &["arch", "arches"], possible_values = Architecture::VARIANTS, value_delimiter = ',')]
+    #[clap(long, ignore_case = true, visible_aliases = &["arch", "arches", "architectures"], possible_values = Architecture::VARIANTS, value_delimiter = ',')]
     pub architecture: Vec<Architecture>,
 
     /// This Flight should be allowed to hit Seaplane API endpoints and will be provided a
     /// 'SEAPLANE_API_TOKEN' environment variable at runtime
-    #[clap(long, overrides_with = "no_api_permission", alias = "api-permissions")]
+    #[clap(long, overrides_with = "no-api-permission", alias = "api-permissions")]
     pub api_permission: bool,
 
     /// This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a
     /// 'SEAPLANE_API_TOKEN' environment variable at runtime
-    #[clap(long, overrides_with = "api_permission", alias = "no-api-permissions")]
+    #[clap(long, overrides_with = "api-permission", alias = "no-api-permissions")]
     pub no_api_permission: bool,
 
     /// There is no maximum number of instances

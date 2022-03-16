@@ -18,14 +18,3 @@ fn cli_ui_tests() {
     t.case("tests/ui/**/*.toml");
     t.insert_var("[PKGVER]", pkg_ver).unwrap();
 }
-
-//
-// The below tests aren't gated by feature = "ui_tests" because they are simply, "Do the CLI
-// arguments we've set up have the semantics we expect" and are not using trycmd
-//
-// Additionally, we don't care about the output, just whether or not a run failed. These tests
-// ensure as we change the CLI it maintains the same semantics
-//
-
-fn seaplane()
-

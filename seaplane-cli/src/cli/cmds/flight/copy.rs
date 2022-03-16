@@ -1,7 +1,10 @@
 use clap::Parser;
 
 use crate::{
-    cli::{cmds::flight::SeaplaneFlightCommonArgs, errors::wrap_cli_context, specs::IMAGE_SPEC},
+    cli::{
+        cmds::flight::SeaplaneFlightCommonArgs, errors::wrap_cli_context, specs::IMAGE_SPEC,
+        validator::validate_name_id,
+    },
     context::Ctx,
     error::Result,
     fs::{FromDisk, ToDisk},
@@ -16,7 +19,7 @@ use crate::{
     seaplane flight copy <NAME|ID> [OPTIONS]")]
 pub struct SeaplaneFlightCopyArgs {
     /// The source name or ID of the Flight to copy
-    #[clap(value_name = "NAME|ID")]
+    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
     source: String,
 
     /// the given SOURCE must be an exact match
