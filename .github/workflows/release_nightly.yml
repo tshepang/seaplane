@@ -1,6 +1,14 @@
 on:
   push:
     branches: [main]
+    paths:
+      - '**.rs'
+      - 'Cargo.lock'
+      - 'share/**'
+      - 'LICENSE'
+      - '!**.md'
+      - '!**.yml'
+      - '!doc/**'
   workflow_dispatch:
 
 name: Nightly Release
