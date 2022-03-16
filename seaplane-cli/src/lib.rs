@@ -29,3 +29,19 @@ pub use crate::{
     cli::SeaplaneArgs, config::RawConfig, context::Ctx, error::Result, log::LogLevel,
     printer::OutputFormat,
 };
+
+#[cfg(feature = "ui_tests")]
+mod ui_tests {
+    use super::SeaplaneArgs;
+    use clap::{error::Error as ClapError, Parser};
+    use std::ffi::OsString;
+    pub fn test_run<I, T>(argv: I) -> Result<SeaplaneArgs, ClapError>
+    where
+        I: IntoIterator<Item = T>,
+        T: Into<OsString> + Clone,
+    {
+        SeaplaneArgs::try_parse_from(argv)
+    }
+}
+#[cfg(feature = "ui_tests")]
+pub use ui_tests::test_run;
