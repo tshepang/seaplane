@@ -5,6 +5,10 @@ edition = "2021"
 license = "Apache-2.0"
 authors = ["Seaplane IO, Inc."]
 
+[lib]
+name = "seaplane_cli"
+path = "src/lib.rs"
+
 [[bin]]
 name = "seaplane"
 path = "src/main.rs"
