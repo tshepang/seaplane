@@ -234,7 +234,7 @@ mod tests {
         // invalid NAME|ID
         assert!(cli!("flight delete way-too-many-hyphens-to-pass-validation").is_err());
         // --all and --exact conflict
-        assert!(cli!("formation land foo --all --exact").is_err());
+        assert!(cli!("flight delete foo --all --exact").is_err());
 
         // aliases
         assert!(cli!("flight del foo").is_ok());
@@ -530,7 +530,7 @@ mod tests {
         assert!(cli!("formation delete foo --remote --no-remote").is_ok());
         assert!(cli!("formation delete foo --local --no-local").is_ok());
         // --all and --exact conflict
-        assert!(cli!("formation land foo --all --exact").is_err());
+        assert!(cli!("formation delete foo --all --exact").is_err());
 
         // aliases
         assert!(cli!("formation del foo").is_ok());
@@ -558,7 +558,7 @@ mod tests {
         assert!(cli!("formation launch foo --fetch").is_ok());
         assert!(cli!("formation launch foo --grounded").is_ok());
         // --all and --exact conflict
-        assert!(cli!("formation land foo --all --exact").is_err());
+        assert!(cli!("formation launch foo --all --exact").is_err());
 
         // aliases
         assert!(cli!("formation start foo").is_ok());
@@ -576,6 +576,6 @@ mod tests {
         assert!(cli!("formation land foo --all --exact").is_err());
 
         // aliases
-        assert!(cli!("formation start foo").is_ok());
+        assert!(cli!("formation stop foo").is_ok());
     }
 }
