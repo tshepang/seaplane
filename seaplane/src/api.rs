@@ -21,3 +21,6 @@ pub static FLIGHTDECK_API_URL: &str = "https://flightdeck.seaplanet.io/";
 /// The OCI registry URL. The `https://` is omitted because that is not part of an OCI registry
 /// reference.
 pub static IMAGE_REGISTRY_URL: &str = "registry.seaplanet.io/";
+
+/// The base URL for our Data Coordination endpoints
+pub static COORD_API_URL: &str = "https://coord.seaplanet.io/";

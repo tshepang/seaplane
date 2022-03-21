@@ -32,4 +32,8 @@ pub enum SeaplaneError {
     MissingFlightImageReference,
     #[error("the requirements specified in the builder are in conflict and invalid")]
     ConflictingRequirements,
+    #[error("request did not include the required key")]
+    MissingConfigKey,
+    #[error("request must target either key or range")]
+    IncorrectConfigRequestTarget,
 }

@@ -2,3 +2,6 @@
 
 pub mod formations;
 pub use formations::*;
+
+pub mod config;
+pub use config::*;
