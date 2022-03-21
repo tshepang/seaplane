@@ -23,7 +23,7 @@ OPTIONS:
         --remote              Delete remote Formations
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
-    -x, --exact               the given FORMATION must be an exact match
+    -x, --exact               The given FORMATION must be an exact match
 
 ```
 
@@ -98,6 +98,6 @@ OPTIONS:
             Print version information
 
     -x, --exact
-            the given FORMATION must be an exact match
+            The given FORMATION must be an exact match
 
 ```

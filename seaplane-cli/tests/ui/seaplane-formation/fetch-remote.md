@@ -5,7 +5,6 @@ Fetch remote Formation definitions
 
 USAGE:
     seaplane formation fetch-remote
-
     seaplane formation fetch-remote [NAME|ID]
 
 ARGS:
@@ -29,7 +28,6 @@ Fetch remote Formation definitions
 
 USAGE:
     seaplane formation fetch-remote
-
     seaplane formation fetch-remote [NAME|ID]
 
 ARGS:

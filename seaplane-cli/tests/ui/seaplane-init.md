@@ -9,15 +9,15 @@ USAGE:
     seaplane init [OPTIONS]
 
 OPTIONS:
-    -A, --api-key <STRING>         The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --color <COLOR>            Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --force                    Force create the files and directories (DANGER: will overwrite existing files)
-    -h, --help                     Print help information
-        --no-color                 Do not color output (alias for --color=never)
-        --overwrite <OVERWRITE>    Overwrite select files or directories (DANGER: will overwrite existing data) [possible values: all, formations, flights, config]
-    -q, --quiet                    Suppress output at a specific level and below
-    -v, --verbose                  Display more verbose output
-    -V, --version                  Print version information
+    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+        --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --force               Force create the files and directories (DANGER: will overwrite existing files)
+    -h, --help                Print help information
+        --no-color            Do not color output (alias for --color=never)
+        --overwrite <ITEM>    Overwrite select files or directories (DANGER: will overwrite existing data) [possible values: all, formations, flights, config]
+    -q, --quiet               Suppress output at a specific level and below
+    -v, --verbose             Display more verbose output
+    -V, --version             Print version information
 
 ```
 
@@ -58,7 +58,7 @@ OPTIONS:
         --no-color
             Do not color output (alias for --color=never)
 
-        --overwrite <OVERWRITE>
+        --overwrite <ITEM>
             Overwrite select files or directories (DANGER: will overwrite existing data)
             
             Using --overwrite=all is the same as using --force

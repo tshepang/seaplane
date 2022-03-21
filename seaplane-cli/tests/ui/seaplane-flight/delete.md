@@ -37,7 +37,7 @@ OPTIONS:
     -q, --quiet               Suppress output at a specific level and below
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
-    -x, --exact               the given FLIGHT must be an exact match
+    -x, --exact               The given FLIGHT must be an exact match
 
 ```
 
@@ -102,6 +102,6 @@ OPTIONS:
             Print version information
 
     -x, --exact
-            the given FLIGHT must be an exact match
+            The given FLIGHT must be an exact match
 
 ```

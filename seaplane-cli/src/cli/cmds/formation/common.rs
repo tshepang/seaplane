@@ -67,6 +67,10 @@ impl Into<ProviderModel> for Provider {
     }
 }
 
+// TODO: @needs-decision @pre-1.0 we need to come back and address how many aliases there are and
+// their sort order for the CLI's "possible values" message. They're currently "grouped" in region
+// aliases, but for one it's too many values, also it makes the sort look wild in the help message.
+// The Compute API only uses the XA, XC, XE values, but those are the least user friendly.
 /// We provide a shim between the Seaplane Region so we can do some additional UX work
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Copy, Clone, PartialEq, EnumString, EnumVariantNames)]

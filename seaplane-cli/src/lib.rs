@@ -26,7 +26,7 @@ pub mod ops;
 pub mod printer;
 
 pub use crate::{
-    cli::SeaplaneArgs, config::RawConfig, context::Ctx, error::Result, log::LogLevel,
+    cli::Seaplane, config::RawConfig, context::Ctx, error::Result, log::LogLevel,
     printer::OutputFormat,
 };
 
@@ -35,12 +35,12 @@ mod ui_tests {
     use super::SeaplaneArgs;
     use clap::{error::Error as ClapError, Parser};
     use std::ffi::OsString;
-    pub fn test_run<I, T>(argv: I) -> Result<SeaplaneArgs, ClapError>
+    pub fn test_run<I, T>(argv: I) -> Result<ArgMatches, ClapError>
     where
         I: IntoIterator<Item = T>,
         T: Into<OsString> + Clone,
     {
-        SeaplaneArgs::try_parse_from(argv)
+        Seaplane::command().try_get_matches_from(argv)
     }
 }
 #[cfg(feature = "ui_tests")]

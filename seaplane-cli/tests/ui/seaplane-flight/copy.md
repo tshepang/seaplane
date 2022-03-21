@@ -29,22 +29,22 @@ ARGS:
     <NAME|ID>    The source name or ID of the Flight to copy
 
 OPTIONS:
-    -A, --api-key <STRING>               The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --api-permission                 This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
-        --architecture <ARCHITECTURE>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches, architectures] [possible values: amd64, arm64]
-        --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -h, --help                           Print help information
-        --image <SPEC>                   The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
-        --maximum <MAXIMUM>              The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
-        --minimum <MINIMUM>              The minimum number of container instances that should ever be running [default: 1] [aliases: min]
-    -n, --name <NAME>                    A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
-        --no-api-permission              This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
-        --no-color                       Do not color output (alias for --color=never)
-        --no-maximum                     There is no maximum number of instances [aliases: no-max]
-    -q, --quiet                          Suppress output at a specific level and below
-    -v, --verbose                        Display more verbose output
-    -V, --version                        Print version information
-    -x, --exact                          the given SOURCE must be an exact match
+    -A, --api-key <STRING>       The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+        --api-permission         This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime [aliases: api-permissions]
+        --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches, architectures] [possible values: amd64, arm64]
+        --color <COLOR>          Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+    -h, --help                   Print help information
+        --image <SPEC>           The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
+        --maximum <NUM>          The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
+        --minimum <NUM>          The minimum number of container instances that should ever be running [default: 1] [aliases: min]
+    -n, --name <STRING>          A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
+        --no-api-permission      This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime [aliases: no-api-permissions]
+        --no-color               Do not color output (alias for --color=never)
+        --no-maximum             There is no maximum number of instances [aliases: no-max]
+    -q, --quiet                  Suppress output at a specific level and below
+    -v, --verbose                Display more verbose output
+    -V, --version                Print version information
+    -x, --exact                  The given SOURCE must be an exact match
 
 IMAGE SPEC
 
@@ -107,8 +107,10 @@ OPTIONS:
 
         --api-permission
             This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+            
+            [aliases: api-permissions]
 
-        --architecture <ARCHITECTURE>
+        --architecture <ARCH>
             The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
             
             [aliases: arch, arches, architectures]
@@ -136,18 +138,18 @@ OPTIONS:
             
             [aliases: img]
 
-        --maximum <MAXIMUM>
+        --maximum <NUM>
             The maximum number of container instances that should ever be running (default: infinite)
             
             [aliases: max]
 
-        --minimum <MINIMUM>
+        --minimum <NUM>
             The minimum number of container instances that should ever be running
             
             [default: 1]
             [aliases: min]
 
-    -n, --name <NAME>
+    -n, --name <STRING>
             A human readable name for the Flight (must be unique within any Formation it
             
             Rules for a valid name are as follows:
@@ -161,6 +163,8 @@ OPTIONS:
 
         --no-api-permission
             This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+            
+            [aliases: no-api-permissions]
 
         --no-color
             Do not color output (alias for --color=never)
@@ -189,7 +193,7 @@ OPTIONS:
             Print version information
 
     -x, --exact
-            the given SOURCE must be an exact match
+            The given SOURCE must be an exact match
 
 IMAGE SPEC
 

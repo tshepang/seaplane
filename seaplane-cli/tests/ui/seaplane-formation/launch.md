@@ -7,7 +7,7 @@ USAGE:
     seaplane formation launch [OPTIONS] <NAME|ID>
 
 ARGS:
-    <NAME|ID>    
+    <NAME|ID>    The name or ID of the Formation to launch
 
 OPTIONS:
     -a, --all                 Stop all matching Formations even when FORMATION is ambiguous
@@ -20,7 +20,7 @@ OPTIONS:
     -q, --quiet               Suppress output at a specific level and below
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
-    -x, --exact               the given FORMATION must be an exact match
+    -x, --exact               The given FORMATION must be an exact match
 
 ```
 
@@ -67,7 +67,7 @@ USAGE:
 
 ARGS:
     <NAME|ID>
-            
+            The name or ID of the Formation to launch
 
 OPTIONS:
     -a, --all
@@ -119,6 +119,6 @@ OPTIONS:
             Print version information
 
     -x, --exact
-            the given FORMATION must be an exact match
+            The given FORMATION must be an exact match
 
 ```

@@ -11,37 +11,37 @@ USAGE:
     seaplane formation create --flight-image=SPEC [INLINE FLIGHT OPTIONS] [FORMATION CFG OPTIONS]
 
 OPTIONS:
-    -A, --api-key <STRING>                              The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --affinity <NAME|ID>                            A Formation that this Formation has an affinity for [aliases: affinities]
-        --color <COLOR>                                 Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --connection <NAME|ID>                          A Formations that this Formation is connected to [aliases: connections]
-        --deploy                                        Send this formation to Seaplane immediately (requires a Formation configuration) (implies --launch, if that is not the desired state use --no-launch)
-        --exclude-provider <PROVIDER>                   A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider [aliases: exclude-providers] [possible values: Aws, Azure, DigitalOcean, Equinix, Gcp, All]
-        --exclude-region <REGION>                       A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below) [aliases: exclude-regions] [possible values: XA, Asia, XC, PRC, PeoplesRepublicofChina, XE, Europe, EU, XF, Africa, XN, NorthAmerica, NAmerica, XO, Oceania, XQ, Antarctica, XS, SAmerica, SouthAmerica, XU, UK, UnitedKingdom, All]
-        --flight <SPEC>                                 A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)
-        --flight-endpoint <PROTO:TGT=FLIGHT:PORT>       An endpoint exposed only to Flights within this Formation. In the form of 'PROTO:TARGET=FLIGHT:PORT' [aliases: flight-endpoints]
-        --force                                         Override any existing Formation with the same NAME
-        --formation-endpoint <PROTO:TGT=FLIGHT:PORT>    An endpoints exposed only to other Formations privately. In the form of 'PROTO:TARGET=FLIGHT:PORT' [aliases: formation-endpoints]
-    -h, --help                                          Print help information
-        --launch                                        This Formation configuration should be deployed and set it as active right away (requires a formation configuration) [aliases: active]
-    -n, --name <NAME>                                   A human readable name for the Formation (must be unique within the tenant) if omitted a pseudo random name will be assigned
-        --no-color                                      Do not color output (alias for --color=never)
-        --no-deploy                                     Do *not* send this formation to Seaplane immediately
-        --no-launch                                     The opposite of --launch, and says that this Formation should not be active [aliases: no-active]
-        --provider <PROVIDER>                           A provider that this Formation's Flights are permitted to run on [default: All] [aliases: providers] [possible values: Aws, Azure, DigitalOcean, Equinix, Gcp, All]
-        --public-endpoint <http:ROUTE=FLIGHT:PORT>      A publicly exposed endpoints of this Formation in the form of 'http:ROUTE=FLIGHT:PORT' [aliases: public-endpoints]
-    -q, --quiet                                         Suppress output at a specific level and below
-        --region <REGION>                               A region in which this Formation's Flights are allowed to run in (See REGION SPEC below) [default: All] [aliases: regions] [possible values: XA, Asia, XC, PRC, PeoplesRepublicofChina, XE, Europe, EU, XF, Africa, XN, NorthAmerica, NAmerica, XO, Oceania, XQ, Antarctica, XS, SAmerica, SouthAmerica, XU, UK, UnitedKingdom, All]
-    -v, --verbose                                       Display more verbose output
-    -V, --version                                       Print version information
+    -A, --api-key <STRING>               The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+        --affinity <NAME|ID>             A Formation that this Formation has an affinity for [aliases: affinities]
+        --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --connection <NAME|ID>           A Formations that this Formation is connected to [aliases: connections]
+        --deploy                         Send this formation to Seaplane immediately (requires a Formation configuration) (implies --launch, if that is not the desired state use --no-launch)
+        --exclude-provider <PROVIDER>    A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider [aliases: exclude-providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
+        --exclude-region <REGION>        A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below) [aliases: exclude-regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+        --flight <SPEC>                  A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below) [aliases: flights]
+        --flight-endpoint <SPEC>         An endpoint exposed only to Flights within this Formation. In the form of 'PROTO:TARGET=FLIGHT:PORT' [aliases: flight-endpoints]
+        --force                          Override any existing Formation with the same NAME
+        --formation-endpoint <SPEC>      An endpoints exposed only to other Formations privately. In the form of 'PROTO:TARGET=FLIGHT:PORT' [aliases: formation-endpoints]
+    -h, --help                           Print help information
+        --launch                         This Formation configuration should be deployed and set it as active right away (requires a formation configuration) [aliases: active]
+    -n, --name <STRING>                  A human readable name for the Formation (must be unique within the tenant) if omitted a pseudo random name will be assigned
+        --no-color                       Do not color output (alias for --color=never)
+        --no-deploy                      Do *not* send this formation to Seaplane immediately
+        --no-launch                      The opposite of --launch, and says that this Formation should not be active [aliases: no-active]
+        --provider <PROVIDER>            A provider that this Formation's Flights are permitted to run on [default: all] [aliases: providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
+        --public-endpoint <SPEC>         A publicly exposed endpoints of this Formation in the form of 'http:ROUTE=FLIGHT:PORT' [aliases: public-endpoints]
+    -q, --quiet                          Suppress output at a specific level and below
+        --region <REGION>                A region in which this Formation's Flights are allowed to run in (See REGION SPEC below) [default: all] [aliases: regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+    -v, --verbose                        Display more verbose output
+    -V, --version                        Print version information
 
 INLINE FLIGHT OPTIONS:
-        --flight-api-permission                        This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
-        --flight-architecture <FLIGHT_ARCHITECTURE>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: flight-arch, flight-arches, flight-architectures] [possible values: amd64, arm64]
-        --flight-image <SPEC>                          The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
-        --flight-maximum <FLIGHT_MAXIMUM>              The maximum number of container instances that should ever be running (default: infinite) [aliases: flight-max]
-        --flight-minimum <FLIGHT_MINIMUM>              The minimum number of container instances that should ever be running [default: 1] [aliases: flight-min]
-        --flight-name <FLIGHT_NAME>                    A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
+        --flight-api-permission         This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime [aliases: flight-api-permissions]
+        --flight-architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: flight-arch, flight-arches, flight-architectures] [possible values: amd64, arm64]
+        --flight-image <SPEC>           The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
+        --flight-maximum <NUM>          The maximum number of container instances that should ever be running (default: infinite) [aliases: flight-max]
+        --flight-minimum <NUM>          The minimum number of container instances that should ever be running [default: 1] [aliases: flight-min]
+        --flight-name <STRING>          A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
 
 FLIGHT SPEC
 
@@ -130,18 +130,20 @@ OPTIONS:
             A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider
             
             [aliases: exclude-providers]
-            [possible values: Aws, Azure, DigitalOcean, Equinix, Gcp, All]
+            [possible values: aws, azure, digitalocean, equinix, gcp, all]
 
         --exclude-region <REGION>
             A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below)
             
             [aliases: exclude-regions]
-            [possible values: XA, Asia, XC, PRC, PeoplesRepublicofChina, XE, Europe, EU, XF, Africa, XN, NorthAmerica, NAmerica, XO, Oceania, XQ, Antarctica, XS, SAmerica, SouthAmerica, XU, UK, UnitedKingdom, All]
+            [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
 
         --flight <SPEC>
             A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)
+            
+            [aliases: flights]
 
-        --flight-endpoint <PROTO:TGT=FLIGHT:PORT>
+        --flight-endpoint <SPEC>
             A privately exposed endpoint of this Formations (only expose to other
             Flights within this Formation)
             
@@ -170,7 +172,7 @@ OPTIONS:
         --force
             Override any existing Formation with the same NAME
 
-        --formation-endpoint <PROTO:TGT=FLIGHT:PORT>
+        --formation-endpoint <SPEC>
             A privately exposed endpoint of this Formations (only expose to other Formations)
             
             Formation Endpoints take the form '{PROTO}:{TARGET}={FLIGHT}:{PORT}'. Where
@@ -203,7 +205,7 @@ OPTIONS:
             
             [aliases: active]
 
-    -n, --name <NAME>
+    -n, --name <STRING>
             A human readable name for the Formation (must be unique within the tenant)
             
             Rules for a valid name are as follows:
@@ -229,11 +231,11 @@ OPTIONS:
         --provider <PROVIDER>
             A provider that this Formation's Flights are permitted to run on
             
-            [default: All]
+            [default: all]
             [aliases: providers]
-            [possible values: Aws, Azure, DigitalOcean, Equinix, Gcp, All]
+            [possible values: aws, azure, digitalocean, equinix, gcp, all]
 
-        --public-endpoint <http:ROUTE=FLIGHT:PORT>
+        --public-endpoint <SPEC>
             A publicly exposed endpoints of this Formations
             
             Public Endpoints take the form 'http:{ROUTE}={FLIGHT}:{PORT}'. Where
@@ -268,9 +270,9 @@ OPTIONS:
         --region <REGION>
             A region in which this Formation's Flights are allowed to run in (See REGION SPEC below)
             
-            [default: All]
+            [default: all]
             [aliases: regions]
-            [possible values: XA, Asia, XC, PRC, PeoplesRepublicofChina, XE, Europe, EU, XF, Africa, XN, NorthAmerica, NAmerica, XO, Oceania, XQ, Antarctica, XS, SAmerica, SouthAmerica, XU, UK, UnitedKingdom, All]
+            [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
 
     -v, --verbose
             Display more verbose output
@@ -285,8 +287,10 @@ OPTIONS:
 INLINE FLIGHT OPTIONS:
         --flight-api-permission
             This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
+            
+            [aliases: flight-api-permissions]
 
-        --flight-architecture <FLIGHT_ARCHITECTURE>
+        --flight-architecture <ARCH>
             The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
             
             [aliases: flight-arch, flight-arches, flight-architectures]
@@ -305,18 +309,18 @@ INLINE FLIGHT OPTIONS:
             
             [aliases: img]
 
-        --flight-maximum <FLIGHT_MAXIMUM>
+        --flight-maximum <NUM>
             The maximum number of container instances that should ever be running (default: infinite)
             
             [aliases: flight-max]
 
-        --flight-minimum <FLIGHT_MINIMUM>
+        --flight-minimum <NUM>
             The minimum number of container instances that should ever be running
             
             [default: 1]
             [aliases: flight-min]
 
-        --flight-name <FLIGHT_NAME>
+        --flight-name <STRING>
             A human readable name for the Flight (must be unique within any Formation it
             
             Rules for a valid name are as follows:
