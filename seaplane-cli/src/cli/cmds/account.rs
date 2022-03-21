@@ -1,9 +1,10 @@
 use std::io::{self, BufRead};
 
-use clap::{Parser, Subcommand};
+use clap::{ArgMatches, Command};
 use seaplane::api::{TokenRequest, FLIGHTDECK_API_URL};
 
 use crate::{
+    cli::CliCommand,
     config::RawConfig,
     context::Ctx,
     error::{CliError, CliErrorKind, Context, Result},
@@ -11,37 +12,45 @@ use crate::{
     printer::Color,
 };
 
-/// Operate on your Seaplane account, including access tokens
-#[derive(Parser)]
-#[clap(visible_alias = "acct")]
-pub struct SeaplaneAccountArgs {
-    // subcommands
-    #[clap(subcommand)]
-    cmd: SeaplaneAccountCmds,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneAccount;
+
+impl SeaplaneAccount {
+    pub fn command() -> Command<'static> {
+        Command::new("account")
+            .visible_alias("acct")
+            .about("Operate on your Seaplane account, including access tokens")
+            .subcommand_required(true)
+            .arg_required_else_help(true)
+            .subcommand(SeaplaneAccountLogin::command())
+            .subcommand(SeaplaneAccountToken::command())
+    }
 }
 
-impl SeaplaneAccountArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        use SeaplaneAccountCmds::*;
-
-        match &self.cmd {
-            Login(args) => args.run(ctx),
-            Token(args) => args.run(ctx),
+impl CliCommand for SeaplaneAccount {
+    fn next_subcmd<'a>(
+        &self,
+        matches: &'a ArgMatches,
+    ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
+        match matches.subcommand() {
+            Some(("login", m)) => Some((Box::new(SeaplaneAccountLogin), m)),
+            Some(("token", m)) => Some((Box::new(SeaplaneAccountToken), m)),
+            _ => None,
         }
     }
 }
 
-#[derive(Subcommand)]
-pub enum SeaplaneAccountCmds {
-    Login(SeaplaneAccountLoginArgs),
-    Token(SeaplaneAccountTokenArgs),
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneAccountToken;
+
+impl SeaplaneAccountToken {
+    pub fn command() -> Command<'static> {
+        Command::new("token")
+    }
 }
 
-#[derive(Parser)]
-pub struct SeaplaneAccountTokenArgs;
-
-impl SeaplaneAccountTokenArgs {
-    pub fn run(&self, ctx: &Ctx) -> Result<()> {
+impl CliCommand for SeaplaneAccountToken {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let t = TokenRequest::builder()
             .api_key(
                 ctx.api_key
@@ -57,15 +66,17 @@ impl SeaplaneAccountTokenArgs {
     }
 }
 
-#[derive(Parser)]
-pub struct SeaplaneAccountLoginArgs {
-    /// Override any existing API key
-    #[clap(short, long)]
-    force: bool,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneAccountLogin;
+
+impl SeaplaneAccountLogin {
+    pub fn command() -> Command<'static> {
+        Command::new("login").arg(arg!(--force - ('f')).help("Override any existing API key"))
+    }
 }
 
-impl SeaplaneAccountLoginArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
+impl CliCommand for SeaplaneAccountLogin {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mut cfg = RawConfig::load(ctx.conf_files().first().ok_or_else(|| {
             CliErrorKind::MissingPath
                 .into_err()
@@ -76,7 +87,7 @@ impl SeaplaneAccountLoginArgs {
         })?)?;
 
         if let Some(key) = cfg.account.api_key {
-            if self.force {
+            if ctx.force {
                 cli_warn!(@Yellow, "warn: ");
                 cli_warn!("overwriting API key ");
                 cli_warn!(@Green, "{} ", key);
@@ -107,6 +118,12 @@ impl SeaplaneAccountLoginArgs {
 
         cli_println!("Successfully saved the API key!");
 
+        Ok(())
+    }
+
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.force = matches.is_present("force");
+        ctx.overwrite = matches.value_of("overwrite").map(ToOwned::to_owned);
         Ok(())
     }
 }

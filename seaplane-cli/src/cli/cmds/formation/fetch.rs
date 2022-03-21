@@ -1,7 +1,7 @@
-use clap::Parser;
+use clap::Command;
 
 use crate::{
-    cli::cmds::formation::build_request,
+    cli::{cmds::formation::build_request, CliCommand},
     error::{CliError, Context, Result},
     fs::{FromDisk, ToDisk},
     ops::{flight::Flights, formation::Formations},
@@ -9,28 +9,34 @@ use crate::{
     Ctx,
 };
 
-/// Fetch remote Formation definitions
-#[derive(Parser)]
-#[clap(
-    visible_alias = "fetch",
-    override_usage = "seaplane formation fetch-remote\n
-    seaplane formation fetch-remote [NAME|ID]"
-)]
-pub struct SeaplaneFormationFetchArgs {
-    /// The NAME or ID of the formation to fetch, omit to fetch all Formations
-    #[clap(value_name = "NAME|ID")]
-    pub formation: Option<String>,
-    //TODO: add a --no-overwrite or similar
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFormationFetch;
+
+impl SeaplaneFormationFetch {
+    pub fn command() -> Command<'static> {
+        //TODO: add a --no-overwrite or similar
+        Command::new("fetch-remote")
+            .visible_alias("fetch")
+            .about("Fetch remote Formation definitions")
+            .override_usage(
+                "seaplane formation fetch-remote
+    seaplane formation fetch-remote [NAME|ID]",
+            )
+            .arg(
+                arg!(formation = ["NAME|ID"])
+                    .help("The NAME or ID of the formation to fetch, omit to fetch all Formations"),
+            )
+    }
 }
 
-impl SeaplaneFormationFetchArgs {
+impl CliCommand for SeaplaneFormationFetch {
     // TODO: async
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Load the known formations from the local JSON "DB"
         let formations_file = ctx.formations_file();
         let mut formations: Formations = FromDisk::load(&formations_file)?;
 
-        let names = if let Some(name) = &self.formation {
+        let names = if let Some(name) = &ctx.name_id {
             vec![name.to_owned()]
         } else {
             // First download all formation names

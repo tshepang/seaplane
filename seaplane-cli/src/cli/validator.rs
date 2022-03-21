@@ -3,6 +3,16 @@
 
 use std::{path::Path, result::Result as StdResult};
 
+use crate::ops::formation::Endpoint;
+
+/// Ensures a valid Endpoint
+pub fn validate_endpoint(s: &str) -> StdResult<(), String> {
+    if s.parse::<Endpoint>().is_err() {
+        return Err("invalid endpoint".to_string());
+    }
+    Ok(())
+}
+
 /// The arg can be any of:
 ///
 /// - name

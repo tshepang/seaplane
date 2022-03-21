@@ -1,14 +1,21 @@
-use clap::Parser;
+use clap::{Arg, ArgMatches, Command};
 
-use crate::{error::Result, Ctx};
+use crate::{cli::CliCommand, error::Result, Ctx};
 
-/// Display statistics about the underlying physical container instances
-#[derive(Parser)]
-#[clap(visible_alias = "container-stats")]
-pub struct SeaplaneFormationContainerStatisticsArgs;
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFormationContainerStatistics;
 
-impl SeaplaneFormationContainerStatisticsArgs {
-    pub fn run(&self, _ctx: &mut Ctx) -> Result<()> {
-        todo!("impl SeaplaneFormationContainerStatisticsArgs")
+impl SeaplaneFormationContainerStatistics {
+    pub fn command() -> Command<'static> {
+        Command::new("container-statistics")
+            .visible_alias(&["container-stats", "statistics", "stats"])
+            .about("Display statistics about the underlying physical container instances");
+        todo!("impl SeaplaneFormationContainerStatistics::command")
+    }
+}
+
+impl CliCommand for SeaplaneFormationContainerStatistics {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        todo!("impl SeaplaneFormationContainerStatistics::run")
     }
 }

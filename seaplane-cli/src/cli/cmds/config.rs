@@ -1,12 +1,21 @@
-use clap::Parser;
+use clap::{Arg, ArgMatches, Command};
 
 use crate::{context::Ctx, error::Result};
 
-#[derive(Parser)]
-pub struct SeaplaneConfigArgs;
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneConfig;
 
-impl SeaplaneConfigArgs {
-    pub fn run(&self, _ctx: &Ctx) -> Result<()> {
-        todo!("impl SeaplaneConfigArgs")
+impl SeaplaneConfig {
+    pub fn command() -> Command<'static> {
+        todo!("SeaplaneConfig::into_app")
+    }
+}
+
+impl CliCommand for SeaplaneConfig {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        todo!("SeaplaneConfig::run")
+    }
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        todo!("SeaplaneConfig::update_ctx")
     }
 }

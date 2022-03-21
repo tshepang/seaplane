@@ -32,8 +32,8 @@ pub use crate::{
 
 #[cfg(feature = "ui_tests")]
 mod ui_tests {
-    use super::SeaplaneArgs;
-    use clap::{error::Error as ClapError, Parser};
+    use super::Seaplane;
+    use clap::{error::Error as ClapError, ArgMatches};
     use std::ffi::OsString;
     pub fn test_run<I, T>(argv: I) -> Result<ArgMatches, ClapError>
     where

@@ -1,4 +1,4 @@
-mod common;
+pub mod common;
 #[cfg(feature = "unstable")]
 mod configuration;
 #[cfg(feature = "unstable")]
@@ -14,22 +14,24 @@ mod load_balance;
 #[cfg(feature = "unstable")]
 mod template;
 
-use clap::{Parser, Subcommand};
+pub use common::{Provider, Region};
+
+use clap::{ArgMatches, Command};
 use seaplane::api::{v1::FormationsRequest, TokenRequest};
 
-use self::{
-    common::SeaplaneFormationCommonArgs, create::SeaplaneFormationCreateArgs,
-    delete::SeaplaneFormationDeleteArgs, fetch::SeaplaneFormationFetchArgs,
-    land::SeaplaneFormationLandArgs, launch::SeaplaneFormationLaunchArgs,
-    list::SeaplaneFormationListArgs,
-};
 #[cfg(feature = "unstable")]
 use self::{
-    configuration::SeaplaneFormationConfigurationArgs,
-    container_stats::SeaplaneFormationContainerStatisticsArgs,
-    load_balance::SeaplaneFormationLoadBalanceArgs, template::SeaplaneFormationTemplateArgs,
+    configuration::SeaplaneFormationConfiguration,
+    container_stats::SeaplaneFormationContainerStatistics,
+    load_balance::SeaplaneFormationLoadBalance, template::SeaplaneFormationTemplate,
+};
+use self::{
+    create::SeaplaneFormationCreate, delete::SeaplaneFormationDelete,
+    fetch::SeaplaneFormationFetch, land::SeaplaneFormationLand, launch::SeaplaneFormationLaunch,
+    list::SeaplaneFormationList,
 };
 use crate::{
+    cli::CliCommand,
     error::{CliError, CliErrorKind, Context, Result},
     Ctx,
 };
@@ -82,55 +84,63 @@ pub fn build_request(formation_name: Option<&str>, ctx: &Ctx) -> Result<Formatio
         })
 }
 
-/// Operate on Seaplane Formations
-#[derive(Parser)]
-pub struct SeaplaneFormationArgs {
-    #[clap(subcommand)]
-    cmd: SeaplaneFormationCmds,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFormation;
+
+impl SeaplaneFormation {
+    pub fn command() -> Command<'static> {
+        #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+        let mut app = Command::new("formation")
+            .about("Operate on Seaplane Formations")
+            .subcommand_required(true)
+            .arg_required_else_help(true)
+            .subcommand(SeaplaneFormationCreate::command())
+            .subcommand(SeaplaneFormationDelete::command())
+            .subcommand(SeaplaneFormationFetch::command())
+            .subcommand(SeaplaneFormationLand::command())
+            .subcommand(SeaplaneFormationLaunch::command())
+            .subcommand(SeaplaneFormationList::command());
+
+        #[cfg(feature = "unstable")]
+        {
+            app = app
+                .subcommand(SeaplaneFormationConfiguration::command())
+                .subcommand(SeaplaneFormationContainerStatistics::command())
+                .subcommand(SeaplaneFormationLoadBalance::command())
+                .subcommand(SeaplaneFormationTemplate::command())
+        }
+
+        app
+    }
 }
 
-impl SeaplaneFormationArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        use SeaplaneFormationCmds::*;
-        self.update_ctx(ctx)?;
-
-        match &self.cmd {
+impl CliCommand for SeaplaneFormation {
+    fn next_subcmd<'a>(
+        &self,
+        matches: &'a ArgMatches,
+    ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
+        match &matches.subcommand() {
+            Some(("create", m)) => Some((Box::new(SeaplaneFormationCreate), m)),
+            Some(("delete", m)) => Some((Box::new(SeaplaneFormationDelete), m)),
+            Some(("fetch-remote", m)) => Some((Box::new(SeaplaneFormationFetch), m)),
+            Some(("land", m)) => Some((Box::new(SeaplaneFormationLand), m)),
+            Some(("launch", m)) => Some((Box::new(SeaplaneFormationLaunch), m)),
+            Some(("list", m)) => Some((Box::new(SeaplaneFormationList), m)),
             #[cfg(feature = "unstable")]
-            Configuration(args) => args.run(ctx),
+            Some(("configuration", m)) => Some((Box::new(SeaplaneFormationConfiguration), m)),
             #[cfg(feature = "unstable")]
-            ContainerStatistics(args) => args.run(ctx),
-            Create(args) => args.run(ctx),
-            Delete(args) => args.run(ctx),
-            FetchRemote(args) => args.run(ctx),
-            Land(args) => args.run(ctx),
-            Launch(args) => args.run(ctx),
-            List(args) => args.run(ctx),
+            Some(("container-statistics", m)) => {
+                Some((Box::new(SeaplaneFormationContainerStatistics), m))
+            }
             #[cfg(feature = "unstable")]
-            LoadBalance(args) => args.run(ctx),
+            Some(("load-balance", m)) => Some((Box::new(SeaplaneFormationLoadBalance), m)),
             #[cfg(feature = "unstable")]
-            Template(args) => args.run(ctx),
+            Some(("template", m)) => Some((Box::new(SeaplaneFormationTemplate), m)),
+            _ => None,
         }
     }
 
-    fn update_ctx(&self, _ctx: &mut Ctx) -> Result<()> {
+    fn update_ctx(&self, _matches: &ArgMatches, _ctx: &mut Ctx) -> Result<()> {
         Ok(())
     }
-}
-
-#[derive(Subcommand)]
-pub enum SeaplaneFormationCmds {
-    #[cfg(feature = "unstable")]
-    Configuration(SeaplaneFormationConfigurationArgs),
-    #[cfg(feature = "unstable")]
-    ContainerStatistics(SeaplaneFormationContainerStatisticsArgs),
-    Create(Box<SeaplaneFormationCreateArgs>),
-    Delete(SeaplaneFormationDeleteArgs),
-    FetchRemote(SeaplaneFormationFetchArgs),
-    Land(SeaplaneFormationLandArgs),
-    Launch(SeaplaneFormationLaunchArgs),
-    List(SeaplaneFormationListArgs),
-    #[cfg(feature = "unstable")]
-    Template(SeaplaneFormationTemplateArgs),
-    #[cfg(feature = "unstable")]
-    LoadBalance(SeaplaneFormationLoadBalanceArgs),
 }

@@ -8,8 +8,9 @@ use std::{
     io::{self, BufRead},
 };
 
-use clap::{crate_authors, Parser, Subcommand};
+use clap::{crate_authors, ArgMatches, Command};
 use const_format::concatcp;
+use strum::VariantNames;
 
 pub use crate::cli::cmds::*;
 use crate::{
@@ -20,113 +21,121 @@ use crate::{
 
 const VERSION: &str = env!("SEAPLANE_GIT_HASH");
 static AUTHORS: &str = crate_authors!();
-
-#[derive(Parser)]
-// Unset any term-width detection for UI tests
-#[cfg_attr(feature = "ui_tests", clap(term_width = 0))]
-#[clap(
-    name = "seaplane",
-    author = AUTHORS,
-    version = VERSION,
-    propagate_version = true,
-    disable_colored_help = true,
-    long_version = concatcp!(VERSION, "\n", env!("SEAPLANE_BUILD_FEATURES")),
-)]
-pub struct SeaplaneArgs {
-    /// Display more verbose output
-    #[clap(
-        short,
-        long,
-        parse(from_occurrences),
-        global = true,
-        long_help = "Display more verbose output
+static LONG_VERBOSE: &str = "Display more verbose output
 
 More uses displays more verbose output
     -v:  Display debug info
-    -vv: Display trace info"
-    )]
-    pub verbose: u8,
+    -vv: Display trace info";
 
-    /// Suppress output at a specific level and below
-    #[clap(
-        short,
-        long,
-        parse(from_occurrences),
-        global = true,
-        long_help = "Suppress output at a specific level and below
+static LONG_QUIET: &str = "Suppress output at a specific level and below
 
 More uses suppresses higher levels of output
     -q:   Only display WARN messages and above
     -qq:  Only display ERROR messages
-    -qqq: Suppress all output"
-    )]
-    pub quiet: u8,
-
-    /// Should the output include color?
-    #[clap(
-        long,
-        global = true,
-        overrides_with_all = &["color", "no_color"],
-        default_value = "auto",
-        ignore_case = true,
-        arg_enum
-    )]
-    pub color: ColorChoice,
-
-    /// Do not color output (alias for --color=never)
-    #[clap(
-        long,
-        global = true,
-        overrides_with_all = &["color", "no_color"],
-        overrides_with = "color",
-    )]
-    pub no_color: bool,
-
-    /// The API key associated with your account used to access Seaplane API endpoints
-    #[clap(
-        short = 'A',
-        long,
-        global = true,
-        value_name = "STRING",
-        env = "SEAPLANE_API_KEY",
-        hide_env_values = true,
-        long_help = "The API key associated with your account used to access Seaplane API endpoints
+    -qqq: Suppress all output";
+static LONG_API_KEY: &str =
+    "The API key associated with your account used to access Seaplane API endpoints
 
 The value provided here will override any provided in any configuration files.
 A CLI provided value also overrides any environment variables.
-One can use a special value of '-' to signal the value should be read from STDIN."
-    )]
-    pub api_key: Option<String>,
+One can use a special value of '-' to signal the value should be read from STDIN.";
 
-    // Subcommands
-    #[clap(subcommand)]
-    pub cmd: SeaplaneCmds,
+pub trait CliCommand {
+    fn update_ctx(&self, _matches: &ArgMatches, _ctx: &mut Ctx) -> Result<()> {
+        Ok(())
+    }
+    fn run(&self, _ctx: &mut Ctx) -> Result<()> {
+        Ok(())
+    }
+    fn next_subcmd<'a>(
+        &self,
+        _matches: &'a ArgMatches,
+    ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
+        None
+    }
 }
 
-impl SeaplaneArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        use SeaplaneCmds::*;
+impl dyn CliCommand + 'static {
+    /// Performs three steps:
+    ///
+    /// - calls `self.update_ctx()`
+    /// - calls `self.run()`
+    /// - Gets the next subcommand (if any) by calling `self.next_subcmd()` and calls
+    /// `traverse_exec` on that subcommand.
+    ///
+    /// This walks down the entire *used* subcommand hierarchy ensuring the `update_ctx` was called
+    /// prior to `run` and that any deeper subcommands were executed.
+    pub fn traverse_exec(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        self.update_ctx(matches, ctx)?;
+        self.run(ctx)?;
+        if let Some((c, m)) = self.next_subcmd(matches) {
+            return c.traverse_exec(m, ctx);
+        }
+        Ok(())
+    }
+}
 
-        self.update_ctx(ctx)?;
+#[derive(Copy, Clone, Debug)]
+pub struct Seaplane;
 
+impl Seaplane {
+    pub fn command() -> Command<'static> {
+        #[cfg_attr(not(any(feature = "unstable", feature = "ui_tests")), allow(unused_mut))]
+        let mut app = Command::new("seaplane")
+            .author(AUTHORS)
+            .version(VERSION)
+            .disable_colored_help(true)
+            .long_version(concatcp!(VERSION, "\n", env!("SEAPLANE_BUILD_FEATURES")))
+            .propagate_version(true)
+            .subcommand_required(true)
+            .arg_required_else_help(true)
+            .arg(arg!(--verbose -('v') global multiple_occurrences)
+                .help("Display more verbose output")
+                .long_help(LONG_VERBOSE))
+            .arg(arg!(--quiet -('q') multiple_occurrences global)
+                .help("Suppress output at a specific level and below")
+                .long_help(LONG_QUIET))
+            .arg(arg!(--color global ignore_case =["COLOR"=>"auto"])
+                .possible_values(ColorChoice::VARIANTS)
+                .overrides_with_all(&["color", "no-color"])
+                .help("Should the output include color?"))
+            .arg(arg!(--("no-color") global)
+                .overrides_with_all(&["color", "no-color"])
+                .help("Do not color output (alias for --color=never)"))
+            .arg(arg!(--("api-key") -('A') global =["STRING"] hide_env_values)
+                .env("SEAPLANE_API_KEY")
+                .help("The API key associated with your account used to access Seaplane API endpoints")
+                .long_help(LONG_API_KEY))
+            .subcommand(SeaplaneAccount::command())
+            .subcommand(SeaplaneFlight::command())
+            .subcommand(SeaplaneFormation::command())
+            .subcommand(SeaplaneInit::command())
+            .subcommand(SeaplaneLicense::command())
+            .subcommand(SeaplaneShellCompletion::command());
+
+        #[cfg(feature = "unstable")]
+        {
+            app = app
+                .subcommand(SeaplaneConfig::command())
+                .subcommand(SeaplaneImage::command());
+        }
+
+        #[cfg(feature = "ui_tests")]
+        {
+            app = app.term_width(0);
+        }
+        app
+    }
+}
+
+impl CliCommand for Seaplane {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Initialize the printer now that we have all the color choices
         Printer::init(ctx.color);
-
-        match &self.cmd {
-            Account(args) => args.run(ctx),
-            #[cfg(feature = "unstable")]
-            Config(args) => args.run(ctx),
-            Flight(args) => args.run(ctx),
-            Formation(args) => args.run(ctx),
-            #[cfg(feature = "unstable")]
-            Image(args) => args.run(ctx),
-            Init(args) => args.run(ctx),
-            License(args) => args.run(ctx),
-            ShellCompletion(args) => args.run(ctx),
-        }
+        Ok(())
     }
 
-    fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // There is a "bug" where due to how clap handles nested-subcommands with global flags and
         // overrides (yeah...niche) if two mutually exclusive flags that override each-other are
         // used at different nesting levels, the overrides do not happen.
@@ -136,7 +145,10 @@ impl SeaplaneArgs {
         // even though they override each-other.
         //
         // So we err on the side of not providing color since that is the safer option
-        ctx.color = match (self.color, self.no_color) {
+        ctx.color = match (
+            value_t!(matches, "color", ColorChoice)?,
+            matches.is_present("no-color"),
+        ) {
             (_, true) => ColorChoice::Never,
             (choice, _) => {
                 if choice != ColorChoice::Auto {
@@ -147,32 +159,37 @@ impl SeaplaneArgs {
             }
         };
 
-        if let Some(key) = &self.api_key {
-            if key == "-" {
+        if let Some(key) = &matches.value_of("api-key") {
+            if key == &"-" {
                 let stdin = io::stdin();
                 let mut lines = stdin.lock().lines();
                 if let Some(line) = lines.next() {
                     ctx.api_key = Some(line?);
                 }
             } else {
-                ctx.api_key = Some(key.to_owned());
+                ctx.api_key = Some(key.to_string());
             }
         }
 
         Ok(())
     }
-}
 
-#[derive(Subcommand)]
-pub enum SeaplaneCmds {
-    Account(SeaplaneAccountArgs),
-    #[cfg(feature = "unstable")]
-    Config(SeaplaneConfigArgs),
-    Flight(Box<SeaplaneFlightArgs>),
-    Formation(Box<SeaplaneFormationArgs>),
-    #[cfg(feature = "unstable")]
-    Image(SeaplaneImageArgs),
-    Init(SeaplaneInitArgs),
-    License(SeaplaneLicenseArgs),
-    ShellCompletion(SeaplaneShellCompletionArgs),
+    fn next_subcmd<'a>(
+        &self,
+        matches: &'a ArgMatches,
+    ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
+        match matches.subcommand() {
+            Some(("account", m)) => Some((Box::new(SeaplaneAccount), m)),
+            Some(("flight", m)) => Some((Box::new(SeaplaneFlight), m)),
+            Some(("formation", m)) => Some((Box::new(SeaplaneFormation), m)),
+            Some(("init", m)) => Some((Box::new(SeaplaneInit), m)),
+            Some(("shell-completion", m)) => Some((Box::new(SeaplaneShellCompletion), m)),
+            Some(("license", m)) => Some((Box::new(SeaplaneLicense), m)),
+            #[cfg(feature = "unstable")]
+            Some(("image", m)) => Some((Box::new(SeaplaneImage), m)),
+            #[cfg(feature = "unstable")]
+            Some(("config", m)) => Some((Box::new(SeaplaneConfig), m)),
+            _ => None, // TODO: handle external plugins
+        }
+    }
 }

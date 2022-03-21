@@ -1,13 +1,20 @@
+use clap::ArgMatches;
 use seaplane::api::v1::formations::{Architecture, Flight as FlightModel, ImageReference};
 
-use crate::ops::generate_name;
+use crate::{
+    cli::cmds::flight::{str_to_image_ref, FLIGHT_MINIMUM_DEFAULT},
+    error::Result,
+    ops::generate_name,
+};
 
 /// Represents the "Source of Truth" i.e. it combines all the CLI options, ENV vars, and config
 /// values into a single structure that can be used later to build models for the API or local
 /// structs for serializing
+// TODO: we may not want to derive this we implement circular references
+#[derive(Debug)]
 pub struct FlightCtx {
     pub image: Option<ImageReference>,
-    pub name: String,
+    pub name_id: String,
     pub minimum: u64,
     pub maximum: Option<u64>,
     pub architecture: Vec<Architecture>,
@@ -20,7 +27,7 @@ pub struct FlightCtx {
 impl Default for FlightCtx {
     fn default() -> Self {
         Self {
-            name: generate_name(),
+            name_id: generate_name(),
             image: None,
             minimum: 0,
             maximum: None,
@@ -33,11 +40,50 @@ impl Default for FlightCtx {
 }
 
 impl FlightCtx {
+    // TODO: use a newtype to distinguish the matches from other arg matches
+    /// Builds a FlightCtx from ArgMatches using some `prefix` if any to search for args
+    pub fn from_arg_matches(matches: &ArgMatches, prefix: &str) -> Result<FlightCtx> {
+        let mut generated_name = false;
+        // We generate a random name if one is not provided
+        let name = matches
+            .value_of(&format!("{prefix}name"))
+            .map(ToOwned::to_owned)
+            .unwrap_or_else(|| {
+                generated_name = true;
+                generate_name()
+            });
+
+        // We have to use if let in order to use the ? operator
+        let image = if let Some(s) = matches.value_of(&format!("{prefix}image")) {
+            Some(str_to_image_ref(s)?)
+        } else {
+            None
+        };
+
+        Ok(FlightCtx {
+            image,
+            name_id: name,
+            minimum: matches
+                .value_of_t(&format!("{prefix}minimum"))
+                .unwrap_or(FLIGHT_MINIMUM_DEFAULT),
+            maximum: matches.value_of_t(&format!("{prefix}maximum")).ok(),
+            architecture: values_t_or_exit!(
+                matches,
+                &format!("{prefix}architecture"),
+                Architecture
+            ),
+            // because of clap overrides we only have to check api_permissions
+            api_permission: matches.is_present(&format!("{prefix}api-permission")),
+            reset_maximum: matches.is_present(&format!("{prefix}no-maximum")),
+            generated_name,
+        })
+    }
+
     /// Creates a new seaplane::api::v1::Flight from the contained values
     pub fn model(&self) -> FlightModel {
         // Create the new Flight model from the CLI inputs
         let mut flight_model = FlightModel::builder()
-            .name(self.name.clone())
+            .name(self.name_id.clone())
             .api_permission(self.api_permission)
             .minimum(self.minimum);
 

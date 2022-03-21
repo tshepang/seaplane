@@ -257,6 +257,8 @@ pub enum CliErrorKind {
     Seaplane(SeaplaneError),
     ExistingValue(&'static str),
     ImageReference(ImageReferenceError),
+    CliArgNotUsed(&'static str),
+    InvalidCliValue(Option<&'static str>, String),
     MissingPath,
     Unknown,
     PermissionDenied,
@@ -313,6 +315,21 @@ impl CliErrorKind {
             UnknownWithContext(e) => {
                 cli_eprintln!("unknown: {}", e)
             }
+            InvalidCliValue(a, v) => {
+                cli_eprint!("the CLI value '");
+                if let Some(val) = a {
+                    cli_eprint!("--{}=", val);
+                    cli_eprint!(@Red, "{}", v);
+                } else {
+                    cli_eprint!(@Red, "{}", v);
+                }
+                cli_eprintln!("' isn't valid");
+            }
+            CliArgNotUsed(a) => {
+                cli_eprint!("the CLI argument '");
+                cli_eprint!("{}", a);
+                cli_eprintln!("' wasn't used but is required in this context");
+            }
             Unknown => {
                 cli_eprintln!("unknown")
             }
@@ -363,6 +380,8 @@ impl PartialEq<Self> for CliErrorKind {
             UnknownWithContext(_) => matches!(rhs, UnknownWithContext(_)),
             ExistingValue(_) => matches!(rhs, ExistingValue(_)),
             ImageReference(_) => matches!(rhs, ImageReference(_)),
+            CliArgNotUsed(_) => matches!(rhs, CliArgNotUsed(_)),
+            InvalidCliValue(_, _) => matches!(rhs, InvalidCliValue(_, _)),
         }
     }
 }

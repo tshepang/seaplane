@@ -1,24 +1,31 @@
-use clap::Parser;
+use clap::{ArgMatches, Command};
+use strum::VariantNames;
 
 use crate::{
-    error::Result, fs::FromDisk, ops::flight::Flights, printer::Output, Ctx, OutputFormat,
+    cli::CliCommand, error::Result, fs::FromDisk, ops::flight::Flights, printer::Output, Ctx,
+    OutputFormat,
 };
 
 // TODO: add sorting
 // TODO: add filtering
-/// List the current Flight definitions
-#[derive(Parser)]
-#[clap(visible_aliases = &["ls"])]
-pub struct SeaplaneFlightListArgs {
-    /// Change the output format
-    #[clap(arg_enum, long, default_value = "table")]
-    format: OutputFormat,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFlightList;
+
+impl SeaplaneFlightList {
+    pub fn command() -> Command<'static> {
+        Command::new("list")
+            .visible_alias("ls")
+            .about("List the current Flight definitions")
+            .arg(
+                arg!(--format =["FORMAT"=>"table"])
+                    .help("Change the output format")
+                    .possible_values(OutputFormat::VARIANTS),
+            )
+    }
 }
 
-impl SeaplaneFlightListArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        self.update_ctx(ctx)?;
-
+impl CliCommand for SeaplaneFlightList {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let flights: Flights = FromDisk::load(ctx.flights_file())?;
 
         // TODO: get remote flights too
@@ -31,9 +38,8 @@ impl SeaplaneFlightListArgs {
         Ok(())
     }
 
-    fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.out_format = self.format;
-
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.out_format = matches.value_of_t("format").unwrap_or_default();
         Ok(())
     }
 }

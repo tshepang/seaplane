@@ -1,14 +1,20 @@
-use clap::Parser;
+use clap::{Arg, ArgMatches, Command};
 
-use crate::{error::Result, Ctx};
+use crate::{cli::CliCommand, error::Result, Ctx};
 
-/// Operate on Seaplane Formation Configurations
-#[derive(Parser)]
-#[clap(visible_aliases = &["cfg"])]
-pub struct SeaplaneFormationConfigurationArgs;
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFormationConfiguration;
 
-impl SeaplaneFormationConfigurationArgs {
-    pub fn run(&self, _ctx: &mut Ctx) -> Result<()> {
-        todo!("impl SeaplaneFormationConfigurationArgs")
+impl SeaplaneFormationConfiguration {
+    pub fn command() -> Command<'static> {
+        Command::new("configuration")
+            .visible_alias("cfg")
+            .about("Operate on Seaplane Formation Configurations")
+    }
+}
+
+impl CliCommand for SeaplaneFormationConfiguration {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        todo!("impl SeaplaneFormationConfiguration::run")
     }
 }

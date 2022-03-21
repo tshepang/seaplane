@@ -1,11 +1,12 @@
-use clap::Parser;
+use clap::{ArgMatches, Command};
 use seaplane::api::v1::{ActiveConfiguration, ActiveConfigurations};
 
 use crate::{
     cli::{
-        cmds::formation::{build_request, SeaplaneFormationFetchArgs},
+        cmds::formation::{build_request, SeaplaneFormationFetch},
         errors,
         validator::validate_name_id,
+        CliCommand,
     },
     error::{CliError, Context, Result},
     fs::{FromDisk, ToDisk},
@@ -13,12 +14,8 @@ use crate::{
     Ctx,
 };
 
-// TODO: make it possible to selectively start only *some* configs
-/// Start all configurations of a Formation and evenly distribute traffic between them
-#[derive(Parser)]
-#[clap(
-    visible_alias = "start",
-    long_about = "Start all configurations of a Formation and evenly distribute traffic between them
+static LONG_ABOUT: &str =
+    "Start all configurations of a Formation and evenly distribute traffic between them
 
     In many cases, or at least initially a Formation may only have a single Formation
     Configuration. In these cases this command will set that one configuration to active.
@@ -51,35 +48,33 @@ use crate::{
 
     These configurations will be made active. If the Seaplane Cloud already has active
     configurations for the given Formation, these newly activated configurations will be appended,
-    and traffic will be balanced between any *all* configurations. "
-)]
-pub struct SeaplaneFormationLaunchArgs {
-    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
-    formation: String,
+    and traffic will be balanced between any *all* configurations. ";
 
-    /// Stop all matching Formations even when FORMATION is ambiguous
-    #[clap(short, long, conflicts_with = "exact")]
-    all: bool,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFormationLaunch;
 
-    /// the given FORMATION must be an exact match
-    #[clap(short = 'x', long, conflicts_with = "all")]
-    exact: bool,
-
-    /// Fetch remote Formation definitions prior to attempting to launch this Formation
-    #[clap(short = 'F', long)]
-    fetch: bool,
-
-    /// Upload the configuration(s) to Seaplane but *DO NOT* set them to active
-    #[clap(long)]
-    grounded: bool,
+impl SeaplaneFormationLaunch {
+    pub fn command() -> Command<'static> {
+        // TODO: make it possible to selectively start only *some* configs
+        Command::new("launch")
+            .visible_alias("start")
+            .about("Start all configurations of a Formation and evenly distribute traffic between them")
+            .long_about(LONG_ABOUT)
+            .arg(arg!(formation =["NAME|ID"] required)
+                .validator(validate_name_id)
+                .help("The name or ID of the Formation to launch"))
+            .arg(arg!(--all -('a')).conflicts_with("exact").help("Stop all matching Formations even when FORMATION is ambiguous"))
+            .arg(arg!(--exact -('x')).conflicts_with("all").help("The given FORMATION must be an exact match"))
+            .arg(arg!(--fetch -('F')).help("Fetch remote Formation definitions prior to attempting to launch this Formation"))
+            .arg(arg!(--grounded).help("Upload the configuration(s) to Seaplane but *DO NOT* set them to active"))
+    }
 }
 
-impl SeaplaneFormationLaunchArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        if self.fetch {
-            let fetch = SeaplaneFormationFetchArgs {
-                formation: Some(self.formation.clone()),
-            };
+impl CliCommand for SeaplaneFormationLaunch {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        let should_fetch = ctx.formation_ctx().fetch;
+        if should_fetch {
+            let fetch = SeaplaneFormationFetch;
             fetch.run(ctx)?;
         }
         // Load the known Formations from the local JSON "DB"
@@ -87,19 +82,19 @@ impl SeaplaneFormationLaunchArgs {
         let formations: Formations = FromDisk::load(&formations_file)?;
 
         // Get the indices of any formations that match the given name/ID
-        let indices = if self.exact {
-            formations.formation_indices_of_matches(&self.formation)
+        let indices = if ctx.exact {
+            formations.formation_indices_of_matches(ctx.name_id.as_ref().unwrap())
         } else {
-            formations.formation_indices_of_left_matches(&self.formation)
+            formations.formation_indices_of_left_matches(ctx.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(self.formation.clone(), self.exact)?,
+            0 => errors::no_matching_item(ctx.name_id.clone().unwrap(), ctx.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
-                if !self.all {
-                    errors::ambiguous_item(self.formation.clone(), true)?;
+                if !ctx.all {
+                    errors::ambiguous_item(ctx.name_id.clone().unwrap(), true)?;
                 }
             }
         }
@@ -126,7 +121,7 @@ impl SeaplaneFormationLaunchArgs {
             let mut cfg_uuids = Vec::new();
             // If the user pasaed `--grounded` they don't want the configuration to be set to
             // active
-            if !self.grounded {
+            if !ctx.formation_ctx().grounded {
                 // Get all configurations for this Formation
                 let list_cfg_uuids_req =
                     build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
@@ -153,7 +148,7 @@ impl SeaplaneFormationLaunchArgs {
             }
 
             cli_print!("Successfully Launched Formation '");
-            cli_print!(@Green, "{}", &self.formation);
+            cli_print!(@Green, "{}", &ctx.name_id.as_ref().unwrap());
             if cfg_uuids.is_empty() {
                 cli_println!("'");
             } else {
@@ -169,6 +164,11 @@ impl SeaplaneFormationLaunchArgs {
             .persist()
             .with_context(|| format!("Path: {:?}\n", ctx.formations_file()))?;
 
+        Ok(())
+    }
+
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.name_id = matches.value_of("formation").map(ToOwned::to_owned);
         Ok(())
     }
 }

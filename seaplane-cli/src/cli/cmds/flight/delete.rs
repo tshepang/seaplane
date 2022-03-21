@@ -1,38 +1,41 @@
-use clap::Parser;
+use clap::{ArgMatches, Command};
 
 use crate::{
-    cli::{errors, validator::validate_name_id},
+    cli::{errors, validator::validate_name_id, CliCommand},
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::flight::Flights,
     Ctx,
 };
 
-/// Delete a Flight definition
-#[derive(Parser)]
-#[clap(visible_aliases = &["del", "remove", "rm"], override_usage = "seaplane flight delete <NAME|ID> [OPTIONS]")]
-pub struct SeaplaneFlightDeleteArgs {
-    /// The name or ID of the Flight to remove, must be unambiguous
-    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
-    flight: String,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFlightDelete;
 
-    /// Delete this Flight even if referenced by a Formation (removes any references in
-    /// Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous
-    #[clap(long)]
-    force: bool,
-
-    /// the given FLIGHT must be an exact match
-    #[clap(short = 'x', long, conflicts_with = "all")]
-    exact: bool,
-
-    /// Delete all matching Flights even when FLIGHT is ambiguous
-    #[clap(short, long, conflicts_with = "exact")]
-    all: bool,
-    // TODO: add a --local[-only] flag or similar that combines with --force to only remove local
+impl SeaplaneFlightDelete {
+    pub fn command() -> Command<'static> {
+        // TODO: add a --local[-only] flag or similar that combines with --force to only remove local
+        Command::new("delete")
+            .visible_aliases(&["del", "remove", "rm"])
+            .override_usage("seaplane flight delete <NAME|ID> [OPTIONS]")
+            .about("Delete a Flight definition")
+            .arg(arg!(flight required =["NAME|ID"])
+                .validator(validate_name_id)
+                .help("The name or ID of the Flight to remove, must be unambiguous"))
+            .arg(arg!(--force)
+                .help("Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous"))
+            .arg(arg!(--exact -('x'))
+                .conflicts_with("all")
+                .help("The given FLIGHT must be an exact match")
+                )
+            .arg(arg!(--all -('a'))
+                .conflicts_with("exact")
+                .long("all")
+                .help("Delete all matching Flights even when FLIGHT is ambiguous"))
+    }
 }
 
-impl SeaplaneFlightDeleteArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
+impl CliCommand for SeaplaneFlightDelete {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
         let mut flights: Flights = FromDisk::load(&flights_file).unwrap_or_default();
@@ -40,19 +43,19 @@ impl SeaplaneFlightDeleteArgs {
         // TODO: find remote Flights too to check references
 
         // Get the indices of any flights that match the given name/ID
-        let indices = if self.exact {
-            flights.indices_of_matches(&self.flight)
+        let indices = if ctx.exact {
+            flights.indices_of_matches(ctx.name_id.as_ref().unwrap())
         } else {
-            flights.indices_of_left_matches(&self.flight)
+            flights.indices_of_left_matches(ctx.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(self.flight.clone(), self.exact)?,
+            0 => errors::no_matching_item(ctx.name_id.clone().unwrap(), ctx.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
-                if !self.all {
-                    errors::ambiguous_item(self.flight.clone(), true)?;
+                if !ctx.all {
+                    errors::ambiguous_item(ctx.name_id.clone().unwrap(), true)?;
                 }
             }
         }
@@ -71,6 +74,11 @@ impl SeaplaneFlightDeleteArgs {
             if indices.len() > 1 { "s" } else { "" }
         );
 
+        Ok(())
+    }
+
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.name_id = matches.value_of("flight").map(ToOwned::to_owned);
         Ok(())
     }
 }

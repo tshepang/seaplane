@@ -1,5 +1,6 @@
 use std::{
-    io::Write,
+    fs,
+    io::{self, Read, Write},
     path::{Path, PathBuf},
 };
 
@@ -9,10 +10,10 @@ use tabwriter::TabWriter;
 
 use crate::{
     context::{Ctx, FlightCtx},
-    error::{CliError, CliErrorKind, Result},
+    error::{CliError, CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
     ops::Id,
-    printer::Output,
+    printer::{Color, Output},
 };
 
 /// A wrapper round a Flight model
@@ -47,7 +48,7 @@ impl Flight {
         if keep_src_name {
             dest_builder = dest_builder.name(self.model.name());
         } else {
-            dest_builder = dest_builder.name(&ctx.name);
+            dest_builder = dest_builder.name(&ctx.name_id);
         }
 
         if let Some(image) = ctx.image.clone() {
@@ -87,9 +88,35 @@ impl Flight {
         self.model = dest_builder.build().expect("Failed to build Flight");
         Ok(())
     }
+
+    /// Creates a Flight from either a JSON string in STDIN (@-) or a path pointed to by @path.
+    fn from_at_str(flight: &str) -> Result<Self> {
+        // First try to create for a @- (STDIN)
+        if flight == "@-" {
+            let mut buf = String::new();
+            let stdin = io::stdin();
+            let mut stdin_lock = stdin.lock();
+            stdin_lock.read_to_string(&mut buf)?;
+
+            // TODO: we need to check for and handle duplicates
+            let new_flight = Flight::from_json(&buf)?;
+            return Ok(new_flight);
+        // next try to create if using @path
+        } else if let Some(path) = flight.strip_prefix('@') {
+            let new_flight = Flight::from_json(
+                &fs::read_to_string(path)
+                    .map_err(CliError::from)
+                    .context("\n\tpath: ")
+                    .with_color_context(|| (Color::Yellow, path))?,
+            )?;
+            return Ok(new_flight);
+        }
+
+        Err(CliErrorKind::InvalidCliValue(None, flight.into()).into_err())
+    }
 }
 
-#[derive(Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(transparent)]
 pub struct Flights {
     #[serde(skip)]
@@ -110,6 +137,24 @@ impl FromDisk for Flights {
 impl ToDisk for Flights {}
 
 impl Flights {
+    /// Takes strings in the form of @- or @path and creates then adds them to the DB. Only one @-
+    /// may be used or an Error is returned.
+    ///
+    /// Returns a list of any created IDs
+    pub fn add_from_at_strs(&mut self, flights: &[&str]) -> Result<Vec<String>> {
+        if flights.iter().filter(|&&f| f == "@-").count() > 1 {
+            return Err(CliErrorKind::MultipleAtStdin.into_err());
+        }
+        let mut ret = Vec::new();
+        for flight in flights {
+            let new_flight = Flight::from_at_str(flight)?;
+            ret.push(new_flight.model.name().to_owned());
+            self.inner.push(new_flight);
+        }
+
+        Ok(ret)
+    }
+
     /// Removes any Flight definitions from the matching indices and returns a Vec of all removed
     /// Flights
     pub fn remove_indices(&mut self, indices: &[usize]) -> Vec<Flight> {

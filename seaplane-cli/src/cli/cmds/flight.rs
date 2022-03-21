@@ -1,4 +1,4 @@
-mod common;
+pub mod common;
 mod copy;
 mod create;
 mod delete;
@@ -7,24 +7,24 @@ mod list;
 #[cfg(feature = "unstable")]
 mod template;
 
-use clap::{Parser, Subcommand};
+use clap::{ArgMatches, Command};
 use seaplane::api::{
     v1::{ImageReference, ImageReferenceError},
     IMAGE_REGISTRY_URL,
 };
 
 #[cfg(feature = "unstable")]
-pub use self::template::SeaplaneFlightTemplateArgs;
+pub use self::template::SeaplaneFlightTemplate;
 pub use self::{
-    common::SeaplaneFlightCommonArgs, copy::SeaplaneFlightCopyArgs,
-    create::SeaplaneFlightCreateArgs, delete::SeaplaneFlightDeleteArgs,
-    edit::SeaplaneFlightEditArgs, list::SeaplaneFlightListArgs,
+    copy::SeaplaneFlightCopy, create::SeaplaneFlightCreate, delete::SeaplaneFlightDelete,
+    edit::SeaplaneFlightEdit, list::SeaplaneFlightList,
 };
 use crate::{
-    cli::specs::IMAGE_SPEC,
-    context::Ctx,
+    cli::{specs::IMAGE_SPEC, CliCommand},
     error::{CliError, Result},
 };
+
+pub const FLIGHT_MINIMUM_DEFAULT: u64 = 1;
 
 /// Allows eliding `registry.seaplanet.io` but otherwise just proxies parsing to ImageReference
 pub fn str_to_image_ref(image_str: &str) -> Result<ImageReference> {
@@ -38,36 +38,44 @@ pub fn str_to_image_ref(image_str: &str) -> Result<ImageReference> {
     }
 }
 
-/// Operate on Seaplane Flights (logical containers), which are the core component of Formations
-#[derive(Parser)]
-pub struct SeaplaneFlightArgs {
-    #[clap(subcommand)]
-    cmd: SeaplaneFlightCmds,
-}
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFlight;
 
-impl SeaplaneFlightArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        use SeaplaneFlightCmds::*;
+impl SeaplaneFlight {
+    pub fn command() -> Command<'static> {
+        #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+        let mut app = Command::new("flight")
+            .about("Operate on Seaplane Flights (logical containers), which are the core component of Formations")
+            .subcommand_required(true)
+            .arg_required_else_help(true)
+            .subcommand(SeaplaneFlightCreate::command())
+            .subcommand(SeaplaneFlightCopy::command())
+            .subcommand(SeaplaneFlightEdit::command())
+            .subcommand(SeaplaneFlightDelete::command())
+            .subcommand(SeaplaneFlightList::command());
 
-        match &self.cmd {
-            Create(args) => Ok(args.run(ctx).map(|_| ())?),
-            Copy(args) => args.run(ctx),
-            Edit(args) => args.run(ctx),
-            Delete(args) => args.run(ctx),
-            List(args) => args.run(ctx),
-            #[cfg(feature = "unstable")]
-            Template(args) => args.run(ctx),
+        #[cfg(feature = "unstable")]
+        {
+            app = app.subcommand(SeaplaneFlightTemplate::subcommand());
         }
+        app
     }
 }
 
-#[derive(Subcommand)]
-pub enum SeaplaneFlightCmds {
-    Create(SeaplaneFlightCreateArgs),
-    Copy(SeaplaneFlightCopyArgs),
-    Edit(SeaplaneFlightEditArgs),
-    Delete(SeaplaneFlightDeleteArgs),
-    List(SeaplaneFlightListArgs),
-    #[cfg(feature = "unstable")]
-    Template(SeaplaneFlightTemplateArgs),
+impl CliCommand for SeaplaneFlight {
+    fn next_subcmd<'a>(
+        &self,
+        matches: &'a ArgMatches,
+    ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
+        match &matches.subcommand() {
+            Some(("create", m)) => Some((Box::new(SeaplaneFlightCreate), m)),
+            Some(("copy", m)) => Some((Box::new(SeaplaneFlightCopy), m)),
+            Some(("edit", m)) => Some((Box::new(SeaplaneFlightEdit), m)),
+            Some(("delete", m)) => Some((Box::new(SeaplaneFlightDelete), m)),
+            Some(("list", m)) => Some((Box::new(SeaplaneFlightList), m)),
+            #[cfg(feature = "unstable")]
+            Some(("template", m)) => Some((Box::new(SeaplaneFlightTemplate), m)),
+            _ => None,
+        }
+    }
 }

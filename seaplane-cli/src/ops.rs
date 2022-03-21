@@ -4,27 +4,28 @@
 pub mod flight;
 pub mod formation;
 
-use std::{fmt, result::Result as StdResult};
+use std::fmt;
 
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
-pub fn validate_name(name: &str) -> StdResult<(), ()> {
+/// Returns true if the name is valid
+pub fn validate_name(name: &str) -> bool {
     if name.len() > 27
         || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
         || name.chars().filter(|c| *c == '-').count() > 3
         || name.contains("--")
     {
-        return Err(());
+        return false;
     }
 
-    Ok(())
+    true
 }
 
 pub fn generate_name() -> String {
     // TODO: Maybe set an upper bound on the number of iterations and don't expect
     names::Generator::default()
-        .find(|name| validate_name(name).is_ok())
+        .find(|name| validate_name(name))
         .expect("Failed to generate a random name")
 }
 
@@ -38,11 +39,17 @@ pub struct Id {
     pub inner: [u8; 32],
 }
 
-impl Id {
-    pub fn new() -> Self {
+impl Default for Id {
+    fn default() -> Self {
         Self {
             inner: rand::thread_rng().gen(),
         }
+    }
+}
+
+impl Id {
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 

@@ -204,3 +204,152 @@ macro_rules! cli_debugln {
         cli_debug!("\n");
     }}
 }
+
+// Helper macros to make some CLI aspects a little less verbose
+
+/// Converts a value from a clap::ArgMatches into some Result<T, CliError>
+///
+/// This macro uses clap's ArgMatches::value_of_t
+/// (https://docs.rs/clap/latest/clap/struct.ArgMatches.html#method.value_of_t) but matches the
+/// error if any and converts to our own CliError
+macro_rules! value_t {
+    ($m:ident, $v:expr, $ty:ty) => {{
+        match $m.value_of_t::<$ty>($v) {
+            Ok(val) => Ok(val),
+            Err(e) => match e.kind() {
+                ::clap::ErrorKind::ValueValidation => {
+                    if let ::clap::error::ContextValue::String(s) = e.context().nth(0).unwrap().1 {
+                        Err(
+                            $crate::error::CliErrorKind::InvalidCliValue(Some($v), s.to_string())
+                                .into_err(),
+                        )
+                    } else {
+                        // clap only returns a single string context value for ErrorKind::ValueValidation
+                        // the pattern is actually irrefutable
+                        unreachable!()
+                    }
+                }
+                ::clap::ErrorKind::ArgumentNotFound => {
+                    Err($crate::error::CliErrorKind::CliArgNotUsed($v).into_err())
+                }
+                // `clap::ArgMatches::value_of_t` does not return any other type of error but the
+                // above two
+                _ => unreachable!(),
+            },
+        }
+    }};
+}
+
+/// Collects the values out of an ArgMatches parsing them into some T or exiting if any value fails
+/// to parse. Unlike ArgMatches::values_of_t_or_exit this macro does not require the argument to
+/// have been used.
+macro_rules! values_t_or_exit {
+    (@into-model $m:ident, $v:expr, $ty:ty) => {{
+        $m.values_of($v)
+            .map(|vals| {
+                vals.filter_map(|s| {
+                    // clap already validates that these values are valid
+                    let p = &s.parse::<$ty>().unwrap();
+                    <$ty>::into_model(p)
+                })
+                .collect()
+            })
+            .unwrap_or_default()
+    }};
+    ($m:ident, $v:expr, $ty:ty) => {{
+        $m.values_of($v)
+            .map(|vals| {
+                vals.map(|s| {
+                    // clap already validates that these values are valid
+                    s.parse::<$ty>().unwrap()
+                })
+                .collect()
+            })
+            .unwrap_or_default()
+    }};
+}
+
+/// Makes declaring *consistent* arguments less verbose and less tedious.
+///
+/// The available syntax is:
+///
+/// - `--STRING` or `--("STRING-WITH-HYPHENS")` will make an `Arg` where *both* the name and long
+/// are the same. Due to Rust syntax, if the argument should have hyphens, one must use
+/// `--("foo-bar-baz")`
+/// - `-('f')` sets the Short value. (Due to Rust syntax rules)
+/// - Visible aliases can be set with using `|` along with the similar Long value rules. I.e. `|foo` or
+/// `|("foo-with-hyphens"). When combined the Long/name it actually looks good `--foo|bar`, etc.
+/// - A value name can be set with `=["STRING"]` optionally also setting a default value `=["STRING"=>"default"]`
+/// - Setting multiple values can be done with `...` Note that this sets multiple
+/// values/occurrences in a consistent manner for this application. If you need arguments with
+/// different semantics you'll have to set those manually. `...` is equivalent to setting
+/// `Arg::new("foo").multiple_values(true).multiple_occurrences(true).number_of_values(1).value_delimiter(',')`
+/// - Setting any boolean value to `true` can be done by just the function name i.e. `required`
+/// - Setting any boolean value to `false` can be done by prefixing the function with `!` i.e.
+/// `!required`
+///
+/// ```rust
+/// # use clap::Arg;
+/// # use seaplane_cli::macros::arg;
+/// # let _ =
+/// arg!(--foo|foos =["NUM"=>"2"]... global !allow_hyphen_values);
+///
+/// // is equivalent to (with the macro syntax in the comment to the right)...
+///# let _ =
+/// Arg::new("foo")                // --foo
+///   .long("foo")                 // --foo
+///   .visible_alias("foos")       // |foos
+///   .value_name("NUM")           // =["NUM"]
+///   .default_value("2")          // =[..=>"2"]
+///   .multiple_values(true)       // ...
+///   .multiple_occurrences(true)  // ...
+///   .value_delimiter(',')        // ...
+///   .number_of_values(1)         // ...
+///   .global(true)                // global
+///   .allow_hyphen_values(false); // !allow_hyphen_values
+/// ```
+macro_rules! arg {
+    (@arg ($arg:expr) ) => { $arg };
+    (@arg ($arg:expr) --$long:ident $($tail:tt)*) => {
+        arg!(@arg ($arg.long(stringify!($long))) $($tail)* )
+    };
+    (@arg ($arg:expr) -($short:expr) $($tail:tt)*) => {
+        arg!(@arg ($arg.short($short)) $($tail)* )
+    };
+    (@arg ($arg:expr) | ($alias:expr) $($tail:tt)*) => {
+        arg!(@arg ($arg.visible_alias($alias)) $($tail)* )
+    };
+    (@arg ($arg:expr) | $alias:ident $($tail:tt)*) => {
+        arg!(@arg ($arg.visible_alias(stringify!($alias))) $($tail)* )
+    };
+    (@arg ($arg:expr) ... $($tail:tt)*) => {
+        arg!(@arg ($arg.number_of_values(1).value_delimiter(',')) multiple_values multiple_occurrences $($tail)* )
+    };
+    (@arg ($arg:expr) =[$var:expr$(=>$default:expr)?] $($tail:tt)*) => {
+        arg!(@arg ({
+            #[allow(unused_mut)]
+            let mut a = $arg.value_name($var);
+            $(
+                a = a.default_value($default);
+            )?
+            a
+            }) $($tail)*)
+    };
+    // !foo -> .foo(false)
+    (@arg ($arg:expr) !$ident:ident $($tail:tt)*) => {
+        arg!(@arg ($arg.$ident(false)) $($tail)*)
+    };
+    // +foo -> .foo(true)
+    (@arg ($arg:expr) $ident:ident $($tail:tt)*) => {
+        arg!(@arg ($arg.$ident(true)) $($tail)*)
+    };
+    ($name:ident $($tail:tt)*) => {
+        arg!(@arg (::clap::Arg::new(stringify!($name))) $($tail)* )
+    };
+    (--($name:expr) $($tail:tt)*) => {
+        arg!(@arg (::clap::Arg::new($name).long($name)) $($tail)* )
+    };
+    (--$name:ident $($tail:tt)*) => {
+        arg!(@arg (::clap::Arg::new(stringify!($name)).long(stringify!($name))) $($tail)* )
+    };
+}

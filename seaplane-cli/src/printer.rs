@@ -1,15 +1,16 @@
 use std::{
     io,
     result::Result as StdResult,
+    str::FromStr,
     sync::{Mutex, MutexGuard, PoisonError},
 };
 
-use clap::ArgEnum;
 use once_cell::sync::OnceCell;
 use serde::{
-    de::{self, Deserialize, Deserializer},
-    Serialize,
+    de::{self, Deserializer},
+    Deserialize, Serialize,
 };
+use strum::{EnumString, EnumVariantNames};
 
 use crate::{error::Result, Ctx};
 
@@ -18,7 +19,10 @@ static GLOBAL_EPRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new
 
 pub use self::_printer::{eprinter, printer, Printer};
 
-#[derive(ArgEnum, Copy, Clone, Debug, PartialEq)]
+#[derive(
+    EnumString, strum::Display, EnumVariantNames, Deserialize, Copy, Clone, Debug, PartialEq,
+)]
+#[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum OutputFormat {
     Table,
     Json,
@@ -30,7 +34,10 @@ impl Default for OutputFormat {
     }
 }
 
-#[derive(ArgEnum, Copy, Clone, Debug, PartialEq, Serialize)]
+#[derive(
+    strum::Display, EnumVariantNames, EnumString, Copy, Clone, Debug, PartialEq, Serialize,
+)]
+#[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum ColorChoice {
     Always,
     Ansi,
@@ -101,6 +108,7 @@ mod _printer {
         }
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct Printer(StandardStream);
 
     pub fn printer() -> MutexGuard<'static, Printer> {
@@ -181,6 +189,7 @@ mod _printer {
         Stderr(io::Stderr),
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct Printer(StandardStream);
 
     pub fn printer() -> MutexGuard<'static, Printer> {

@@ -1,49 +1,59 @@
-use clap::Parser;
+use clap::Command;
 
 use crate::{
-    cli::{cmds::formation::build_request, errors, validator::validate_name_id},
+    cli::{cmds::formation::build_request, errors, validator::validate_name_id, CliCommand},
     error::{Context, Result},
     fs::{FromDisk, ToDisk},
     ops::formation::Formations,
     Ctx,
 };
 
-/// Land (Stop) all configurations of a Formation
-#[derive(Parser)]
-#[clap(visible_alias = "stop")]
-pub struct SeaplaneFormationLandArgs {
-    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
-    formation: String,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFormationLand;
 
-    /// Stop all matching Formations even when FORMATION is ambiguous
-    #[clap(short, long, conflicts_with = "exact")]
-    all: bool,
-
-    /// the given FORMATION must be an exact match
-    #[clap(short = 'x', long, conflicts_with = "all")]
-    exact: bool,
+impl SeaplaneFormationLand {
+    pub fn command() -> Command<'static> {
+        Command::new("land")
+            .visible_alias("stop")
+            .about("Land (Stop) all configurations of a Formation")
+            .arg(
+                arg!(formation =["NAME|ID"] required)
+                    .help("The name or ID of the Formation to land")
+                    .validator(validate_name_id),
+            )
+            .arg(
+                arg!(--all - ('a'))
+                    .conflicts_with("exact")
+                    .help("Stop all matching Formations even when FORMATION is ambiguous"),
+            )
+            .arg(
+                arg!(--exact - ('x'))
+                    .conflicts_with("all")
+                    .help("The given FORMATION must be an exact match"),
+            )
+    }
 }
 
-impl SeaplaneFormationLandArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
+impl CliCommand for SeaplaneFormationLand {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Load the known Formations from the local JSON "DB"
         let formations_file = ctx.formations_file();
         let mut formations: Formations = FromDisk::load(&formations_file)?;
 
         // Get the indices of any formations that match the given name/ID
-        let indices = if self.exact {
-            formations.formation_indices_of_matches(&self.formation)
+        let indices = if ctx.exact {
+            formations.formation_indices_of_matches(ctx.name_id.as_ref().unwrap())
         } else {
-            formations.formation_indices_of_left_matches(&self.formation)
+            formations.formation_indices_of_left_matches(ctx.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(self.formation.clone(), self.exact)?,
+            0 => errors::no_matching_item(ctx.name_id.clone().unwrap(), ctx.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
-                if !self.all {
-                    errors::ambiguous_item(self.formation.clone(), true)?;
+                if !ctx.all {
+                    errors::ambiguous_item(ctx.name_id.clone().unwrap(), true)?;
                 }
             }
         }
@@ -68,7 +78,7 @@ impl SeaplaneFormationLandArgs {
                 .with_context(|| format!("Path: {:?}\n", ctx.formations_file()))?;
 
             cli_print!("Successfully Landed Formation '");
-            cli_print!(@Green, "{}", &self.formation);
+            cli_print!(@Green, "{}", &ctx.name_id.as_ref().unwrap());
             cli_println!("'");
         }
 

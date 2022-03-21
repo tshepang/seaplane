@@ -1,12 +1,12 @@
-use clap::Parser;
+use clap::{ArgMatches, Command};
+use strum::VariantNames;
 
 use crate::{
-    error::Result, fs::FromDisk, ops::formation::Formations, printer::Output, Ctx, OutputFormat,
+    cli::CliCommand, error::Result, fs::FromDisk, ops::formation::Formations, printer::Output, Ctx,
+    OutputFormat,
 };
 
-/// List your Seaplane Formations
-#[derive(Parser)]
-#[clap(visible_aliases = &["ls"], long_about = "List your Seaplane Formations
+static LONG_ABOUT: &str = "List your Seaplane Formations
 
 This command will display the status and number of configurations for each of your Formations.
 The Formations displayed come from the local database of know Formations. You may wish to update
@@ -14,17 +14,27 @@ the local database with Remote Formations as well by first running:
 
 $ seaplane formation fetch-remote
 
-After which your local database will contain all remote Formations and their configurations as well.")]
-pub struct SeaplaneFormationListArgs {
-    /// Change the output format
-    #[clap(arg_enum, long, default_value = "table")]
-    format: OutputFormat,
+After which your local database will contain all remote Formations and their configurations as well.";
+
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFormationList;
+
+impl SeaplaneFormationList {
+    pub fn command() -> Command<'static> {
+        Command::new("list")
+            .visible_alias("ls")
+            .long_about(LONG_ABOUT)
+            .about("List your Seaplane Formations")
+            .arg(
+                arg!(--format =["FORMAT"=>"table"])
+                    .possible_values(OutputFormat::VARIANTS)
+                    .help("Change the output format"),
+            )
+    }
 }
 
-impl SeaplaneFormationListArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        self.update_ctx(ctx)?;
-
+impl CliCommand for SeaplaneFormationList {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let formations: Formations = FromDisk::load(ctx.formations_file())?;
 
         match ctx.out_format {
@@ -35,8 +45,8 @@ impl SeaplaneFormationListArgs {
         Ok(())
     }
 
-    fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.out_format = self.format;
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.out_format = matches.value_of_t("format").unwrap_or_default();
 
         Ok(())
     }

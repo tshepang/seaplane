@@ -1,55 +1,36 @@
-use clap::Parser;
+use clap::{ArgMatches, Command};
 
 use crate::{
-    cli::cmds::flight::{SeaplaneFlightCommonArgs, IMAGE_SPEC},
+    cli::{
+        cmds::flight::{common, IMAGE_SPEC},
+        CliCommand,
+    },
+    context::FlightCtx,
     error::{CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
-    ops::{
-        flight::{Flight, Flights},
-        Id,
-    },
+    ops::flight::{Flight, Flights},
     printer::Color,
     Ctx,
 };
 
-// TODO: add --from
-/// Create a new Flight definition
-#[derive(Parser)]
-#[clap(visible_aliases = &["add"], after_help = IMAGE_SPEC, override_usage =
-"seaplane flight create --image=<SPEC> [OPTIONS]")]
-pub struct SeaplaneFlightCreateArgs {
-    // So we don't have to define the same args over and over with commands that use the same ones
-    #[clap(flatten)]
-    pub shared: SeaplaneFlightCommonArgs,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFlightCreate;
 
-    /// Override any existing Flights with the same NAME
-    #[clap(short, long)]
-    pub force: bool,
+impl SeaplaneFlightCreate {
+    pub fn command() -> Command<'static> {
+        // TODO: add --from
+        Command::new("create")
+            .visible_alias("add")
+            .after_help(IMAGE_SPEC)
+            .override_usage("seaplane flight create --image=<SPEC> [OPTIONS]")
+            .about("Create a new Flight definition")
+            .arg(arg!(--force - ('f')).help("Override any existing Flights with the same NAME"))
+            .args(common::args(true))
+    }
 }
 
-impl SeaplaneFlightCreateArgs {
-    /// Returns the ID of the created Flight
-    pub fn run(&self, ctx: &mut Ctx) -> Result<Id> {
-        self.update_ctx(ctx)?;
-
-        // In the shared args --image is optional, because not all commands need it to be
-        // mandatory.
-        //
-        // So we have to check ourselves to make sure it's included, and can unwrap() down below.
-        if self.shared.image.is_none() {
-            // We emulate clap errors so as to provide a cohesive experience
-            cli_print!(@Red, "error: ");
-            cli_println!("The following required arguments were not provided:");
-            cli_println!(@Green, "    --image=<SPEC>");
-            cli_println!("");
-            cli_println!("USAGE:");
-            cli_println!("seaplane flight create --image=<SPEC> [OPTIONS]");
-            cli_println!("");
-            cli_print!("For more information try ");
-            cli_println!(@Green, "--help");
-            std::process::exit(2);
-        }
-
+impl CliCommand for SeaplaneFlightCreate {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let new_flight = ctx.flight_ctx().model();
 
         // Load the known Flights from the local JSON "DB"
@@ -62,7 +43,7 @@ impl SeaplaneFlightCreateArgs {
         if !indices.is_empty() {
             // TODO: We should check if these ones we remove are referenced remote or not
 
-            if !self.force {
+            if !ctx.force {
                 return Err(CliErrorKind::DuplicateName(name.into())
                     .into_err()
                     .context("(hint: try '")
@@ -93,11 +74,12 @@ impl SeaplaneFlightCreateArgs {
         cli_print!(@Green, "{}", &id.to_string()[..8]);
         cli_println!("'");
 
-        Ok(id)
+        Ok(())
     }
 
-    fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.flight.init(self.shared.flight_ctx()?);
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.flight.init(FlightCtx::from_arg_matches(matches, "")?);
+        ctx.force = matches.is_present("force");
         Ok(())
     }
 }

@@ -1,47 +1,50 @@
-use clap::Parser;
+use clap::{ArgMatches, Command};
 
 use crate::{
     cli::{
-        cmds::flight::SeaplaneFlightCommonArgs, errors::wrap_cli_context, specs::IMAGE_SPEC,
-        validator::validate_name_id,
+        cmds::flight::common, errors::wrap_cli_context, specs::IMAGE_SPEC,
+        validator::validate_name_id, CliCommand,
     },
-    context::Ctx,
+    context::{Ctx, FlightCtx},
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::flight::Flights,
 };
 
-// TODO: add --from
-/// Copy a Flight definition
-#[derive(Parser)]
-#[clap(visible_aliases = &["clone"], after_help = IMAGE_SPEC, override_usage =
-"seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
-    seaplane flight copy <NAME|ID> [OPTIONS]")]
-pub struct SeaplaneFlightCopyArgs {
-    /// The source name or ID of the Flight to copy
-    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
-    source: String,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFlightCopy;
 
-    /// the given SOURCE must be an exact match
-    #[clap(short = 'x', long)]
-    exact: bool,
-
-    // So we don't have to define the same args over and over with commands that use the same ones
-    #[clap(flatten)]
-    shared: SeaplaneFlightCommonArgs,
+impl SeaplaneFlightCopy {
+    pub fn command() -> Command<'static> {
+        // TODO: add --from
+        Command::new("copy")
+            .visible_alias("clone")
+            .about("Copy a Flight definition")
+            .after_help(IMAGE_SPEC)
+            .override_usage(
+                "seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
+    seaplane flight copy <NAME|ID> [OPTIONS]",
+            )
+            .arg(
+                arg!(name_id =["NAME|ID"] required)
+                    .validator(validate_name_id)
+                    .help("The source name or ID of the Flight to copy"),
+            )
+            .arg(arg!(--exact - ('x')).help("The given SOURCE must be an exact match"))
+            .args(common::args(false))
+    }
 }
 
-impl SeaplaneFlightCopyArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        self.update_ctx(ctx)?;
-
+impl CliCommand for SeaplaneFlightCopy {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
         let mut flights: Flights = FromDisk::load(&flights_file)?;
 
-        let mut dest_flight = match flights.clone_flight(&self.source, self.exact) {
+        // name_id cannot be None in `flight copy`
+        let mut dest_flight = match flights.clone_flight(ctx.name_id.as_ref().unwrap(), ctx.exact) {
             Ok(f) => f,
-            Err(e) => return wrap_cli_context(e, self.exact, false),
+            Err(e) => return wrap_cli_context(e, ctx.exact, false),
         };
 
         // Now we just edit the newly copied Flight to match the given CLI params...
@@ -57,7 +60,7 @@ impl SeaplaneFlightCopyArgs {
         flights.persist()?;
 
         cli_print!("Successfully copied Flight '");
-        cli_print!(@Yellow, "{}", self.source);
+        cli_print!(@Yellow, "{}", ctx.name_id.as_ref().unwrap());
         cli_print!("' to new Flight '");
         cli_print!(@Green, "{}", name);
         cli_print!("' with ID '");
@@ -67,8 +70,10 @@ impl SeaplaneFlightCopyArgs {
         Ok(())
     }
 
-    fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.flight.init(self.shared.flight_ctx()?);
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        // clap will not let "source" be None
+        ctx.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
+        ctx.flight.init(FlightCtx::from_arg_matches(matches, "")?);
         Ok(())
     }
 }

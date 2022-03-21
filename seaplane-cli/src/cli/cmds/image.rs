@@ -1,12 +1,20 @@
-use clap::Parser;
+use clap::{Arg, ArgMatches, Command};
 
 use crate::{context::Ctx, error::Result};
 
-#[derive(Parser)]
-pub struct SeaplaneImageArgs;
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneImage;
 
-impl SeaplaneImageArgs {
-    pub fn run(&self, _ctx: &Ctx) -> Result<()> {
-        todo!("impl SeaplaneConfigArgs")
+impl SeaplaneImage {
+    fn common() -> Command<'static> {
+        todo!("SeaplaneImage::into_app")
+    }
+}
+impl CliCommand for SeaplaneImage {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        todo!("SeaplaneImage::run")
+    }
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        todo!("SeaplaneImage::update_ctx")
     }
 }

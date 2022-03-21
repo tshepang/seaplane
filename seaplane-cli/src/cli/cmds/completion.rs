@@ -1,8 +1,12 @@
 use std::io;
 
-use clap::{CommandFactory, Parser};
+use clap::{ArgMatches, Command};
 
-use crate::{cli::SeaplaneArgs, error::Result, Ctx};
+use crate::{
+    cli::{CliCommand, Seaplane},
+    error::Result,
+    Ctx,
+};
 
 // @TODO @SIZE this str is ~3.5kb, it can be stored compressed at around 1.4kb. However that would
 // require a code to do the compression/decompression which is larger than the 2.1kb savings. There
@@ -102,21 +106,34 @@ static COMPLETION_HELP: &str = "DISCUSSION:
         >> ${env:USERPROFILE}\\Documents\\WindowsPowerShell\\Microsoft.PowerShell_profile.ps1
 ";
 
-/// Generate shell completion script files for seaplane
-#[derive(Parser)]
-#[clap(after_help = COMPLETION_HELP)]
-pub struct SeaplaneShellCompletionArgs {
-    /// The shell to generate completion scripts for
-    #[clap(ignore_case = true, arg_enum)]
-    shell: clap_complete::Shell,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneShellCompletion;
+
+impl SeaplaneShellCompletion {
+    pub fn command() -> Command<'static> {
+        Command::new("shell-completion")
+            .about("Generate shell completion script files for seaplane")
+            .after_help(COMPLETION_HELP)
+            .arg(
+                arg!(shell ignore_case required)
+                    .help("The shell to generate completion scripts for")
+                    .possible_values(clap_complete::Shell::possible_values()),
+            )
+    }
 }
 
-impl SeaplaneShellCompletionArgs {
-    pub fn run(&self, _ctx: &mut Ctx) -> Result<()> {
-        let mut app = SeaplaneArgs::command();
+impl CliCommand for SeaplaneShellCompletion {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        let mut app = Seaplane::command();
 
-        clap_complete::generate(self.shell, &mut app, "seaplane", &mut io::stdout());
+        clap_complete::generate(ctx.shell.unwrap(), &mut app, "seaplane", &mut io::stdout());
 
+        Ok(())
+    }
+
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        // unwrap is safe because clap won't let this value be empty
+        ctx.shell = Some(matches.value_of_t("shell").unwrap());
         Ok(())
     }
 }

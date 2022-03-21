@@ -3,19 +3,20 @@
 // (see LICENSE or <http://opensource.org/licenses/Apache-2.0>) All files in the project carrying such
 // notice may not be copied, modified, or distributed except according to those terms.
 
-use clap::Parser;
-
 use seaplane_cli::{
-    cli::SeaplaneArgs, config::RawConfig, context::Ctx, error::Result, log::LogLevel,
-    printer::OutputFormat,
+    cli::{CliCommand, Seaplane},
+    config::RawConfig,
+    context::Ctx,
+    error::Result,
+    log::LogLevel,
 };
 
 fn try_main() -> Result<()> {
-    let args = SeaplaneArgs::parse();
-    // Normally, this would be in the SeapalneArgs::run method, however setting up logging has to
+    let matches = Seaplane::command().get_matches();
+    // Normally, this would be in the Seapalne::run method, however setting up logging has to
     // happen super early in the process lifetime
-    match args.verbose {
-        0 => match args.quiet {
+    match matches.occurrences_of("verbose") {
+        0 => match matches.occurrences_of("quiet") {
             0 => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Info).unwrap(),
             1 => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Warn).unwrap(),
             2 => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Error).unwrap(),
@@ -28,7 +29,9 @@ fn try_main() -> Result<()> {
     let mut ctx = Ctx::from_config(&RawConfig::load_all()?)?;
     ctx.update_from_env()?;
 
-    args.run(&mut ctx)
+    let s: Box<dyn CliCommand> = Box::new(Seaplane);
+    s.traverse_exec(&matches, &mut ctx)?;
+    Ok(())
 }
 
 fn main() {

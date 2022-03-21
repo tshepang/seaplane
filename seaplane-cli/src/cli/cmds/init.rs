@@ -1,33 +1,37 @@
 use std::fs;
 
-use clap::Parser;
+use clap::{ArgMatches, Command};
 
-use crate::{config::RawConfig, context::Ctx, error::Result, fs::conf_dirs};
+use crate::{cli::CliCommand, config::RawConfig, context::Ctx, error::Result, fs::conf_dirs};
 
-/// Create the Seaplane directory structure at the appropriate locations
-#[derive(Parser, Default)]
-pub struct SeaplaneInitArgs {
-    /// Force create the files and directories (DANGER: will overwrite existing files)
-    #[clap(
-        long,
-        long_help = "Force create the files and directories (DANGER: will overwrite existing files)
+static LONG_FORCE: &str =
+    "Force create the files and directories (DANGER: will overwrite existing files)
 
-Using --force is the same as using --overwrite=all"
-    )]
-    pub force: bool,
+Using --force is the same as using --overwrite=all";
+static LONG_OVERWRITE: &str =
+    "Overwrite select files or directories (DANGER: will overwrite existing data)
 
-    /// Overwrite select files or directories (DANGER: will overwrite existing data)
-    #[clap(long, possible_values = &["all", "formations", "flights", "config"],
-        long_help = "Overwrite select files or directories (DANGER: will overwrite existing data)
+Using --overwrite=all is the same as using --force";
 
-Using --overwrite=all is the same as using --force")]
-    pub overwrite: Option<String>,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneInit;
+
+impl SeaplaneInit {
+    pub fn command() -> Command<'static> {
+        Command::new("init")
+            .about("Create the Seaplane directory structure at the appropriate locations")
+            .arg(arg!(--force)
+                .help("Force create the files and directories (DANGER: will overwrite existing files)")
+                .long_help(LONG_FORCE))
+            .arg(arg!(--overwrite =["ITEM"])
+                .help("Overwrite select files or directories (DANGER: will overwrite existing data)")
+                .long_help(LONG_OVERWRITE)
+                .possible_values(&["all", "formations", "flights", "config"]))
+    }
 }
 
-impl SeaplaneInitArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        self.update_ctx(ctx)?;
-
+impl CliCommand for SeaplaneInit {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Create the data directory
         cli_debugln!("Creating directory {:?}", ctx.data_dir());
         fs::create_dir_all(ctx.data_dir())?;
@@ -51,7 +55,7 @@ impl SeaplaneInitArgs {
         // TODO: @security create the file with limited permissions
         for (file, empty_bytes, opt) in to_create {
             if file.exists() {
-                match (ctx.force, &self.overwrite) {
+                match (ctx.force, &ctx.overwrite) {
                     (true, Some(val)) | (_, Some(val)) if val == opt || val == "all" => {
                         cli_warn!(@Yellow, "warn: ");
                         cli_warn!("overwriting existing file ");
@@ -82,8 +86,9 @@ impl SeaplaneInitArgs {
         Ok(())
     }
 
-    pub fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.force = self.force;
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.force = matches.is_present("force");
+        ctx.overwrite = matches.value_of("overwrite").map(ToOwned::to_owned);
         Ok(())
     }
 }

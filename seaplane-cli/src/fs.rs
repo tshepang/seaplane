@@ -1,6 +1,5 @@
 use std::{
-    fs::{self},
-    io,
+    fs, io,
     path::{Path, PathBuf},
 };
 
@@ -9,7 +8,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use tempfile::NamedTempFile;
 
 use crate::{
-    cli::SeaplaneInitArgs,
+    cli::{CliCommand, SeaplaneInit},
     context::Ctx,
     error::{CliError, CliErrorKind, Result},
 };
@@ -53,6 +52,7 @@ pub fn data_dir() -> PathBuf {
 }
 
 /// A struct that writes to a tempfile and persists to a given location atomically on Drop
+#[derive(Debug)]
 pub struct AtomicFile<'p> {
     path: &'p Path,
     temp_file: Option<NamedTempFile>,
@@ -130,7 +130,9 @@ pub trait FromDisk {
                 // it happens again
                 if e.kind() == io::ErrorKind::NotFound {
                     let mut ctx = Ctx::default();
-                    SeaplaneInitArgs::default().run(&mut ctx)?;
+                    let init = SeaplaneInit;
+                    init.run(&mut ctx)?;
+
                     fs::read_to_string(&path).map_err(CliError::from)?
                 } else {
                     return Err(CliError::from(e));

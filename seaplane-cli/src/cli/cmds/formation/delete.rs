@@ -1,57 +1,51 @@
-use clap::Parser;
+use clap::{ArgMatches, Command};
 
 use crate::{
-    cli::{errors, validator::validate_name_id},
+    cli::{errors, validator::validate_name_id, CliCommand},
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::formation::Formations,
     Ctx,
 };
 
-/// Delete a Seaplane Formation
-#[derive(Parser)]
-#[clap(visible_aliases = &["del", "remove", "rm"],
-    override_usage = "seaplane formation delete <NAME|ID> [OPTIONS]")]
-pub struct SeaplaneFormationDeleteArgs {
-    /// The name or ID of the Formation to remove, must be unambiguous
-    #[clap(value_name = "NAME|ID", validator = validate_name_id)]
-    formation: String,
+#[derive(Copy, Clone, Debug)]
+pub struct SeaplaneFormationDelete;
 
-    /// Delete this Formation even if there are configurations In Flight (active), which will
-    /// effectively stop all instances of this Formation
-    #[clap(long)]
-    force: bool,
-
-    /// Delete all matching Formations even when FORMATION is ambiguous
-    #[clap(short, long, conflicts_with = "exact")]
-    all: bool,
-
-    /// Delete local Formations (this is set by the default, use --no-local to skip)
-    #[clap(long, overrides_with = "no-local")]
-    local: bool,
-
-    /// DO NOT delete local Formations
-    #[clap(long, overrides_with = "local")]
-    no_local: bool,
-
-    /// Delete remote Formations
-    #[clap(long, overrides_with = "no-remote")]
-    remote: bool,
-
-    /// DO NOT delete remote Formations (this is set by the default, use --remote to remove them)
-    #[clap(long, overrides_with = "remote")]
-    no_remote: bool,
-
-    /// the given FORMATION must be an exact match
-    #[clap(short = 'x', long, conflicts_with = "all")]
-    exact: bool,
-    // TODO: add --recursive to handle configurations too
+impl SeaplaneFormationDelete {
+    pub fn command() -> Command<'static> {
+        // TODO: add --recursive to handle configurations too
+        Command::new("delete")
+            .visible_aliases(&["del", "remove", "rm"])
+            .about("Delete a Seaplane Formation")
+            .override_usage("seaplane formation delete <NAME|ID> [OPTIONS]")
+            .arg(arg!(formation =["NAME|ID"] required)
+                .validator(validate_name_id)
+                .help("The name or ID of the Formation to remove, must be unambiguous"))
+            .arg(arg!(--force)
+                .help("Delete this Formation even if there are configurations In Flight (active), which will effectively stop all instances of this Formation"))
+            .arg(arg!(--all -('a'))
+                .conflicts_with("exact")
+                .help("Delete all matching Formations even when FORMATION is ambiguous"))
+            .arg(arg!(--local)
+                .overrides_with("no-local")
+                .help("Delete local Formations (this is set by the default, use --no-local to skip)"))
+            .arg(arg!(--("no-local"))
+                .overrides_with("local")
+                .help("DO NOT delete local Formations"))
+            .arg(arg!(--remote)
+                .overrides_with("no-remote")
+                .help("Delete remote Formations"))
+            .arg(arg!(--("no-remote"))
+                .overrides_with("remote")
+                .help("DO NOT delete remote Formations (this is set by the default, use --remote to remove them)"))
+            .arg(arg!(--exact -('x'))
+                .conflicts_with("all")
+                .help("The given FORMATION must be an exact match"))
+    }
 }
 
-impl SeaplaneFormationDeleteArgs {
-    pub fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        self.update_ctx(ctx)?;
-
+impl CliCommand for SeaplaneFormationDelete {
+    fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let formation_ctx = ctx.formation_ctx();
 
         if !formation_ctx.local && !formation_ctx.remote {
@@ -71,19 +65,19 @@ impl SeaplaneFormationDeleteArgs {
         // TODO: find remote Formations too to check references
 
         // Get the indices of any formations that match the given name/ID
-        let indices = if self.exact {
-            formations.formation_indices_of_matches(&self.formation)
+        let indices = if ctx.exact {
+            formations.formation_indices_of_matches(ctx.name_id.as_ref().unwrap())
         } else {
-            formations.formation_indices_of_left_matches(&self.formation)
+            formations.formation_indices_of_left_matches(ctx.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(self.formation.clone(), self.exact)?,
+            0 => errors::no_matching_item(ctx.name_id.clone().unwrap(), ctx.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
-                if !self.all {
-                    errors::ambiguous_item(self.formation.clone(), true)?;
+                if !ctx.all {
+                    errors::ambiguous_item(ctx.name_id.clone().unwrap(), true)?;
                 }
             }
         }
@@ -113,11 +107,11 @@ impl SeaplaneFormationDeleteArgs {
         Ok(())
     }
 
-    fn update_ctx(&self, ctx: &mut Ctx) -> Result<()> {
-        ctx.force = self.force;
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.force = matches.is_present("force");
         let mut fctx = ctx.formation_ctx();
-        fctx.remote = self.remote;
-        fctx.local = self.local || !self.no_local;
+        fctx.remote = matches.is_present("remote");
+        fctx.local = matches.is_present("local") || !matches.is_present("no-local");
 
         Ok(())
     }

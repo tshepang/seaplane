@@ -32,6 +32,7 @@ use std::{
     sync::{Mutex, MutexGuard, PoisonError},
 };
 
+use clap_complete::Shell;
 use once_cell::sync::OnceCell;
 
 use crate::{
@@ -46,6 +47,8 @@ const FORMATIONS_FILE: &str = "formations.json";
 
 /// The source of truth "Context" that is passed to all runtime processes to make decisions based
 /// on user configuration
+// TODO: we may not want to derive this we implement circular references
+#[derive(Debug)]
 pub struct Ctx {
     // @TODO we may need to get more granular than binary yes/no. For example, there may be times
     /// when the answer is "yes...but only if the stream is a TTY." In these cases an enum of Never,
@@ -75,6 +78,24 @@ pub struct Ctx {
 
     /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
+
+    /// The name or local ID of an item
+    pub name_id: Option<String>,
+
+    /// What to overwrite
+    pub overwrite: Option<String>,
+
+    /// Do items need to be exact to match
+    pub exact: bool,
+
+    /// Match all items
+    pub all: bool,
+
+    /// Display third party licenses
+    pub third_party: bool,
+
+    /// The shell to generate completions for
+    pub shell: Option<Shell>,
 }
 
 impl Default for Ctx {
@@ -88,6 +109,12 @@ impl Default for Ctx {
             flight: LateInit::default(),
             formation: LateInit::default(),
             conf_files: Vec::new(),
+            overwrite: None,
+            name_id: None,
+            exact: false,
+            all: false,
+            third_party: false,
+            shell: None,
         }
     }
 }
@@ -99,12 +126,9 @@ impl Ctx {
             // may change.
             color: cfg.seaplane.color.unwrap_or_default(),
             data_dir: fs::data_dir(),
-            force: false,
-            out_format: OutputFormat::default(),
             api_key: cfg.account.api_key.clone(),
-            flight: LateInit::default(),
-            formation: LateInit::default(),
             conf_files: cfg.loaded_from.clone(),
+            ..Self::default()
         })
     }
 
@@ -148,6 +172,8 @@ impl Ctx {
     }
 }
 
+// TODO: we may not want to derive this we implement circular references
+#[derive(Debug)]
 pub struct LateInit<T> {
     inner: OnceCell<Mutex<T>>,
 }

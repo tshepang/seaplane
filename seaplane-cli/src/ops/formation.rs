@@ -31,7 +31,7 @@ use crate::{
 /// "Formation Model" only a "Formation Configuration Model" This is because a "Formation" so to
 /// speak is really just a named collection of configurations and info about their traffic
 /// weights/activation statuses.
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Formations {
     // Where was this "DB" loaded from on disk, so we can persist it back later
     #[serde(skip)]
@@ -267,7 +267,7 @@ impl Output for Formations {
 }
 
 // TODO: move ID to the key of a HashMap
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Formation {
     pub id: Id,
     pub name: Option<String>,
@@ -297,7 +297,7 @@ impl Formation {
 }
 
 /// Wraps the [`FormationConfiguration`] model adding a local ID and the UUID associated
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FormationConfiguration {
     pub id: Id,
     remote_id: Option<Uuid>,
@@ -340,7 +340,7 @@ impl FromStr for Endpoint {
     type Err = String;
 
     fn from_str(s: &str) -> StdResult<Self, Self::Err> {
-        let mut parts = s.split("=");
+        let mut parts = s.split('=');
         Ok(Self {
             src: parts
                 .next()
