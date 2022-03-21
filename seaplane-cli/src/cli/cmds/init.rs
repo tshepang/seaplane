@@ -55,26 +55,27 @@ impl CliCommand for SeaplaneInit {
         // TODO: @security create the file with limited permissions
         for (file, empty_bytes, opt) in to_create {
             if file.exists() {
-                match (ctx.force, &ctx.overwrite) {
-                    (true, Some(val)) | (_, Some(val)) if val == opt || val == "all" => {
-                        cli_warn!(@Yellow, "warn: ");
-                        cli_warn!("overwriting existing file ");
-                        cli_warn!("{:?} ", file);
-                        cli_warn!("due to '");
-                        cli_warn!(@Green, "{}", if ctx.force { "--force".into() } else { format!("--overwrite={}", val)});
-                        cli_warnln!(@noprefix, "'\n");
-                    }
-                    _ => {
-                        // We only want to advertise the *least* destructive option, not --force or
-                        // --overwrite=all. The user can find those on their own.
-                        cli_warn!(@Yellow, "warn: ");
-                        cli_warn!("{:?} ", file);
-                        cli_warnln!(@noprefix, "already exists");
-                        cli_warn!("(hint: use '");
-                        cli_warn!(@Green, "seaplane init --overwrite={} ", opt);
-                        cli_warnln!(@noprefix, "to erase and overwrite it)\n");
-                        continue;
-                    }
+                // Due to how match guards work, we can't use them, we have to use if-else
+                if ctx.force
+                    || ctx.overwrite.as_deref() == Some(opt)
+                    || ctx.overwrite.as_deref() == Some("all")
+                {
+                    cli_warn!(@Yellow, "warn: ");
+                    cli_warn!("overwriting existing file ");
+                    cli_warn!("{:?} ", file);
+                    cli_warn!("due to '");
+                    cli_warn!(@Green, "{}", if ctx.force { "--force".into() } else { format!("--overwrite={}", opt)});
+                    cli_warnln!(@noprefix, "'\n");
+                } else {
+                    // We only want to advertise the *least* destructive option, not --force or
+                    // --overwrite=all. The user can find those on their own.
+                    cli_warn!(@Yellow, "warn: ");
+                    cli_warn!("{:?} ", file);
+                    cli_warnln!(@noprefix, "already exists");
+                    cli_warn!("(hint: use '");
+                    cli_warn!(@Green, "seaplane init --overwrite={} ", opt);
+                    cli_warnln!(@noprefix, "to erase and overwrite it)\n");
+                    continue;
                 }
             }
             cli_debugln!("creating file {:?}", file);
