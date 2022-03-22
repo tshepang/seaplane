@@ -70,3 +70,41 @@ fn get_root_values() {
 
     assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
 }
+
+// PUT /config/base64:{key}
+#[test]
+fn put_value() {
+    let resp_json = json!({"status": 200, "title": "Ok"});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, PUT, "/v1/config/base64:foo");
+        then(t, resp_json);
+    });
+
+    let req = partial_build().encoded_key("foo").build().unwrap();
+    let resp = req.put_value("bar").unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp, ());
+}
+
+// DELETE /config/base64:{key}
+#[test]
+fn delete_value() {
+    let resp_json = json!({"status": 200u32, "title": "Ok"});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, DELETE, "/v1/config/base64:foo");
+        then(t, resp_json);
+    });
+
+    let req = partial_build().encoded_key("foo").build().unwrap();
+    let resp = req.delete_value().unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp, ());
+}
