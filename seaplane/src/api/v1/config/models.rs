@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 /// A single key value pair, encoded in url-safe base64.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct KeyValue {
-    key: Key,
-    value: Value,
+    pub key: Key,
+    pub value: Value,
 }
 
 /// A single key with which to access a value in the store, encoded in url-safe base64.

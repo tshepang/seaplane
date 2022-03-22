@@ -1,6 +1,6 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::{ConfigRequestBuilder, RangeQueryContext};
+use seaplane::api::v1::{ConfigRequestBuilder, Key, KeyValue, RangeQueryContext, Value};
 use serde_json::json;
 
 static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
@@ -31,20 +31,23 @@ fn partial_build() -> ConfigRequestBuilder {
 // GET /config/base64:{key}
 #[test]
 fn get_value() {
-    let resp_json = json!({"key": "foo", "value": "bar"});
+    let resp = KeyValue {
+        key: Key("foo".to_string()),
+        value: Value("bar".to_string()),
+    };
 
     let mock = MOCK_SERVER.mock(|w, t| {
         when(w, GET, "/v1/config/base64:foo");
-        then(t, resp_json.clone());
+        then(t, json!(resp));
     });
 
     let req = partial_build().encoded_key("foo").build().unwrap();
-    let resp = req.get_value().unwrap();
+    let resp_val = req.get_value().unwrap();
 
     // Ensure the endpoint was hit
     mock.assert();
 
-    assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
+    assert_eq!(resp_val, resp.value);
 }
 
 // GET /config/[base64:{dir}/][?after=base64:{key}]

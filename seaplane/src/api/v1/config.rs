@@ -185,13 +185,14 @@ impl ConfigRequest {
     /// let resp = req.get_value().unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn get_value(&self) -> Result<KeyValue> {
+    pub fn get_value(&self) -> Result<Value> {
         let url = self.single_key_url()?;
         self.client
             .get(url)
             .bearer_auth(&self.token)
             .send()?
             .json::<KeyValue>()
+            .map(|kv| kv.value)
             .map_err(Into::into)
     }
 
