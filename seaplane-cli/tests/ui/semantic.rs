@@ -559,3 +559,71 @@ fn seaplane_formation_land() {
     // aliases
     assert!(cli!("formation stop foo").is_ok());
 }
+
+#[test]
+fn seaplane_kv() {
+    // requires a subcmd
+    assert!(cli!("key-value").is_err());
+    // provide subcmd
+    assert!(cli!("key-value delete foo").is_ok());
+    // aliases
+    assert!(cli!("kv delete foo").is_ok());
+}
+
+#[test]
+fn seaplane_kv_delete() {
+    // requires a KEY
+    assert!(cli!("key-value delete").is_err());
+    // provide a key
+    assert!(cli!("key-value delete foo").is_ok());
+    // multiples
+    assert!(cli!("key-value delete foo bar baz").is_ok());
+    assert!(cli!("key-value delete foo,bar,baz").is_ok());
+    assert!(cli!("key-value delete foo bar,baz").is_ok());
+    assert!(cli!("key-value delete foo,bar baz").is_ok());
+
+    // aliases
+    assert!(cli!("key-value del foo").is_ok());
+    assert!(cli!("key-value remove foo").is_ok());
+    assert!(cli!("key-value rm  foo").is_ok());
+}
+
+#[test]
+fn seaplane_kv_get() {
+    // requires a KEY
+    assert!(cli!("key-value get").is_err());
+    // provide a key
+    assert!(cli!("key-value get foo").is_ok());
+    // multiples
+    assert!(cli!("key-value get foo bar baz").is_ok());
+    assert!(cli!("key-value get foo,bar,baz").is_ok());
+    assert!(cli!("key-value get foo bar,baz").is_ok());
+    assert!(cli!("key-value get foo,bar baz").is_ok());
+
+    // aliases
+    assert!(cli!("key-value show foo").is_ok());
+}
+
+#[test]
+fn seaplane_kv_set() {
+    // requires a KEY and VALUE
+    assert!(cli!("key-value set").is_err());
+    assert!(cli!("key-value set foo").is_err());
+    // provide a valid KEY VALUE
+    assert!(cli!("key-value set foo bar").is_ok());
+    // multiples are not allowed
+    assert!(cli!("key-value set foo bar baz qux").is_err());
+}
+
+#[test]
+fn seaplane_kv_list() {
+    // does not require a dir
+    assert!(cli!("key-value list").is_ok());
+    // can provide a dir
+    assert!(cli!("key-value list foo").is_ok());
+    // Multiples not supported
+    assert!(cli!("key-value list foo bar").is_err());
+
+    // aliases
+    assert!(cli!("key-value ls foo").is_ok());
+}
