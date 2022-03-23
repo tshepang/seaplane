@@ -29,7 +29,6 @@ impl SeaplaneFlightDelete {
                 )
             .arg(arg!(--all -('a'))
                 .conflicts_with("exact")
-                .long("all")
                 .help("Delete all matching Flights even when FLIGHT is ambiguous"))
     }
 }

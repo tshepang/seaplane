@@ -103,7 +103,7 @@ impl CliCommand for SeaplaneAccountLogin {
         }
         cli_println!("Enter your API key below.");
         cli_print!("(hint: it can be found by visiting ");
-        cli_print!(@Green, "{}", FLIGHTDECK_API_URL);
+        cli_print!(@Green, "{FLIGHTDECK_API_URL}");
         cli_println!(")\n");
 
         let stdin = io::stdin();

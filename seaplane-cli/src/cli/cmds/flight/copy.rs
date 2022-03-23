@@ -11,6 +11,8 @@ use crate::{
     ops::flight::Flights,
 };
 
+use super::SeaplaneFlightCommonArgMatches;
+
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneFlightCopy;
 
@@ -62,7 +64,7 @@ impl CliCommand for SeaplaneFlightCopy {
         cli_print!("Successfully copied Flight '");
         cli_print!(@Yellow, "{}", ctx.name_id.as_ref().unwrap());
         cli_print!("' to new Flight '");
-        cli_print!(@Green, "{}", name);
+        cli_print!(@Green, "{name}");
         cli_print!("' with ID '");
         cli_print!(@Green, "{}", &id[..8]);
         cli_println!("'");
@@ -73,7 +75,10 @@ impl CliCommand for SeaplaneFlightCopy {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // clap will not let "source" be None
         ctx.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
-        ctx.flight.init(FlightCtx::from_arg_matches(matches, "")?);
+        ctx.init_flight(FlightCtx::from_flight_common(
+            &SeaplaneFlightCommonArgMatches(matches),
+            "",
+        )?);
         Ok(())
     }
 }

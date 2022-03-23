@@ -70,7 +70,7 @@ pub fn validate_name(name: &str) -> StdResult<(), &'static str> {
 pub fn validate_at_path(s: &str) -> StdResult<(), String> {
     if let Some(path) = s.strip_prefix('@') {
         if !Path::exists(path.as_ref()) {
-            return Err(format!("path '{}' does not exist", path));
+            return Err(format!("path '{path}' does not exist"));
         }
     } else {
         return Err("the '@<path>'  was not provided".to_owned());

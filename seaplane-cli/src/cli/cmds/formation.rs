@@ -15,9 +15,10 @@ mod load_balance;
 mod template;
 
 pub use common::{Provider, Region};
+pub use create::SeaplaneFormationCreateArgMatches;
 
 use clap::{ArgMatches, Command};
-use seaplane::api::{v1::FormationsRequest, TokenRequest};
+use seaplane::api::v1::FormationsRequest;
 
 #[cfg(feature = "unstable")]
 use self::{
@@ -31,8 +32,8 @@ use self::{
     list::SeaplaneFormationList,
 };
 use crate::{
-    cli::CliCommand,
-    error::{CliError, CliErrorKind, Context, Result},
+    cli::{request_token, CliCommand},
+    error::{CliError, Context, Result},
     Ctx,
 };
 
@@ -44,43 +45,18 @@ pub fn build_request(formation_name: Option<&str>, ctx: &Ctx) -> Result<Formatio
     let mut builder = FormationsRequest::builder();
     let formation_context = if let Some(name) = formation_name {
         builder = builder.name(name);
-        format!("\n\tFormation: {}", name)
+        format!("\n\tFormation: {name}")
     } else {
         String::new()
     };
 
-    let token = TokenRequest::builder()
-        .api_key(
-            // TODO: add context
-            ctx.api_key
-                .as_ref()
-                .ok_or_else(|| CliErrorKind::MissingApiKey.into_err())?,
-        )
-        .build()
-        .map_err(CliError::from)
-        .with_context(|| {
-            format!(
-                "Context: failed to build Access Token request{}\n",
-                formation_context
-            )
-        })?
-        .access_token()
-        .map_err(CliError::from)
-        .with_context(|| {
-            format!(
-                "Context: failed to retrieve an Access Token{}\n",
-                formation_context
-            )
-        })?;
+    let token = request_token(ctx, &formation_context)?;
     builder
         .token(token)
         .build()
         .map_err(CliError::from)
         .with_context(|| {
-            format!(
-                "Context: failed to build /formations endpoint request{}\n",
-                formation_context
-            )
+            format!("Context: failed to build /formations endpoint request{formation_context}\n")
         })
 }
 

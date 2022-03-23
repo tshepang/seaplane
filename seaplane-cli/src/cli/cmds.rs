@@ -3,7 +3,7 @@ mod completion;
 #[cfg(feature = "unstable")]
 mod config;
 pub mod flight;
-mod formation;
+pub mod formation;
 #[cfg(feature = "unstable")]
 mod image;
 mod init;

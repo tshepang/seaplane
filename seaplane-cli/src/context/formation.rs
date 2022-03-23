@@ -1,13 +1,14 @@
 use std::collections::HashSet;
 
-use clap::ArgMatches;
 use seaplane::api::v1::formations::{
     FormationConfiguration as FormationConfigurationModel, Provider as ProviderModel,
     Region as RegionModel,
 };
 
 use crate::{
-    cli::{specs::FLIGHT_SPEC, Provider, Region},
+    cli::{
+        cmds::formation::SeaplaneFormationCreateArgMatches, specs::FLIGHT_SPEC, Provider, Region,
+    },
     context::Ctx,
     error::{CliErrorKind, Context, Result},
     fs::FromDisk,
@@ -54,7 +55,11 @@ impl Default for FormationCtx {
 
 impl FormationCtx {
     /// `flight` is the name of the argument for the Flight's name/id
-    pub fn from_arg_matches(matches: &ArgMatches, ctx: &Ctx) -> Result<Self> {
+    pub fn from_formation_create(
+        matches: &SeaplaneFormationCreateArgMatches,
+        ctx: &Ctx,
+    ) -> Result<Self> {
+        let matches = matches.0;
         // TODO: check if "all" was used along with another value within regions/providers and err
 
         let mut flight_names = Vec::new();
@@ -83,7 +88,7 @@ impl FormationCtx {
                     .into_err()
                     .context("(hint: create the Flight with '")
                     .with_color_context(|| {
-                        (Color::Green, format!("seaplane flight create {}", flight))
+                        (Color::Green, format!("seaplane flight create {flight}"))
                     })
                     .context("')\n")
                     .context("(hint: or try fetching remote references with '")
@@ -143,7 +148,7 @@ impl FormationCtx {
             cli_eprint!("when providing formation configuration options at least one ");
             cli_eprint!(@Green, "--flight=<SPEC>... ");
             cli_eprintln!("is required");
-            cli_eprintln!("\n{}", FLIGHT_SPEC);
+            cli_eprintln!("\n{FLIGHT_SPEC}");
             std::process::exit(1);
         }
 
@@ -160,7 +165,7 @@ impl FormationCtx {
                     .with_color_context(|| {
                         (
                             Color::Green,
-                            format!("seaplane flight create {}", flight_name),
+                            format!("seaplane flight create {flight_name}"),
                         )
                     })
                     .context("')\n")

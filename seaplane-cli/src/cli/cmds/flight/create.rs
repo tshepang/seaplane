@@ -2,7 +2,10 @@ use clap::{ArgMatches, Command};
 
 use crate::{
     cli::{
-        cmds::flight::{common, IMAGE_SPEC},
+        cmds::flight::{
+            common::{self, SeaplaneFlightCommonArgMatches},
+            IMAGE_SPEC,
+        },
         CliCommand,
     },
     context::FlightCtx,
@@ -47,7 +50,7 @@ impl CliCommand for SeaplaneFlightCreate {
                 return Err(CliErrorKind::DuplicateName(name.into())
                     .into_err()
                     .context("(hint: try '")
-                    .color_context(Color::Green, format!("seaplane flight edit {}", name))
+                    .color_context(Color::Green, format!("seaplane flight edit {name}"))
                     .context("' instead)\n"));
             }
 
@@ -69,7 +72,7 @@ impl CliCommand for SeaplaneFlightCreate {
         flights.persist()?;
 
         cli_print!("Successfully created Flight '");
-        cli_print!(@Green, "{}", new_flight_name);
+        cli_print!(@Green, "{new_flight_name}");
         cli_print!("' with ID '");
         cli_print!(@Green, "{}", &id.to_string()[..8]);
         cli_println!("'");
@@ -78,7 +81,10 @@ impl CliCommand for SeaplaneFlightCreate {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.flight.init(FlightCtx::from_arg_matches(matches, "")?);
+        ctx.init_flight(FlightCtx::from_flight_common(
+            &SeaplaneFlightCommonArgMatches(matches),
+            "",
+        )?);
         ctx.force = matches.is_present("force");
         Ok(())
     }

@@ -1,8 +1,7 @@
-use clap::ArgMatches;
 use seaplane::api::v1::formations::{Architecture, Flight as FlightModel, ImageReference};
 
 use crate::{
-    cli::cmds::flight::{str_to_image_ref, FLIGHT_MINIMUM_DEFAULT},
+    cli::cmds::flight::{str_to_image_ref, SeaplaneFlightCommonArgMatches, FLIGHT_MINIMUM_DEFAULT},
     error::Result,
     ops::generate_name,
 };
@@ -40,9 +39,12 @@ impl Default for FlightCtx {
 }
 
 impl FlightCtx {
-    // TODO: use a newtype to distinguish the matches from other arg matches
     /// Builds a FlightCtx from ArgMatches using some `prefix` if any to search for args
-    pub fn from_arg_matches(matches: &ArgMatches, prefix: &str) -> Result<FlightCtx> {
+    pub fn from_flight_common(
+        matches: &SeaplaneFlightCommonArgMatches,
+        prefix: &str,
+    ) -> Result<FlightCtx> {
+        let matches = matches.0;
         let mut generated_name = false;
         // We generate a random name if one is not provided
         let name = matches

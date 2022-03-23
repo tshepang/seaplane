@@ -33,7 +33,7 @@ impl std::str::FromStr for EndpointValue {
             .unwrap()
             .as_str()
             .parse()
-            .map_err(|e| format!("{}", e))?;
+            .map_err(|e| format!("{e}"))?;
         Ok(Self { flight_name, port })
     }
 }
@@ -125,7 +125,7 @@ impl std::str::FromStr for EndpointKey {
                     .unwrap()
                     .as_str()
                     .parse()
-                    .map_err(|e| format!("{}", e))?,
+                    .map_err(|e| format!("{e}"))?,
             }),
             "udp" => Ok(EndpointKey::Udp {
                 port: captures
@@ -133,7 +133,7 @@ impl std::str::FromStr for EndpointKey {
                     .unwrap()
                     .as_str()
                     .parse()
-                    .map_err(|e| format!("{}", e))?,
+                    .map_err(|e| format!("{e}"))?,
             }),
             _ => {
                 unreachable!();

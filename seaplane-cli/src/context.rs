@@ -71,10 +71,10 @@ pub struct Ctx {
     pub api_key: Option<String>,
 
     /// Context relate to exclusively to Flight operations and commands
-    pub flight: LateInit<FlightCtx>,
+    flight: LateInit<FlightCtx>,
 
     /// Context relate to exclusively to Formation operations and commands
-    pub formation: LateInit<FormationCtx>,
+    formation: LateInit<FormationCtx>,
 
     /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
@@ -146,12 +146,20 @@ impl Ctx {
         self.data_dir.join(FORMATIONS_FILE)
     }
 
+    pub fn init_flight(&self, val: FlightCtx) {
+        self.flight.init(val)
+    }
+
     pub fn flight_ctx(&self) -> MutexGuard<'_, FlightCtx> {
         self.flight
             .inner
             .get_or_init(|| Mutex::new(FlightCtx::default()))
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
+    }
+
+    pub fn init_formation(&self, val: FormationCtx) {
+        self.formation.init(val)
     }
 
     pub fn formation_ctx(&self) -> MutexGuard<'_, FormationCtx> {

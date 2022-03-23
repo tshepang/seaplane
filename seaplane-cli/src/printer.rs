@@ -75,7 +75,7 @@ pub enum Color {
 pub trait Output {
     fn print_json(&self, _ctx: &Ctx) -> Result<()> {
         cli_eprint!("--format=");
-        cli_eprint!(@Yellow, "{}", "json");
+        cli_eprint!(@Yellow, "json");
         cli_eprintln!(" is not supported by this object");
 
         Ok(())
@@ -83,7 +83,7 @@ pub trait Output {
 
     fn print_table(&self, _ctx: &Ctx) -> Result<()> {
         cli_eprint!("--format=");
-        cli_eprint!(@Yellow, "{}", "table");
+        cli_eprint!(@Yellow, "table");
         cli_eprintln!(" is not supported by this object");
 
         Ok(())

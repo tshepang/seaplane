@@ -1,4 +1,4 @@
-use clap::Arg;
+use clap::{Arg, ArgMatches};
 use seaplane::{api::v1::Architecture, rexports::strum::VariantNames};
 
 use crate::cli::validator::validate_name;
@@ -25,6 +25,12 @@ Rules for a valid name are as follows:
   - the total length must be <= 27
 
 Some of these restrictions may be lifted in the future.";
+
+/// A newtype wrapper to enforce where the ArgMatches came from which reduces errors in checking if
+/// values of arguments were used or not. i.e. `seaplane formation create` may not have the same
+/// arguments as `seaplane account token` even though both produce an `ArgMatches`.
+#[allow(missing_debug_implementations)]
+pub struct SeaplaneFlightCommonArgMatches<'a>(pub &'a ArgMatches);
 
 pub fn args(image_required: bool) -> Vec<Arg<'static>> {
     vec![

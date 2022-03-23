@@ -4,7 +4,10 @@ use seaplane::{api::v1::Architecture, rexports::strum::VariantNames};
 
 use crate::{
     cli::{
-        cmds::formation::{build_request, common},
+        cmds::{
+            flight::SeaplaneFlightCommonArgMatches,
+            formation::{build_request, common},
+        },
         specs::{FLIGHT_SPEC, REGION_SPEC},
         validator::validate_name,
         CliCommand,
@@ -45,6 +48,12 @@ Rules for a valid name are as follows:
   - the total length must be <= 27
 
 Some of these restrictions may be lifted in the future.";
+
+/// A newtype wrapper to enforce where the ArgMatches came from which reduces errors in checking if
+/// values of arguments were used or not. i.e. `seaplane formation create` may not have the same
+/// arguments as `seaplane account token` even though both produce an `ArgMatches`.
+#[allow(missing_debug_implementations)]
+pub struct SeaplaneFormationCreateArgMatches<'a>(pub &'a ArgMatches);
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneFormationCreate;
@@ -163,7 +172,7 @@ impl CliCommand for SeaplaneFormationCreate {
                     formations.add_grounded_by_name(&formation_ctx.name_id, cfg_id);
                 }
                 for uuid in cfg_uuids.into_iter() {
-                    cli_println!(@Green, "{}", uuid);
+                    cli_println!(@Green, "{uuid}");
                     formations.add_uuid(&cfg_id, uuid);
                 }
             }
@@ -174,12 +183,16 @@ impl CliCommand for SeaplaneFormationCreate {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         if matches.is_present("flight-image") {
-            ctx.flight
-                .init(FlightCtx::from_arg_matches(matches, "flight-")?);
+            ctx.init_flight(FlightCtx::from_flight_common(
+                &SeaplaneFlightCommonArgMatches(matches),
+                "flight-",
+            )?);
         }
 
-        ctx.formation
-            .init(FormationCtx::from_arg_matches(matches, ctx)?);
+        ctx.init_formation(FormationCtx::from_formation_create(
+            &SeaplaneFormationCreateArgMatches(matches),
+            ctx,
+        )?);
 
         let flights_file = ctx.flights_file();
         let mut flights: Flights = FromDisk::load(&flights_file)?;

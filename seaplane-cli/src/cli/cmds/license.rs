@@ -28,9 +28,9 @@ impl SeaplaneLicense {
 impl CliCommand for SeaplaneLicense {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         if ctx.third_party {
-            println!("{}", THIRD_PARTY_LICENSES);
+            println!("{THIRD_PARTY_LICENSES}");
         } else {
-            println!("{}", SELF_LICENSE);
+            println!("{SELF_LICENSE}");
         }
 
         Ok(())

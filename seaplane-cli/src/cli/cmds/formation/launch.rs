@@ -154,7 +154,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             } else {
                 cli_println!("' with Configuration UUIDs:");
                 for uuid in cfg_uuids {
-                    cli_println!(@Green, "{}", uuid);
+                    cli_println!(@Green, "{uuid}");
                 }
             }
         }

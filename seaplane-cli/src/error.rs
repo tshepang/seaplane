@@ -273,17 +273,17 @@ impl CliErrorKind {
         match &*self {
             DuplicateName(name) => {
                 cli_eprint!("an item with the name '");
-                cli_eprint!(@Yellow, "{}", name);
+                cli_eprint!(@Yellow, "{name}");
                 cli_eprintln!("' already exists");
             }
             NoMatchingItem(item) => {
                 cli_eprint!("the NAME or ID '");
-                cli_eprint!(@Green, "{}", item);
+                cli_eprint!(@Green, "{item}");
                 cli_eprintln!("' didn't match anything");
             }
             AmbiguousItem(item) => {
                 cli_eprint!("the NAME or ID '");
-                cli_eprint!(@Yellow, "{}", item);
+                cli_eprint!(@Yellow, "{item}");
                 cli_eprintln!("' is ambiguous and matches more than one item");
             }
             MissingPath => {
@@ -293,41 +293,41 @@ impl CliErrorKind {
                 cli_eprintln!("permission denied when accessing file or directory");
             }
             ImageReference(e) => {
-                cli_eprintln!("seaplane: {}", e)
+                cli_eprintln!("seaplane: {e}")
             }
             Io(e, Some(path)) => {
-                cli_eprintln!("io: {}", e);
+                cli_eprintln!("io: {e}");
                 cli_eprint!("\tpath: ");
-                cli_eprintln!(@Yellow, "{:?}", path);
+                cli_eprintln!(@Yellow, "{path:?}");
             }
             Io(e, None) => {
-                cli_eprintln!("io: {}", e);
+                cli_eprintln!("io: {e}");
             }
             SerdeJson(e) => {
-                cli_eprintln!("json: {}", e)
+                cli_eprintln!("json: {e}")
             }
             TomlDe(e) => {
-                cli_eprintln!("toml: {}", e)
+                cli_eprintln!("toml: {e}")
             }
             TomlSer(e) => {
-                cli_eprintln!("toml: {}", e)
+                cli_eprintln!("toml: {e}")
             }
             UnknownWithContext(e) => {
-                cli_eprintln!("unknown: {}", e)
+                cli_eprintln!("unknown: {e}")
             }
             InvalidCliValue(a, v) => {
                 cli_eprint!("the CLI value '");
                 if let Some(val) = a {
-                    cli_eprint!("--{}=", val);
-                    cli_eprint!(@Red, "{}", v);
+                    cli_eprint!("--{val}=");
+                    cli_eprint!(@Red, "{v}");
                 } else {
-                    cli_eprint!(@Red, "{}", v);
+                    cli_eprint!(@Red, "{v}");
                 }
                 cli_eprintln!("' isn't valid");
             }
             CliArgNotUsed(a) => {
                 cli_eprint!("the CLI argument '");
-                cli_eprint!("{}", a);
+                cli_eprint!("{a}");
                 cli_eprintln!("' wasn't used but is required in this context");
             }
             Unknown => {
@@ -342,7 +342,7 @@ impl CliErrorKind {
                 cli_println!("' values were provided and only one is allowed");
             }
             Seaplane(e) => {
-                cli_eprintln!("seaplane: {}", e)
+                cli_eprintln!("seaplane: {e}")
             }
             ExistingValue(value) => {
                 cli_eprintln!("{value} already exists");

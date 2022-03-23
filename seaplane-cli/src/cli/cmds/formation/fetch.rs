@@ -72,13 +72,13 @@ impl CliCommand for SeaplaneFormationFetch {
                     .get_configuration(uuid)
                     .map_err(CliError::from)
                     .context("Context: failed to retrieve Formation Configuration\n\tUUID: ")
-                    .with_color_context(|| (Color::Yellow, format!("{}\n", uuid)))?;
+                    .with_color_context(|| (Color::Yellow, format!("{uuid}\n")))?;
 
                 for flight in cfg_model.flights() {
                     let names_ids = flights.update_or_create_flight(flight.clone());
                     for (name, id) in names_ids {
                         cli_print!("Successfully fetched Flight '");
-                        cli_print!(@Green, "{}", name);
+                        cli_print!(@Green, "{name}");
                         cli_print!("' with ID '");
                         cli_print!(@Green, "{}", &id.to_string()[..8]);
                         cli_println!("'!");

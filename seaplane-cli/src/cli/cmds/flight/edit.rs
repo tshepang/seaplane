@@ -2,7 +2,10 @@ use clap::{ArgMatches, Command};
 
 use crate::{
     cli::{
-        cmds::flight::{common, IMAGE_SPEC},
+        cmds::flight::{
+            common::{self, SeaplaneFlightCommonArgMatches},
+            IMAGE_SPEC,
+        },
         errors::wrap_cli_context,
         validator::validate_name_id,
         CliCommand,
@@ -61,7 +64,10 @@ impl CliCommand for SeaplaneFlightEdit {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // clap will not let "source" be None
         ctx.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
-        ctx.flight.init(FlightCtx::from_arg_matches(matches, "")?);
+        ctx.init_flight(FlightCtx::from_flight_common(
+            &SeaplaneFlightCommonArgMatches(matches),
+            "",
+        )?);
         Ok(())
     }
 }

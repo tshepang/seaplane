@@ -64,7 +64,7 @@ impl CliCommand for SeaplaneInit {
                     cli_warn!("overwriting existing file ");
                     cli_warn!("{:?} ", file);
                     cli_warn!("due to '");
-                    cli_warn!(@Green, "{}", if ctx.force { "--force".into() } else { format!("--overwrite={}", opt)});
+                    cli_warn!(@Green, "{}", if ctx.force { "--force".into() } else { format!("--overwrite={opt}")});
                     cli_warnln!(@noprefix, "'\n");
                 } else {
                     // We only want to advertise the *least* destructive option, not --force or

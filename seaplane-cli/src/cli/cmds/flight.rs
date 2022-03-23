@@ -16,8 +16,8 @@ use seaplane::api::{
 #[cfg(feature = "unstable")]
 pub use self::template::SeaplaneFlightTemplate;
 pub use self::{
-    copy::SeaplaneFlightCopy, create::SeaplaneFlightCreate, delete::SeaplaneFlightDelete,
-    edit::SeaplaneFlightEdit, list::SeaplaneFlightList,
+    common::SeaplaneFlightCommonArgMatches, copy::SeaplaneFlightCopy, create::SeaplaneFlightCreate,
+    delete::SeaplaneFlightDelete, edit::SeaplaneFlightEdit, list::SeaplaneFlightList,
 };
 use crate::{
     cli::{specs::IMAGE_SPEC, CliCommand},
@@ -31,7 +31,7 @@ pub fn str_to_image_ref(image_str: &str) -> Result<ImageReference> {
     match image_str.parse::<ImageReference>() {
         Ok(ir) => Ok(ir),
         Err(ImageReferenceError::ErrDomainInvalidFormat(_)) => {
-            let ir: ImageReference = format!("{}{}", IMAGE_REGISTRY_URL, image_str).parse()?;
+            let ir: ImageReference = format!("{IMAGE_REGISTRY_URL}{image_str}").parse()?;
             Ok(ir)
         }
         Err(e) => Err(CliError::from(e)),
