@@ -26,6 +26,8 @@ pub mod flight;
 pub use flight::FlightCtx;
 pub mod formation;
 pub use formation::{FormationCfgCtx, FormationCtx};
+pub mod kv;
+pub use kv::KvCtx;
 
 use std::{
     path::{Path, PathBuf},
@@ -76,6 +78,9 @@ pub struct Ctx {
     /// Context relate to exclusively to Formation operations and commands
     formation: LateInit<FormationCtx>,
 
+    /// Context relate to exclusively to key-value operations and commands
+    kv: LateInit<KvCtx>,
+
     /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
 
@@ -108,6 +113,7 @@ impl Default for Ctx {
             api_key: None,
             flight: LateInit::default(),
             formation: LateInit::default(),
+            kv: LateInit::default(),
             conf_files: Vec::new(),
             overwrite: None,
             name_id: None,
@@ -166,6 +172,18 @@ impl Ctx {
         self.formation
             .inner
             .get_or_init(|| Mutex::new(FormationCtx::default()))
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+    }
+
+    pub fn init_kv(&self, val: KvCtx) {
+        self.kv.init(val)
+    }
+
+    pub fn kv_ctx(&self) -> MutexGuard<'_, KvCtx> {
+        self.kv
+            .inner
+            .get_or_init(|| Mutex::new(KvCtx::default()))
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
     }

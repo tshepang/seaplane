@@ -353,3 +353,20 @@ macro_rules! arg {
         arg!(@arg (::clap::Arg::new(stringify!($name)).long(stringify!($name))) $($tail)* )
     };
 }
+
+/// Shorthand for checking if an argument in the key-value commands was base64 or not, and doing
+/// the conversion if necessary
+macro_rules! maybe_base64_arg {
+    ($m:expr, $arg:expr, $is_base64:expr) => {
+        if let Some(raw_key) = $m.value_of($arg) {
+            if $is_base64 {
+                let _ = ::base64::decode_config(raw_key, ::base64::URL_SAFE_NO_PAD)?;
+                Some(raw_key.to_owned())
+            } else {
+                Some(::base64::encode_config(raw_key, ::base64::URL_SAFE_NO_PAD))
+            }
+        } else {
+            None
+        }
+    };
+}

@@ -3,6 +3,7 @@
 
 pub mod flight;
 pub mod formation;
+pub mod kv;
 
 use std::fmt;
 

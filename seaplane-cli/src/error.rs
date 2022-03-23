@@ -192,11 +192,14 @@ macro_rules! impl_err {
 
 // These are placeholders until we get around to writing distinct errors for the cases we care
 // about
+impl_err!(base64::DecodeError, Base64Decode);
 impl_err!(serde_json::Error, SerdeJson);
 impl_err!(toml::de::Error, TomlDe);
 impl_err!(toml::ser::Error, TomlSer);
 impl_err!(seaplane::error::SeaplaneError, Seaplane);
 impl_err!(seaplane::api::v1::ImageReferenceError, ImageReference);
+impl_err!(std::string::FromUtf8Error, InvalidUtf8);
+impl_err!(hex::FromHexError, HexDecode);
 
 impl From<io::Error> for CliError {
     fn from(e: io::Error) -> Self {
@@ -251,12 +254,15 @@ pub enum CliErrorKind {
     AmbiguousItem(String),
     Io(io::Error, Option<PathBuf>),
     SerdeJson(serde_json::Error),
+    Base64Decode(base64::DecodeError),
     TomlDe(toml::de::Error),
     TomlSer(toml::ser::Error),
+    HexDecode(hex::FromHexError),
     UnknownWithContext(&'static str),
     Seaplane(SeaplaneError),
     ExistingValue(&'static str),
     ImageReference(ImageReferenceError),
+    InvalidUtf8(std::string::FromUtf8Error),
     CliArgNotUsed(&'static str),
     InvalidCliValue(Option<&'static str>, String),
     MissingPath,
@@ -271,6 +277,9 @@ impl CliErrorKind {
         use CliErrorKind::*;
 
         match &*self {
+            Base64Decode(e) => {
+                cli_eprintln!("base64 decode: {e}");
+            }
             DuplicateName(name) => {
                 cli_eprint!("an item with the name '");
                 cli_eprint!(@Yellow, "{name}");
@@ -292,8 +301,14 @@ impl CliErrorKind {
             PermissionDenied => {
                 cli_eprintln!("permission denied when accessing file or directory");
             }
+            HexDecode(e) => {
+                cli_eprintln!("hex decode: {e}")
+            }
             ImageReference(e) => {
                 cli_eprintln!("seaplane: {e}")
+            }
+            InvalidUtf8(e) => {
+                cli_eprintln!("invalid UTF-8: {e}")
             }
             Io(e, Some(path)) => {
                 cli_eprintln!("io: {e}");
@@ -382,6 +397,9 @@ impl PartialEq<Self> for CliErrorKind {
             ImageReference(_) => matches!(rhs, ImageReference(_)),
             CliArgNotUsed(_) => matches!(rhs, CliArgNotUsed(_)),
             InvalidCliValue(_, _) => matches!(rhs, InvalidCliValue(_, _)),
+            Base64Decode(_) => matches!(rhs, Base64Decode(_)),
+            InvalidUtf8(_) => matches!(rhs, InvalidUtf8(_)),
+            HexDecode(_) => matches!(rhs, HexDecode(_)),
         }
     }
 }

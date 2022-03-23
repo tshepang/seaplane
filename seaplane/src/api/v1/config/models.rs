@@ -46,6 +46,12 @@ pub struct KeyValue {
     pub value: Value,
 }
 
+impl KeyValue {
+    pub fn into_value(self) -> Value {
+        self.value
+    }
+}
+
 /// A single key with which to access a value in the store, encoded in url-safe base64.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[serde(transparent)]
