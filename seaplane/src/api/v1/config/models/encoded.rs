@@ -1,9 +1,23 @@
+use std::fmt;
+
 use base64::{decode_config, encode_config, URL_SAFE_NO_PAD};
 use serde::{Deserialize, Serialize};
 
 /// Holds a [URL-safe base64 encoded](https://datatracker.ietf.org/doc/html/rfc4648#section-5) string
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub(crate) struct Base64Encoded(String);
+
+impl fmt::Display for Base64Encoded {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl AsRef<str> for Base64Encoded {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
 
 impl Base64Encoded {
     /// Constructs from an unencoded byte array, encoding with URL-safe base64 in the process

@@ -48,39 +48,50 @@ pub struct KeyValue {
 
 /// A single key with which to access a value in the store, encoded in url-safe base64.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
-pub struct Key(pub String);
+#[serde(transparent)]
+pub struct Key {
+    inner: Base64Encoded,
+}
+impl_base64!(Key);
 
 impl AsRef<str> for Key {
     fn as_ref(&self) -> &str {
-        &self.0
+        self.inner.as_ref()
     }
 }
 
 impl fmt::Display for Key {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.inner)
     }
 }
 
 /// The raw bytes stored at a given key, encoded in url-safe base64.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
-pub struct Value(pub String);
+#[serde(transparent)]
+pub struct Value {
+    inner: Base64Encoded,
+}
+impl_base64!(Value);
 
 impl AsRef<str> for Value {
     fn as_ref(&self) -> &str {
-        &self.0
+        self.inner.as_ref()
     }
 }
 
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.inner)
     }
 }
 
 /// The directory from which to perform a given range query, excluding the trailing slash, encoded in url-safe base64
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Directory(pub String);
+pub struct Directory {
+    inner: Base64Encoded,
+}
+impl_base64!(Directory);
 
 /// The full context with which to perform a range query
 #[derive(Debug, PartialEq, Eq, Default)]
