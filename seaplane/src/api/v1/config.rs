@@ -59,7 +59,7 @@ impl ConfigRequestBuilder {
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
     pub fn encoded_key<S: Into<String>>(mut self, key: S) -> Self {
-        self.target = Some(RequestTarget::Key(Key(key.into())));
+        self.target = Some(RequestTarget::Key(Key::from_encoded(key.into())));
         self
     }
 
@@ -141,7 +141,10 @@ impl ConfigRequest {
     fn single_key_url(&self) -> Result<Url> {
         match &self.target {
             RequestTarget::Range(_) => Err(SeaplaneError::IncorrectConfigRequestTarget),
-            RequestTarget::Key(Key(k)) => Ok(add_base64_path_segment(self.endpoint_url.clone(), k)),
+            RequestTarget::Key(k) => Ok(add_base64_path_segment(
+                self.endpoint_url.clone(),
+                k.encoded(),
+            )),
         }
     }
 
@@ -149,17 +152,17 @@ impl ConfigRequest {
     fn range_url(&self) -> Result<Url> {
         match &self.target {
             RequestTarget::Key(_) => Err(SeaplaneError::IncorrectConfigRequestTarget),
-            RequestTarget::Range(RangeQueryContext { dir, after }) => {
+            RequestTarget::Range(context) => {
                 let mut url = self.endpoint_url.clone();
 
-                if let Some(Directory(encoded_dir)) = dir {
-                    url = add_base64_path_segment(url, encoded_dir);
+                if let Some(encoded_dir) = context.directory() {
+                    url = add_base64_path_segment(url, encoded_dir.encoded());
                     // A directory is distinguished from a key by the trailing slash
                     url.set_path(&format!("{}/", url.path()));
                 }
 
-                if let Some(Key(after)) = after {
-                    url.set_query(Some(&format!("after={}", after)));
+                if let Some(after) = context.after() {
+                    url.set_query(Some(&format!("after={}", after.encoded())));
                 }
 
                 Ok(url)
@@ -266,7 +269,7 @@ impl ConfigRequest {
     /// ```no_run
     /// use seaplane::api::v1::{ConfigRequestBuilder, ConfigRequest, RangeQueryContext};
     ///
-    /// let root_dir_range = RangeQueryContext{dir: None, after: None};
+    /// let root_dir_range = RangeQueryContext::new();
     ///
     /// let req = ConfigRequestBuilder::new()
     ///     .token("abc123_token")
@@ -277,7 +280,8 @@ impl ConfigRequest {
     /// let resp = req.get_page().unwrap();
     ///
     /// if resp.more {
-    ///     let next_page_range = RangeQueryContext{dir: None, after: Some(resp.last)};
+    ///     let mut next_page_range = RangeQueryContext::new();
+    ///     next_page_range.set_after(resp.last);
     ///     
     ///     let req = ConfigRequestBuilder::new()
     ///     .token("abc123_token")
@@ -315,7 +319,7 @@ impl ConfigRequest {
     /// ```no_run
     /// use seaplane::api::v1::{ConfigRequestBuilder, ConfigRequest, RangeQueryContext};
     ///
-    /// let root_dir_range = RangeQueryContext{dir: None, after: None};
+    /// let root_dir_range = RangeQueryContext::new();
     ///
     /// let mut req = ConfigRequestBuilder::new()
     ///     .token("abc123_token")
@@ -334,12 +338,8 @@ impl ConfigRequest {
             pages.append(&mut kvr.kvs);
             if kvr.more {
                 // TODO: Regrettable duplication here suggests that there should be a ConfigKeyRequest and a ConfigRangeRequest
-                if let RequestTarget::Range(RangeQueryContext {
-                    dir: _,
-                    ref mut after,
-                }) = self.target
-                {
-                    *after = Some(kvr.last);
+                if let RequestTarget::Range(ref mut context) = self.target {
+                    context.set_after(kvr.last);
                 } else {
                     return Err(SeaplaneError::IncorrectConfigRequestTarget);
                 }

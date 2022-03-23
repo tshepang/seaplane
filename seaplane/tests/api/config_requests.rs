@@ -32,8 +32,8 @@ fn partial_build() -> ConfigRequestBuilder {
 #[test]
 fn get_value() {
     let resp = KeyValue {
-        key: Key("foo".to_string()),
-        value: Value("bar".to_string()),
+        key: Key::from_encoded("foo".to_string()),
+        value: Value::from_encoded("foo".to_string()),
     };
 
     let mock = MOCK_SERVER.mock(|w, t| {
@@ -60,10 +60,7 @@ fn get_root_values() {
         then(t, resp_json.clone());
     });
 
-    let range = RangeQueryContext {
-        dir: None,
-        after: None,
-    };
+    let range = RangeQueryContext::new();
 
     let req = partial_build().range(range).build().unwrap();
     let resp = req.get_page().unwrap();
