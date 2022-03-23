@@ -12,6 +12,7 @@ use reqwest::{
     header::{self, CONTENT_TYPE},
     Url,
 };
+use serde::Serialize;
 
 pub use models::*;
 
@@ -216,12 +217,15 @@ impl ConfigRequest {
     /// let resp = req.put_value("YWhhYgo").unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn put_value<S: Into<blocking::Body>>(&self, value: S) -> Result<()> {
+    pub fn put_value<T>(&self, value: &T) -> Result<()>
+    where
+        T: ?Sized + Serialize,
+    {
         let url = self.single_key_url()?;
         self.client
             .put(url)
             .bearer_auth(&self.token)
-            .body(value)
+            .body(serde_json::to_string(&value)?)
             .send()?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
