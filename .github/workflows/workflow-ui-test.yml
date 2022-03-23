@@ -26,7 +26,7 @@ env:
 #     - uses: Swatinem/rust-cache@v1
 
 #     - name: UI Tests
-#       run: cargo test --test ui --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
+#       run: cargo test --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
 
   ui-test-self-hosted:
     name: UI Tests
@@ -53,4 +53,4 @@ env:
     - uses: Swatinem/rust-cache@v1
 
     - name: UI Tests
-      run: cargo test --test ui --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
+      run: cargo test --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
