@@ -17,6 +17,7 @@ OPTIONS:
         --color <COLOR>              Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -D, --decode                     Decode the keys and values before printing them (WARNING! See --help)
     -E, --display-encoding <KIND>    What format to display the decoded (--decode) keys/values (WARNING! See --help) [default: simple] [possible values: simple, utf8, hex]
+        --format <FORMAT>            Change the output format [default: table] [possible values: table, json]
     -h, --help                       Print help information
     -H, --no-header                  Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading]
         --no-color                   Do not color output (alias for --color=never)
@@ -90,6 +91,12 @@ OPTIONS:
             
             [default: simple]
             [possible values: simple, utf8, hex]
+
+        --format <FORMAT>
+            Change the output format
+            
+            [default: table]
+            [possible values: table, json]
 
     -h, --help
             Print help information

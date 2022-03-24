@@ -324,23 +324,24 @@ impl Output for KeyValues {
 
     fn print_table(&self, ctx: &Ctx) -> Result<()> {
         let mut this = self.clone();
-        if ctx.kv_ctx().no_keys {
+        let kvctx = ctx.kv_ctx();
+        if kvctx.no_keys {
             this.inner.iter_mut().for_each(|kv| {
                 kv.key.take();
             });
         }
-        if ctx.kv_ctx().no_values {
+        if kvctx.no_values {
             this.inner.iter_mut().for_each(|kv| {
                 kv.value.take();
             });
         }
-        if ctx.kv_ctx().decode {
+        if kvctx.decode {
             // TODO: for lots of keys or lots of big keys this may need improved performance?
             return this
-                .to_decoded(ctx.kv_ctx().disp_encoding)?
-                .impl_print_table(!ctx.kv_ctx().no_header);
+                .to_decoded(kvctx.disp_encoding)?
+                .impl_print_table(!kvctx.no_header);
         }
-        this.impl_print_table(!ctx.kv_ctx().no_header)
+        this.impl_print_table(!kvctx.no_header)
     }
 }
 

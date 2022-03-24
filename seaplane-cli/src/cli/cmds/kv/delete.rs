@@ -52,6 +52,7 @@ impl CliCommand for SeaplaneKvDelete {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.init_kv(KvCtx::from_kv_common(&SeaplaneKvCommonArgMatches(matches))?);
+        ctx.out_format = matches.value_of_t_or_exit("format");
         Ok(())
     }
 }

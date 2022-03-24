@@ -6,6 +6,7 @@ mod set;
 
 use clap::{ArgMatches, Command};
 use seaplane::api::v1::config::{ConfigRequest, RangeQueryContext};
+use strum::VariantNames;
 
 pub use self::{
     common::SeaplaneKvCommonArgMatches,
@@ -18,6 +19,7 @@ use crate::{
     cli::{request_token, CliCommand},
     context::Ctx,
     error::{CliError, Context, Result},
+    printer::OutputFormat,
 };
 
 #[derive(Copy, Clone, Debug)]
@@ -30,6 +32,11 @@ impl SeaplaneKv {
             .subcommand_required(true)
             .arg_required_else_help(true)
             .visible_alias("kv")
+            .arg(
+                arg!(--format =["FORMAT"=>"table"] global)
+                    .help("Change the output format")
+                    .possible_values(OutputFormat::VARIANTS),
+            )
             .subcommand(SeaplaneKvGet::command())
             .subcommand(SeaplaneKvSet::command())
             .subcommand(SeaplaneKvDelete::command())

@@ -27,18 +27,22 @@ impl SeaplaneKvGet {
 
 impl CliCommand for SeaplaneKvGet {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        for kv in ctx.kv_ctx().kvs.iter_mut() {
-            kv.set_value(
-                // The key is already in Base64 so no need to convert
-                build_config_request_key(kv.key.as_ref().unwrap().to_string(), ctx)?
-                    .get_value()?
-                    .to_string(),
-            );
-        }
+        let kvs = {
+            let mut kvctx = ctx.kv_ctx();
+            for kv in kvctx.kvs.iter_mut() {
+                kv.set_value(
+                    // The key is already in Base64 so no need to convert
+                    build_config_request_key(kv.key.as_ref().unwrap().to_string(), ctx)?
+                        .get_value()?
+                        .to_string(),
+                );
+            }
 
+            kvctx.kvs.clone()
+        };
         match ctx.out_format {
-            OutputFormat::Json => ctx.kv_ctx().kvs.print_json(ctx)?,
-            OutputFormat::Table => ctx.kv_ctx().kvs.print_table(ctx)?,
+            OutputFormat::Json => kvs.print_json(ctx)?,
+            OutputFormat::Table => kvs.print_table(ctx)?,
         }
 
         Ok(())
@@ -48,6 +52,7 @@ impl CliCommand for SeaplaneKvGet {
         ctx.init_kv(KvCtx::from_kv_common(&common::SeaplaneKvCommonArgMatches(
             matches,
         ))?);
+        ctx.out_format = matches.value_of_t_or_exit("format");
         let mut kvctx = ctx.kv_ctx();
         kvctx.decode = matches.is_present("decode");
         kvctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");

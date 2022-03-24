@@ -43,7 +43,9 @@ impl CliCommand for SeaplaneKvSet {
         }
 
         if ctx.out_format == OutputFormat::Json {
-            ctx.kv_ctx().kvs.print_json(ctx)?;
+            // Scope to release the KvCtx lock
+            let kvs = { ctx.kv_ctx().kvs.clone() };
+            kvs.print_json(ctx)?;
         }
 
         Ok(())
@@ -51,6 +53,7 @@ impl CliCommand for SeaplaneKvSet {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.init_kv(KvCtx::from_kv_set(&SeaplaneKvSetArgMatches(matches))?);
+        ctx.out_format = matches.value_of_t_or_exit("format");
         Ok(())
     }
 }

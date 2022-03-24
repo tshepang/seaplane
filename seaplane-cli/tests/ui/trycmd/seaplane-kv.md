@@ -12,6 +12,7 @@ USAGE:
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
     -q, --quiet               Suppress output at a specific level and below
@@ -40,6 +41,7 @@ USAGE:
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
     -q, --quiet               Suppress output at a specific level and below
@@ -80,6 +82,12 @@ OPTIONS:
             
             [default: auto]
             [possible values: always, ansi, auto, never]
+
+        --format <FORMAT>
+            Change the output format
+            
+            [default: table]
+            [possible values: table, json]
 
     -h, --help
             Print help information
