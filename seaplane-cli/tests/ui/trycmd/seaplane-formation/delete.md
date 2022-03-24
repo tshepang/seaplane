@@ -20,7 +20,7 @@ OPTIONS:
         --no-local            DO NOT delete local Formations
         --no-remote           DO NOT delete remote Formations (this is set by the default, use --remote to remove them)
     -q, --quiet               Suppress output at a specific level and below
-        --remote              Delete remote Formations
+        --remote              Delete remote Formations (this is set by default, use --no-remote to skip)
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
     -x, --exact               The given FORMATION must be an exact match
@@ -85,7 +85,7 @@ OPTIONS:
                 -qqq: Suppress all output
 
         --remote
-            Delete remote Formations
+            Delete remote Formations (this is set by default, use --no-remote to skip)
 
     -v, --verbose
             Display more verbose output

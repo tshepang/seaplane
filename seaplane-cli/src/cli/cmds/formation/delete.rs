@@ -1,11 +1,12 @@
 use clap::{ArgMatches, Command};
 
 use crate::{
-    cli::{errors, validator::validate_name_id, CliCommand},
-    error::Result,
+    cli::{cmds::formation::build_request, errors, validator::validate_name_id, CliCommand},
+    context::Ctx,
+    error::{CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
     ops::formation::Formations,
-    Ctx,
+    printer::Color,
 };
 
 #[derive(Copy, Clone, Debug)]
@@ -34,7 +35,7 @@ impl SeaplaneFormationDelete {
                 .help("DO NOT delete local Formations"))
             .arg(arg!(--remote)
                 .overrides_with("no-remote")
-                .help("Delete remote Formations"))
+                .help("Delete remote Formations (this is set by default, use --no-remote to skip)"))
             .arg(arg!(--("no-remote"))
                 .overrides_with("remote")
                 .help("DO NOT delete remote Formations (this is set by the default, use --remote to remove them)"))
@@ -58,37 +59,73 @@ impl CliCommand for SeaplaneFormationDelete {
             cli_eprintln!("to the command)");
             std::process::exit(1);
         }
+
         // Load the known Formations from the local JSON "DB"
         let formations_file = ctx.formations_file();
         let mut formations: Formations = FromDisk::load(&formations_file)?;
 
-        // TODO: find remote Formations too to check references
-
         // Get the indices of any formations that match the given name/ID
         let indices = if ctx.exact {
-            formations.formation_indices_of_matches(ctx.name_id.as_ref().unwrap())
+            formations.formation_indices_of_matches(&formation_ctx.name_id)
         } else {
-            formations.formation_indices_of_left_matches(ctx.name_id.as_ref().unwrap())
+            formations.formation_indices_of_left_matches(&formation_ctx.name_id)
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(ctx.name_id.clone().unwrap(), ctx.exact)?,
+            0 => errors::no_matching_item(formation_ctx.name_id.clone(), ctx.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
                 if !ctx.all {
-                    errors::ambiguous_item(ctx.name_id.clone().unwrap(), true)?;
+                    errors::ambiguous_item(formation_ctx.name_id.clone(), true)?;
                 }
             }
         }
 
         // Remove the Formations
+        //
+        // First try to delete the remote formation if required, because we don't want to delete
+        // the local one too if this fails
+        if formation_ctx.remote {
+            for idx in &indices {
+                let formation = formations.get_formation(*idx).unwrap();
+                if let Some(name) = &formation.name {
+                    let delete_req = build_request(Some(name), ctx)?;
+                    let cfg_uuids = delete_req.delete(ctx.force)?;
+                    cli_print!("Successfully deleted remote Formation '");
+                    cli_print!(@Green, "{}", name);
+                    if cfg_uuids.is_empty() {
+                        cli_println!("'");
+                    } else {
+                        cli_println!("' with Configuration UUIDs:");
+                        for uuid in cfg_uuids.into_iter() {
+                            cli_println!(@Green, "\t{uuid}");
+                        }
+                    }
+                } else {
+                    return Err(CliErrorKind::NoMatchingItem(formation_ctx.name_id.clone())
+                        .into_err()
+                        .context("(hint: create the Formation with '")
+                        .color_context(Color::Green, "seaplane formation create")
+                        .context("')\n")
+                        .context("(hint: or try fetching remote references with '")
+                        .color_context(Color::Green, "seaplane formation fetch-remote")
+                        .context("')\n")
+                        .context("(hint: You can also fetch remote references with 'seaplane formation delete ")
+                        .color_context(Color::Green, "--fetch")
+                        .context("')\n"));
+                }
+            }
+        }
         if formation_ctx.local {
             formations
                 .remove_formation_indices(&indices)
                 .iter()
                 .for_each(|formation| {
-                    cli_println!("Deleted Formation {}", &formation.id.to_string());
+                    cli_println!(
+                        "Successfully deleted local Formation {}",
+                        &formation.id.to_string()
+                    );
                 });
         }
 
@@ -110,8 +147,9 @@ impl CliCommand for SeaplaneFormationDelete {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.force = matches.is_present("force");
         let mut fctx = ctx.formation_ctx();
-        fctx.remote = matches.is_present("remote");
-        fctx.local = matches.is_present("local") || !matches.is_present("no-local");
+        fctx.name_id = matches.value_of("formation").unwrap().to_string();
+        fctx.remote = !matches.is_present("no-remote");
+        fctx.local = !matches.is_present("no-local");
 
         Ok(())
     }
