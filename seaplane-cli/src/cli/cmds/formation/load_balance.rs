@@ -1,4 +1,4 @@
-use clap::{Arg, ArgMatches, Command};
+use clap::{Command};
 
 use crate::{cli::CliCommand, error::Result, Ctx};
 
@@ -13,8 +13,8 @@ impl SeaplaneFormationLoadBalance {
     }
 }
 
-impl CliCommand for SeaplaneFormationLoadBalanceArgs {
-    fn run(&self, ctx: &mut Ctx) -> Result<()> {
+impl CliCommand for SeaplaneFormationLoadBalance {
+    fn run(&self, _ctx: &mut Ctx) -> Result<()> {
         todo!("impl SeaplaneFormationLoadBalance::run")
     }
 }

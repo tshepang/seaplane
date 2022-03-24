@@ -1,4 +1,4 @@
-use clap::{Arg, ArgMatches, Command};
+use clap::Command;
 
 use crate::{cli::CliCommand, error::Result, Ctx};
 
@@ -7,13 +7,12 @@ pub struct SeaplaneFlightTemplate;
 
 impl SeaplaneFlightTemplate {
     pub fn command() -> Command<'static> {
-        Command::new("template").about("Generate a new template skeleton for a Flight definition");
         todo!("impl SeaplaneFlightTemplate::command")
     }
 }
 
-impl CLiCommand for SeaplaneFlightTemplateArgs {
-    fn run(&self, ctx: &mut Ctx) -> Result<()> {
+impl CliCommand for SeaplaneFlightTemplate {
+    fn run(&self, _ctx: &mut Ctx) -> Result<()> {
         todo!("impl SeaplaneFlightTemplate::run")
     }
 }

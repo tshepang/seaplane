@@ -56,7 +56,7 @@ impl SeaplaneFlight {
 
         #[cfg(feature = "unstable")]
         {
-            app = app.subcommand(SeaplaneFlightTemplate::subcommand());
+            app = app.subcommand(SeaplaneFlightTemplate::command());
         }
         app
     }
