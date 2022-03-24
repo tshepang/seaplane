@@ -1,4 +1,4 @@
-use clap::{Command};
+use clap::Command;
 
 use crate::{cli::CliCommand, error::Result, Ctx};
 

@@ -53,14 +53,17 @@ pub fn validate_name(name: &str) -> StdResult<(), &'static str> {
     if name.len() > 27 {
         return Err("Flight name too long, must be <= 27 in length");
     }
-    if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') {
-        return Err("illegal character in Flight name");
+    if !name
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+    {
+        return Err("illegal character in name");
     }
     if name.chars().filter(|c| *c == '-').count() > 3 {
-        return Err("no more than three hyphens ('-') allowed in Flight name");
+        return Err("no more than three hyphens ('-') allowed in name");
     }
     if name.contains("--") {
-        return Err("repeated hyphens ('--') not allowed in Flight name");
+        return Err("repeated hyphens ('--') not allowed in name");
     }
 
     Ok(())
