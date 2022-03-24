@@ -6,7 +6,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-# jobs:
+jobs:
 #   ui-test:
 #     name: UI Tests
 #     strategy:
