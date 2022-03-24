@@ -58,10 +58,9 @@ impl CliCommand for SeaplaneKvList {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.init_kv(KvCtx::from_kv_common(&common::SeaplaneKvCommonArgMatches(
-            matches,
-        ))?);
+        ctx.init_kv(KvCtx::default());
         let mut kvctx = ctx.kv_ctx();
+        kvctx.base64 = matches.is_present("base64");
         kvctx.decode = matches.is_present("decode");
         kvctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");
         kvctx.after = maybe_base64_arg!(matches, "after", matches.is_present("base64"))
