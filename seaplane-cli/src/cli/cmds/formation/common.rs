@@ -215,6 +215,12 @@ pub fn args() -> Vec<Arg<'static>> {
         arg!(--("no-launch")|("no-active"))
             .help("The opposite of --launch, and says that this Formation should not be active")
             .overrides_with("launch"),
+        arg!(--deploy)
+                .help("Send this formation to Seaplane immediately (requires a Formation configuration) but DO NOT set to active. To also set the configuration to active add or use --launch instead")
+                .overrides_with("no-deploy"),
+        arg!(--("no-deploy"))
+            .overrides_with_all(&["deploy", "launch"])
+            .help("Do *not* send this formation to Seaplane immediately"),
         arg!(--flight|flights =["SPEC"]...)
             .help("A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)")
             .validator(validate_name_id_path),

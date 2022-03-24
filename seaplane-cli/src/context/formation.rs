@@ -97,15 +97,19 @@ impl FormationCtx {
             }
         }
 
-        let deploy = matches.is_present("deploy");
         let launch = matches.is_present("launch");
+        // If we're launching we also need to deploy
+        if launch && matches.is_present("no-deploy") {
+            return Err(CliErrorKind::ConflictingArguments("--no-deploy", "--launch").into_err());
+        }
+        let deploy = matches.is_present("deploy") || launch;
         Ok(FormationCtx {
             name_id: matches
                 .value_of("name_id")
                 .map(ToOwned::to_owned)
                 .unwrap_or_else(generate_name),
             deploy: deploy || launch,
-            launch: deploy && !matches.is_present("no-launch "),
+            launch: deploy && !matches.is_present("no-launch"),
             cfg_ctx: FormationCfgCtx {
                 flights: flight_names.iter().map(|s| s.to_string()).collect(),
                 affinities: matches
@@ -118,10 +122,10 @@ impl FormationCtx {
                     .unwrap_or_default()
                     .map(ToOwned::to_owned)
                     .collect(),
-                providers_allowed: values_t_or_exit!(@into-model matches, "provider", Provider),
-                providers_denied: values_t_or_exit!(@into-model matches, "exclude-provider", Provider),
-                regions_allowed: values_t_or_exit!(@into-model matches, "region", Region),
-                regions_denied: values_t_or_exit!(@into-model matches, "exclude-region", Region),
+                providers_allowed: values_t_or_exit!(@into_model matches, "provider", Provider),
+                providers_denied: values_t_or_exit!(@into_model matches, "exclude-provider", Provider),
+                regions_allowed: values_t_or_exit!(@into_model matches, "region", Region),
+                regions_denied: values_t_or_exit!(@into_model matches, "exclude-region", Region),
                 public_endpoints: values_t_or_exit!(matches, "public-endpoint", Endpoint),
                 formation_endpoints: values_t_or_exit!(matches, "formation-endpoint", Endpoint),
                 flight_endpoints: values_t_or_exit!(matches, "flight-endpoint", Endpoint),

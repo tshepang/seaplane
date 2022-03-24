@@ -265,6 +265,7 @@ pub enum CliErrorKind {
     InvalidUtf8(std::string::FromUtf8Error),
     CliArgNotUsed(&'static str),
     InvalidCliValue(Option<&'static str>, String),
+    ConflictingArguments(&'static str, &'static str),
     MissingPath,
     Unknown,
     PermissionDenied,
@@ -277,6 +278,16 @@ impl CliErrorKind {
         use CliErrorKind::*;
 
         match &*self {
+            ConflictingArguments(a, b) => {
+                cli_eprint!("cannot use '");
+                cli_eprint!(@Yellow, "{a}");
+                cli_eprint!("' with '");
+                cli_eprint!(@Yellow, "{b}");
+                cli_eprintln!("'");
+                cli_eprintln!(
+                    "(hint: one or both arguments may have been implied from other flags)"
+                );
+            }
             Base64Decode(e) => {
                 cli_eprintln!("base64 decode: {e}");
             }
@@ -400,6 +411,7 @@ impl PartialEq<Self> for CliErrorKind {
             Base64Decode(_) => matches!(rhs, Base64Decode(_)),
             InvalidUtf8(_) => matches!(rhs, InvalidUtf8(_)),
             HexDecode(_) => matches!(rhs, HexDecode(_)),
+            ConflictingArguments(_, _) => matches!(rhs, ConflictingArguments(_, _)),
         }
     }
 }

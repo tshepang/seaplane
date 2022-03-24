@@ -5,7 +5,7 @@ use seaplane::{api::v1::Architecture, rexports::strum::VariantNames};
 use crate::{
     cli::{
         cmds::{
-            flight::SeaplaneFlightCommonArgMatches,
+            flight::{SeaplaneFlightCommonArgMatches, SeaplaneFlightCreate},
             formation::{build_request, common},
         },
         specs::{FLIGHT_SPEC, REGION_SPEC},
@@ -69,10 +69,6 @@ impl SeaplaneFormationCreate {
             .about("Create a Seaplane Formation")
             .long_about(LONG_ABOUT)
             .args(common::args())
-            .arg(arg!(--deploy)
-                .help("Send this formation to Seaplane immediately (requires a Formation configuration) (implies --launch, if that is not the desired state use --no-launch)")
-                .overrides_with("no-deploy"))
-            .arg(arg!(--("no-deploy")).overrides_with("deploy").help("Do *not* send this formation to Seaplane immediately"))
             .arg(arg!(--force).help("Override any existing Formation with the same NAME"))
             .next_help_heading("INLINE FLIGHT OPTIONS")
             // TODO: allow omitting of USER (TENANT) portion of image spec too...but this requires a an API
@@ -89,7 +85,12 @@ impl SeaplaneFormationCreate {
                 .requires("flight-image")
                 .help("The minimum number of container instances that should ever be running"))
             .arg(arg!(--("flight-maximum")|("flight-max") =["NUM"])
+                .overrides_with("flight-no-maximum")
                 .requires("flight-image")
+                .help("The maximum number of container instances that should ever be running (default: infinite)"))
+            .arg(arg!(--("flight-no-maximum")|("flight-no-max"))
+                .requires("flight-image")
+                .overrides_with("flight-maximum")
                 .help("The maximum number of container instances that should ever be running (default: infinite)"))
             .arg(arg!(--("flight-architecture")|("flight-arch")|("flight-arches")|("flight-architectures") =["ARCH"]... ignore_case)
                 .requires("flight-image")
@@ -166,13 +167,13 @@ impl CliCommand for SeaplaneFormationCreate {
                 if formation_ctx.launch {
                     cli_print!("Successfully launched Formation '");
                     cli_print!(@Green, "{}", &cfg_id.to_string()[..8]);
-                    cli_println!("with Configuration UUIDs:");
+                    cli_println!("' with Configuration UUIDs:");
                     formations.add_in_air_by_name(&formation_ctx.name_id, cfg_id);
                 } else {
                     formations.add_grounded_by_name(&formation_ctx.name_id, cfg_id);
                 }
                 for uuid in cfg_uuids.into_iter() {
-                    cli_println!(@Green, "{uuid}");
+                    cli_println!(@Green, "\t{uuid}");
                     formations.add_uuid(&cfg_id, uuid);
                 }
             }
@@ -182,17 +183,26 @@ impl CliCommand for SeaplaneFormationCreate {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.init_formation(FormationCtx::from_formation_create(
+            &SeaplaneFormationCreateArgMatches(matches),
+            ctx,
+        )?);
+
         if matches.is_present("flight-image") {
             ctx.init_flight(FlightCtx::from_flight_common(
                 &SeaplaneFlightCommonArgMatches(matches),
                 "flight-",
             )?);
-        }
 
-        ctx.init_formation(FormationCtx::from_formation_create(
-            &SeaplaneFormationCreateArgMatches(matches),
-            ctx,
-        )?);
+            let flight_create: Box<dyn CliCommand> = Box::new(SeaplaneFlightCreate);
+            flight_create.run(ctx)?;
+
+            // Store the newly created Flight as if it was passed via `--flight FOO`
+            ctx.formation_ctx()
+                .cfg_ctx
+                .flights
+                .push(ctx.flight_ctx().name_id.clone());
+        }
 
         let flights_file = ctx.flights_file();
         let mut flights: Flights = FromDisk::load(&flights_file)?;

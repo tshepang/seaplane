@@ -244,7 +244,7 @@ macro_rules! value_t {
 /// to parse. Unlike ArgMatches::values_of_t_or_exit this macro does not require the argument to
 /// have been used.
 macro_rules! values_t_or_exit {
-    (@into-model $m:ident, $v:expr, $ty:ty) => {{
+    (@into_model $m:ident, $v:expr, $ty:ty) => {{
         $m.values_of($v)
             .map(|vals| {
                 vals.filter_map(|s| {

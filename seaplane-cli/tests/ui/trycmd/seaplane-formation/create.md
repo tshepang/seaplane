@@ -15,7 +15,7 @@ OPTIONS:
         --affinity <NAME|ID>             A Formation that this Formation has an affinity for [aliases: affinities]
         --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
         --connection <NAME|ID>           A Formations that this Formation is connected to [aliases: connections]
-        --deploy                         Send this formation to Seaplane immediately (requires a Formation configuration) (implies --launch, if that is not the desired state use --no-launch)
+        --deploy                         Send this formation to Seaplane immediately (requires a Formation configuration) but DO NOT set to active. To also set the configuration to active add or use --launch instead
         --exclude-provider <PROVIDER>    A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider [aliases: exclude-providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
         --exclude-region <REGION>        A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below) [aliases: exclude-regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
         --flight <SPEC>                  A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below) [aliases: flights]
@@ -42,6 +42,7 @@ INLINE FLIGHT OPTIONS:
         --flight-maximum <NUM>          The maximum number of container instances that should ever be running (default: infinite) [aliases: flight-max]
         --flight-minimum <NUM>          The minimum number of container instances that should ever be running [default: 1] [aliases: flight-min]
         --flight-name <STRING>          A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
+        --flight-no-maximum             The maximum number of container instances that should ever be running (default: infinite) [aliases: flight-no-max]
 
 FLIGHT SPEC
 
@@ -124,7 +125,7 @@ OPTIONS:
             [aliases: connections]
 
         --deploy
-            Send this formation to Seaplane immediately (requires a Formation configuration) (implies --launch, if that is not the desired state use --no-launch)
+            Send this formation to Seaplane immediately (requires a Formation configuration) but DO NOT set to active. To also set the configuration to active add or use --launch instead
 
         --exclude-provider <PROVIDER>
             A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider
@@ -331,6 +332,11 @@ INLINE FLIGHT OPTIONS:
               - the total length must be <= 27
             
             Some of these restrictions may be lifted in the future.
+
+        --flight-no-maximum
+            The maximum number of container instances that should ever be running (default: infinite)
+            
+            [aliases: flight-no-max]
 
 FLIGHT SPEC
 

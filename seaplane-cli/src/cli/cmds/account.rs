@@ -123,7 +123,6 @@ impl CliCommand for SeaplaneAccountLogin {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.force = matches.is_present("force");
-        ctx.overwrite = matches.value_of("overwrite").map(ToOwned::to_owned);
         Ok(())
     }
 }
