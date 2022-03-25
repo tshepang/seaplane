@@ -367,9 +367,20 @@ impl CliErrorKind {
                 cli_print!(@Yellow, "@-");
                 cli_println!("' values were provided and only one is allowed");
             }
-            Seaplane(e) => {
-                cli_eprintln!("seaplane: {e}")
-            }
+            Seaplane(e) => match e {
+                SeaplaneError::FormationsResponse(fr) => {
+                    cli_eprintln!("{fr}");
+                    if let Some(ctx) = &fr.context {
+                        cli_eprintln!("(hint: {ctx})");
+                    }
+                }
+                SeaplaneError::ConfigResponse(cr) => {
+                    cli_eprintln!("{cr}")
+                }
+                _ => {
+                    cli_eprintln!("seaplane: {e}")
+                }
+            },
             ExistingValue(value) => {
                 cli_eprintln!("{value} already exists");
             }

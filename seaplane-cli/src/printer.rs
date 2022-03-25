@@ -207,18 +207,18 @@ mod _printer {
     }
 
     impl Printer {
-        pub fn init(color: ColorChoice) {
-            printer();
-            eprinter();
+        pub fn init(_color: ColorChoice) {
+            let _a = printer();
+            let _a = eprinter();
         }
 
-        pub fn set_color(&mut self, color: Color) {}
+        pub fn set_color(&mut self, _color: Color) {}
 
         pub fn reset(&mut self) {}
     }
 
     impl io::Write for Printer {
-        fn write(&mut self, mut buf: &[u8]) -> io::Result<usize> {
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
             match self.0 {
                 StandardStream::Stdout(ref mut s) => s.write(buf),
                 StandardStream::Stderr(ref mut s) => s.write(buf),

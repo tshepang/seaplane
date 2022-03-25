@@ -2,12 +2,15 @@
 
 use thiserror::Error;
 
+#[cfg(feature = "api_v1")]
+use crate::api::v1::{config::ConfigError, formations::FormationsError};
+
 pub type Result<T> = std::result::Result<T, SeaplaneError>;
 
 #[derive(Error, Debug)]
 pub enum SeaplaneError {
-    #[error("http request error")]
-    Http(#[from] reqwest::Error),
+    #[error("http error")]
+    UnknownHttp(#[from] reqwest::Error),
     #[error("request did not include a required API key")]
     MissingRequestApiKey,
     #[error("request did not include a required authorization token")]
@@ -36,4 +39,10 @@ pub enum SeaplaneError {
     MissingConfigKey,
     #[error("request must target either key or range")]
     IncorrectConfigRequestTarget,
+    #[cfg(feature = "api_v1")]
+    #[error("the Formations Compute API returned an error status")]
+    FormationsResponse(#[from] FormationsError),
+    #[error("the Config Consensus API returned an error status")]
+    #[cfg(feature = "api_v1")]
+    ConfigResponse(#[from] ConfigError),
 }

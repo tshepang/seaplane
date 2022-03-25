@@ -1,7 +1,10 @@
 //! The `/formations` endpoint APIs which allows working with [`FormationConfiguration`]s,
 //! [`Flight`]s, and the underlying containers
 
+mod error;
 mod models;
+
+pub use error::{map_error, FormationsError, FormationsErrorKind};
 
 use reqwest::{
     blocking,
@@ -134,10 +137,6 @@ impl FormationsRequest {
     //  - stop_configuration: sets only the given configuration to inactive, all others remain
     //    active
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 500 - Internal
     /// Returns a list of the names of all Formations you have access to
     ///
     /// **NOTE:** This is the only endpoint that does not require a Formation name as part of the
@@ -154,21 +153,16 @@ impl FormationsRequest {
     /// ```
     pub fn list_names(&self) -> Result<FormationNames> {
         let client = reqwest::blocking::Client::new();
-        client
+        let resp = client
             .get(self.endpoint_url.clone())
             .bearer_auth(&self.token)
-            .send()?
+            .send()?;
+
+        map_error(resp, None)?
             .json::<FormationNames>()
             .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 400 - Invalid Request
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - Source for Clone Operation not found
-    //   - [ ] 409 - Name already in use
-    //   - [ ] 500 - Internal
     /// Create a new Formation and returns the IDs of any created configurations. This differs from
     /// `FormationsRequest::add_configuration` in that the Formation name of this request *must
     /// not* already exists, or an error is returned.
@@ -199,13 +193,6 @@ impl FormationsRequest {
         self._post_formation(Some(configuration), active, None)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 400 - Invalid Request
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - Source for Clone Operation not found
-    //   - [ ] 409 - Name already in use
-    //   - [ ] 500 - Internal
     /// Clones an existing Formation's (`source`) configuration and optionally sets the given
     /// configuration as active.
     ///
@@ -250,15 +237,18 @@ impl FormationsRequest {
         } else {
             self.client.post(url).bearer_auth(&self.token)
         };
-        req.send()?.json::<Vec<Uuid>>().map_err(Into::into)
+        let resp = req.send()?;
+        map_error(
+            resp,
+            Some((
+                FormationsErrorKind::FormationNotFound,
+                "'source' not found".into(),
+            )),
+        )?
+        .json::<Vec<Uuid>>()
+        .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 400 - Formation is running and `force = false`
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// Deletes a formation
     ///
     /// **WARNING:** Setting `force` to `true` will delete the formation even if it is actively
@@ -285,19 +275,19 @@ impl FormationsRequest {
         let url = self
             .endpoint_url
             .join(&format!("formations/{}?force={force}", self.name()))?;
-        self.client
-            .delete(url)
-            .bearer_auth(&self.token)
-            .send()?
-            .json::<Vec<Uuid>>()
-            .map_err(Into::into)
+        let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
+
+        map_error(
+            resp,
+            Some((
+                FormationsErrorKind::InvalidRequest,
+                "use force=true to override".into(),
+            )),
+        )?
+        .json::<Vec<Uuid>>()
+        .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// Returns the IDs of all active configurations of a formation, along with their traffic
     /// weights.
     ///
@@ -323,19 +313,12 @@ impl FormationsRequest {
         let url = self
             .endpoint_url
             .join(&format!("formations/{}/activeConfiguration", self.name()))?;
-        self.client
-            .get(url)
-            .bearer_auth(&self.token)
-            .send()?
+        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+        map_error(resp, None)?
             .json::<ActiveConfigurations>()
             .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// Stops a Formation, spinning down all active Flights
     ///
     /// Uses `DELETE /formations/NAME/activeConfiguration`
@@ -361,21 +344,13 @@ impl FormationsRequest {
         let url = self
             .endpoint_url
             .join(&format!("formations/{}/activeConfiguration", self.name()))?;
-        self.client
-            .delete(url)
-            .bearer_auth(&self.token)
-            .send()?
+        let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
+        map_error(resp, None)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 400 - Invalid request (or force=false with intentionally invalid request)
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// Sets all active configurations for a particular Formation.
     ///
     /// Uses `PUT /formations/NAME/activeConfiguration`
@@ -422,21 +397,24 @@ impl FormationsRequest {
         if !force && configs.is_empty() {
             return Err(SeaplaneError::MissingActiveConfiguration);
         }
-        self.client
+        let resp = self
+            .client
             .put(url)
             .bearer_auth(&self.token)
             .body(serde_json::to_string(&configs)?)
-            .send()?
-            .text()
-            .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
-            .map_err(Into::into)
+            .send()?;
+        map_error(
+            resp,
+            Some((
+                FormationsErrorKind::InvalidRequest,
+                "use force=true to override".into(),
+            )),
+        )?
+        .text()
+        .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
+        .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// List all containers (both actively running and recently stopped) within a Formation
     ///
     /// Uses `GET /formations/NAME/containers`
@@ -461,19 +439,12 @@ impl FormationsRequest {
         let url = self
             .endpoint_url
             .join(&format!("formations/{}/containers", self.name()))?;
-        self.client
-            .get(url)
-            .bearer_auth(&self.token)
-            .send()?
+        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+        map_error(resp, None)?
             .json::<Containers>()
             .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// Returns the status and details of a single containers within a Formation
     ///
     /// Uses `GET /formations/NAME/containers/CONTAINER_UUID`
@@ -502,19 +473,12 @@ impl FormationsRequest {
             "formations/{}/containers/{container_id}",
             self.name()
         ))?;
-        self.client
-            .get(url)
-            .bearer_auth(&self.token)
-            .send()?
+        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+        map_error(resp, None)?
             .json::<Container>()
             .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// Returns the configuration details for a given configuration UUID within Formation
     ///
     /// Uses `GET /formations/NAME/configurations/UUID`
@@ -543,19 +507,12 @@ impl FormationsRequest {
         let url = self
             .endpoint_url
             .join(&format!("formations/{}/configurations/{uuid}", self.name()))?;
-        self.client
-            .get(url)
-            .bearer_auth(&self.token)
-            .send()?
+        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+        map_error(resp, None)?
             .json::<FormationConfiguration>()
             .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// Returns all configuration IDs for a given Formation
     ///
     /// Uses `GET /formations/NAME/configurations`
@@ -580,20 +537,12 @@ impl FormationsRequest {
         let url = self
             .endpoint_url
             .join(&format!("formations/{}/configurations", self.name()))?;
-        self.client
-            .get(url)
-            .bearer_auth(&self.token)
-            .send()?
+        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+        map_error(resp, None)?
             .json::<Vec<Uuid>>()
             .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 400 - Formation is running and `force = false`
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - No formation by that name
-    //   - [ ] 500 - Internal
     /// Removes a Configuration from a Formation and returns the UUID of the configuration
     ///
     /// **WARNING:** Setting `force` to `true` will delete the formation even if it is actively
@@ -629,21 +578,18 @@ impl FormationsRequest {
             "formations/{}/configurations/{uuid}?force={force}",
             self.name()
         ))?;
-        self.client
-            .delete(url)
-            .bearer_auth(&self.token)
-            .send()?
-            .json::<Uuid>()
-            .map_err(Into::into)
+        let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
+        map_error(
+            resp,
+            Some((
+                FormationsErrorKind::InvalidRequest,
+                "use force=true to override".into(),
+            )),
+        )?
+        .json::<Uuid>()
+        .map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 400 - Invalid Request
-    //   - [ ] 401 - Not logged in (Can't happen?)
-    //   - [ ] 403 - No permission
-    //   - [ ] 404 - Source for Clone Operation not found
-    //   - [ ] 409 - Name already in use
-    //   - [ ] 500 - Internal
     /// Create a new configuration for this Formation and optionally set it as active. This differs
     /// from `FormationsRequest::create` in that the Formation name of this request *must*
     /// already exists or an error is returned.
@@ -682,13 +628,21 @@ impl FormationsRequest {
             "formations/{}/configurations?active={active}",
             self.name()
         ))?;
-        self.client
+        let resp = self
+            .client
             .post(url)
             .bearer_auth(&self.token)
             .body(serde_json::to_string(&configuration)?)
-            .send()?
-            .json::<Uuid>()
-            .map_err(Into::into)
+            .send()?;
+        map_error(
+            resp,
+            Some((
+                FormationsErrorKind::FormationNotFound,
+                "'source' not found".into(),
+            )),
+        )?
+        .json::<Uuid>()
+        .map_err(Into::into)
     }
 
     // Internal, only used when can only be a valid name.

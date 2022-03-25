@@ -1,5 +1,6 @@
 //! The `/config` endpoint APIs which allows working with [`KeyValue`]s
 
+mod error;
 mod models;
 
 use crate::{
@@ -13,6 +14,7 @@ use reqwest::{
     Url,
 };
 
+pub use error::*;
 pub use models::*;
 
 /// A builder struct for creating a [`ConfigRequest`] which will then be used for making a
@@ -190,10 +192,8 @@ impl ConfigRequest {
     /// ```
     pub fn get_value(&self) -> Result<Value> {
         let url = self.single_key_url()?;
-        self.client
-            .get(url)
-            .bearer_auth(&self.token)
-            .send()?
+        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+        map_error(resp)?
             .json::<KeyValue>()
             .map(|kv| kv.value)
             .map_err(Into::into)
@@ -222,11 +222,13 @@ impl ConfigRequest {
     {
         let url = self.single_key_url()?;
         // TODO the Content-Type and Content-Transfer-Encoding headers for this request are probably wrong.
-        self.client
+        let resp = self
+            .client
             .put(url)
             .bearer_auth(&self.token)
             .body(value.to_string())
-            .send()?
+            .send()?;
+        map_error(resp)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
@@ -251,10 +253,8 @@ impl ConfigRequest {
     /// ```
     pub fn delete_value(&self) -> Result<()> {
         let url = self.single_key_url()?;
-        self.client
-            .delete(url)
-            .bearer_auth(&self.token)
-            .send()?
+        let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
+        map_error(resp)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
@@ -303,12 +303,8 @@ impl ConfigRequest {
             RequestTarget::Range(_) => {
                 let url = self.range_url()?;
 
-                self.client
-                    .get(url)
-                    .bearer_auth(&self.token)
-                    .send()?
-                    .json::<KeyValueRange>()
-                    .map_err(Into::into)
+                let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+                map_error(resp)?.json::<KeyValueRange>().map_err(Into::into)
             }
         }
     }
