@@ -12,7 +12,6 @@ use reqwest::{
     header::{self, CONTENT_TYPE},
     Url,
 };
-use serde::Serialize;
 
 pub use models::*;
 
@@ -219,13 +218,14 @@ impl ConfigRequest {
     /// ```
     pub fn put_value<T>(&self, value: &T) -> Result<()>
     where
-        T: ?Sized + Serialize,
+        T: ?Sized + ToString,
     {
         let url = self.single_key_url()?;
+        // TODO the Content-Type and Content-Transfer-Encoding headers for this request are probably wrong.
         self.client
             .put(url)
             .bearer_auth(&self.token)
-            .body(serde_json::to_string(&value)?)
+            .body(value.to_string())
             .send()?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
