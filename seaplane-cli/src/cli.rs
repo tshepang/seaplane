@@ -10,7 +10,7 @@ use std::{
 
 use clap::{crate_authors, ArgMatches, Command};
 use const_format::concatcp;
-use seaplane::api::TokenRequest;
+use seaplane::api::{AccessToken, TokenRequest};
 use strum::VariantNames;
 
 pub use crate::cli::cmds::*;
@@ -200,6 +200,10 @@ impl CliCommand for Seaplane {
 /// Makes a request against the `/token` endpoint of FlightDeck using the discovered API key and
 /// returns the short lived Access token (JWT). The access token is only good for 60 seconds
 pub fn request_token(ctx: &Ctx, context: &str) -> Result<String> {
+    Ok(request_token_json(ctx, context)?.token)
+}
+
+pub fn request_token_json(ctx: &Ctx, context: &str) -> Result<AccessToken> {
     TokenRequest::builder()
         .api_key(
             // TODO: add context
@@ -210,7 +214,7 @@ pub fn request_token(ctx: &Ctx, context: &str) -> Result<String> {
         .build()
         .map_err(CliError::from)
         .with_context(|| format!("Context: failed to build Access Token request{context}\n"))?
-        .access_token()
+        .access_token_json()
         .map_err(CliError::from)
         .with_context(|| format!("Context: failed to retrieve an Access Token{context}\n"))
 }

@@ -2,14 +2,27 @@
 
 use reqwest::{
     blocking,
-    header::{self, CONTENT_TYPE},
+    header::{HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE},
     Url,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::{
     api::FLIGHTDECK_API_URL,
     error::{Result, SeaplaneError},
 };
+
+/// An access token with tenant subdomain and ID
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[cfg_attr(feature = "api_tests", derive(PartialEq))]
+pub struct AccessToken {
+    /// The JWT token
+    pub token: String,
+    /// Tenant ID
+    pub tenant: u64,
+    /// Tenant Subdomain
+    pub subdomain: String,
+}
 
 #[derive(Default, Debug)]
 pub struct TokenRequestBuilder {
@@ -41,11 +54,8 @@ impl TokenRequestBuilder {
             return Err(SeaplaneError::MissingRequestApiKey);
         }
 
-        let mut headers = header::HeaderMap::new();
-        headers.insert(
-            CONTENT_TYPE,
-            header::HeaderValue::from_static("application/json"),
-        );
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
         #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
         let mut builder = blocking::Client::builder()
@@ -118,6 +128,33 @@ impl TokenRequest {
             .bearer_auth(&self.api_key)
             .send()?
             .text()
+            .map_err(Into::into)
+    }
+
+    // TODO: Distinguish errors:
+    //   - [ ] 401 - Malformed Token
+    //   - [ ] 403 - No permission
+    //   - [ ] 500 - Internal
+    /// Returns a JSON response of an `AccessToken` which contains the short lived JWT used to
+    /// authenticate to other public API endpoints, along with addition fields for tenant ID and
+    /// subdomain
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use seaplane::api::TokenRequest;
+    /// let req = TokenRequest::builder().api_key("abc123").build().unwrap();
+    ///
+    /// let resp = req.access_token_json().unwrap();
+    /// dbg!(resp);
+    /// ```
+    pub fn access_token_json(&self) -> Result<AccessToken> {
+        self.client
+            .post(self.endpoint_url.clone())
+            .bearer_auth(&self.api_key)
+            .header(ACCEPT, HeaderValue::from_static("application/json"))
+            .send()?
+            .json::<AccessToken>()
             .map_err(Into::into)
     }
 }

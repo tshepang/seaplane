@@ -18,7 +18,7 @@ macro_rules! impl_base64 {
             }
 
             /// Constructs a `Base64Encoded`, assuming the input is already encoded.
-            pub fn from_encoded(encoded: String) -> Self {
+            pub fn from_encoded(encoded: impl Into<String>) -> Self {
                 Self {
                     inner: Base64Encoded::from_encoded(encoded),
                 }

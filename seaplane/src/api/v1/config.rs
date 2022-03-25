@@ -199,13 +199,14 @@ impl ConfigRequest {
             .map_err(Into::into)
     }
 
-    /// Adds a base64 encoded value to the store at the given key.
+    /// Adds an unencoded value to the store at the given key performing the encoding before
+    /// sending the request.
     ///
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Key`.
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{ConfigRequestBuilder,ConfigRequest};
+    /// use seaplane::api::v1::{ConfigRequestBuilder,ConfigRequest,Value};
     ///
     /// let req = ConfigRequestBuilder::new()
     ///     .token("abc123_token")
@@ -213,19 +214,40 @@ impl ConfigRequest {
     ///     .build()
     ///     .unwrap();
     ///
-    /// let resp = req.put_value("YWhhYgo").unwrap();
+    /// let resp = req.put_value_unencoded("I'll be encoded!").unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn put_value<T>(&self, value: &T) -> Result<()>
-    where
-        T: ?Sized + ToString,
-    {
+    pub fn put_value_unencoded<S: AsRef<[u8]>>(&self, value: S) -> Result<()> {
+        self.put_value(Value::from_unencoded(value))
+    }
+
+    /// Adds a base64 encoded value to the store at the given key.
+    ///
+    /// **NOTE:** This endpoint requires the `RequestTarget` be a `Key`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use seaplane::api::v1::{ConfigRequestBuilder,ConfigRequest,Value};
+    ///
+    /// let req = ConfigRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .encoded_key("bW9ieQo")
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.put_value(Value::from_encoded("YWhhYgo")).unwrap();
+    /// dbg!(resp);
+    /// ```
+    pub fn put_value(&self, value: Value) -> Result<()> {
         let url = self.single_key_url()?;
-        // TODO the Content-Type and Content-Transfer-Encoding headers for this request are probably wrong.
         let resp = self
             .client
             .put(url)
             .bearer_auth(&self.token)
+            .header(
+                CONTENT_TYPE,
+                header::HeaderValue::from_static("application/octet-stream"),
+            )
             .body(value.to_string())
             .send()?;
         map_error(resp)?

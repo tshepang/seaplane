@@ -28,8 +28,8 @@ impl Base64Encoded {
     /// Constructs a `Base64Encoded`, assuming the input is already encoded.
     // This is a reasonable thing to provide, as the majority of the time this function will be used
     // with the keys that are returned by the API, which are already encoded
-    pub(crate) fn from_encoded(encoded: String) -> Self {
-        Base64Encoded(encoded)
+    pub(crate) fn from_encoded(encoded: impl Into<String>) -> Self {
+        Base64Encoded(encoded.into())
     }
 
     /// Returns the result of decoding the inner string.

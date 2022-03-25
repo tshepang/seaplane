@@ -9,7 +9,7 @@ use crate::{
     context::Ctx,
     error::{CliError, CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
-    printer::Color,
+    printer::{Color, OutputFormat},
 };
 
 #[derive(Copy, Clone, Debug)]
@@ -45,7 +45,9 @@ pub struct SeaplaneAccountToken;
 
 impl SeaplaneAccountToken {
     pub fn command() -> Command<'static> {
-        Command::new("token")
+        Command::new("token").arg(arg!(--json - ('j')).help(
+            "Returns the access token in a JSON object also containing tenant ID and subdomain",
+        ))
     }
 }
 
@@ -60,8 +62,19 @@ impl CliCommand for SeaplaneAccountToken {
             .build()
             .map_err(CliError::from)?;
 
-        cli_println!("{}", t.access_token().map_err(CliError::from)?);
+        if ctx.out_format == OutputFormat::Json {
+            cli_println!("{}", serde_json::to_string(&t.access_token_json()?)?);
+        } else {
+            cli_println!("{}", t.access_token()?);
+        }
 
+        Ok(())
+    }
+
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        if matches.is_present("json") {
+            ctx.out_format = OutputFormat::Json;
+        }
         Ok(())
     }
 }

@@ -32,16 +32,16 @@ fn partial_build() -> ConfigRequestBuilder {
 #[test]
 fn get_value() {
     let resp = KeyValue {
-        key: Key::from_encoded("foo".to_string()),
-        value: Value::from_encoded("foo".to_string()),
+        key: Key::from_encoded("Zm9v".to_string()),
+        value: Value::from_encoded("Zm9v".to_string()),
     };
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v1/config/base64:foo");
+        when(w, GET, "/v1/config/base64:Zm9v");
         then(t, json!(resp));
     });
 
-    let req = partial_build().encoded_key("foo").build().unwrap();
+    let req = partial_build().encoded_key("Zm9v").build().unwrap();
     let resp_val = req.get_value().unwrap();
 
     // Ensure the endpoint was hit
@@ -77,12 +77,31 @@ fn put_value() {
     let resp_json = json!({"status": 200, "title": "Ok"});
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, PUT, "/v1/config/base64:foo");
+        when(w, PUT, "/v1/config/base64:Zm9vMQ").header("content-type", "application/octet-stream");
         then(t, resp_json);
     });
 
-    let req = partial_build().encoded_key("foo").build().unwrap();
-    let resp = req.put_value("bar").unwrap();
+    let req = partial_build().encoded_key("Zm9vMQ").build().unwrap();
+    let resp = req.put_value(Value::from_encoded("YmFy")).unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp, ());
+}
+
+// PUT /config/base64:{key}
+#[test]
+fn put_value_unencoded() {
+    let resp_json = json!({"status": 200, "title": "Ok"});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, PUT, "/v1/config/base64:Zm9vMg").header("content-type", "application/octet-stream");
+        then(t, resp_json);
+    });
+
+    let req = partial_build().encoded_key("Zm9vMg").build().unwrap();
+    let resp = req.put_value_unencoded("bar").unwrap();
 
     // Ensure the endpoint was hit
     mock.assert();
@@ -96,11 +115,11 @@ fn delete_value() {
     let resp_json = json!({"status": 200u32, "title": "Ok"});
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, DELETE, "/v1/config/base64:foo");
+        when(w, DELETE, "/v1/config/base64:Zm9v");
         then(t, resp_json);
     });
 
-    let req = partial_build().encoded_key("foo").build().unwrap();
+    let req = partial_build().encoded_key("Zm9v").build().unwrap();
     let resp = req.delete_value().unwrap();
 
     // Ensure the endpoint was hit

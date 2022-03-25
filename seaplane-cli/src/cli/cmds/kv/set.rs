@@ -1,5 +1,7 @@
 use clap::{ArgMatches, Command};
 
+use seaplane::api::v1::config::Value;
+
 use crate::{
     cli::{
         cmds::kv::{build_config_request_key, common},
@@ -36,7 +38,7 @@ impl CliCommand for SeaplaneKvSet {
         for kv in ctx.kv_ctx().kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
             let value = kv.value.as_ref().unwrap().to_string();
-            build_config_request_key(&key, ctx)?.put_value(&value)?;
+            build_config_request_key(&key, ctx)?.put_value(Value::from_encoded(value.clone()))?;
             if ctx.out_format == OutputFormat::Table {
                 cli_println!("Set {key} with value {value}");
             }

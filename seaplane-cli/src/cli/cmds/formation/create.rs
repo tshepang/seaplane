@@ -8,6 +8,7 @@ use crate::{
             flight::{SeaplaneFlightCommonArgMatches, SeaplaneFlightCreate},
             formation::{build_request, common},
         },
+        request_token_json,
         specs::{FLIGHT_SPEC, REGION_SPEC},
         validator::validate_name,
         CliCommand,
@@ -175,6 +176,12 @@ impl CliCommand for SeaplaneFormationCreate {
                 for uuid in cfg_uuids.into_iter() {
                     cli_println!(@Green, "\t{uuid}");
                     formations.add_uuid(&cfg_id, uuid);
+                }
+                if formation_ctx.launch {
+                    let subdomain = request_token_json(ctx, "")?.subdomain;
+                    cli_print!("The Formation URL is ");
+                    cli_println!(@Green, "https://{}--{subdomain}.on.seaplanet.io/", &formation_ctx.name_id);
+                    cli_println!("(hint: if you have not configured any public endpoints, the Formation will not be reachable from the public internet!)");
                 }
             }
         }
