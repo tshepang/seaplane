@@ -4,7 +4,7 @@ use clap::{ArgMatches, Command};
 use seaplane::api::{TokenRequest, FLIGHTDECK_API_URL};
 
 use crate::{
-    cli::CliCommand,
+    cli::{cmds::init::SeaplaneInit, CliCommand},
     config::RawConfig,
     context::Ctx,
     error::{CliError, CliErrorKind, Context, Result},
@@ -90,14 +90,16 @@ impl SeaplaneAccountLogin {
 
 impl CliCommand for SeaplaneAccountLogin {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let mut cfg = RawConfig::load(ctx.conf_files().first().ok_or_else(|| {
-            CliErrorKind::MissingPath
-                .into_err()
-                .context("Context: no configuration file found\n")
-                .context("(hint: try '")
-                .color_context(Color::Green, "seaplane init")
-                .context("' if the files are missing)\n")
-        })?)?;
+        let mut cfg = if let Some(f) = ctx.conf_files().first() {
+            RawConfig::load(f)?
+        } else {
+            // If we don't know where the configuration files are, we need to run init
+            SeaplaneInit.run(ctx)?;
+            // Now we try and load whatever was created. NOTE this does not update the
+            // `ctx.conf_dirs`. However this is fine because the remaining code paths after this
+            // don't try and access them.
+            RawConfig::load_all()?
+        };
 
         if let Some(key) = cfg.account.api_key {
             if ctx.force {

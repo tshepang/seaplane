@@ -209,9 +209,8 @@ macro_rules! cli_debugln {
 
 /// Converts a value from a clap::ArgMatches into some Result<T, CliError>
 ///
-/// This macro uses clap's ArgMatches::value_of_t
-/// (https://docs.rs/clap/latest/clap/struct.ArgMatches.html#method.value_of_t) but matches the
-/// error if any and converts to our own CliError
+/// This macro uses clap's [`clap::ArgMatches::value_of_t`] but matches the error if any and
+/// converts to our own [`crate::error::CliError`]
 macro_rules! value_t {
     ($m:ident, $v:expr, $ty:ty) => {{
         match $m.value_of_t::<$ty>($v) {
