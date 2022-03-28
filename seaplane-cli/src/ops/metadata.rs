@@ -8,7 +8,7 @@ use seaplane::api::v1::config::{Key as KeyModel, KeyValue as KeyValueModel};
 use serde::{ser::Serializer, Serialize};
 
 use crate::{
-    context::{kv::DisplayEncodingFormat, Ctx},
+    context::{metadata::DisplayEncodingFormat, Ctx},
     error::Result,
     printer::Output,
 };
@@ -303,20 +303,20 @@ impl KeyValues {
 impl Output for KeyValues {
     fn print_json(&self, ctx: &Ctx) -> Result<()> {
         let mut this = self.clone();
-        if ctx.kv_ctx().no_keys {
+        if ctx.md_ctx().no_keys {
             this.inner.iter_mut().for_each(|kv| {
                 kv.key.take();
             });
         }
-        if ctx.kv_ctx().no_values {
+        if ctx.md_ctx().no_values {
             this.inner.iter_mut().for_each(|kv| {
                 kv.value.take();
             });
         }
-        if ctx.kv_ctx().decode {
+        if ctx.md_ctx().decode {
             // TODO: for lots of keys or lots of big keys this may need improved performance?
             return this
-                .to_decoded(ctx.kv_ctx().disp_encoding)?
+                .to_decoded(ctx.md_ctx().disp_encoding)?
                 .impl_print_json();
         }
         this.impl_print_json()
@@ -324,24 +324,24 @@ impl Output for KeyValues {
 
     fn print_table(&self, ctx: &Ctx) -> Result<()> {
         let mut this = self.clone();
-        let kvctx = ctx.kv_ctx();
-        if kvctx.no_keys {
+        let mdctx = ctx.md_ctx();
+        if mdctx.no_keys {
             this.inner.iter_mut().for_each(|kv| {
                 kv.key.take();
             });
         }
-        if kvctx.no_values {
+        if mdctx.no_values {
             this.inner.iter_mut().for_each(|kv| {
                 kv.value.take();
             });
         }
-        if kvctx.decode {
+        if mdctx.decode {
             // TODO: for lots of keys or lots of big keys this may need improved performance?
             return this
-                .to_decoded(kvctx.disp_encoding)?
-                .impl_print_table(!kvctx.no_header);
+                .to_decoded(mdctx.disp_encoding)?
+                .impl_print_table(!mdctx.no_header);
         }
-        this.impl_print_table(!kvctx.no_header)
+        this.impl_print_table(!mdctx.no_header)
     }
 }
 

@@ -1,15 +1,15 @@
 Short help
 
 ```console
-$ seaplane key-value delete -h
-seaplane-key-value-delete [PKGVER]
-Delete one or more key-value pairs
+$ seaplane metadata delete -h
+seaplane-metadata-delete [PKGVER]
+Delete one or more metadata key-value pairs
 
 USAGE:
-    seaplane key-value delete <KEY>... [OPTIONS]
+    seaplane metadata delete <KEY>... [OPTIONS]
 
 ARGS:
-    <KEY>    The key(s) of the key-value pair use
+    <KEY>    The key(s) of the metadata key-value pair
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -27,16 +27,16 @@ OPTIONS:
 Long help:
 
 ```console
-$ seaplane key-value delete --help
-seaplane-key-value-delete [PKGVER]
-Delete one or more key-value pairs
+$ seaplane metadata delete --help
+seaplane-metadata-delete [PKGVER]
+Delete one or more metadata key-value pairs
 
 USAGE:
-    seaplane key-value delete <KEY>... [OPTIONS]
+    seaplane metadata delete <KEY>... [OPTIONS]
 
 ARGS:
     <KEY>
-            The key(s) of the key-value pair use
+            The key(s) of the metadata key-value pair
 
 OPTIONS:
     -A, --api-key <STRING>

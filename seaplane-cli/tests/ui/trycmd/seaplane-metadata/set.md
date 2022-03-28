@@ -1,12 +1,12 @@
 Short help:
 
 ```console
-$ seaplane key-value set -h
-seaplane-key-value-set [PKGVER]
-Set a key-value pair
+$ seaplane metadata set -h
+seaplane-metadata-set [PKGVER]
+Set a metadata key-value pair
 
 USAGE:
-    seaplane key-value set <KEY:VALUE> [OPTIONS]
+    seaplane metadata set <KEY:VALUE> [OPTIONS]
 
 ARGS:
     <KEY>      The key to set
@@ -28,12 +28,12 @@ OPTIONS:
 Long Help: 
 
 ```console
-$ seaplane key-value set --help
-seaplane-key-value-set [PKGVER]
-Set a key-value pair
+$ seaplane metadata set --help
+seaplane-metadata-set [PKGVER]
+Set a metadata key-value pair
 
 USAGE:
-    seaplane key-value set <KEY:VALUE> [OPTIONS]
+    seaplane metadata set <KEY:VALUE> [OPTIONS]
 
 ARGS:
     <KEY>

@@ -112,7 +112,7 @@ impl Seaplane {
             .subcommand(SeaplaneFormation::command())
             .subcommand(SeaplaneInit::command())
             .subcommand(SeaplaneLicense::command())
-            .subcommand(SeaplaneKv::command())
+            .subcommand(SeaplaneMetadata::command())
             .subcommand(SeaplaneShellCompletion::command());
 
         #[cfg(feature = "unstable")]
@@ -185,7 +185,7 @@ impl CliCommand for Seaplane {
             Some(("flight", m)) => Some((Box::new(SeaplaneFlight), m)),
             Some(("formation", m)) => Some((Box::new(SeaplaneFormation), m)),
             Some(("init", m)) => Some((Box::new(SeaplaneInit), m)),
-            Some(("key-value", m)) => Some((Box::new(SeaplaneKv), m)),
+            Some(("metadata", m)) => Some((Box::new(SeaplaneMetadata), m)),
             Some(("shell-completion", m)) => Some((Box::new(SeaplaneShellCompletion), m)),
             Some(("license", m)) => Some((Box::new(SeaplaneLicense), m)),
             #[cfg(feature = "unstable")]

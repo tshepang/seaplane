@@ -7,8 +7,8 @@ pub mod formation;
 #[cfg(feature = "unstable")]
 mod image;
 mod init;
-pub mod kv;
 mod license;
+pub mod metadata;
 
 pub use self::{
     account::SeaplaneAccount,
@@ -16,8 +16,8 @@ pub use self::{
     flight::SeaplaneFlight,
     formation::{Provider, Region, SeaplaneFormation},
     init::SeaplaneInit,
-    kv::SeaplaneKv,
     license::SeaplaneLicense,
+    metadata::SeaplaneMetadata,
 };
 #[cfg(feature = "unstable")]
 pub use self::{config::SeaplaneConfig, image::SeaplaneImage};

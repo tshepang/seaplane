@@ -24,8 +24,8 @@ SUBCOMMANDS:
     formation           Operate on Seaplane Formations
     help                Print this message or the help of the given subcommand(s)
     init                Create the Seaplane directory structure at the appropriate locations
-    key-value           Operate on key-value pairs using the Global Data Consensus API [aliases: kv]
     license             Print license information
+    metadata            Operate on metadata key-value pairs using the Global Data Coordination API [aliases: meta, md]
     shell-completion    Generate shell completion script files for seaplane
 
 ```

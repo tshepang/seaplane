@@ -1,7 +1,7 @@
 use clap::{Arg, ArgMatches};
 use strum::VariantNames;
 
-use crate::context::kv::DisplayEncodingFormat;
+use crate::context::metadata::DisplayEncodingFormat;
 
 const LONG_DECODE: &str = "Decode the keys and values before printing them
 
@@ -31,7 +31,7 @@ hex    => Raw bytes will hex encoded and displayed as text";
 /// values of arguments were used or not. i.e. `seaplane formation create` may not have the same
 /// arguments as `seaplane account token` even though both produce an `ArgMatches`.
 #[allow(missing_debug_implementations)]
-pub struct SeaplaneKvCommonArgMatches<'a>(pub &'a ArgMatches);
+pub struct SeaplaneMetadataCommonArgMatches<'a>(pub &'a ArgMatches);
 
 pub fn args() -> Vec<Arg<'static>> {
     vec![key(), base64()]
@@ -65,5 +65,5 @@ pub fn base64() -> Arg<'static> {
 }
 
 pub fn key() -> Arg<'static> {
-    arg!(key =["KEY"]... required ).help("The key(s) of the key-value pair use")
+    arg!(key =["KEY"]... required ).help("The key(s) of the metadata key-value pair")
 }

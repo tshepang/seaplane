@@ -1,18 +1,18 @@
 Short help:
 
 ```console
-$ seaplane key-value list -h
-seaplane-key-value-list [PKGVER]
-List one or more key-value pairs
+$ seaplane metadata list -h
+seaplane-metadata-list [PKGVER]
+List one or more metadata key-value pairs
 
 USAGE:
-    seaplane key-value list <DIR> [OPTIONS]
+    seaplane metadata list <DIR> [OPTIONS]
 
 ARGS:
-    <DIR>    The root directory of the key-value pairs to list
+    <DIR>    The root directory of the metadata key-value pairs to list
 
 OPTIONS:
-    -a, --after                      Only print key-value pairs after this key (note: this key and it's value are NOT included in the results)
+    -a, --after                      Only print metadata key-value pairs after this key (note: this key and it's value are NOT included in the results)
     -A, --api-key <STRING>           The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
     -B, --base64                     The keys/values are already encoded in URL safe Base64
         --color <COLOR>              Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
@@ -34,20 +34,20 @@ OPTIONS:
 Long help:
 
 ```console
-$ seaplane key-value list --help
-seaplane-key-value-list [PKGVER]
-List one or more key-value pairs
+$ seaplane metadata list --help
+seaplane-metadata-list [PKGVER]
+List one or more metadata key-value pairs
 
 USAGE:
-    seaplane key-value list <DIR> [OPTIONS]
+    seaplane metadata list <DIR> [OPTIONS]
 
 ARGS:
     <DIR>
-            The root directory of the key-value pairs to list
+            The root directory of the metadata key-value pairs to list
 
 OPTIONS:
     -a, --after
-            Only print key-value pairs after this key (note: this key and it's value are NOT included in the results)
+            Only print metadata key-value pairs after this key (note: this key and it's value are NOT included in the results)
 
     -A, --api-key <STRING>
             The API key associated with your account used to access Seaplane API endpoints

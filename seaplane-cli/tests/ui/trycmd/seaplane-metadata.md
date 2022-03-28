@@ -1,13 +1,13 @@
 With no args:
 
 ```console
-$ seaplane key-value
+$ seaplane metadata
 ? 2
-seaplane-key-value [PKGVER]
-Operate on key-value pairs using the Global Data Consensus API
+seaplane-metadata [PKGVER]
+Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:
-    seaplane key-value [OPTIONS] <SUBCOMMAND>
+    seaplane metadata [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -20,23 +20,23 @@ OPTIONS:
     -V, --version             Print version information
 
 SUBCOMMANDS:
-    delete    Delete one or more key-value pairs [aliases: del, remove, rm]
-    get       Get one or more key-value pairs [aliases: show]
+    delete    Delete one or more metadata key-value pairs [aliases: del, remove, rm]
+    get       Get one or more metadata key-value pairs [aliases: show]
     help      Print this message or the help of the given subcommand(s)
-    list      List one or more key-value pairs [aliases: ls]
-    set       Set a key-value pair [aliases: put]
+    list      List one or more metadata key-value pairs [aliases: ls]
+    set       Set a metadata key-value pair [aliases: put]
 
 ```
 
 The short help:
 
 ```console
-$ seaplane key-value -h
-seaplane-key-value [PKGVER]
-Operate on key-value pairs using the Global Data Consensus API
+$ seaplane metadata -h
+seaplane-metadata [PKGVER]
+Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:
-    seaplane key-value [OPTIONS] <SUBCOMMAND>
+    seaplane metadata [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -49,23 +49,23 @@ OPTIONS:
     -V, --version             Print version information
 
 SUBCOMMANDS:
-    delete    Delete one or more key-value pairs [aliases: del, remove, rm]
-    get       Get one or more key-value pairs [aliases: show]
+    delete    Delete one or more metadata key-value pairs [aliases: del, remove, rm]
+    get       Get one or more metadata key-value pairs [aliases: show]
     help      Print this message or the help of the given subcommand(s)
-    list      List one or more key-value pairs [aliases: ls]
-    set       Set a key-value pair [aliases: put]
+    list      List one or more metadata key-value pairs [aliases: ls]
+    set       Set a metadata key-value pair [aliases: put]
 
 ```
 
 The long help:
 
 ```console
-$ seaplane key-value --help
-seaplane-key-value [PKGVER]
-Operate on key-value pairs using the Global Data Consensus API
+$ seaplane metadata --help
+seaplane-metadata [PKGVER]
+Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:
-    seaplane key-value [OPTIONS] <SUBCOMMAND>
+    seaplane metadata [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>
@@ -115,14 +115,14 @@ OPTIONS:
 
 SUBCOMMANDS:
     delete
-            Delete one or more key-value pairs [aliases: del, remove, rm]
+            Delete one or more metadata key-value pairs [aliases: del, remove, rm]
     get
-            Get one or more key-value pairs [aliases: show]
+            Get one or more metadata key-value pairs [aliases: show]
     help
             Print this message or the help of the given subcommand(s)
     list
-            List one or more key-value pairs [aliases: ls]
+            List one or more metadata key-value pairs [aliases: ls]
     set
-            Set a key-value pair [aliases: put]
+            Set a metadata key-value pair [aliases: put]
 
 ```

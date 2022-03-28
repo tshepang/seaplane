@@ -1,15 +1,15 @@
 Short help:
 
 ```console
-$ seaplane key-value get -h
-seaplane-key-value-get [PKGVER]
-Get one or more key-value pairs
+$ seaplane metadata get -h
+seaplane-metadata-get [PKGVER]
+Get one or more metadata key-value pairs
 
 USAGE:
-    seaplane key-value get <KEY>... [OPTIONS]
+    seaplane metadata get <KEY>... [OPTIONS]
 
 ARGS:
-    <KEY>    The key(s) of the key-value pair use
+    <KEY>    The key(s) of the metadata key-value pair
 
 OPTIONS:
     -A, --api-key <STRING>           The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -33,16 +33,16 @@ OPTIONS:
 Long help:
 
 ```console
-$ seaplane key-value get --help
-seaplane-key-value-get [PKGVER]
-Get one or more key-value pairs
+$ seaplane metadata get --help
+seaplane-metadata-get [PKGVER]
+Get one or more metadata key-value pairs
 
 USAGE:
-    seaplane key-value get <KEY>... [OPTIONS]
+    seaplane metadata get <KEY>... [OPTIONS]
 
 ARGS:
     <KEY>
-            The key(s) of the key-value pair use
+            The key(s) of the metadata key-value pair
 
 OPTIONS:
     -A, --api-key <STRING>

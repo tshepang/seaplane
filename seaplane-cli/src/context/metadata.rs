@@ -7,9 +7,9 @@ use seaplane::api::v1::config::{Directory, Key};
 use strum::{EnumString, EnumVariantNames};
 
 use crate::{
-    cli::cmds::kv::{SeaplaneKvCommonArgMatches, SeaplaneKvSetArgMatches},
+    cli::cmds::metadata::{SeaplaneMetadataCommonArgMatches, SeaplaneMetadataSetArgMatches},
     error::{CliError, Context, Result},
-    ops::kv::{KeyValue, KeyValues},
+    ops::metadata::{KeyValue, KeyValues},
     printer::Color,
 };
 
@@ -32,7 +32,7 @@ impl Default for DisplayEncodingFormat {
 /// structs for serializing
 // TODO: we may not want to derive this we implement circular references
 #[derive(Debug, Default)]
-pub struct KvCtx {
+pub struct MetadataCtx {
     pub kvs: KeyValues,
     pub directory: Option<Directory>,
     /// Is the key or value already URL safe base64 encoded
@@ -51,9 +51,9 @@ pub struct KvCtx {
     pub no_values: bool,
 }
 
-impl KvCtx {
-    /// Builds a KvCtx from ArgMatches
-    pub fn from_kv_common(matches: &SeaplaneKvCommonArgMatches) -> Result<KvCtx> {
+impl MetadataCtx {
+    /// Builds a MetadataCtx from ArgMatches
+    pub fn from_md_common(matches: &SeaplaneMetadataCommonArgMatches) -> Result<MetadataCtx> {
         let matches = matches.0;
         let base64 = matches.is_present("base64");
         let raw_keys: Vec<&str> = matches.values_of("key").unwrap().collect();
@@ -69,15 +69,15 @@ impl KvCtx {
             }
         }
 
-        Ok(KvCtx {
+        Ok(MetadataCtx {
             kvs,
             base64: true, // At this point all keys and values should be encoded as base64
-            ..KvCtx::default()
+            ..MetadataCtx::default()
         })
     }
 
-    /// Builds a KvCtx from ArgMatches
-    pub fn from_kv_set(matches: &SeaplaneKvSetArgMatches) -> Result<KvCtx> {
+    /// Builds a MetadataCtx from ArgMatches
+    pub fn from_md_set(matches: &SeaplaneMetadataSetArgMatches) -> Result<MetadataCtx> {
         let matches = matches.0;
         let base64 = matches.is_present("base64");
         let raw_key = matches.value_of("key").unwrap();
@@ -122,10 +122,10 @@ impl KvCtx {
         let mut kvs = KeyValues::default();
         kvs.push(kv);
 
-        Ok(KvCtx {
+        Ok(MetadataCtx {
             kvs,
             base64: true,
-            ..KvCtx::default()
+            ..MetadataCtx::default()
         })
     }
 }

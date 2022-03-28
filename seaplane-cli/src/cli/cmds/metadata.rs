@@ -9,11 +9,11 @@ use seaplane::api::v1::config::{ConfigRequest, RangeQueryContext};
 use strum::VariantNames;
 
 pub use self::{
-    common::SeaplaneKvCommonArgMatches,
-    delete::SeaplaneKvDelete,
-    get::SeaplaneKvGet,
-    list::SeaplaneKvList,
-    set::{SeaplaneKvSet, SeaplaneKvSetArgMatches},
+    common::SeaplaneMetadataCommonArgMatches,
+    delete::SeaplaneMetadataDelete,
+    get::SeaplaneMetadataGet,
+    list::SeaplaneMetadataList,
+    set::{SeaplaneMetadataSet, SeaplaneMetadataSetArgMatches},
 };
 use crate::{
     cli::{request_token, CliCommand},
@@ -23,37 +23,37 @@ use crate::{
 };
 
 #[derive(Copy, Clone, Debug)]
-pub struct SeaplaneKv;
+pub struct SeaplaneMetadata;
 
-impl SeaplaneKv {
+impl SeaplaneMetadata {
     pub fn command() -> Command<'static> {
-        Command::new("key-value")
-            .about("Operate on key-value pairs using the Global Data Consensus API")
+        Command::new("metadata")
+            .about("Operate on metadata key-value pairs using the Global Data Coordination API")
             .subcommand_required(true)
             .arg_required_else_help(true)
-            .visible_alias("kv")
+            .visible_aliases(&["meta", "md"])
             .arg(
                 arg!(--format =["FORMAT"=>"table"] global)
                     .help("Change the output format")
                     .possible_values(OutputFormat::VARIANTS),
             )
-            .subcommand(SeaplaneKvGet::command())
-            .subcommand(SeaplaneKvSet::command())
-            .subcommand(SeaplaneKvDelete::command())
-            .subcommand(SeaplaneKvList::command())
+            .subcommand(SeaplaneMetadataGet::command())
+            .subcommand(SeaplaneMetadataSet::command())
+            .subcommand(SeaplaneMetadataDelete::command())
+            .subcommand(SeaplaneMetadataList::command())
     }
 }
 
-impl CliCommand for SeaplaneKv {
+impl CliCommand for SeaplaneMetadata {
     fn next_subcmd<'a>(
         &self,
         matches: &'a ArgMatches,
     ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
         match &matches.subcommand() {
-            Some(("get", m)) => Some((Box::new(SeaplaneKvGet), m)),
-            Some(("set", m)) => Some((Box::new(SeaplaneKvSet), m)),
-            Some(("delete", m)) => Some((Box::new(SeaplaneKvDelete), m)),
-            Some(("list", m)) => Some((Box::new(SeaplaneKvList), m)),
+            Some(("get", m)) => Some((Box::new(SeaplaneMetadataGet), m)),
+            Some(("set", m)) => Some((Box::new(SeaplaneMetadataSet), m)),
+            Some(("delete", m)) => Some((Box::new(SeaplaneMetadataDelete), m)),
+            Some(("list", m)) => Some((Box::new(SeaplaneMetadataList), m)),
             _ => None,
         }
     }

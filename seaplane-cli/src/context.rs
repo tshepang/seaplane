@@ -26,8 +26,8 @@ pub mod flight;
 pub use flight::FlightCtx;
 pub mod formation;
 pub use formation::{FormationCfgCtx, FormationCtx};
-pub mod kv;
-pub use kv::KvCtx;
+pub mod metadata;
+pub use metadata::MetadataCtx;
 
 use std::{
     path::{Path, PathBuf},
@@ -79,7 +79,7 @@ pub struct Ctx {
     formation: LateInit<FormationCtx>,
 
     /// Context relate to exclusively to key-value operations and commands
-    kv: LateInit<KvCtx>,
+    md: LateInit<MetadataCtx>,
 
     /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
@@ -113,7 +113,7 @@ impl Default for Ctx {
             api_key: None,
             flight: LateInit::default(),
             formation: LateInit::default(),
-            kv: LateInit::default(),
+            md: LateInit::default(),
             conf_files: Vec::new(),
             overwrite: None,
             name_id: None,
@@ -176,14 +176,14 @@ impl Ctx {
             .unwrap_or_else(PoisonError::into_inner)
     }
 
-    pub fn init_kv(&self, val: KvCtx) {
-        self.kv.init(val)
+    pub fn init_md(&self, val: MetadataCtx) {
+        self.md.init(val)
     }
 
-    pub fn kv_ctx(&self) -> MutexGuard<'_, KvCtx> {
-        self.kv
+    pub fn md_ctx(&self) -> MutexGuard<'_, MetadataCtx> {
+        self.md
             .inner
-            .get_or_init(|| Mutex::new(KvCtx::default()))
+            .get_or_init(|| Mutex::new(MetadataCtx::default()))
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
     }
