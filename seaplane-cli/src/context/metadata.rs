@@ -42,7 +42,7 @@ pub struct MetadataCtx {
     /// What format to display decoded values in
     pub disp_encoding: DisplayEncodingFormat,
     /// A base64 encoded key
-    pub after: Option<Key>,
+    pub from: Option<Key>,
     /// Skip the KEY or VALUE header in --format=table
     pub no_header: bool,
     /// Don't print keys

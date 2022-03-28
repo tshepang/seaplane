@@ -27,7 +27,7 @@ impl SeaplaneMetadataList {
             )
             .arg(common::base64())
             .args(common::display_args())
-            .arg(arg!(--after - ('a')).help("Only print metadata key-value pairs after this key (note: this key and it's value are NOT included in the results)"))
+            .arg(arg!(--from - ('f') =["KEY"]).help("Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)"))
     }
 }
 
@@ -42,8 +42,8 @@ impl CliCommand for SeaplaneMetadataList {
             if let Some(dir) = &mdctx.directory {
                 range.set_directory(dir.clone());
             }
-            if let Some(after) = &mdctx.after {
-                range.set_after(after.clone());
+            if let Some(from) = &mdctx.from {
+                range.set_from(from.clone());
             }
             // Using the KeyValues container makes displaying easy
             KeyValues::from_model(build_config_request_dir(range, ctx)?.get_all_pages()?)
@@ -64,8 +64,8 @@ impl CliCommand for SeaplaneMetadataList {
         mdctx.base64 = matches.is_present("base64");
         mdctx.decode = matches.is_present("decode");
         mdctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");
-        mdctx.after = maybe_base64_arg!(matches, "after", matches.is_present("base64"))
-            .map(Key::from_encoded);
+        mdctx.from =
+            maybe_base64_arg!(matches, "from", matches.is_present("base64")).map(Key::from_encoded);
         mdctx.directory = maybe_base64_arg!(matches, "dir", matches.is_present("base64"))
             .map(Directory::from_encoded);
         Ok(())

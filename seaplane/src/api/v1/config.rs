@@ -163,8 +163,8 @@ impl ConfigRequest {
                     url.set_path(&format!("{}/", url.path()));
                 }
 
-                if let Some(after) = context.after() {
-                    url.set_query(Some(&format!("after={}", after.encoded())));
+                if let Some(from) = context.from() {
+                    url.set_query(Some(&format!("from=base64:{}", from.encoded())));
                 }
 
                 Ok(url)
@@ -282,13 +282,13 @@ impl ConfigRequest {
             .map_err(Into::into)
     }
 
-    /// Returns a single page of key value pairs for the given directory, beginning with the `after` key.
+    /// Returns a single page of key value pairs for the given directory, beginning with the `from` key.
     ///
     /// If no directory is given, the root directory is used.
-    /// If no `after` is given, the range begins from the start.
+    /// If no `from` is given, the range begins from the start.
     ///
-    /// If more pages are desired, perform another range request using the `last` value from the first request.
-    /// Or, use `get_all_pages`.
+    /// If more pages are desired, perform another range request using the `next_key` value from the first request
+    /// as the `from` value of the following request, or use `get_all_pages`.
     ///
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
@@ -305,9 +305,9 @@ impl ConfigRequest {
     ///
     /// let resp = req.get_page().unwrap();
     ///
-    /// if resp.more {
+    /// if let Some(next_key) = resp.next_key {
     ///     let mut next_page_range = RangeQueryContext::new();
-    ///     next_page_range.set_after(resp.last);
+    ///     next_page_range.set_from(next_key);
     ///     
     ///     let req = ConfigRequestBuilder::new()
     ///     .token("abc123_token")
@@ -331,10 +331,10 @@ impl ConfigRequest {
         }
     }
 
-    /// Returns all key-value pairs for the given directory, from the `after` key onwards. May perform multiple requests.
+    /// Returns all key-value pairs for the given directory, from the `from` key onwards. May perform multiple requests.
     ///
     /// If no directory is given, the root directory is used.
-    /// If no `after` is given, the range begins from the start.
+    /// If no `from` is given, the range begins from the start.
     ///
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
@@ -358,10 +358,10 @@ impl ConfigRequest {
         loop {
             let mut kvr = self.get_page()?;
             pages.append(&mut kvr.kvs);
-            if kvr.more {
+            if let Some(next_key) = kvr.next_key {
                 // TODO: Regrettable duplication here suggests that there should be a ConfigKeyRequest and a ConfigRangeRequest
                 if let RequestTarget::Range(ref mut context) = self.target {
-                    context.set_after(kvr.last);
+                    context.set_from(next_key);
                 } else {
                     return Err(SeaplaneError::IncorrectConfigRequestTarget);
                 }

@@ -1,6 +1,6 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::{ConfigRequestBuilder, Key, KeyValue, RangeQueryContext, Value};
+use seaplane::api::v1::{ConfigRequestBuilder, Directory, Key, KeyValue, RangeQueryContext, Value};
 use serde_json::json;
 
 static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
@@ -50,10 +50,10 @@ fn get_value() {
     assert_eq!(resp_val, resp.value);
 }
 
-// GET /config/[base64:{dir}/][?after=base64:{key}]
+// GET /config/
 #[test]
 fn get_root_values() {
-    let resp_json = json!({"more": false, "last": "baz", "kvs": [{"key": "foo", "value": "bar"}, {"key": "baz", "value": "buz"}]});
+    let resp_json = json!({"next_key": None::<String>, "kvs": [{"key": "foo", "value": "bar"}, {"key": "baz", "value": "buz"}]});
 
     let mock = MOCK_SERVER.mock(|w, t| {
         when(w, GET, "/v1/config/");
@@ -61,7 +61,28 @@ fn get_root_values() {
     });
 
     let range = RangeQueryContext::new();
+    let req = partial_build().range(range).build().unwrap();
+    let resp = req.get_page().unwrap();
 
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
+}
+
+// GET /config/[base64:{dir}/][?from=base64:{key}]
+#[test]
+fn get_values_from() {
+    let resp_json = json!({"next_key": None::<String>, "kvs": [{"key": "foo", "value": "bar"}, {"key": "baz", "value": "buz"}]});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/config/base64:bWFuIGFzY2lp/").query_param("from", "base64:aGVsbG8");
+        then(t, resp_json.clone());
+    });
+
+    let mut range = RangeQueryContext::new();
+    range.set_from(Key::from_encoded("aGVsbG8"));
+    range.set_directory(Directory::from_encoded("bWFuIGFzY2lp"));
     let req = partial_build().range(range).build().unwrap();
     let resp = req.get_page().unwrap();
 

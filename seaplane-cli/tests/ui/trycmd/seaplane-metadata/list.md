@@ -12,12 +12,12 @@ ARGS:
     <DIR>    The root directory of the metadata key-value pairs to list
 
 OPTIONS:
-    -a, --after                      Only print metadata key-value pairs after this key (note: this key and it's value are NOT included in the results)
     -A, --api-key <STRING>           The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
     -B, --base64                     The keys/values are already encoded in URL safe Base64
         --color <COLOR>              Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -D, --decode                     Decode the keys and values before printing them (WARNING! See --help)
     -E, --display-encoding <KIND>    What format to display the decoded (--decode) keys/values (WARNING! See --help) [default: simple] [possible values: simple, utf8, hex]
+    -f, --from <KEY>                 Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
         --format <FORMAT>            Change the output format [default: table] [possible values: table, json]
     -h, --help                       Print help information
     -H, --no-header                  Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading]
@@ -46,9 +46,6 @@ ARGS:
             The root directory of the metadata key-value pairs to list
 
 OPTIONS:
-    -a, --after
-            Only print metadata key-value pairs after this key (note: this key and it's value are NOT included in the results)
-
     -A, --api-key <STRING>
             The API key associated with your account used to access Seaplane API endpoints
             
@@ -95,6 +92,9 @@ OPTIONS:
             
             [default: simple]
             [possible values: simple, utf8, hex]
+
+    -f, --from <KEY>
+            Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
 
         --format <FORMAT>
             Change the output format

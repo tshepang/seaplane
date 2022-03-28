@@ -104,8 +104,8 @@ impl_base64!(Directory);
 pub struct RangeQueryContext {
     /// The directory, if any, within which to perform the range query.
     dir: Option<Directory>,
-    /// The key after which (lexicographically) results are returned.
-    after: Option<Key>,
+    /// The lower bound on the page of results to return.
+    from: Option<Key>,
 }
 
 impl RangeQueryContext {
@@ -119,17 +119,17 @@ impl RangeQueryContext {
         self.dir = Some(dir);
     }
 
-    /// Set the last key after which the range should be queried
-    pub fn set_after(&mut self, after: Key) {
-        self.after = Some(after);
+    /// Set the key to use when beginning the next page of the query
+    pub fn set_from(&mut self, next_key: Key) {
+        self.from = Some(next_key);
     }
 
     pub fn directory(&self) -> &Option<Directory> {
         &self.dir
     }
 
-    pub fn after(&self) -> &Option<Key> {
-        &self.after
+    pub fn from(&self) -> &Option<Key> {
+        &self.from
     }
 }
 
@@ -143,10 +143,49 @@ pub enum RequestTarget {
 /// The response given from a range query
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct KeyValueRange {
-    /// Indicates that there are more values to be read.
-    pub more: bool,
-    /// The last key in the range, can be used to read more values if needed.
-    pub last: Key,
+    /// A lower bound of the next page of results
+    pub next_key: Option<Key>,
     /// The range of key value pairs returned
     pub kvs: Vec<KeyValue>,
+}
+
+#[cfg(test)]
+mod config_models_test {
+    use super::*;
+
+    #[test]
+    fn key_value_range_deserialize() {
+        let deserialzied = serde_json::from_str(
+            "{\"next_key\":\"bmV4dCBrZX\",\"kvs\":[{\"key\":\"aGVsbG8\",\"value\":\"dmFsdWU\"}]}",
+        )
+        .unwrap();
+
+        assert_eq!(
+            KeyValueRange {
+                next_key: Some(Key::from_encoded("bmV4dCBrZX")),
+                kvs: vec![KeyValue {
+                    key: Key::from_encoded("aGVsbG8"),
+                    value: Value::from_encoded("dmFsdWU"),
+                },]
+            },
+            deserialzied
+        );
+    }
+
+    #[test]
+    fn key_value_range_serialize() {
+        let serialized = serde_json::to_string(&KeyValueRange {
+            next_key: Some(Key::from_encoded("bmV4dCBrZX")),
+            kvs: vec![KeyValue {
+                key: Key::from_encoded("aGVsbG8"),
+                value: Value::from_encoded("dmFsdWU"),
+            }],
+        })
+        .unwrap();
+
+        assert_eq!(
+            "{\"next_key\":\"bmV4dCBrZX\",\"kvs\":[{\"key\":\"aGVsbG8\",\"value\":\"dmFsdWU\"}]}",
+            serialized
+        );
+    }
 }
