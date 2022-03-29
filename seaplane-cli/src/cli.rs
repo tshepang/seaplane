@@ -16,7 +16,7 @@ use strum::VariantNames;
 pub use crate::cli::cmds::*;
 use crate::{
     context::Ctx,
-    error::{CliError, CliErrorKind, Context, Result},
+    error::{CliError, Context, Result},
     printer::{ColorChoice, Printer},
 };
 
@@ -133,7 +133,7 @@ impl Seaplane {
 impl CliCommand for Seaplane {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Initialize the printer now that we have all the color choices
-        Printer::init(ctx.color);
+        Printer::init(ctx.args.color);
         Ok(())
     }
 
@@ -147,7 +147,7 @@ impl CliCommand for Seaplane {
         // even though they override each-other.
         //
         // So we err on the side of not providing color since that is the safer option
-        ctx.color = match (
+        ctx.args.color = match (
             value_t!(matches, "color", ColorChoice)?,
             matches.is_present("no-color"),
         ) {
@@ -156,7 +156,7 @@ impl CliCommand for Seaplane {
                 if choice != ColorChoice::Auto {
                     choice
                 } else {
-                    ctx.color
+                    ctx.args.color
                 }
             }
         };
@@ -166,10 +166,10 @@ impl CliCommand for Seaplane {
                 let stdin = io::stdin();
                 let mut lines = stdin.lock().lines();
                 if let Some(line) = lines.next() {
-                    ctx.api_key = Some(line?);
+                    ctx.args.api_key = Some(line?);
                 }
             } else {
-                ctx.api_key = Some(key.to_string());
+                ctx.args.api_key = Some(key.to_string());
             }
         }
 
@@ -199,18 +199,13 @@ impl CliCommand for Seaplane {
 
 /// Makes a request against the `/token` endpoint of FlightDeck using the discovered API key and
 /// returns the short lived Access token (JWT). The access token is only good for 60 seconds
-pub fn request_token(ctx: &Ctx, context: &str) -> Result<String> {
-    Ok(request_token_json(ctx, context)?.token)
+pub fn request_token(api_key: &str, context: &str) -> Result<String> {
+    Ok(request_token_json(api_key, context)?.token)
 }
 
-pub fn request_token_json(ctx: &Ctx, context: &str) -> Result<AccessToken> {
+pub fn request_token_json(api_key: &str, context: &str) -> Result<AccessToken> {
     TokenRequest::builder()
-        .api_key(
-            // TODO: add context
-            ctx.api_key
-                .as_ref()
-                .ok_or_else(|| CliErrorKind::MissingApiKey.into_err())?,
-        )
+        .api_key(api_key)
         .build()
         .map_err(CliError::from)
         .with_context(|| format!("Context: failed to build Access Token request{context}\n"))?

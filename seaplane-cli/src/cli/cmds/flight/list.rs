@@ -30,16 +30,16 @@ impl CliCommand for SeaplaneFlightList {
 
         // TODO: get remote flights too
 
-        match ctx.out_format {
-            OutputFormat::Json => flights.print_json(ctx)?,
+        match ctx.args.out_format {
             OutputFormat::Table => flights.print_table(ctx)?,
+            OutputFormat::Json => flights.print_json(ctx)?,
         }
 
         Ok(())
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.out_format = matches.value_of_t("format").unwrap_or_default();
+        ctx.args.out_format = matches.value_of_t("format").unwrap_or_default();
         Ok(())
     }
 }

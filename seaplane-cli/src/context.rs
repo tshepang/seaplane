@@ -39,7 +39,7 @@ use once_cell::sync::OnceCell;
 
 use crate::{
     config::RawConfig,
-    error::Result,
+    error::{CliErrorKind, Result},
     fs,
     printer::{ColorChoice, OutputFormat},
 };
@@ -47,42 +47,14 @@ use crate::{
 const FLIGHTS_FILE: &str = "flights.json";
 const FORMATIONS_FILE: &str = "formations.json";
 
-/// The source of truth "Context" that is passed to all runtime processes to make decisions based
-/// on user configuration
-// TODO: we may not want to derive this we implement circular references
-#[derive(Debug)]
-pub struct Ctx {
+#[derive(Debug, Default)]
+pub struct Args {
     // @TODO we may need to get more granular than binary yes/no. For example, there may be times
     /// when the answer is "yes...but only if the stream is a TTY." In these cases an enum of Never,
     /// Auto, Always would be more appropriate
     ///
     /// Should be display ANSI color codes in output?
     pub color: ColorChoice,
-
-    /// The platform specific path to a data location
-    data_dir: PathBuf,
-
-    /// How to display output
-    pub out_format: OutputFormat,
-
-    /// Try to force the operation to happen
-    pub force: bool,
-
-    /// The API Key associated with an account provided by the CLI, env, or Config used to request
-    /// access tokens
-    pub api_key: Option<String>,
-
-    /// Context relate to exclusively to Flight operations and commands
-    flight: LateInit<FlightCtx>,
-
-    /// Context relate to exclusively to Formation operations and commands
-    formation: LateInit<FormationCtx>,
-
-    /// Context relate to exclusively to key-value operations and commands
-    md: LateInit<MetadataCtx>,
-
-    /// Where the configuration files were loaded from
-    pub conf_files: Vec<PathBuf>,
 
     /// The name or local ID of an item
     pub name_id: Option<String>,
@@ -101,26 +73,58 @@ pub struct Ctx {
 
     /// The shell to generate completions for
     pub shell: Option<Shell>,
+
+    /// How to display output
+    pub out_format: OutputFormat,
+
+    /// Try to force the operation to happen
+    pub force: bool,
+
+    /// The API Key associated with an account provided by the CLI, env, or Config used to request
+    /// access tokens
+    pub api_key: Option<String>,
+}
+
+impl Args {
+    pub fn api_key(&self) -> Result<&str> {
+        self.api_key
+            .as_deref()
+            .ok_or_else(|| CliErrorKind::MissingApiKey.into_err())
+    }
+}
+
+/// The source of truth "Context" that is passed to all runtime processes to make decisions based
+/// on user configuration
+// TODO: we may not want to derive this we implement circular references
+#[derive(Debug)]
+pub struct Ctx {
+    /// The platform specific path to a data location
+    data_dir: PathBuf,
+
+    /// Context relate to exclusively to Flight operations and commands
+    flight: LateInit<FlightCtx>,
+
+    /// Context relate to exclusively to Formation operations and commands
+    formation: LateInit<FormationCtx>,
+
+    /// Context relate to exclusively to key-value operations and commands
+    md: LateInit<MetadataCtx>,
+
+    /// Where the configuration files were loaded from
+    pub conf_files: Vec<PathBuf>,
+
+    pub args: Args,
 }
 
 impl Default for Ctx {
     fn default() -> Self {
         Self {
-            color: ColorChoice::Auto,
             data_dir: fs::data_dir(),
-            out_format: OutputFormat::default(),
-            force: false,
-            api_key: None,
             flight: LateInit::default(),
             formation: LateInit::default(),
             md: LateInit::default(),
             conf_files: Vec::new(),
-            overwrite: None,
-            name_id: None,
-            exact: false,
-            all: false,
-            third_party: false,
-            shell: None,
+            args: Args::default(),
         }
     }
 }
@@ -128,12 +132,13 @@ impl Default for Ctx {
 impl Ctx {
     pub fn from_config(cfg: &RawConfig) -> Result<Self> {
         Ok(Self {
-            // We default to using color. Later when the context is updated from the CLI args, this
-            // may change.
-            color: cfg.seaplane.color.unwrap_or_default(),
             data_dir: fs::data_dir(),
-            api_key: cfg.account.api_key.clone(),
             conf_files: cfg.loaded_from.clone(),
+            args: Args {
+                color: cfg.seaplane.color.unwrap_or_default(),
+                api_key: cfg.account.api_key.clone(),
+                ..Default::default()
+            },
             ..Self::default()
         })
     }

@@ -47,19 +47,19 @@ impl CliCommand for SeaplaneFlightDelete {
         // TODO: find remote Flights too to check references
 
         // Get the indices of any flights that match the given name/ID
-        let indices = if ctx.exact {
-            flights.indices_of_matches(ctx.name_id.as_ref().unwrap())
+        let indices = if ctx.args.exact {
+            flights.indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         } else {
-            flights.indices_of_left_matches(ctx.name_id.as_ref().unwrap())
+            flights.indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(ctx.name_id.clone().unwrap(), ctx.exact)?,
+            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), ctx.args.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
-                if !ctx.all {
-                    errors::ambiguous_item(ctx.name_id.clone().unwrap(), true)?;
+                if !ctx.args.all {
+                    errors::ambiguous_item(ctx.args.name_id.clone().unwrap(), true)?;
                 }
             }
         }
@@ -82,7 +82,7 @@ impl CliCommand for SeaplaneFlightDelete {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.name_id = matches.value_of("flight").map(ToOwned::to_owned);
+        ctx.args.name_id = matches.value_of("flight").map(ToOwned::to_owned);
         Ok(())
     }
 }

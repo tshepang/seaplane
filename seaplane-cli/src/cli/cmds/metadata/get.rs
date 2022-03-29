@@ -32,15 +32,18 @@ impl CliCommand for SeaplaneMetadataGet {
             for kv in mdctx.kvs.iter_mut() {
                 kv.set_value(
                     // The key is already in Base64 so no need to convert
-                    build_config_request_key(kv.key.as_ref().unwrap().to_string(), ctx)?
-                        .get_value()?
-                        .to_string(),
+                    build_config_request_key(
+                        kv.key.as_ref().unwrap().to_string(),
+                        ctx.args.api_key()?,
+                    )?
+                    .get_value()?
+                    .to_string(),
                 );
             }
 
             mdctx.kvs.clone()
         };
-        match ctx.out_format {
+        match ctx.args.out_format {
             OutputFormat::Json => kvs.print_json(ctx)?,
             OutputFormat::Table => kvs.print_table(ctx)?,
         }
@@ -52,7 +55,7 @@ impl CliCommand for SeaplaneMetadataGet {
         ctx.init_md(MetadataCtx::from_md_common(
             &common::SeaplaneMetadataCommonArgMatches(matches),
         )?);
-        ctx.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.value_of_t_or_exit("format");
         let mut mdctx = ctx.md_ctx();
         mdctx.decode = matches.is_present("decode");
         mdctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");

@@ -54,15 +54,11 @@ impl SeaplaneAccountToken {
 impl CliCommand for SeaplaneAccountToken {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let t = TokenRequest::builder()
-            .api_key(
-                ctx.api_key
-                    .as_ref()
-                    .ok_or_else(|| CliErrorKind::MissingApiKey.into_err())?,
-            )
+            .api_key(ctx.args.api_key()?)
             .build()
             .map_err(CliError::from)?;
 
-        if ctx.out_format == OutputFormat::Json {
+        if ctx.args.out_format == OutputFormat::Json {
             cli_println!("{}", serde_json::to_string(&t.access_token_json()?)?);
         } else {
             cli_println!("{}", t.access_token()?);
@@ -73,7 +69,7 @@ impl CliCommand for SeaplaneAccountToken {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         if matches.is_present("json") {
-            ctx.out_format = OutputFormat::Json;
+            ctx.args.out_format = OutputFormat::Json;
         }
         Ok(())
     }
@@ -102,7 +98,7 @@ impl CliCommand for SeaplaneAccountLogin {
         };
 
         if let Some(key) = cfg.account.api_key {
-            if ctx.force {
+            if ctx.args.force {
                 cli_warn!(@Yellow, "warn: ");
                 cli_warn!("overwriting API key ");
                 cli_warn!(@Green, "{} ", key);
@@ -124,10 +120,10 @@ impl CliCommand for SeaplaneAccountLogin {
         let stdin = io::stdin();
         let mut lines = stdin.lock().lines();
         if let Some(line) = lines.next() {
-            ctx.api_key = Some(line?);
+            ctx.args.api_key = Some(line?);
         }
 
-        cfg.account.api_key = ctx.api_key.clone();
+        cfg.account.api_key = ctx.args.api_key.clone();
 
         cfg.persist()?;
 
@@ -137,7 +133,7 @@ impl CliCommand for SeaplaneAccountLogin {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.force = matches.is_present("force");
+        ctx.args.force = matches.is_present("force");
         Ok(())
     }
 }

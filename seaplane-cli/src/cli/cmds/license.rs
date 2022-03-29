@@ -27,7 +27,7 @@ impl SeaplaneLicense {
 
 impl CliCommand for SeaplaneLicense {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        if ctx.third_party {
+        if ctx.args.third_party {
             println!("{THIRD_PARTY_LICENSES}");
         } else {
             println!("{SELF_LICENSE}");
@@ -37,7 +37,7 @@ impl CliCommand for SeaplaneLicense {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.third_party = matches.is_present("third-party");
+        ctx.args.third_party = matches.is_present("third-party");
         Ok(())
     }
 }

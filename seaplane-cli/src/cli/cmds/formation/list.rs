@@ -37,7 +37,7 @@ impl CliCommand for SeaplaneFormationList {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let formations: Formations = FromDisk::load(ctx.formations_file())?;
 
-        match ctx.out_format {
+        match ctx.args.out_format {
             OutputFormat::Json => formations.print_json(ctx)?,
             OutputFormat::Table => formations.print_table(ctx)?,
         }
@@ -46,8 +46,7 @@ impl CliCommand for SeaplaneFormationList {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.out_format = matches.value_of_t("format").unwrap_or_default();
-
+        ctx.args.out_format = matches.value_of_t("format").unwrap_or_default();
         Ok(())
     }
 }

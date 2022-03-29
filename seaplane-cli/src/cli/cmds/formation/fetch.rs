@@ -36,11 +36,12 @@ impl CliCommand for SeaplaneFormationFetch {
         let formations_file = ctx.formations_file();
         let mut formations: Formations = FromDisk::load(&formations_file)?;
 
-        let names = if let Some(name) = &ctx.name_id {
+        let api_key = ctx.args.api_key()?;
+        let names = if let Some(name) = &ctx.args.name_id {
             vec![name.to_owned()]
         } else {
             // First download all formation names
-            let formations_request = build_request(None, ctx)?;
+            let formations_request = build_request(None, api_key)?;
             formations_request
                 .list_names()
                 .map_err(CliError::from)
@@ -54,20 +55,20 @@ impl CliCommand for SeaplaneFormationFetch {
         // TODO: We't requesting tons of new tokens...maybe we could do multiple per and just
         // retry on error?
         for name in names {
-            let list_cfg_uuids_req = build_request(Some(&name), ctx)?;
+            let list_cfg_uuids_req = build_request(Some(&name), api_key)?;
 
             let cfg_uuids = list_cfg_uuids_req
                 .list_configuration_ids()
                 .map_err(CliError::from)
                 .context("Context: failed to retrieve Formation Configuration IDs\n")?;
-            let active_cfgs_req = build_request(Some(&name), ctx)?;
+            let active_cfgs_req = build_request(Some(&name), api_key)?;
             let active_cfgs = active_cfgs_req
                 .get_active_configurations()
                 .map_err(CliError::from)
                 .context("Context: failed to retrieve Active Formation Configurations\n")?;
 
             for uuid in cfg_uuids.into_iter() {
-                let get_cfgs_req = build_request(Some(&name), ctx)?;
+                let get_cfgs_req = build_request(Some(&name), api_key)?;
                 let cfg_model = get_cfgs_req
                     .get_configuration(uuid)
                     .map_err(CliError::from)

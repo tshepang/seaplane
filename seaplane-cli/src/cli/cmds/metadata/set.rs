@@ -38,13 +38,14 @@ impl CliCommand for SeaplaneMetadataSet {
         for kv in ctx.md_ctx().kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
             let value = kv.value.as_ref().unwrap().to_string();
-            build_config_request_key(&key, ctx)?.put_value(Value::from_encoded(value.clone()))?;
-            if ctx.out_format == OutputFormat::Table {
+            build_config_request_key(&key, ctx.args.api_key()?)?
+                .put_value(Value::from_encoded(value.clone()))?;
+            if ctx.args.out_format == OutputFormat::Table {
                 cli_println!("Set {key} with value {value}");
             }
         }
 
-        if ctx.out_format == OutputFormat::Json {
+        if ctx.args.out_format == OutputFormat::Json {
             // Scope to release the MetadataCtx lock
             let kvs = { ctx.md_ctx().kvs.clone() };
             kvs.print_json(ctx)?;
@@ -57,7 +58,7 @@ impl CliCommand for SeaplaneMetadataSet {
         ctx.init_md(MetadataCtx::from_md_set(&SeaplaneMetadataSetArgMatches(
             matches,
         ))?);
-        ctx.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.value_of_t_or_exit("format");
         Ok(())
     }
 }

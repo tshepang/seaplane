@@ -41,7 +41,7 @@ use crate::{
 /// The access token is only good for 60 seconds
 ///
 /// If the name is None the only request that can be made is FormationRequest::list_names
-pub fn build_request(formation_name: Option<&str>, ctx: &Ctx) -> Result<FormationsRequest> {
+pub fn build_request(formation_name: Option<&str>, api_key: &str) -> Result<FormationsRequest> {
     let mut builder = FormationsRequest::builder();
     let formation_context = if let Some(name) = formation_name {
         builder = builder.name(name);
@@ -50,7 +50,7 @@ pub fn build_request(formation_name: Option<&str>, ctx: &Ctx) -> Result<Formatio
         String::new()
     };
 
-    let token = request_token(ctx, &formation_context)?;
+    let token = request_token(api_key, &formation_context)?;
     builder
         .token(token)
         .build()

@@ -46,17 +46,19 @@ impl CliCommand for SeaplaneFlightEdit {
 
         // Now we just edit the newly copied Flight to match the given CLI params...
         // name_id cannot be None in `flight edit`
-        if let Err(e) =
-            flights.update_flight(ctx.name_id.as_ref().unwrap(), ctx.exact, &ctx.flight_ctx())
-        {
-            return wrap_cli_context(e, ctx.exact, false);
+        if let Err(e) = flights.update_flight(
+            ctx.args.name_id.as_ref().unwrap(),
+            ctx.args.exact,
+            &ctx.flight_ctx(),
+        ) {
+            return wrap_cli_context(e, ctx.args.exact, false);
         }
 
         // Write out an entirely new JSON file with the new Flight included
         flights.persist()?;
 
         cli_print!("Successfully edited Flight '");
-        cli_print!(@Yellow, "{}", ctx.name_id.as_ref().unwrap());
+        cli_print!(@Yellow, "{}", ctx.args.name_id.as_ref().unwrap());
         cli_println!("'");
 
         Ok(())
@@ -64,7 +66,7 @@ impl CliCommand for SeaplaneFlightEdit {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // clap will not let "source" be None
-        ctx.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
+        ctx.args.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
         ctx.init_flight(FlightCtx::from_flight_common(
             &SeaplaneFlightCommonArgMatches(matches),
             "",

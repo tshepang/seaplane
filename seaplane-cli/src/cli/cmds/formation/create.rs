@@ -113,10 +113,10 @@ impl CliCommand for SeaplaneFormationCreate {
 
         // Check for duplicates and suggest `seaplane formation edit`
         let name = &formation_ctx.name_id;
-        if formations.contains_name(name) {
-            // TODO: We should check if these ones we remove are referenced remote or not
+        // TODO: We should check if these ones we remove are referenced remote or not
 
-            if !ctx.force {
+        if formations.contains_name(name) {
+            if !ctx.args.force {
                 return Err(CliErrorKind::DuplicateName(name.to_owned())
                     .into_err()
                     .context("(hint: try '")
@@ -158,9 +158,10 @@ impl CliCommand for SeaplaneFormationCreate {
         cli_print!(@Green, "{}", &id[..8]);
         cli_println!("'");
 
+        let api_key = ctx.args.api_key()?;
         if let Some(cfg_id) = cfg_id {
             if formation_ctx.deploy {
-                let create_req = build_request(Some(&formation_ctx.name_id), ctx)?;
+                let create_req = build_request(Some(&formation_ctx.name_id), api_key)?;
                 let cfg_uuids = create_req.create(
                     formation_ctx.configuration_model(ctx)?.unwrap(),
                     formation_ctx.launch,
@@ -178,7 +179,7 @@ impl CliCommand for SeaplaneFormationCreate {
                     formations.add_uuid(&cfg_id, uuid);
                 }
                 if formation_ctx.launch {
-                    let subdomain = request_token_json(ctx, "")?.subdomain;
+                    let subdomain = request_token_json(api_key, "")?.subdomain;
                     cli_print!("The Formation URL is ");
                     cli_println!(@Green, "https://{}--{subdomain}.on.seaplanet.io/", &formation_ctx.name_id);
                     cli_println!("(hint: if you have not configured any public endpoints, the Formation will not be reachable from the public internet!)");

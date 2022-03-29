@@ -46,7 +46,7 @@ impl CliCommand for SeaplaneFlightCreate {
         if !indices.is_empty() {
             // TODO: We should check if these ones we remove are referenced remote or not
 
-            if !ctx.force {
+            if !ctx.args.force {
                 return Err(CliErrorKind::DuplicateName(name.into())
                     .into_err()
                     .context("(hint: try '")
@@ -85,7 +85,7 @@ impl CliCommand for SeaplaneFlightCreate {
             &SeaplaneFlightCommonArgMatches(matches),
             "",
         )?);
-        ctx.force = matches.is_present("force");
+        ctx.args.force = matches.is_present("force");
         Ok(())
     }
 }

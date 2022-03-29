@@ -56,15 +56,15 @@ impl CliCommand for SeaplaneInit {
         for (file, empty_bytes, opt) in to_create {
             if file.exists() {
                 // Due to how match guards work, we can't use them, we have to use if-else
-                if ctx.force
-                    || ctx.overwrite.as_deref() == Some(opt)
-                    || ctx.overwrite.as_deref() == Some("all")
+                if ctx.args.force
+                    || ctx.args.overwrite.as_deref() == Some(opt)
+                    || ctx.args.overwrite.as_deref() == Some("all")
                 {
                     cli_warn!(@Yellow, "warn: ");
                     cli_warn!("overwriting existing file ");
                     cli_warn!("{:?} ", file);
                     cli_warn!("due to '");
-                    cli_warn!(@Green, "{}", if ctx.force { "--force".into() } else { format!("--overwrite={opt}")});
+                    cli_warn!(@Green, "{}", if ctx.args.force { "--force".into() } else { format!("--overwrite={opt}")});
                     cli_warnln!(@noprefix, "'\n");
                 } else {
                     // We only want to advertise the *least* destructive option, not --force or
@@ -88,8 +88,8 @@ impl CliCommand for SeaplaneInit {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.force = matches.is_present("force");
-        ctx.overwrite = matches.value_of("overwrite").map(ToOwned::to_owned);
+        ctx.args.force = matches.is_present("force");
+        ctx.args.overwrite = matches.value_of("overwrite").map(ToOwned::to_owned);
         Ok(())
     }
 }

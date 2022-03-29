@@ -47,29 +47,30 @@ impl CliCommand for SeaplaneFormationLand {
         let mut formations: Formations = FromDisk::load(&formations_file)?;
 
         // Get the indices of any formations that match the given name/ID
-        let indices = if ctx.exact {
-            formations.formation_indices_of_matches(ctx.name_id.as_ref().unwrap())
+        let indices = if ctx.args.exact {
+            formations.formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         } else {
-            formations.formation_indices_of_left_matches(ctx.name_id.as_ref().unwrap())
+            formations.formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(ctx.name_id.clone().unwrap(), ctx.exact)?,
+            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), ctx.args.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
-                if !ctx.all {
-                    errors::ambiguous_item(ctx.name_id.clone().unwrap(), true)?;
+                if !ctx.args.all {
+                    errors::ambiguous_item(ctx.args.name_id.clone().unwrap(), true)?;
                 }
             }
         }
 
+        let api_key = ctx.args.api_key()?;
         for idx in indices {
             // re unwrap: the indices returned came from Formations so they have to be valid
             let formation = formations.get_formation_mut(idx).unwrap();
 
             // re unwrap: We got the formation from the local DB so it has to have a name
-            let stop_req = build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
+            let stop_req = build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
             stop_req.stop()?;
 
             // Move all configurations from in air to grounded
@@ -84,7 +85,7 @@ impl CliCommand for SeaplaneFormationLand {
                 .with_context(|| format!("Path: {:?}\n", ctx.formations_file()))?;
 
             cli_print!("Successfully Landed Formation '");
-            cli_print!(@Green, "{}", &ctx.name_id.as_ref().unwrap());
+            cli_print!(@Green, "{}", &ctx.args.name_id.as_ref().unwrap());
             cli_println!("'");
         }
 

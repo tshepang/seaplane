@@ -71,18 +71,18 @@ impl CliCommand for SeaplaneFormationDelete {
         let mut formations: Formations = FromDisk::load(&formations_file)?;
 
         // Get the indices of any formations that match the given name/ID
-        let indices = if ctx.exact {
+        let indices = if ctx.args.exact {
             formations.formation_indices_of_matches(&formation_ctx.name_id)
         } else {
             formations.formation_indices_of_left_matches(&formation_ctx.name_id)
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(formation_ctx.name_id.clone(), ctx.exact)?,
+            0 => errors::no_matching_item(formation_ctx.name_id.clone(), ctx.args.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
-                if !ctx.all {
+                if !ctx.args.all {
                     errors::ambiguous_item(formation_ctx.name_id.clone(), true)?;
                 }
             }
@@ -93,11 +93,12 @@ impl CliCommand for SeaplaneFormationDelete {
         // First try to delete the remote formation if required, because we don't want to delete
         // the local one too if this fails
         if formation_ctx.remote {
+            let api_key = ctx.args.api_key()?;
             for idx in &indices {
                 let formation = formations.get_formation(*idx).unwrap();
                 if let Some(name) = &formation.name {
-                    let delete_req = build_request(Some(name), ctx)?;
-                    let cfg_uuids = delete_req.delete(ctx.force)?;
+                    let delete_req = build_request(Some(name), api_key)?;
+                    let cfg_uuids = delete_req.delete(ctx.args.force)?;
                     cli_print!("Successfully deleted remote Formation '");
                     cli_print!(@Green, "{}", name);
                     if cfg_uuids.is_empty() {
@@ -151,7 +152,7 @@ impl CliCommand for SeaplaneFormationDelete {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.force = matches.is_present("force");
+        ctx.args.force = matches.is_present("force");
         let mut fctx = ctx.formation_ctx();
         fctx.name_id = matches.value_of("formation").unwrap().to_string();
         fctx.remote = !matches.is_present("no-remote");

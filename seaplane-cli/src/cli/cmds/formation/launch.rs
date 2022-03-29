@@ -84,19 +84,19 @@ impl CliCommand for SeaplaneFormationLaunch {
         let formations: Formations = FromDisk::load(&formations_file)?;
 
         // Get the indices of any formations that match the given name/ID
-        let indices = if ctx.exact {
-            formations.formation_indices_of_matches(ctx.name_id.as_ref().unwrap())
+        let indices = if ctx.args.exact {
+            formations.formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         } else {
-            formations.formation_indices_of_left_matches(ctx.name_id.as_ref().unwrap())
+            formations.formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(ctx.name_id.clone().unwrap(), ctx.exact)?,
+            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), ctx.args.exact)?,
             1 => (),
             _ => {
                 // TODO: and --force
-                if !ctx.all {
-                    errors::ambiguous_item(ctx.name_id.clone().unwrap(), true)?;
+                if !ctx.args.all {
+                    errors::ambiguous_item(ctx.args.name_id.clone().unwrap(), true)?;
                 }
             }
         }
@@ -108,10 +108,12 @@ impl CliCommand for SeaplaneFormationLaunch {
             // Get the local configs that don't exist remote yet
             let cfgs_ids = formation.local_only_configs();
 
+            let api_key = ctx.args.api_key()?;
             // Add those configurations to this formation
             for id in cfgs_ids {
                 if let Some(cfg) = formations.get_configuration(id) {
-                    let add_cfg_req = build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
+                    let add_cfg_req =
+                        build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute
                     add_cfg_req.add_configuration(cfg.model.clone(), false)?;
@@ -126,7 +128,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             if !ctx.formation_ctx().grounded {
                 // Get all configurations for this Formation
                 let list_cfg_uuids_req =
-                    build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
+                    build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
                 cfg_uuids.extend(
                     list_cfg_uuids_req
                         .list_configuration_ids()
@@ -142,7 +144,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                             .build()?,
                     );
                 }
-                let set_cfgs_req = build_request(Some(formation.name.as_ref().unwrap()), ctx)?;
+                let set_cfgs_req = build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
                 set_cfgs_req
                     .set_active_configurations(active_configs, false)
                     .map_err(CliError::from)
@@ -150,7 +152,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             }
 
             cli_print!("Successfully Launched Formation '");
-            cli_print!(@Green, "{}", &ctx.name_id.as_ref().unwrap());
+            cli_print!(@Green, "{}", &ctx.args.name_id.as_ref().unwrap());
             if cfg_uuids.is_empty() {
                 cli_println!("'");
             } else {
@@ -170,7 +172,7 @@ impl CliCommand for SeaplaneFormationLaunch {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.name_id = matches.value_of("formation").map(ToOwned::to_owned);
+        ctx.args.name_id = matches.value_of("formation").map(ToOwned::to_owned);
         Ok(())
     }
 }

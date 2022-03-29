@@ -49,10 +49,11 @@ impl CliCommand for SeaplaneFlightCopy {
         let mut flights: Flights = FromDisk::load(&flights_file)?;
 
         // name_id cannot be None in `flight copy`
-        let mut dest_flight = match flights.clone_flight(ctx.name_id.as_ref().unwrap(), ctx.exact) {
-            Ok(f) => f,
-            Err(e) => return wrap_cli_context(e, ctx.exact, false),
-        };
+        let mut dest_flight =
+            match flights.clone_flight(ctx.args.name_id.as_ref().unwrap(), ctx.args.exact) {
+                Ok(f) => f,
+                Err(e) => return wrap_cli_context(e, ctx.args.exact, false),
+            };
 
         // Now we just edit the newly copied Flight to match the given CLI params...
         dest_flight.update_from(&ctx.flight_ctx(), false)?;
@@ -67,7 +68,7 @@ impl CliCommand for SeaplaneFlightCopy {
         flights.persist()?;
 
         cli_print!("Successfully copied Flight '");
-        cli_print!(@Yellow, "{}", ctx.name_id.as_ref().unwrap());
+        cli_print!(@Yellow, "{}", ctx.args.name_id.as_ref().unwrap());
         cli_print!("' to new Flight '");
         cli_print!(@Green, "{name}");
         cli_print!("' with ID '");
@@ -79,7 +80,7 @@ impl CliCommand for SeaplaneFlightCopy {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // clap will not let "source" be None
-        ctx.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
+        ctx.args.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
         ctx.init_flight(FlightCtx::from_flight_common(
             &SeaplaneFlightCommonArgMatches(matches),
             "",

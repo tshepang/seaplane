@@ -28,14 +28,14 @@ impl CliCommand for SeaplaneMetadataDelete {
         let mut len = 0;
         for kv in ctx.md_ctx().kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
-            build_config_request_key(&key, ctx)?.delete_value()?;
-            if ctx.out_format == OutputFormat::Table {
+            build_config_request_key(&key, ctx.args.api_key()?)?.delete_value()?;
+            if ctx.args.out_format == OutputFormat::Table {
                 cli_println!("Removed {key}");
             }
             len += 1;
         }
 
-        if ctx.out_format == OutputFormat::Table {
+        if ctx.args.out_format == OutputFormat::Table {
             cli_println!(
                 "\nSuccessfully removed {len} item{}",
                 if len > 1 { "s" } else { "" }
@@ -54,7 +54,7 @@ impl CliCommand for SeaplaneMetadataDelete {
         ctx.init_md(MetadataCtx::from_md_common(
             &SeaplaneMetadataCommonArgMatches(matches),
         )?);
-        ctx.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.value_of_t_or_exit("format");
         Ok(())
     }
 }

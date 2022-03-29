@@ -46,10 +46,12 @@ impl CliCommand for SeaplaneMetadataList {
                 range.set_from(from.clone());
             }
             // Using the KeyValues container makes displaying easy
-            KeyValues::from_model(build_config_request_dir(range, ctx)?.get_all_pages()?)
+            KeyValues::from_model(
+                build_config_request_dir(range, ctx.args.api_key()?)?.get_all_pages()?,
+            )
         };
 
-        match ctx.out_format {
+        match ctx.args.out_format {
             OutputFormat::Json => kvs.print_json(ctx)?,
             OutputFormat::Table => kvs.print_table(ctx)?,
         }
@@ -59,7 +61,7 @@ impl CliCommand for SeaplaneMetadataList {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.init_md(MetadataCtx::default());
-        ctx.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.value_of_t_or_exit("format");
         let mut mdctx = ctx.md_ctx();
         mdctx.base64 = matches.is_present("base64");
         mdctx.decode = matches.is_present("decode");

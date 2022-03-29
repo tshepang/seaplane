@@ -126,14 +126,19 @@ impl CliCommand for SeaplaneShellCompletion {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mut app = Seaplane::command();
 
-        clap_complete::generate(ctx.shell.unwrap(), &mut app, "seaplane", &mut io::stdout());
+        clap_complete::generate(
+            ctx.args.shell.unwrap(),
+            &mut app,
+            "seaplane",
+            &mut io::stdout(),
+        );
 
         Ok(())
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // unwrap is safe because clap won't let this value be empty
-        ctx.shell = Some(matches.value_of_t("shell").unwrap());
+        ctx.args.shell = Some(matches.value_of_t("shell").unwrap());
         Ok(())
     }
 }

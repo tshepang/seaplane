@@ -17,7 +17,6 @@ pub use self::{
 };
 use crate::{
     cli::{request_token, CliCommand},
-    context::Ctx,
     error::{CliError, Context, Result},
     printer::OutputFormat,
 };
@@ -62,18 +61,21 @@ impl CliCommand for SeaplaneMetadata {
 /// Requests an Access token and returns a built ConfigRequest.
 ///
 /// The target *must* be URL Safe base64 encoded already
-pub fn build_config_request_key<S: Into<String>>(target: S, ctx: &Ctx) -> Result<ConfigRequest> {
+pub fn build_config_request_key<S: Into<String>>(
+    target: S,
+    api_key: &str,
+) -> Result<ConfigRequest> {
     ConfigRequest::builder()
-        .token(request_token(ctx, "")?)
+        .token(request_token(api_key, "")?)
         .encoded_key(target)
         .build()
         .map_err(CliError::from)
         .context("Context: failed to build /config endpoint request\n")
 }
 
-pub fn build_config_request_dir(range: RangeQueryContext, ctx: &Ctx) -> Result<ConfigRequest> {
+pub fn build_config_request_dir(range: RangeQueryContext, api_key: &str) -> Result<ConfigRequest> {
     ConfigRequest::builder()
-        .token(request_token(ctx, "")?)
+        .token(request_token(api_key, "")?)
         .range(range)
         .build()
         .map_err(CliError::from)
