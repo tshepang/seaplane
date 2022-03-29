@@ -22,7 +22,7 @@ jobs:
   call-pr-workflow:
     uses: ./.github/workflows/workflow-pr.yml
     with:
-      manifest_path: ./seaplane/Cargo.toml
+      manifest_path: ./seaplane-cli/Cargo.toml
 
   call-ui-test-workflow:
     uses: ./.github/workflows/workflow-ui-test.yml

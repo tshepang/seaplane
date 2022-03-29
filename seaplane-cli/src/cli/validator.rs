@@ -98,7 +98,7 @@ pub fn validate_formation_name(name: &str) -> StdResult<(), &'static str> {
     if name.contains("--") {
         return Err("repeated hyphens ('--') not allowed in Formation name");
     }
-    if name.chars().last() == Some('-') {
+    if name.ends_with('-') {
         return Err("Formation names may not end with a hyphen ('-')");
     }
 
