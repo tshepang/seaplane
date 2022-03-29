@@ -3,7 +3,7 @@ use seaplane::api::v1::formations::{Architecture, Flight as FlightModel, ImageRe
 use crate::{
     cli::cmds::flight::{str_to_image_ref, SeaplaneFlightCommonArgMatches, FLIGHT_MINIMUM_DEFAULT},
     error::Result,
-    ops::generate_name,
+    ops::generate_flight_name,
 };
 
 /// Represents the "Source of Truth" i.e. it combines all the CLI options, ENV vars, and config
@@ -26,7 +26,7 @@ pub struct FlightCtx {
 impl Default for FlightCtx {
     fn default() -> Self {
         Self {
-            name_id: generate_name(),
+            name_id: generate_flight_name(),
             image: None,
             minimum: 0,
             maximum: None,
@@ -52,7 +52,7 @@ impl FlightCtx {
             .map(ToOwned::to_owned)
             .unwrap_or_else(|| {
                 generated_name = true;
-                generate_name()
+                generate_flight_name()
             });
 
         // We have to use if let in order to use the ? operator

@@ -1,7 +1,7 @@
 use clap::{Arg, ArgMatches};
 use seaplane::{api::v1::Architecture, rexports::strum::VariantNames};
 
-use crate::cli::validator::validate_name;
+use crate::cli::validator::validate_flight_name;
 
 static LONG_IMAGE: &str =
     "The container image registry reference that this Flight will use (See IMAGE SPEC below)
@@ -41,7 +41,7 @@ pub fn args(image_required: bool) -> Vec<Arg<'static>> {
             .help("The container image registry reference that this Flight will use (See IMAGE SPEC below)")
             .long_help(LONG_IMAGE),
         arg!(--name -('n') =["STRING"])
-            .validator(validate_name)
+            .validator(validate_flight_name)
             .help("A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned")
             .long_help(LONG_NAME),
         arg!(--minimum|min =["NUM"=>"1"])

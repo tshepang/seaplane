@@ -7,7 +7,7 @@ use crate::{
             IMAGE_SPEC,
         },
         errors::wrap_cli_context,
-        validator::validate_name_id,
+        validator::{validate_flight_name, validate_name_id},
         CliCommand,
     },
     context::{Ctx, FlightCtx},
@@ -21,6 +21,7 @@ pub struct SeaplaneFlightEdit;
 
 impl SeaplaneFlightEdit {
     pub fn command() -> Command<'static> {
+        let validator = |s: &str| validate_name_id(validate_flight_name, s);
         // TODO: add --no-maximum or similar
         // TODO: add --from
         Command::new("edit")
@@ -30,7 +31,7 @@ impl SeaplaneFlightEdit {
             .arg(
                 arg!(name_id required =["NAME|ID"])
                     .help("The source name or ID of the Flight to copy")
-                    .validator(validate_name_id),
+                    .validator(validator),
             )
             .arg(arg!(--exact - ('x')).help("The given SOURCE must be an exact match"))
             .args(common::args(false))

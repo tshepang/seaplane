@@ -2,8 +2,11 @@ use clap::{ArgMatches, Command};
 
 use crate::{
     cli::{
-        cmds::flight::common, errors::wrap_cli_context, specs::IMAGE_SPEC,
-        validator::validate_name_id, CliCommand,
+        cmds::flight::common,
+        errors::wrap_cli_context,
+        specs::IMAGE_SPEC,
+        validator::{validate_flight_name, validate_name_id},
+        CliCommand,
     },
     context::{Ctx, FlightCtx},
     error::Result,
@@ -18,6 +21,8 @@ pub struct SeaplaneFlightCopy;
 
 impl SeaplaneFlightCopy {
     pub fn command() -> Command<'static> {
+        let validator = |s: &str| validate_name_id(validate_flight_name, s);
+
         // TODO: add --from
         Command::new("copy")
             .visible_alias("clone")
@@ -29,7 +34,7 @@ impl SeaplaneFlightCopy {
             )
             .arg(
                 arg!(name_id =["NAME|ID"] required)
-                    .validator(validate_name_id)
+                    .validator(validator)
                     .help("The source name or ID of the Flight to copy"),
             )
             .arg(arg!(--exact - ('x')).help("The given SOURCE must be an exact match"))

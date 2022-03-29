@@ -19,8 +19,11 @@ pub fn validate_endpoint(s: &str) -> StdResult<(), String> {
 /// - Local ID (32byte hex encoded string)
 /// - @- (means STDIN)
 /// - @path
-pub fn validate_name_id_path(s: &str) -> StdResult<(), String> {
-    validate_name(s)
+pub fn validate_name_id_path<F>(name_validator: F, s: &str) -> StdResult<(), String>
+where
+    F: Fn(&str) -> StdResult<(), &'static str>,
+{
+    name_validator(s)
         .or_else(|_| validate_id(s))
         .or_else(|_| validate_at_path(s))
         .or_else(|_| validate_at_stdin(s))
@@ -34,36 +37,69 @@ pub fn validate_name_id_path(s: &str) -> StdResult<(), String> {
 ///
 /// - name
 /// - Local ID (32byte hex encoded string)
-pub fn validate_name_id(s: &str) -> StdResult<(), &'static str> {
-    validate_name(s).or_else(|_| validate_id(s))
+pub fn validate_name_id<F>(name_validator: F, s: &str) -> StdResult<(), &'static str>
+where
+    F: Fn(&str) -> StdResult<(), &'static str>,
+{
+    name_validator(s).or_else(|_| validate_id(s))
 }
 
-/// For now, somewhat arbitrary naming rules to ensure we don't go over the 63 char limit for
-/// hostnames in a URL (while considering how Seaplane combines the tenant name and expands `-`)
+/// Rules:
 ///
-/// Current Rules:
-///  - may only include 0-9, a-z, A-Z, and '-' (hyphen)
-///  - hyphens ('-') may not be repeated (i.e. '--')
-///  - no more than three (3) total hyphens
-///  - the total length must be <= 27
-pub fn validate_name(name: &str) -> StdResult<(), &'static str> {
+/// - 1-63 alphanumeric characters (only ASCII lowercase) and hyphens ( 0-9, a-z, A-Z, and '-' )
+/// (aka, one DNS segment)
+pub fn validate_flight_name(name: &str) -> StdResult<(), &'static str> {
     if name.is_empty() {
-        return Err("Flight cannot be empty");
+        return Err("Flight name cannot be empty");
     }
-    if name.len() > 27 {
-        return Err("Flight name too long, must be <= 27 in length");
+    if name.len() > 63 {
+        return Err("Flight name too long, must be <= 63 in length");
     }
     if !name
         .chars()
-        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
     {
-        return Err("illegal character in name");
-    }
-    if name.chars().filter(|c| *c == '-').count() > 3 {
-        return Err("no more than three hyphens ('-') allowed in name");
+        return Err(
+            "illegal character in Flight name; must only contain ASCII lowercase, digit, or hyphen ('-')",
+        );
     }
     if name.contains("--") {
-        return Err("repeated hyphens ('--') not allowed in name");
+        return Err("repeated hyphens ('--') not allowed in Flight name");
+    }
+
+    Ok(())
+}
+
+/// Current Rules:
+///
+///  - 1-30 alphanumeric (only ASCII lowercase) characters or hyphen (0-9, a-z, A-Z, and '-' )
+///  - hyphens ('-') may not be repeated (i.e. '--')
+///  - no more than three (3) total hyphens
+///  - no consecutive hyphens
+///  - no trailing hyphen
+pub fn validate_formation_name(name: &str) -> StdResult<(), &'static str> {
+    if name.is_empty() {
+        return Err("Formation name cannot be empty");
+    }
+    if name.len() > 30 {
+        return Err("Formation name too long, must be <= 30 in length");
+    }
+    if !name
+        .chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+    {
+        return Err(
+            "illegal character in Formation name; must only contain ASCII lowercase, digit, or hyphen ('-')",
+        );
+    }
+    if name.chars().filter(|c| *c == '-').count() > 3 {
+        return Err("no more than three hyphens ('-') allowed in Formation name");
+    }
+    if name.contains("--") {
+        return Err("repeated hyphens ('--') not allowed in Formation name");
+    }
+    if name.chars().last() == Some('-') {
+        return Err("Formation names may not end with a hyphen ('-')");
     }
 
     Ok(())
@@ -129,12 +165,21 @@ mod tests {
     }
 
     #[test]
-    fn invalid_names() {
-        assert!(validate_name("").is_err());
-        assert!(validate_name("no-special-chars!").is_err());
-        assert!(validate_name("imwaaaaaytoolongforanythingthatshouldbeaname").is_err());
-        assert!(validate_name("too-many-hyphens-in-here").is_err());
-        assert!(validate_name("no spaces allowed").is_err());
+    fn invalid_flight_names() {
+        assert!(validate_flight_name("").is_err());
+        assert!(validate_flight_name("no-special-chars!").is_err());
+        assert!(validate_flight_name("imwaaaaaytoolongforanythingthatshouldbeanameimwaaaaaytoolongforanythingthatshouldbeaname").is_err());
+        assert!(validate_flight_name("noUperCase").is_err());
+    }
+
+    #[test]
+    fn invalid_formation_names() {
+        assert!(validate_formation_name("").is_err());
+        assert!(validate_formation_name("no-special-chars!").is_err());
+        assert!(validate_formation_name("imwaaaaaytoolongforanythingthatshouldbeaname").is_err());
+        assert!(validate_formation_name("too-many-hyphens-in-here").is_err());
+        assert!(validate_formation_name("no-ending-hyphen-").is_err());
+        assert!(validate_formation_name("noUperCase").is_err());
     }
 
     #[test]

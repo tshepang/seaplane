@@ -10,23 +10,19 @@ use std::fmt;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
-/// Returns true if the name is valid
-pub fn validate_name(name: &str) -> bool {
-    if name.len() > 27
-        || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
-        || name.chars().filter(|c| *c == '-').count() > 3
-        || name.contains("--")
-    {
-        return false;
-    }
+use crate::cli::validator::{validate_flight_name, validate_formation_name};
 
-    true
-}
-
-pub fn generate_name() -> String {
+pub fn generate_flight_name() -> String {
     // TODO: Maybe set an upper bound on the number of iterations and don't expect
     names::Generator::default()
-        .find(|name| validate_name(name))
+        .find(|name| validate_flight_name(name).is_ok())
+        .expect("Failed to generate a random name")
+}
+
+pub fn generate_formation_name() -> String {
+    // TODO: Maybe set an upper bound on the number of iterations and don't expect
+    names::Generator::default()
+        .find(|name| validate_formation_name(name).is_ok())
         .expect("Failed to generate a random name")
 }
 

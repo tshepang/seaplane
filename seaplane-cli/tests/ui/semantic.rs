@@ -172,7 +172,10 @@ fn seaplane_flight_copy() {
     // provide a NAME|ID
     assert!(cli!("flight copy foo").is_ok());
     // invalid NAME|ID
-    assert!(cli!("flight copy way-too-many-hyphens-to-pass-validation").is_err());
+    assert!(
+        cli!("flight copy way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
+            .is_err()
+    );
 
     // clone is an alias
     assert!(cli!("flight clone foo").is_ok());
@@ -199,7 +202,10 @@ fn seaplane_flight_edit() {
     // provide a NAME|ID
     assert!(cli!("flight edit foo").is_ok());
     // invalid NAME|ID
-    assert!(cli!("flight edit way-too-many-hyphens-to-pass-validation").is_err());
+    assert!(
+        cli!("flight edit way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
+            .is_err()
+    );
 }
 
 #[test]
@@ -209,7 +215,10 @@ fn seaplane_flight_delete() {
     // provide a NAME|ID
     assert!(cli!("flight delete foo").is_ok());
     // invalid NAME|ID
-    assert!(cli!("flight delete way-too-many-hyphens-to-pass-validation").is_err());
+    assert!(cli!(
+        "flight delete way-too-long-to-pass-validationway-too-loooong-to-pass-validation"
+    )
+    .is_err());
     // --all and --exact conflict
     assert!(cli!("flight delete foo --all --exact").is_err());
 
@@ -254,7 +263,10 @@ fn seaplane_formation_common() {
     assert!(cli!("formation create --flight foo").is_ok());
     assert!(cli!("formation create --flight @-").is_ok());
     // invalid
-    assert!(cli!("formation create --flight way-too-many-hyphens-to-pass-validation").is_err());
+    assert!(
+        cli!("formation create --flight way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
+            .is_err()
+    );
     // multiples only with commas or multiple uses
     assert!(cli!("formation create --flight=foo,bar,baz").is_ok());
     assert!(cli!("formation create --flight=foo --flight=bar,baz").is_ok());

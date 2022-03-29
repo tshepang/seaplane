@@ -10,7 +10,7 @@ use crate::{
         },
         request_token_json,
         specs::{FLIGHT_SPEC, REGION_SPEC},
-        validator::validate_name,
+        validator::validate_formation_name,
         CliCommand,
     },
     context::{Ctx, FlightCtx, FormationCtx},
@@ -78,7 +78,7 @@ impl SeaplaneFormationCreate {
                 .help("The container image registry reference that this Flight will use (See IMAGE SPEC below)")
                 .long_help(LONG_FLIGHT_IMAGE))
             .arg(arg!(--("flight-name") =["STRING"])
-                .validator(validate_name)
+                .validator(validate_formation_name)
                 .requires("flight-image")
                 .help("A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned")
                 .long_help(LONG_FLIGHT_NAME))

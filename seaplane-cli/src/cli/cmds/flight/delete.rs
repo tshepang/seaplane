@@ -1,7 +1,11 @@
 use clap::{ArgMatches, Command};
 
 use crate::{
-    cli::{errors, validator::validate_name_id, CliCommand},
+    cli::{
+        errors,
+        validator::{validate_flight_name, validate_name_id},
+        CliCommand,
+    },
     error::Result,
     fs::{FromDisk, ToDisk},
     ops::flight::Flights,
@@ -13,13 +17,14 @@ pub struct SeaplaneFlightDelete;
 
 impl SeaplaneFlightDelete {
     pub fn command() -> Command<'static> {
+        let validator = |s: &str| validate_name_id(validate_flight_name, s);
         // TODO: add a --local[-only] flag or similar that combines with --force to only remove local
         Command::new("delete")
             .visible_aliases(&["del", "remove", "rm"])
             .override_usage("seaplane flight delete <NAME|ID> [OPTIONS]")
             .about("Delete a Flight definition")
             .arg(arg!(flight required =["NAME|ID"])
-                .validator(validate_name_id)
+                .validator(validator)
                 .help("The name or ID of the Flight to remove, must be unambiguous"))
             .arg(arg!(--force)
                 .help("Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous"))

@@ -12,7 +12,7 @@ use crate::{
     context::Ctx,
     error::{CliErrorKind, Context, Result},
     fs::FromDisk,
-    ops::{flight::Flights, formation::Endpoint, generate_name},
+    ops::{flight::Flights, formation::Endpoint, generate_formation_name},
     printer::Color,
 };
 
@@ -41,7 +41,7 @@ pub struct FormationCtx {
 impl Default for FormationCtx {
     fn default() -> Self {
         Self {
-            name_id: generate_name(),
+            name_id: generate_formation_name(),
             launch: false,
             deploy: false,
             cfg_ctx: FormationCfgCtx::default(),
@@ -107,7 +107,7 @@ impl FormationCtx {
             name_id: matches
                 .value_of("name_id")
                 .map(ToOwned::to_owned)
-                .unwrap_or_else(generate_name),
+                .unwrap_or_else(generate_formation_name),
             deploy: deploy || launch,
             launch: deploy && !matches.is_present("no-launch"),
             cfg_ctx: FormationCfgCtx {

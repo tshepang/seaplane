@@ -1,7 +1,12 @@
 use clap::{ArgMatches, Command};
 
 use crate::{
-    cli::{cmds::formation::build_request, errors, validator::validate_name_id, CliCommand},
+    cli::{
+        cmds::formation::build_request,
+        errors,
+        validator::{validate_formation_name, validate_name_id},
+        CliCommand,
+    },
     context::Ctx,
     error::{CliErrorKind, Context, Result},
     fs::{FromDisk, ToDisk},
@@ -14,13 +19,14 @@ pub struct SeaplaneFormationDelete;
 
 impl SeaplaneFormationDelete {
     pub fn command() -> Command<'static> {
+        let validator = |s: &str| validate_name_id(validate_formation_name, s);
         // TODO: add --recursive to handle configurations too
         Command::new("delete")
             .visible_aliases(&["del", "remove", "rm"])
             .about("Delete a Seaplane Formation")
             .override_usage("seaplane formation delete <NAME|ID> [OPTIONS]")
             .arg(arg!(formation =["NAME|ID"] required)
-                .validator(validate_name_id)
+                .validator(validator)
                 .help("The name or ID of the Formation to remove, must be unambiguous"))
             .arg(arg!(--force)
                 .help("Delete this Formation even if there are configurations In Flight (active), which will effectively stop all instances of this Formation"))

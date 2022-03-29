@@ -5,7 +5,7 @@ use crate::{
     cli::{
         cmds::formation::{build_request, SeaplaneFormationFetch},
         errors,
-        validator::validate_name_id,
+        validator::{validate_formation_name, validate_name_id},
         CliCommand,
     },
     error::{CliError, Context, Result},
@@ -55,13 +55,15 @@ pub struct SeaplaneFormationLaunch;
 
 impl SeaplaneFormationLaunch {
     pub fn command() -> Command<'static> {
+        let validator = |s: &str| validate_name_id(validate_formation_name, s);
+
         // TODO: make it possible to selectively start only *some* configs
         Command::new("launch")
             .visible_alias("start")
             .about("Start all configurations of a Formation and evenly distribute traffic between them")
             .long_about(LONG_ABOUT)
             .arg(arg!(formation =["NAME|ID"] required)
-                .validator(validate_name_id)
+                .validator(validator)
                 .help("The name or ID of the Formation to launch"))
             .arg(arg!(--all -('a')).conflicts_with("exact").help("Stop all matching Formations even when FORMATION is ambiguous"))
             .arg(arg!(--exact -('x')).conflicts_with("all").help("The given FORMATION must be an exact match"))

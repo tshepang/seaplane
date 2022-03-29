@@ -15,7 +15,7 @@ use tabwriter::TabWriter;
 use uuid::Uuid;
 
 use crate::{
-    cli::validator::validate_name,
+    cli::validator::validate_flight_name,
     context::Ctx,
     error::{CliError, Result},
     fs::{FromDisk, ToDisk},
@@ -415,7 +415,7 @@ impl FromStr for EndpointDst {
         let flight = parts
             .next()
             .ok_or_else(|| ("missing destinaion flight").to_string())?;
-        validate_name(flight)?;
+        validate_flight_name(flight)?;
         let port = parts
             .next()
             .ok_or_else(|| ("missing destination port number").to_string())?

@@ -1,7 +1,12 @@
 use clap::Command;
 
 use crate::{
-    cli::{cmds::formation::build_request, errors, validator::validate_name_id, CliCommand},
+    cli::{
+        cmds::formation::build_request,
+        errors,
+        validator::{validate_formation_name, validate_name_id},
+        CliCommand,
+    },
     error::{Context, Result},
     fs::{FromDisk, ToDisk},
     ops::formation::Formations,
@@ -13,13 +18,14 @@ pub struct SeaplaneFormationLand;
 
 impl SeaplaneFormationLand {
     pub fn command() -> Command<'static> {
+        let validator = |s: &str| validate_name_id(validate_formation_name, s);
         Command::new("land")
             .visible_alias("stop")
             .about("Land (Stop) all configurations of a Formation")
             .arg(
                 arg!(formation =["NAME|ID"] required)
                     .help("The name or ID of the Formation to land")
-                    .validator(validate_name_id),
+                    .validator(validator),
             )
             .arg(
                 arg!(--all - ('a'))

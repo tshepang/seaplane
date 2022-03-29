@@ -10,7 +10,8 @@ use seaplane::api::v1::{Provider as ProviderModel, Region as RegionModel};
 use strum::{EnumString, EnumVariantNames, VariantNames};
 
 use crate::cli::validator::{
-    validate_endpoint, validate_name, validate_name_id, validate_name_id_path,
+    validate_endpoint, validate_flight_name, validate_formation_name, validate_name_id,
+    validate_name_id_path,
 };
 
 static LONG_NAME: &str =
@@ -203,12 +204,14 @@ impl<'a> Into<RegionModel> for &'a Region {
 }
 
 pub fn args() -> Vec<Arg<'static>> {
+    let validate_flight_spec = |s: &str| validate_name_id_path(validate_flight_name, s);
+    let validator = |s: &str| validate_name_id(validate_formation_name, s);
     // TODO: add --from with support for @file and @- (stdin)
     vec![
         arg!(name_id --name -('n') =["STRING"])
             .help("A human readable name for the Formation (must be unique within the tenant) if omitted a pseudo random name will be assigned")
             .long_help(LONG_NAME)
-            .validator(validate_name),
+            .validator(validate_formation_name),
         arg!(--launch|active)
             .help("This Formation configuration should be deployed and set it as active right away (requires a formation configuration)")
             .overrides_with("no-launch"),
@@ -223,15 +226,15 @@ pub fn args() -> Vec<Arg<'static>> {
             .help("Do *not* send this formation to Seaplane immediately"),
         arg!(--flight|flights =["SPEC"]...)
             .help("A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)")
-            .validator(validate_name_id_path),
+            .validator(validate_flight_spec),
         arg!(--affinity|affinities =["NAME|ID"]...)
             .help("A Formation that this Formation has an affinity for")
             .long_help(LONG_AFFINITY)
-            .validator(validate_name_id),
+            .validator(validator),
         arg!(--connection|connections =["NAME|ID"]...)
             .help("A Formations that this Formation is connected to")
             .long_help(LONG_CONNECTION)
-            .validator(validate_name_id),
+            .validator(validator),
         arg!(--provider|providers =["PROVIDER"=>"all"]... ignore_case)
             .help("A provider that this Formation's Flights are permitted to run on")
             .possible_values(Provider::VARIANTS),
