@@ -1,4 +1,9 @@
-# Seaplane
+<p align="center">
+<img src="./assets/seaplane_green_tsp.min.svg">
+</p>
+
+---
+# Seaplane CLI and SDK
 
 ![Rust Version][rustc-image]
 [![crates.io][crate-image]][crate-link]
