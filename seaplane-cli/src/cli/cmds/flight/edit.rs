@@ -49,7 +49,7 @@ impl CliCommand for SeaplaneFlightEdit {
         if let Err(e) = flights.update_flight(
             ctx.args.name_id.as_ref().unwrap(),
             ctx.args.exact,
-            &ctx.flight_ctx(),
+            &ctx.flight_ctx.get_or_init(),
         ) {
             return wrap_cli_context(e, ctx.args.exact, false);
         }
@@ -67,7 +67,7 @@ impl CliCommand for SeaplaneFlightEdit {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // clap will not let "source" be None
         ctx.args.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
-        ctx.init_flight(FlightCtx::from_flight_common(
+        ctx.flight_ctx.init(FlightCtx::from_flight_common(
             &SeaplaneFlightCommonArgMatches(matches),
             "",
         )?);

@@ -102,13 +102,13 @@ pub struct Ctx {
     data_dir: PathBuf,
 
     /// Context relate to exclusively to Flight operations and commands
-    flight: LateInit<FlightCtx>,
+    pub flight_ctx: LateInit<FlightCtx>,
 
     /// Context relate to exclusively to Formation operations and commands
-    formation: LateInit<FormationCtx>,
+    pub formation_ctx: LateInit<FormationCtx>,
 
     /// Context relate to exclusively to key-value operations and commands
-    md: LateInit<MetadataCtx>,
+    pub md_ctx: LateInit<MetadataCtx>,
 
     /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
@@ -120,9 +120,9 @@ impl Default for Ctx {
     fn default() -> Self {
         Self {
             data_dir: fs::data_dir(),
-            flight: LateInit::default(),
-            formation: LateInit::default(),
-            md: LateInit::default(),
+            flight_ctx: LateInit::default(),
+            formation_ctx: LateInit::default(),
+            md_ctx: LateInit::default(),
             conf_files: Vec::new(),
             args: Args::default(),
         }
@@ -157,42 +157,6 @@ impl Ctx {
         self.data_dir.join(FORMATIONS_FILE)
     }
 
-    pub fn init_flight(&self, val: FlightCtx) {
-        self.flight.init(val)
-    }
-
-    pub fn flight_ctx(&self) -> MutexGuard<'_, FlightCtx> {
-        self.flight
-            .inner
-            .get_or_init(|| Mutex::new(FlightCtx::default()))
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-    }
-
-    pub fn init_formation(&self, val: FormationCtx) {
-        self.formation.init(val)
-    }
-
-    pub fn formation_ctx(&self) -> MutexGuard<'_, FormationCtx> {
-        self.formation
-            .inner
-            .get_or_init(|| Mutex::new(FormationCtx::default()))
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-    }
-
-    pub fn init_md(&self, val: MetadataCtx) {
-        self.md.init(val)
-    }
-
-    pub fn md_ctx(&self) -> MutexGuard<'_, MetadataCtx> {
-        self.md
-            .inner
-            .get_or_init(|| Mutex::new(MetadataCtx::default()))
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-    }
-
     #[inline]
     pub fn data_dir(&self) -> &Path {
         &self.data_dir
@@ -220,5 +184,17 @@ impl<T> Default for LateInit<T> {
 impl<T> LateInit<T> {
     pub fn init(&self, val: T) {
         assert!(self.inner.set(Mutex::new(val)).is_ok())
+    }
+    pub fn get(&self) -> Option<&Mutex<T>> {
+        self.inner.get()
+    }
+}
+
+impl<T: Default> LateInit<T> {
+    pub fn get_or_init(&self) -> MutexGuard<'_, T> {
+        self.inner
+            .get_or_init(|| Mutex::new(T::default()))
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
     }
 }

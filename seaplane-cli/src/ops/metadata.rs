@@ -303,28 +303,27 @@ impl KeyValues {
 impl Output for KeyValues {
     fn print_json(&self, ctx: &Ctx) -> Result<()> {
         let mut this = self.clone();
-        if ctx.md_ctx().no_keys {
+        let mdctx = ctx.md_ctx.get_or_init();
+        if mdctx.no_keys {
             this.inner.iter_mut().for_each(|kv| {
                 kv.key.take();
             });
         }
-        if ctx.md_ctx().no_values {
+        if mdctx.no_values {
             this.inner.iter_mut().for_each(|kv| {
                 kv.value.take();
             });
         }
-        if ctx.md_ctx().decode {
+        if mdctx.decode {
             // TODO: for lots of keys or lots of big keys this may need improved performance?
-            return this
-                .to_decoded(ctx.md_ctx().disp_encoding)?
-                .impl_print_json();
+            return this.to_decoded(mdctx.disp_encoding)?.impl_print_json();
         }
         this.impl_print_json()
     }
 
     fn print_table(&self, ctx: &Ctx) -> Result<()> {
         let mut this = self.clone();
-        let mdctx = ctx.md_ctx();
+        let mdctx = ctx.md_ctx.get_or_init();
         if mdctx.no_keys {
             this.inner.iter_mut().for_each(|kv| {
                 kv.key.take();

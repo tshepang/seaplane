@@ -74,7 +74,7 @@ impl SeaplaneFormationLaunch {
 
 impl CliCommand for SeaplaneFormationLaunch {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let should_fetch = ctx.formation_ctx().fetch;
+        let should_fetch = ctx.formation_ctx.get_or_init().fetch;
         if should_fetch {
             let fetch = SeaplaneFormationFetch;
             fetch.run(ctx)?;
@@ -125,7 +125,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             let mut cfg_uuids = Vec::new();
             // If the user pasaed `--grounded` they don't want the configuration to be set to
             // active
-            if !ctx.formation_ctx().grounded {
+            if !ctx.formation_ctx.get_or_init().grounded {
                 // Get all configurations for this Formation
                 let list_cfg_uuids_req =
                     build_request(Some(formation.name.as_ref().unwrap()), api_key)?;

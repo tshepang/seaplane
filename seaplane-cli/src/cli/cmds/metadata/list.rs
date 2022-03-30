@@ -36,7 +36,7 @@ impl CliCommand for SeaplaneMetadataList {
         // Scope releases the mutex on the MetadataCtx so that when we hand off the ctx to print_* we
         // don't have the chance of a deadlock if those functions need to acquire a MetadataCtx
         let kvs = {
-            let mdctx = ctx.md_ctx();
+            let mdctx = ctx.md_ctx.get_or_init();
 
             let mut range = RangeQueryContext::new();
             if let Some(dir) = &mdctx.directory {
@@ -60,9 +60,9 @@ impl CliCommand for SeaplaneMetadataList {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.init_md(MetadataCtx::default());
+        ctx.md_ctx.init(MetadataCtx::default());
         ctx.args.out_format = matches.value_of_t_or_exit("format");
-        let mut mdctx = ctx.md_ctx();
+        let mut mdctx = ctx.md_ctx.get_or_init();
         mdctx.base64 = matches.is_present("base64");
         mdctx.decode = matches.is_present("decode");
         mdctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");

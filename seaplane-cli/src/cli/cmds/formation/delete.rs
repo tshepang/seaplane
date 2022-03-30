@@ -53,7 +53,7 @@ impl SeaplaneFormationDelete {
 
 impl CliCommand for SeaplaneFormationDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let formation_ctx = ctx.formation_ctx();
+        let formation_ctx = ctx.formation_ctx.get_or_init();
 
         if !formation_ctx.local && !formation_ctx.remote {
             cli_eprint!(@Red, "error: ");
@@ -153,7 +153,7 @@ impl CliCommand for SeaplaneFormationDelete {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.force = matches.is_present("force");
-        let mut fctx = ctx.formation_ctx();
+        let mut fctx = ctx.formation_ctx.get_or_init();
         fctx.name_id = matches.value_of("formation").unwrap().to_string();
         fctx.remote = !matches.is_present("no-remote");
         fctx.local = !matches.is_present("no-local");

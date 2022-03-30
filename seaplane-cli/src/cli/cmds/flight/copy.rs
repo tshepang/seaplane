@@ -56,7 +56,7 @@ impl CliCommand for SeaplaneFlightCopy {
             };
 
         // Now we just edit the newly copied Flight to match the given CLI params...
-        dest_flight.update_from(&ctx.flight_ctx(), false)?;
+        dest_flight.update_from(&ctx.flight_ctx.get_or_init(), false)?;
 
         let id = dest_flight.id.to_string();
         let name = dest_flight.model.name().to_owned();
@@ -81,7 +81,7 @@ impl CliCommand for SeaplaneFlightCopy {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // clap will not let "source" be None
         ctx.args.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
-        ctx.init_flight(FlightCtx::from_flight_common(
+        ctx.flight_ctx.init(FlightCtx::from_flight_common(
             &SeaplaneFlightCommonArgMatches(matches),
             "",
         )?);

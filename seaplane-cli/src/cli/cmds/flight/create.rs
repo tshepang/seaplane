@@ -34,7 +34,7 @@ impl SeaplaneFlightCreate {
 
 impl CliCommand for SeaplaneFlightCreate {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let new_flight = ctx.flight_ctx().model();
+        let new_flight = ctx.flight_ctx.get_or_init().model();
 
         // Load the known Flights from the local JSON "DB"
         let flights_file = ctx.flights_file();
@@ -81,7 +81,7 @@ impl CliCommand for SeaplaneFlightCreate {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.init_flight(FlightCtx::from_flight_common(
+        ctx.flight_ctx.init(FlightCtx::from_flight_common(
             &SeaplaneFlightCommonArgMatches(matches),
             "",
         )?);

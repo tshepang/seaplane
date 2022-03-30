@@ -105,11 +105,10 @@ impl SeaplaneFormationCreate {
 
 impl CliCommand for SeaplaneFormationCreate {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let formation_ctx = ctx.formation_ctx();
-
         // Load the known formations from the local JSON "DB"
         let formations_file = ctx.formations_file();
         let mut formations: Formations = FromDisk::load(&formations_file)?;
+        let formation_ctx = ctx.formation_ctx.get_or_init();
 
         // Check for duplicates and suggest `seaplane formation edit`
         let name = &formation_ctx.name_id;
@@ -191,13 +190,13 @@ impl CliCommand for SeaplaneFormationCreate {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.init_formation(FormationCtx::from_formation_create(
+        ctx.formation_ctx.init(FormationCtx::from_formation_create(
             &SeaplaneFormationCreateArgMatches(matches),
             ctx,
         )?);
 
         if matches.is_present("flight-image") {
-            ctx.init_flight(FlightCtx::from_flight_common(
+            ctx.flight_ctx.init(FlightCtx::from_flight_common(
                 &SeaplaneFlightCommonArgMatches(matches),
                 "flight-",
             )?);
@@ -206,10 +205,11 @@ impl CliCommand for SeaplaneFormationCreate {
             flight_create.run(ctx)?;
 
             // Store the newly created Flight as if it was passed via `--flight FOO`
-            ctx.formation_ctx()
+            ctx.formation_ctx
+                .get_or_init()
                 .cfg_ctx
                 .flights
-                .push(ctx.flight_ctx().name_id.clone());
+                .push(ctx.flight_ctx.get_or_init().name_id.clone());
         }
 
         let flights_file = ctx.flights_file();
@@ -222,7 +222,7 @@ impl CliCommand for SeaplaneFormationCreate {
             .filter(|s| s.starts_with('@'))
             .collect();
         for name in flights.add_from_at_strs(&at_flights)? {
-            ctx.formation_ctx().cfg_ctx.flights.push(name);
+            ctx.formation_ctx.get_or_init().cfg_ctx.flights.push(name);
         }
 
         flights
