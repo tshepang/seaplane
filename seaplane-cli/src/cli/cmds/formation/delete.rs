@@ -9,8 +9,6 @@ use crate::{
     },
     context::Ctx,
     error::{CliErrorKind, Context, Result},
-    fs::{FromDisk, ToDisk},
-    ops::formation::Formations,
     printer::Color,
 };
 
@@ -66,15 +64,15 @@ impl CliCommand for SeaplaneFormationDelete {
             std::process::exit(1);
         }
 
-        // Load the known Formations from the local JSON "DB"
-        let formations_file = ctx.formations_file();
-        let mut formations: Formations = FromDisk::load(&formations_file)?;
-
         // Get the indices of any formations that match the given name/ID
         let indices = if ctx.args.exact {
-            formations.formation_indices_of_matches(&formation_ctx.name_id)
+            ctx.db
+                .formations
+                .formation_indices_of_matches(&formation_ctx.name_id)
         } else {
-            formations.formation_indices_of_left_matches(&formation_ctx.name_id)
+            ctx.db
+                .formations
+                .formation_indices_of_left_matches(&formation_ctx.name_id)
         };
 
         match indices.len() {
@@ -95,7 +93,7 @@ impl CliCommand for SeaplaneFormationDelete {
         if formation_ctx.remote {
             let api_key = ctx.args.api_key()?;
             for idx in &indices {
-                let formation = formations.get_formation(*idx).unwrap();
+                let formation = ctx.db.formations.get_formation(*idx).unwrap();
                 if let Some(name) = &formation.name {
                     let delete_req = build_request(Some(name), api_key)?;
                     let cfg_uuids = delete_req.delete(ctx.args.force)?;
@@ -125,7 +123,8 @@ impl CliCommand for SeaplaneFormationDelete {
             }
         }
         if formation_ctx.local {
-            formations
+            ctx.db
+                .formations
                 .remove_formation_indices(&indices)
                 .iter()
                 .for_each(|formation| {
@@ -136,10 +135,7 @@ impl CliCommand for SeaplaneFormationDelete {
                 });
         }
 
-        // TODO: handle remote Formations
-
-        // Write out an entirely new JSON file with the Formation(s) deleted
-        formations.persist()?;
+        ctx.persist_formations()?;
 
         // TODO: recalculate dichotomy of local v. remote numbers (i.e. --no-local, etc.)
         cli_println!(

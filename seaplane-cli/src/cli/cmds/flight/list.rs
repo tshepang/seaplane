@@ -1,10 +1,7 @@
 use clap::{ArgMatches, Command};
 use strum::VariantNames;
 
-use crate::{
-    cli::CliCommand, error::Result, fs::FromDisk, ops::flight::Flights, printer::Output, Ctx,
-    OutputFormat,
-};
+use crate::{cli::CliCommand, error::Result, printer::Output, Ctx, OutputFormat};
 
 // TODO: add sorting
 // TODO: add filtering
@@ -26,13 +23,10 @@ impl SeaplaneFlightList {
 
 impl CliCommand for SeaplaneFlightList {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let flights: Flights = FromDisk::load(ctx.flights_file())?;
-
         // TODO: get remote flights too
-
         match ctx.args.out_format {
-            OutputFormat::Table => flights.print_table(ctx)?,
-            OutputFormat::Json => flights.print_json(ctx)?,
+            OutputFormat::Json => ctx.db.flights.print_json(ctx)?,
+            OutputFormat::Table => ctx.db.flights.print_table(ctx)?,
         }
 
         Ok(())

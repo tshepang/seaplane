@@ -8,10 +8,8 @@ use crate::{
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
     },
+    context::Ctx,
     error::{CliError, Context, Result},
-    fs::{FromDisk, ToDisk},
-    ops::formation::Formations,
-    Ctx,
 };
 
 static LONG_ABOUT: &str =
@@ -79,15 +77,15 @@ impl CliCommand for SeaplaneFormationLaunch {
             let fetch = SeaplaneFormationFetch;
             fetch.run(ctx)?;
         }
-        // Load the known Formations from the local JSON "DB"
-        let formations_file = ctx.formations_file();
-        let formations: Formations = FromDisk::load(&formations_file)?;
-
         // Get the indices of any formations that match the given name/ID
         let indices = if ctx.args.exact {
-            formations.formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
+            ctx.db
+                .formations
+                .formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         } else {
-            formations.formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
+            ctx.db
+                .formations
+                .formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
@@ -103,7 +101,7 @@ impl CliCommand for SeaplaneFormationLaunch {
 
         for idx in indices {
             // re unwrap: the indices returned came from Formations so they have to be valid
-            let formation = formations.get_formation(idx).unwrap();
+            let formation = ctx.db.formations.get_formation(idx).unwrap();
 
             // Get the local configs that don't exist remote yet
             let cfgs_ids = formation.local_only_configs();
@@ -111,7 +109,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             let api_key = ctx.args.api_key()?;
             // Add those configurations to this formation
             for id in cfgs_ids {
-                if let Some(cfg) = formations.get_configuration(id) {
+                if let Some(cfg) = ctx.db.formations.get_configuration(id) {
                     let add_cfg_req =
                         build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
@@ -163,10 +161,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             }
         }
 
-        // Write out an entirely new JSON file with the new Formation included
-        formations
-            .persist()
-            .with_context(|| format!("Path: {:?}\n", ctx.formations_file()))?;
+        ctx.persist_formations()?;
 
         Ok(())
     }

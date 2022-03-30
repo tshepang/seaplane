@@ -12,8 +12,6 @@ use crate::{
     },
     context::{Ctx, FlightCtx},
     error::Result,
-    fs::{FromDisk, ToDisk},
-    ops::flight::Flights,
 };
 
 #[derive(Copy, Clone, Debug)]
@@ -40,9 +38,7 @@ impl SeaplaneFlightEdit {
 
 impl CliCommand for SeaplaneFlightEdit {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        // Load the known Flights from the local JSON "DB"
-        let flights_file = ctx.flights_file();
-        let mut flights: Flights = FromDisk::load(&flights_file)?;
+        let flights = &mut ctx.db.flights;
 
         // Now we just edit the newly copied Flight to match the given CLI params...
         // name_id cannot be None in `flight edit`
@@ -54,8 +50,7 @@ impl CliCommand for SeaplaneFlightEdit {
             return wrap_cli_context(e, ctx.args.exact, false);
         }
 
-        // Write out an entirely new JSON file with the new Flight included
-        flights.persist()?;
+        ctx.persist_flights()?;
 
         cli_print!("Successfully edited Flight '");
         cli_print!(@Yellow, "{}", ctx.args.name_id.as_ref().unwrap());

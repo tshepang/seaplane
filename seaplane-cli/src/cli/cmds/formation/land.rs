@@ -7,9 +7,7 @@ use crate::{
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
     },
-    error::{Context, Result},
-    fs::{FromDisk, ToDisk},
-    ops::formation::Formations,
+    error::Result,
     Ctx,
 };
 
@@ -42,15 +40,15 @@ impl SeaplaneFormationLand {
 
 impl CliCommand for SeaplaneFormationLand {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        // Load the known Formations from the local JSON "DB"
-        let formations_file = ctx.formations_file();
-        let mut formations: Formations = FromDisk::load(&formations_file)?;
-
         // Get the indices of any formations that match the given name/ID
         let indices = if ctx.args.exact {
-            formations.formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
+            ctx.db
+                .formations
+                .formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         } else {
-            formations.formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
+            ctx.db
+                .formations
+                .formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
@@ -67,7 +65,7 @@ impl CliCommand for SeaplaneFormationLand {
         let api_key = ctx.args.api_key()?;
         for idx in indices {
             // re unwrap: the indices returned came from Formations so they have to be valid
-            let formation = formations.get_formation_mut(idx).unwrap();
+            let formation = ctx.db.formations.get_formation_mut(idx).unwrap();
 
             // re unwrap: We got the formation from the local DB so it has to have a name
             let stop_req = build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
@@ -79,10 +77,7 @@ impl CliCommand for SeaplaneFormationLand {
                 formation.grounded.insert(id);
             }
 
-            // Write out an entirely new JSON file with the new Formation included
-            formations
-                .persist()
-                .with_context(|| format!("Path: {:?}\n", ctx.formations_file()))?;
+            ctx.persist_formations()?;
 
             cli_print!("Successfully Landed Formation '");
             cli_print!(@Green, "{}", &ctx.args.name_id.as_ref().unwrap());

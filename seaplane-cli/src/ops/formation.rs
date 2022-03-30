@@ -31,7 +31,7 @@ use crate::{
 /// "Formation Model" only a "Formation Configuration Model" This is because a "Formation" so to
 /// speak is really just a named collection of configurations and info about their traffic
 /// weights/activation statuses.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct Formations {
     // Where was this "DB" loaded from on disk, so we can persist it back later
     #[serde(skip)]

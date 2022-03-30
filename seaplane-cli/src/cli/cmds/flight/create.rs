@@ -10,8 +10,7 @@ use crate::{
     },
     context::FlightCtx,
     error::{CliErrorKind, Context, Result},
-    fs::{FromDisk, ToDisk},
-    ops::flight::{Flight, Flights},
+    ops::flight::Flight,
     printer::Color,
     Ctx,
 };
@@ -36,13 +35,9 @@ impl CliCommand for SeaplaneFlightCreate {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let new_flight = ctx.flight_ctx.get_or_init().model();
 
-        // Load the known Flights from the local JSON "DB"
-        let flights_file = ctx.flights_file();
-        let mut flights: Flights = FromDisk::load(&flights_file)?;
-
         // Check for duplicates and suggest `seaplane flight edit`
         let name = new_flight.name();
-        let indices = flights.indices_of_matches(name);
+        let indices = ctx.db.flights.indices_of_matches(name);
         if !indices.is_empty() {
             // TODO: We should check if these ones we remove are referenced remote or not
 
@@ -59,17 +54,16 @@ impl CliCommand for SeaplaneFlightCreate {
 
             // TODO: if more than one flight has the exact same name, we remove them all; that's
             // *probably* what we want? But more thought should go into this...
-            flights.remove_indices(&indices);
+            ctx.db.flights.remove_indices(&indices);
         }
 
         let new_flight_name = new_flight.name().to_owned();
         // Add the new Flight
         let new_flight = Flight::new(new_flight);
         let id = new_flight.id;
-        flights.inner.push(new_flight);
+        ctx.db.flights.add_flight(new_flight);
 
-        // Write out an entirely new JSON file with the new Flight included
-        flights.persist()?;
+        ctx.persist_flights()?;
 
         cli_print!("Successfully created Flight '");
         cli_print!(@Green, "{new_flight_name}");

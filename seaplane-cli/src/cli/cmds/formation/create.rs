@@ -15,11 +15,7 @@ use crate::{
     },
     context::{Ctx, FlightCtx, FormationCtx},
     error::{CliErrorKind, Context, Result},
-    fs::{FromDisk, ToDisk},
-    ops::{
-        flight::Flights,
-        formation::{Formation, FormationConfiguration, Formations},
-    },
+    ops::formation::{Formation, FormationConfiguration},
     printer::Color,
 };
 
@@ -105,16 +101,11 @@ impl SeaplaneFormationCreate {
 
 impl CliCommand for SeaplaneFormationCreate {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        // Load the known formations from the local JSON "DB"
-        let formations_file = ctx.formations_file();
-        let mut formations: Formations = FromDisk::load(&formations_file)?;
         let formation_ctx = ctx.formation_ctx.get_or_init();
 
         // Check for duplicates and suggest `seaplane formation edit`
         let name = &formation_ctx.name_id;
-        // TODO: We should check if these ones we remove are referenced remote or not
-
-        if formations.contains_name(name) {
+        if ctx.db.formations.contains_name(name) {
             if !ctx.args.force {
                 return Err(CliErrorKind::DuplicateName(name.to_owned())
                     .into_err()
@@ -126,9 +117,10 @@ impl CliCommand for SeaplaneFormationCreate {
             // We have duplicates, but the user passed --force. So first we remove the existing
             // formations and "re-add" them
 
+            // TODO: We should check if these ones we remove are referenced remote or not
             // TODO: if more than one formation has the exact same name, we remove them all; that's
             // *probably* what we want? But more thought should go into this...
-            formations.remove_name(name);
+            ctx.db.formations.remove_name(name);
         }
 
         // Add the new formation
@@ -140,16 +132,13 @@ impl CliCommand for SeaplaneFormationCreate {
             // TODO: if active / deployed add to appropriate in_air / grounded
             new_formation.local.insert(formation_cfg.id);
             cfg_id = Some(formation_cfg.id);
-            formations.configurations.push(formation_cfg)
+            ctx.db.formations.configurations.push(formation_cfg)
         }
 
         let id = new_formation.id.to_string();
-        formations.formations.push(new_formation);
+        ctx.db.formations.formations.push(new_formation);
 
-        // Write out an entirely new JSON file with the new Formation included
-        formations
-            .persist()
-            .with_context(|| format!("Path: {:?}\n", ctx.formations_file()))?;
+        ctx.persist_formations()?;
 
         cli_print!("Successfully created Formation '");
         cli_print!(@Green, "{}", &formation_ctx.name_id);
@@ -169,13 +158,17 @@ impl CliCommand for SeaplaneFormationCreate {
                     cli_print!("Successfully launched Formation '");
                     cli_print!(@Green, "{}", &cfg_id.to_string()[..8]);
                     cli_println!("' with Configuration UUIDs:");
-                    formations.add_in_air_by_name(&formation_ctx.name_id, cfg_id);
+                    ctx.db
+                        .formations
+                        .add_in_air_by_name(&formation_ctx.name_id, cfg_id);
                 } else {
-                    formations.add_grounded_by_name(&formation_ctx.name_id, cfg_id);
+                    ctx.db
+                        .formations
+                        .add_grounded_by_name(&formation_ctx.name_id, cfg_id);
                 }
                 for uuid in cfg_uuids.into_iter() {
                     cli_println!(@Green, "\t{uuid}");
-                    formations.add_uuid(&cfg_id, uuid);
+                    ctx.db.formations.add_uuid(&cfg_id, uuid);
                 }
                 if formation_ctx.launch {
                     let subdomain = request_token_json(api_key, "")?.subdomain;
@@ -212,22 +205,17 @@ impl CliCommand for SeaplaneFormationCreate {
                 .push(ctx.flight_ctx.get_or_init().name_id.clone());
         }
 
-        let flights_file = ctx.flights_file();
-        let mut flights: Flights = FromDisk::load(&flights_file)?;
-
         // Create any flights required
         let at_flights: Vec<_> = matches
             .values_of("flight")
             .unwrap_or_default()
             .filter(|s| s.starts_with('@'))
             .collect();
-        for name in flights.add_from_at_strs(&at_flights)? {
+        for name in ctx.db.flights.add_from_at_strs(&at_flights)? {
             ctx.formation_ctx.get_or_init().cfg_ctx.flights.push(name);
         }
 
-        flights
-            .persist()
-            .with_context(|| format!("Path: {:?}\n", ctx.formations_file()))?;
+        ctx.persist_flights()?;
 
         Ok(())
     }

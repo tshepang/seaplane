@@ -10,8 +10,6 @@ use crate::{
     },
     context::{Ctx, FlightCtx},
     error::Result,
-    fs::{FromDisk, ToDisk},
-    ops::flight::Flights,
 };
 
 use super::SeaplaneFlightCommonArgMatches;
@@ -44,16 +42,15 @@ impl SeaplaneFlightCopy {
 
 impl CliCommand for SeaplaneFlightCopy {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        // Load the known Flights from the local JSON "DB"
-        let flights_file = ctx.flights_file();
-        let mut flights: Flights = FromDisk::load(&flights_file)?;
-
         // name_id cannot be None in `flight copy`
-        let mut dest_flight =
-            match flights.clone_flight(ctx.args.name_id.as_ref().unwrap(), ctx.args.exact) {
-                Ok(f) => f,
-                Err(e) => return wrap_cli_context(e, ctx.args.exact, false),
-            };
+        let mut dest_flight = match ctx
+            .db
+            .flights
+            .clone_flight(ctx.args.name_id.as_ref().unwrap(), ctx.args.exact)
+        {
+            Ok(f) => f,
+            Err(e) => return wrap_cli_context(e, ctx.args.exact, false),
+        };
 
         // Now we just edit the newly copied Flight to match the given CLI params...
         dest_flight.update_from(&ctx.flight_ctx.get_or_init(), false)?;
@@ -62,10 +59,9 @@ impl CliCommand for SeaplaneFlightCopy {
         let name = dest_flight.model.name().to_owned();
 
         // Add the new Flight
-        flights.inner.push(dest_flight);
+        ctx.db.flights.add_flight(dest_flight);
 
-        // Write out an entirely new JSON file with the new Flight included
-        flights.persist()?;
+        ctx.persist_flights()?;
 
         cli_print!("Successfully copied Flight '");
         cli_print!(@Yellow, "{}", ctx.args.name_id.as_ref().unwrap());

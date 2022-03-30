@@ -3,8 +3,6 @@ use clap::Command;
 use crate::{
     cli::{cmds::formation::build_request, CliCommand},
     error::{CliError, Context, Result},
-    fs::{FromDisk, ToDisk},
-    ops::{flight::Flights, formation::Formations},
     printer::Color,
     Ctx,
 };
@@ -32,10 +30,6 @@ impl SeaplaneFormationFetch {
 impl CliCommand for SeaplaneFormationFetch {
     // TODO: async
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        // Load the known formations from the local JSON "DB"
-        let formations_file = ctx.formations_file();
-        let mut formations: Formations = FromDisk::load(&formations_file)?;
-
         let api_key = ctx.args.api_key()?;
         let names = if let Some(name) = &ctx.args.name_id {
             vec![name.to_owned()]
@@ -48,9 +42,6 @@ impl CliCommand for SeaplaneFormationFetch {
                 .context("Context: failed to retrieve Formation names\n")?
                 .into_inner()
         };
-
-        let flights_file = ctx.flights_file();
-        let mut flights: Flights = FromDisk::load(&flights_file)?;
 
         // TODO: We't requesting tons of new tokens...maybe we could do multiple per and just
         // retry on error?
@@ -76,7 +67,7 @@ impl CliCommand for SeaplaneFormationFetch {
                     .with_color_context(|| (Color::Yellow, format!("{uuid}\n")))?;
 
                 for flight in cfg_model.flights() {
-                    let names_ids = flights.update_or_create_flight(flight.clone());
+                    let names_ids = ctx.db.flights.update_or_create_flight(flight.clone());
                     for (name, id) in names_ids {
                         cli_print!("Successfully fetched Flight '");
                         cli_print!(@Green, "{name}");
@@ -86,7 +77,7 @@ impl CliCommand for SeaplaneFormationFetch {
                     }
                 }
 
-                let ids = formations.update_or_create_configuration(
+                let ids = ctx.db.formations.update_or_create_configuration(
                     &name,
                     cfg_model,
                     active_cfgs.iter().any(|ac| ac.uuid() == &uuid),
@@ -100,10 +91,8 @@ impl CliCommand for SeaplaneFormationFetch {
             }
         }
 
-        // Write out an entirely new JSON file with the new Flights
-        flights.persist()?;
-        // Write out an entirely new JSON file with the new Formations
-        formations.persist()?;
+        ctx.persist_flights()?;
+        ctx.persist_formations()?;
 
         Ok(())
     }

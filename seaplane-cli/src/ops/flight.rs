@@ -121,7 +121,7 @@ impl Flight {
 pub struct Flights {
     #[serde(skip)]
     loaded_from: Option<PathBuf>,
-    pub inner: Vec<Flight>,
+    inner: Vec<Flight>,
 }
 
 impl FromDisk for Flights {
@@ -243,6 +243,10 @@ impl Flights {
         self.inner.push(src_flight);
 
         Ok(())
+    }
+
+    pub fn add_flight(&mut self, flight: Flight) {
+        self.inner.push(flight);
     }
 
     pub fn remove_flight(&mut self, src: &str, exact: bool) -> Result<Flight> {

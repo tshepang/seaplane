@@ -11,8 +11,7 @@ use crate::{
     },
     context::Ctx,
     error::{CliErrorKind, Context, Result},
-    fs::FromDisk,
-    ops::{flight::Flights, formation::Endpoint, generate_formation_name},
+    ops::{formation::Endpoint, generate_formation_name},
     printer::Color,
 };
 
@@ -64,11 +63,6 @@ impl FormationCtx {
 
         let mut flight_names = Vec::new();
 
-        // TODO: fetch remote flights too
-        // Load known local flights
-        let flights_file = ctx.flights_file();
-        let flights: Flights = FromDisk::load(&flights_file)?;
-
         // Translate the flight NAME|ID into a NAME, or create the flight when @path or @- is used
         // and save the NAME
         for flight in matches
@@ -79,7 +73,7 @@ impl FormationCtx {
             .filter(|f| !f.starts_with('@'))
         {
             // Try to lookup either a partial ID match, or exact NAME match
-            if let Some(flight) = flights.find_name_or_partial_id(flight) {
+            if let Some(flight) = ctx.db.flights.find_name_or_partial_id(flight) {
                 // Look for exact name matches, or partial ID matches and map to their name
                 flight_names.push(flight.model.name().to_owned());
             } else {
@@ -159,10 +153,8 @@ impl FormationCtx {
         // Create the new Formation model from the CLI inputs
         let mut f_model = FormationConfigurationModel::builder();
 
-        let flights: Flights = FromDisk::load(ctx.flights_file())?;
-
         for flight_name in &self.cfg_ctx.flights {
-            let flight = flights.find_name(flight_name).ok_or_else(|| {
+            let flight = ctx.db.flights.find_name(flight_name).ok_or_else(|| {
                 CliErrorKind::NoMatchingItem(flight_name.to_string())
                     .into_err()
                     .context("(hint: create the Flight with '")

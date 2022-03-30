@@ -116,6 +116,17 @@ pub trait FromDisk {
         None
     }
 
+    /// Only load from disk if `yes` is `true`, otherwise return `None`
+    fn load_if<P: AsRef<Path>>(p: P, yes: bool) -> Option<Result<Self>>
+    where
+        Self: Sized + DeserializeOwned,
+    {
+        if yes {
+            return Some(Self::load(p));
+        }
+        None
+    }
+
     /// Deserialize from some given path
     fn load<P: AsRef<Path>>(p: P) -> Result<Self>
     where
@@ -149,6 +160,17 @@ pub trait FromDisk {
 
 // TODO: make the serializer generic
 pub trait ToDisk: FromDisk {
+    /// Persist to path only if `yes` is `true`
+    fn persist_if(&self, yes: bool) -> Result<()>
+    where
+        Self: Sized + Serialize,
+    {
+        if yes {
+            return self.persist();
+        }
+        Ok(())
+    }
+
     /// Serializes itself to the given path
     fn persist(&self) -> Result<()>
     where

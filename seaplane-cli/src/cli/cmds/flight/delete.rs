@@ -6,10 +6,8 @@ use crate::{
         validator::{validate_flight_name, validate_name_id},
         CliCommand,
     },
+    context::Ctx,
     error::Result,
-    fs::{FromDisk, ToDisk},
-    ops::flight::Flights,
-    Ctx,
 };
 
 #[derive(Copy, Clone, Debug)]
@@ -40,17 +38,17 @@ impl SeaplaneFlightDelete {
 
 impl CliCommand for SeaplaneFlightDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        // Load the known Flights from the local JSON "DB"
-        let flights_file = ctx.flights_file();
-        let mut flights: Flights = FromDisk::load(&flights_file).unwrap_or_default();
-
         // TODO: find remote Flights too to check references
 
         // Get the indices of any flights that match the given name/ID
         let indices = if ctx.args.exact {
-            flights.indices_of_matches(ctx.args.name_id.as_ref().unwrap())
+            ctx.db
+                .flights
+                .indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         } else {
-            flights.indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
+            ctx.db
+                .flights
+                .indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
@@ -65,12 +63,15 @@ impl CliCommand for SeaplaneFlightDelete {
         }
 
         // Remove the flights
-        flights.remove_indices(&indices).iter().for_each(|flight| {
-            cli_println!("Deleted Flight {}", &flight.id.to_string());
-        });
+        ctx.db
+            .flights
+            .remove_indices(&indices)
+            .iter()
+            .for_each(|flight| {
+                cli_println!("Deleted Flight {}", &flight.id.to_string());
+            });
 
-        // Write out an entirely new JSON file with the Flight(s) deleted
-        flights.persist()?;
+        ctx.persist_flights()?;
 
         cli_println!(
             "\nSuccessfully removed {} item{}",

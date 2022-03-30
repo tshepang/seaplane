@@ -39,8 +39,9 @@ use once_cell::sync::OnceCell;
 
 use crate::{
     config::RawConfig,
-    error::{CliErrorKind, Result},
-    fs,
+    error::{CliErrorKind, Context, Result},
+    fs::{self, FromDisk, ToDisk},
+    ops::{flight::Flights, formation::Formations},
     printer::{ColorChoice, OutputFormat},
 };
 
@@ -113,7 +114,11 @@ pub struct Ctx {
     /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
 
+    /// Common CLI arguments
     pub args: Args,
+
+    /// The in memory databases
+    pub db: Db,
 }
 
 impl Default for Ctx {
@@ -125,6 +130,7 @@ impl Default for Ctx {
             md_ctx: LateInit::default(),
             conf_files: Vec::new(),
             args: Args::default(),
+            db: Db::default(),
         }
     }
 }
@@ -135,6 +141,8 @@ impl Ctx {
             data_dir: fs::data_dir(),
             conf_files: cfg.loaded_from.clone(),
             args: Args {
+                // We default to using color. Later when the context is updated from the CLI args, this
+                // may change.
                 color: cfg.seaplane.color.unwrap_or_default(),
                 api_key: cfg.account.api_key.clone(),
                 ..Default::default()
@@ -142,11 +150,19 @@ impl Ctx {
             ..Self::default()
         })
     }
-
     pub fn update_from_env(&mut self) -> Result<()> {
         // TODO: this just gets it compiling. Using `todo!` blocks progress since loading the
         // context happens at program startup, so we cannot panic on unimplemented
         Ok(())
+    }
+
+    #[inline]
+    pub fn data_dir(&self) -> &Path {
+        &self.data_dir
+    }
+
+    pub fn conf_files(&self) -> &[PathBuf] {
+        &*self.conf_files
     }
 
     pub fn flights_file(&self) -> PathBuf {
@@ -157,13 +173,44 @@ impl Ctx {
         self.data_dir.join(FORMATIONS_FILE)
     }
 
-    #[inline]
-    pub fn data_dir(&self) -> &Path {
-        &self.data_dir
+    /// Write out an entirely new JSON file if `--stateless` wasn't used
+    pub fn persist_formations(&self) -> Result<()> {
+        self.db
+            .formations
+            .persist()
+            .with_context(|| format!("Path: {:?}\n", self.formations_file()))
     }
 
-    pub fn conf_files(&self) -> &[PathBuf] {
-        &*self.conf_files
+    /// Write out an entirely new JSON file if `--stateless` wasn't used
+    pub fn persist_flights(&self) -> Result<()> {
+        self.db
+            .flights
+            .persist()
+            .with_context(|| format!("Path: {:?}\n", self.flights_file()))
+    }
+}
+
+/// The in memory "Databases"
+#[derive(Debug, Default)]
+pub struct Db {
+    /// The in memory Flights database
+    pub flights: Flights,
+
+    /// The in memory Formations database
+    pub formations: Formations,
+}
+
+impl Db {
+    pub fn load<P: AsRef<Path>>(flights: P, formations: P) -> Result<Self> {
+        Self::load_if(flights, formations, true)
+    }
+
+    pub fn load_if<P: AsRef<Path>>(flights: P, formations: P, yes: bool) -> Result<Self> {
+        Ok(Self {
+            flights: FromDisk::load_if(flights, yes).unwrap_or_else(|| Ok(Flights::default()))?,
+            formations: FromDisk::load_if(formations, yes)
+                .unwrap_or_else(|| Ok(Formations::default()))?,
+        })
     }
 }
 

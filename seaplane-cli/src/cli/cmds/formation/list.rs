@@ -1,10 +1,7 @@
 use clap::{ArgMatches, Command};
 use strum::VariantNames;
 
-use crate::{
-    cli::CliCommand, error::Result, fs::FromDisk, ops::formation::Formations, printer::Output, Ctx,
-    OutputFormat,
-};
+use crate::{cli::CliCommand, error::Result, printer::Output, Ctx, OutputFormat};
 
 static LONG_ABOUT: &str = "List your Seaplane Formations
 
@@ -35,11 +32,9 @@ impl SeaplaneFormationList {
 
 impl CliCommand for SeaplaneFormationList {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let formations: Formations = FromDisk::load(ctx.formations_file())?;
-
         match ctx.args.out_format {
-            OutputFormat::Json => formations.print_json(ctx)?,
-            OutputFormat::Table => formations.print_table(ctx)?,
+            OutputFormat::Json => ctx.db.formations.print_json(ctx)?,
+            OutputFormat::Table => ctx.db.formations.print_table(ctx)?,
         }
 
         Ok(())
