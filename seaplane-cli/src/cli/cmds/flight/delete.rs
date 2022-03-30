@@ -38,7 +38,6 @@ impl SeaplaneFlightDelete {
 
 impl CliCommand for SeaplaneFlightDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        // TODO: find remote Flights too to check references
         if ctx.args.stateless {
             cli_eprint!(@Red, "error: ");
             cli_eprint!("'");

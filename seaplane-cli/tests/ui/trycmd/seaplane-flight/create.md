@@ -30,6 +30,7 @@ OPTIONS:
         --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches, architectures] [possible values: amd64, arm64]
         --color <COLOR>          Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -f, --force                  Override any existing Flights with the same NAME
+    -F, --fetch                  Fetch remote Flight definitions prior to creating to check for conflicts (by default only local state is considered)
     -h, --help                   Print help information
         --image <SPEC>           The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
         --maximum <NUM>          The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
@@ -116,6 +117,9 @@ OPTIONS:
 
     -f, --force
             Override any existing Flights with the same NAME
+
+    -F, --fetch
+            Fetch remote Flight definitions prior to creating to check for conflicts (by default only local state is considered)
 
     -h, --help
             Print help information

@@ -1,7 +1,12 @@
 use clap::{ArgMatches, Command};
 use strum::VariantNames;
 
-use crate::{cli::CliCommand, error::Result, printer::Output, Ctx, OutputFormat};
+use crate::{
+    cli::{cmds::formation::SeaplaneFormationFetch, CliCommand},
+    error::Result,
+    printer::Output,
+    Ctx, OutputFormat,
+};
 
 static LONG_ABOUT: &str = "List your Seaplane Formations
 
@@ -22,6 +27,7 @@ impl SeaplaneFormationList {
             .visible_alias("ls")
             .long_about(LONG_ABOUT)
             .about("List your Seaplane Formations")
+            .arg(arg!(--fetch - ('F')).help("Fetch remote Formation definitions prior to listing (by default only local state is considered)"))
             .arg(
                 arg!(--format =["FORMAT"=>"table"])
                     .possible_values(OutputFormat::VARIANTS)
@@ -32,6 +38,27 @@ impl SeaplaneFormationList {
 
 impl CliCommand for SeaplaneFormationList {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.stateless && !ctx.args.fetch {
+            cli_eprint!(@Red, "error: ");
+            cli_eprint!("'");
+            cli_eprint!(@Yellow, "seaplane formation list");
+            cli_eprint!("' when used with '");
+            cli_eprint!(@Yellow, "--stateless");
+            cli_eprint!("' is useless without '");
+            cli_eprint!(@Green, "--fetch");
+            cli_eprintln!("'");
+            cli_eprintln!("(hint: 'seaplane formation list' only looks at local state)");
+            cli_eprint!("(hint: 'seaplane formation list");
+            cli_eprint!(@Green, "--fetch");
+            cli_eprintln!("' also fetches remote references)");
+            std::process::exit(1);
+        }
+
+        if ctx.args.fetch {
+            let fetch = SeaplaneFormationFetch;
+            fetch.run(ctx)?;
+        }
+
         match ctx.args.out_format {
             OutputFormat::Json => ctx.db.formations.print_json(ctx)?,
             OutputFormat::Table => ctx.db.formations.print_table(ctx)?,
@@ -42,6 +69,7 @@ impl CliCommand for SeaplaneFormationList {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.out_format = matches.value_of_t("format").unwrap_or_default();
+        ctx.args.fetch = matches.is_present("fetch");
         Ok(())
     }
 }

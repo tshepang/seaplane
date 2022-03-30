@@ -31,7 +31,6 @@ pub struct FormationCtx {
     pub deploy: bool,
     pub remote: bool,
     pub local: bool,
-    pub fetch: bool,
     pub grounded: bool,
     // TODO: make multiple possible
     pub cfg_ctx: FormationCfgCtx,
@@ -46,7 +45,6 @@ impl Default for FormationCtx {
             cfg_ctx: FormationCfgCtx::default(),
             remote: false,
             local: true,
-            fetch: false,
             grounded: false,
         }
     }

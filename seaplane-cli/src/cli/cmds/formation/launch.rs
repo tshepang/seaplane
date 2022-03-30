@@ -72,8 +72,7 @@ impl SeaplaneFormationLaunch {
 
 impl CliCommand for SeaplaneFormationLaunch {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let should_fetch = ctx.formation_ctx.get_or_init().fetch;
-        if should_fetch {
+        if ctx.args.fetch {
             let fetch = SeaplaneFormationFetch;
             fetch.run(ctx)?;
         }
@@ -168,6 +167,7 @@ impl CliCommand for SeaplaneFormationLaunch {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.name_id = matches.value_of("formation").map(ToOwned::to_owned);
+        ctx.args.fetch = matches.is_present("fetch");
         Ok(())
     }
 }

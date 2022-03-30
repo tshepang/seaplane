@@ -2,9 +2,12 @@ use clap::{ArgMatches, Command};
 
 use crate::{
     cli::{
-        cmds::flight::{
-            common::{self, SeaplaneFlightCommonArgMatches},
-            IMAGE_SPEC,
+        cmds::{
+            flight::{
+                common::{self, SeaplaneFlightCommonArgMatches},
+                IMAGE_SPEC,
+            },
+            formation::SeaplaneFormationFetch,
         },
         CliCommand,
     },
@@ -27,6 +30,7 @@ impl SeaplaneFlightCreate {
             .override_usage("seaplane flight create --image=<SPEC> [OPTIONS]")
             .about("Create a new Flight definition")
             .arg(arg!(--force - ('f')).help("Override any existing Flights with the same NAME"))
+            .arg(arg!(--fetch - ('F')).help("Fetch remote Flight definitions prior to creating to check for conflicts (by default only local state is considered)"))
             .args(common::args(true))
     }
 }
@@ -45,6 +49,11 @@ impl CliCommand for SeaplaneFlightCreate {
             cli_eprint!(@Green, "formation ");
             cli_eprintln!("create' instead)");
             std::process::exit(1);
+        }
+
+        if ctx.args.fetch {
+            let fetch = SeaplaneFormationFetch;
+            fetch.run(ctx)?;
         }
 
         let new_flight = ctx.flight_ctx.get_or_init().model();
@@ -94,6 +103,7 @@ impl CliCommand for SeaplaneFlightCreate {
             "",
         )?);
         ctx.args.force = matches.is_present("force");
+        ctx.args.fetch = matches.is_present("fetch");
         Ok(())
     }
 }

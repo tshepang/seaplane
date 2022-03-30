@@ -87,6 +87,9 @@ pub struct Args {
     /// The API Key associated with an account provided by the CLI, env, or Config used to request
     /// access tokens
     pub api_key: Option<String>,
+
+    /// Should we fetch remote refs?
+    pub fetch: bool,
 }
 
 impl Args {

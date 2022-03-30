@@ -6,7 +6,7 @@ use crate::{
     cli::{
         cmds::{
             flight::{SeaplaneFlightCommonArgMatches, SeaplaneFlightCreate},
-            formation::{build_request, common},
+            formation::{build_request, common, SeaplaneFormationFetch},
         },
         request_token_json,
         specs::{FLIGHT_SPEC, REGION_SPEC},
@@ -67,6 +67,7 @@ impl SeaplaneFormationCreate {
             .long_about(LONG_ABOUT)
             .args(common::args())
             .arg(arg!(--force).help("Override any existing Formation with the same NAME"))
+            .arg(arg!(--fetch - ('F')).help("Fetch remote definitions prior to creating to check for conflicts (by default only local state is considered)"))
             .next_help_heading("INLINE FLIGHT OPTIONS")
             // TODO: allow omitting of USER (TENANT) portion of image spec too...but this requires a an API
             // call to determine the TENANT id (at least until the `seaplane account login` command is done)
@@ -101,6 +102,11 @@ impl SeaplaneFormationCreate {
 
 impl CliCommand for SeaplaneFormationCreate {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.fetch {
+            let fetch = SeaplaneFormationFetch;
+            fetch.run(ctx)?;
+        }
+
         let formation_ctx = ctx.formation_ctx.get_or_init();
 
         // Check for duplicates and suggest `seaplane formation edit`
@@ -183,6 +189,7 @@ impl CliCommand for SeaplaneFormationCreate {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.args.fetch = matches.is_present("fetch");
         ctx.formation_ctx.init(FormationCtx::from_formation_create(
             &SeaplaneFormationCreateArgMatches(matches),
             ctx,

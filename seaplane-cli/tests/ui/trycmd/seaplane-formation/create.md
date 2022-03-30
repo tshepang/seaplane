@@ -18,6 +18,7 @@ OPTIONS:
         --deploy                         Send this formation to Seaplane immediately (requires a Formation configuration) but DO NOT set to active. To also set the configuration to active add or use --launch instead
         --exclude-provider <PROVIDER>    A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider [aliases: exclude-providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
         --exclude-region <REGION>        A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below) [aliases: exclude-regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+    -F, --fetch                          Fetch remote definitions prior to creating to check for conflicts (by default only local state is considered)
         --flight <SPEC>                  A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below) [aliases: flights]
         --flight-endpoint <SPEC>         An endpoint exposed only to Flights within this Formation. In the form of 'PROTO:TARGET=FLIGHT:PORT' [aliases: flight-endpoints]
         --force                          Override any existing Formation with the same NAME
@@ -139,6 +140,9 @@ OPTIONS:
             
             [aliases: exclude-regions]
             [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+
+    -F, --fetch
+            Fetch remote definitions prior to creating to check for conflicts (by default only local state is considered)
 
         --flight <SPEC>
             A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)

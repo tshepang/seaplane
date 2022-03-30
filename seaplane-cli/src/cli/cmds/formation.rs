@@ -26,7 +26,7 @@ use self::{
     container_stats::SeaplaneFormationContainerStatistics,
     load_balance::SeaplaneFormationLoadBalance, template::SeaplaneFormationTemplate,
 };
-use self::{
+pub use self::{
     create::SeaplaneFormationCreate, delete::SeaplaneFormationDelete,
     fetch::SeaplaneFormationFetch, land::SeaplaneFormationLand, launch::SeaplaneFormationLaunch,
     list::SeaplaneFormationList,
