@@ -39,6 +39,19 @@ impl SeaplaneFlightDelete {
 impl CliCommand for SeaplaneFlightDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // TODO: find remote Flights too to check references
+        if ctx.args.stateless {
+            cli_eprint!(@Red, "error: ");
+            cli_eprint!("'");
+            cli_eprint!(@Yellow, "--stateless");
+            cli_eprint!("' cannot be used with the '");
+            cli_eprint!(@Yellow, "seaplane flight delete");
+            cli_eprintln!("' command");
+            cli_eprintln!("(hint: 'seaplane flight delete' only modifies local state)");
+            cli_eprint!("(hint: you may want 'seaplane ");
+            cli_eprint!(@Green, "formation ");
+            cli_eprintln!("delete' instead)");
+            std::process::exit(1);
+        }
 
         // Get the indices of any flights that match the given name/ID
         let indices = if ctx.args.exact {

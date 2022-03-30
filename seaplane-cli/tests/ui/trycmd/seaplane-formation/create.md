@@ -32,6 +32,7 @@ OPTIONS:
         --public-endpoint <SPEC>         A publicly exposed endpoints of this Formation in the form of 'http:ROUTE=FLIGHT:PORT' [aliases: public-endpoints]
     -q, --quiet                          Suppress output at a specific level and below
         --region <REGION>                A region in which this Formation's Flights are allowed to run in (See REGION SPEC below) [default: all] [aliases: regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+    -S, --stateless                      Ignore local state files, do not read from or write to them
     -v, --verbose                        Display more verbose output
     -V, --version                        Print version information
 
@@ -274,6 +275,9 @@ OPTIONS:
             [default: all]
             [aliases: regions]
             [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+
+    -S, --stateless
+            Ignore local state files, do not read from or write to them
 
     -v, --verbose
             Display more verbose output

@@ -107,6 +107,8 @@ impl Seaplane {
                 .env("SEAPLANE_API_KEY")
                 .help("The API key associated with your account used to access Seaplane API endpoints")
                 .long_help(LONG_API_KEY))
+            .arg(arg!(--("stateless") -('S') global)
+                .help("Ignore local state files, do not read from or write to them"))
             .subcommand(SeaplaneAccount::command())
             .subcommand(SeaplaneFlight::command())
             .subcommand(SeaplaneFormation::command())
@@ -160,6 +162,14 @@ impl CliCommand for Seaplane {
                 }
             }
         };
+
+        ctx.args.stateless = matches.is_present("stateless");
+
+        ctx.db = crate::context::Db::load_if(
+            ctx.flights_file(),
+            ctx.formations_file(),
+            !ctx.args.stateless,
+        )?;
 
         if let Some(key) = &matches.value_of("api-key") {
             if key == &"-" {

@@ -23,6 +23,17 @@ impl SeaplaneFlightList {
 
 impl CliCommand for SeaplaneFlightList {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.stateless {
+            cli_eprint!(@Red, "error: ");
+            cli_eprint!("'");
+            cli_eprint!(@Yellow, "seaplane flight list");
+            cli_eprint!("' when used with '");
+            cli_eprint!(@Yellow, "--stateless");
+            cli_eprintln!("' is useless");
+            cli_eprintln!("(hint: 'seaplane flight list' only looks at local state)");
+            std::process::exit(1);
+        }
+
         // TODO: get remote flights too
         match ctx.args.out_format {
             OutputFormat::Json => ctx.db.flights.print_json(ctx)?,

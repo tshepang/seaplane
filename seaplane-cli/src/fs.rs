@@ -141,8 +141,7 @@ pub trait FromDisk {
                 // it happens again
                 if e.kind() == io::ErrorKind::NotFound {
                     let mut ctx = Ctx::default();
-                    let init = SeaplaneInit;
-                    init.run(&mut ctx)?;
+                    SeaplaneInit.run(&mut ctx)?;
 
                     fs::read_to_string(&path).map_err(CliError::from)?
                 } else {

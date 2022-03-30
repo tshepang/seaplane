@@ -81,6 +81,9 @@ pub struct Args {
     /// Try to force the operation to happen
     pub force: bool,
 
+    /// Do not use local state files
+    pub stateless: bool,
+
     /// The API Key associated with an account provided by the CLI, env, or Config used to request
     /// access tokens
     pub api_key: Option<String>,
@@ -135,21 +138,24 @@ impl Default for Ctx {
     }
 }
 
-impl Ctx {
-    pub fn from_config(cfg: &RawConfig) -> Result<Self> {
-        Ok(Self {
+impl From<RawConfig> for Ctx {
+    fn from(cfg: RawConfig) -> Self {
+        Self {
             data_dir: fs::data_dir(),
             conf_files: cfg.loaded_from.clone(),
             args: Args {
                 // We default to using color. Later when the context is updated from the CLI args, this
                 // may change.
                 color: cfg.seaplane.color.unwrap_or_default(),
-                api_key: cfg.account.api_key.clone(),
+                api_key: cfg.account.api_key,
                 ..Default::default()
             },
             ..Self::default()
-        })
+        }
     }
+}
+
+impl Ctx {
     pub fn update_from_env(&mut self) -> Result<()> {
         // TODO: this just gets it compiling. Using `todo!` blocks progress since loading the
         // context happens at program startup, so we cannot panic on unimplemented
@@ -177,7 +183,7 @@ impl Ctx {
     pub fn persist_formations(&self) -> Result<()> {
         self.db
             .formations
-            .persist()
+            .persist_if(!self.args.stateless)
             .with_context(|| format!("Path: {:?}\n", self.formations_file()))
     }
 
@@ -185,7 +191,7 @@ impl Ctx {
     pub fn persist_flights(&self) -> Result<()> {
         self.db
             .flights
-            .persist()
+            .persist_if(!self.args.stateless)
             .with_context(|| format!("Path: {:?}\n", self.flights_file()))
     }
 }

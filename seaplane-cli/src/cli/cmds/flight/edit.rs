@@ -38,6 +38,16 @@ impl SeaplaneFlightEdit {
 
 impl CliCommand for SeaplaneFlightEdit {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.stateless {
+            cli_eprint!(@Red, "error: ");
+            cli_eprint!("'");
+            cli_eprint!(@Yellow, "--stateless");
+            cli_eprint!("' cannot be used with the '");
+            cli_eprint!(@Yellow, "seaplane flight edit");
+            cli_eprintln!("' command");
+            cli_eprintln!("(hint: 'seaplane flight edit' only modifies local state)");
+            std::process::exit(1);
+        }
         let flights = &mut ctx.db.flights;
 
         // Now we just edit the newly copied Flight to match the given CLI params...

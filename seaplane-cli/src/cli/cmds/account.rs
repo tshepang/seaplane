@@ -4,7 +4,7 @@ use clap::{ArgMatches, Command};
 use seaplane::api::{TokenRequest, FLIGHTDECK_API_URL};
 
 use crate::{
-    cli::{cmds::init::SeaplaneInit, CliCommand},
+    cli::CliCommand,
     config::RawConfig,
     context::Ctx,
     error::{CliError, CliErrorKind, Context, Result},
@@ -86,12 +86,13 @@ impl SeaplaneAccountLogin {
 
 impl CliCommand for SeaplaneAccountLogin {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.stateless {
+            cli_bail!("'--stateless' cannot be used with 'seaplane account login'");
+        }
         let mut cfg = if let Some(f) = ctx.conf_files().first() {
             RawConfig::load(f)?
         } else {
-            // If we don't know where the configuration files are, we need to run init
-            SeaplaneInit.run(ctx)?;
-            // Now we try and load whatever was created. NOTE this does not update the
+            // Try and load whatever the defaults are. NOTE this does not update the
             // `ctx.conf_dirs`. However this is fine because the remaining code paths after this
             // don't try and access them.
             RawConfig::load_all()?

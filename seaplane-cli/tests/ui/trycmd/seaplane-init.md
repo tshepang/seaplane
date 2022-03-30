@@ -16,6 +16,7 @@ OPTIONS:
         --no-color            Do not color output (alias for --color=never)
         --overwrite <ITEM>    Overwrite select files or directories (DANGER: will overwrite existing data) [possible values: all, formations, flights, config]
     -q, --quiet               Suppress output at a specific level and below
+    -S, --stateless           Ignore local state files, do not read from or write to them
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
 
@@ -72,6 +73,9 @@ OPTIONS:
                 -q:   Only display WARN messages and above
                 -qq:  Only display ERROR messages
                 -qqq: Suppress all output
+
+    -S, --stateless
+            Ignore local state files, do not read from or write to them
 
     -v, --verbose
             Display more verbose output

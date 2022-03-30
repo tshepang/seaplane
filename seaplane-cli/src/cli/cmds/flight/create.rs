@@ -33,6 +33,20 @@ impl SeaplaneFlightCreate {
 
 impl CliCommand for SeaplaneFlightCreate {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.stateless {
+            cli_eprint!(@Red, "error: ");
+            cli_eprint!("'");
+            cli_eprint!(@Yellow, "--stateless");
+            cli_eprint!("' cannot be used with the '");
+            cli_eprint!(@Yellow, "seaplane flight create");
+            cli_eprintln!("' command");
+            cli_eprintln!("(hint: 'seaplane flight create' only modifies local state)");
+            cli_eprint!("(hint: you may want 'seaplane ");
+            cli_eprint!(@Green, "formation ");
+            cli_eprintln!("create' instead)");
+            std::process::exit(1);
+        }
+
         let new_flight = ctx.flight_ctx.get_or_init().model();
 
         // Check for duplicates and suggest `seaplane flight edit`

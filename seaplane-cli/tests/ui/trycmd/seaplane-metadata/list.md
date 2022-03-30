@@ -26,6 +26,7 @@ OPTIONS:
         --only-key                   Only print the key [aliases: only-keys]
         --only-value                 Only print the value [aliases: only-values]
     -q, --quiet                      Suppress output at a specific level and below
+    -S, --stateless                  Ignore local state files, do not read from or write to them
     -v, --verbose                    Display more verbose output
     -V, --version                    Print version information
 
@@ -133,6 +134,9 @@ OPTIONS:
                 -q:   Only display WARN messages and above
                 -qq:  Only display ERROR messages
                 -qqq: Suppress all output
+
+    -S, --stateless
+            Ignore local state files, do not read from or write to them
 
     -v, --verbose
             Display more verbose output

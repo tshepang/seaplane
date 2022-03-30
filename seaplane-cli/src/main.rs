@@ -26,7 +26,11 @@ fn try_main() -> Result<()> {
         _ => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Trace).unwrap(),
     }
 
-    let mut ctx = Ctx::from_config(&RawConfig::load_all()?)?;
+    let mut ctx = if !matches.is_present("stateless") {
+        RawConfig::load_all()?.into()
+    } else {
+        Ctx::default()
+    };
     ctx.update_from_env()?;
 
     let s: Box<dyn CliCommand> = Box::new(Seaplane);

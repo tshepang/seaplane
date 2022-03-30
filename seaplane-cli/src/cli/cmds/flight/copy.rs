@@ -42,6 +42,16 @@ impl SeaplaneFlightCopy {
 
 impl CliCommand for SeaplaneFlightCopy {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.stateless {
+            cli_eprint!(@Red, "error: ");
+            cli_eprint!("'");
+            cli_eprint!(@Yellow, "--stateless");
+            cli_eprint!("' cannot be used with the '");
+            cli_eprint!(@Yellow, "seaplane flight copy");
+            cli_eprintln!("' command");
+            cli_eprintln!("(hint: 'seaplane flight ...' only modifies local state)");
+            std::process::exit(1);
+        }
         // name_id cannot be None in `flight copy`
         let mut dest_flight = match ctx
             .db
