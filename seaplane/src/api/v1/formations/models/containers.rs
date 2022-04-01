@@ -9,14 +9,14 @@ pub enum ContainerStatus {
     Running,
 }
 
-/// The response from `GET /formations`
+/// The response from `GET /formations/NAME/containers`
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(transparent)]
 pub struct Containers {
     inner: Vec<Container>,
 }
 
-/// A single formation name in the response from `GET /formations`
+/// A single formation name in the response from `GET /formations/NAME/containers/ID`
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Container {
     /// ID of a particular container instance
