@@ -11,7 +11,10 @@ Using --force is the same as using --overwrite=all";
 static LONG_OVERWRITE: &str =
     "Overwrite select files or directories (DANGER: will overwrite existing data)
 
-Using --overwrite=all is the same as using --force";
+Using --overwrite=all is the same as using --force
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneInit;
@@ -23,8 +26,8 @@ impl SeaplaneInit {
             .arg(arg!(--force)
                 .help("Force create the files and directories (DANGER: will overwrite existing files)")
                 .long_help(LONG_FORCE))
-            .arg(arg!(--overwrite =["ITEM"])
-                .help("Overwrite select files or directories (DANGER: will overwrite existing data)")
+            .arg(arg!(--overwrite =["ITEM"]...)
+                .help("Overwrite select files or directories (DANGER: will overwrite existing data) (supports comma separated list, or multiple uses)")
                 .long_help(LONG_OVERWRITE)
                 .possible_values(&["all", "formations", "flights", "config"]))
     }

@@ -12,25 +12,25 @@ USAGE:
 
 OPTIONS:
     -A, --api-key <STRING>               The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --affinity <NAME|ID>             A Formation that this Formation has an affinity for [aliases: affinities]
+        --affinity <NAME|ID>             A Formation that this Formation has an affinity for (supports comma separated list, or multiple uses) [aliases: affinities]
         --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --connection <NAME|ID>           A Formations that this Formation is connected to [aliases: connections]
-        --exclude-provider <PROVIDER>    A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider [aliases: exclude-providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
-        --exclude-region <REGION>        A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below) [aliases: exclude-regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+        --connection <NAME|ID>           A Formations that this Formation is connected to (supports comma separated list, or multiple uses) [aliases: connections]
+        --exclude-provider <PROVIDER>    A provider that this Formation's Flights are *NOT* permitted to run on (supports comma separated list, or multiple uses) [aliases: exclude-providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
+        --exclude-region <REGION>        A region in which this Formation's Flights are *NOT* allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below) [aliases: exclude-regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
     -F, --fetch                          Fetch remote definitions prior to creating to check for conflicts (by default only local state is considered)
-        --flight <SPEC>                  A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below) [aliases: flights]
-        --flight-endpoint <SPEC>         An endpoint exposed only to Flights within this Formation. In the form of 'PROTO:TARGET=FLIGHT:PORT' [aliases: flight-endpoints]
+        --flight <SPEC>                  A Flight to add to this formation in the form of ID|NAME|@path|@- (supports comma separated list, or multiple uses) (See FLIGHT SPEC below) [aliases: flights]
+        --flight-endpoint <SPEC>         An endpoint exposed only to Flights within this Formation. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses) [aliases: flight-endpoints]
         --force                          Override any existing Formation with the same NAME
-        --formation-endpoint <SPEC>      An endpoints exposed only to other Formations privately. In the form of 'PROTO:TARGET=FLIGHT:PORT' [aliases: formation-endpoints]
+        --formation-endpoint <SPEC>      An endpoints exposed only to other Formations privately. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses) [aliases: formation-endpoints]
         --grounded                       This Formation configuration should be deployed but NOT set as active (requires a formation configuration) [aliases: no-active]
     -h, --help                           Print help information
         --launch                         This Formation configuration should be deployed and set as active right away (requires a formation configuration) [aliases: active]
     -n, --name <STRING>                  A human readable name for the Formation (must be unique within the tenant) if omitted a pseudo random name will be assigned
         --no-color                       Do not color output (alias for --color=never)
-        --provider <PROVIDER>            A provider that this Formation's Flights are permitted to run on [default: all] [aliases: providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
-        --public-endpoint <SPEC>         A publicly exposed endpoint of this Formation in the form of 'http:ROUTE=FLIGHT:PORT' [aliases: public-endpoints]
+        --provider <PROVIDER>            A provider that this Formation's Flights are permitted to run on (supports comma separated list, or multiple uses) [default: all] [aliases: providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
+        --public-endpoint <SPEC>         A publicly exposed endpoint of this Formation in the form of 'http:ROUTE=FLIGHT:PORT' (supports comma separated list, or multiple uses) [aliases: public-endpoints]
     -q, --quiet                          Suppress output at a specific level and below
-        --region <REGION>                A region in which this Formation's Flights are allowed to run in (See REGION SPEC below) [default: all] [aliases: regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+        --region <REGION>                A region in which this Formation's Flights are allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below) [default: all] [aliases: regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
     -S, --stateless                      Ignore local state files, do not read from or write to them
     -v, --verbose                        Display more verbose output
     -V, --version                        Print version information
@@ -107,6 +107,9 @@ OPTIONS:
             formations "close" to eachother (for some version of close including but
             not limited to latency).
             
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
+            
             [aliases: affinities]
 
         --color <COLOR>
@@ -122,16 +125,29 @@ OPTIONS:
             --formation-endpoints) if and only if both formations opt in to that connection (list
             each other in their connections map)
             
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
+            
             [aliases: connections]
 
         --exclude-provider <PROVIDER>
-            A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider
+            A provider that this Formation's Flights are *NOT* permitted to run on
+            
+            This will override any values given to --provider
+            
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
             
             [aliases: exclude-providers]
             [possible values: aws, azure, digitalocean, equinix, gcp, all]
 
         --exclude-region <REGION>
             A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below)
+            
+            This will override any values given to --region
+            
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
             
             [aliases: exclude-regions]
             [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
@@ -141,6 +157,9 @@ OPTIONS:
 
         --flight <SPEC>
             A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)
+            
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
             
             [aliases: flights]
 
@@ -170,6 +189,9 @@ OPTIONS:
             Note 'https' can be used interchangeably with 'http' for convenience sake. It does NOT however
             require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
             using the HTTP" protocol.
+            
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
             
             [aliases: flight-endpoints]
 
@@ -202,6 +224,9 @@ OPTIONS:
             Note 'https' can be used interchangeably with 'http' for convenience sake. It does NOT however
             require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
             using the HTTP" protocol.
+            
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
             
             [aliases: formation-endpoints]
 
@@ -236,6 +261,9 @@ OPTIONS:
         --provider <PROVIDER>
             A provider that this Formation's Flights are permitted to run on
             
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
+            
             [default: all]
             [aliases: providers]
             [possible values: aws, azure, digitalocean, equinix, gcp, all]
@@ -265,6 +293,9 @@ OPTIONS:
             require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
             using the HTTP" protocol.
             
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
+            
             [aliases: public-endpoints]
 
     -q, --quiet
@@ -277,6 +308,9 @@ OPTIONS:
 
         --region <REGION>
             A region in which this Formation's Flights are allowed to run in (See REGION SPEC below)
+            
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
             
             [default: all]
             [aliases: regions]

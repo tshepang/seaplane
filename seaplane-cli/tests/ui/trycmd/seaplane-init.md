@@ -14,7 +14,7 @@ OPTIONS:
         --force               Force create the files and directories (DANGER: will overwrite existing files)
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
-        --overwrite <ITEM>    Overwrite select files or directories (DANGER: will overwrite existing data) [possible values: all, formations, flights, config]
+        --overwrite <ITEM>    Overwrite select files or directories (DANGER: will overwrite existing data) (supports comma separated list, or multiple uses) [possible values: all, formations, flights, config]
     -q, --quiet               Suppress output at a specific level and below
     -S, --stateless           Ignore local state files, do not read from or write to them
     -v, --verbose             Display more verbose output
@@ -63,6 +63,9 @@ OPTIONS:
             Overwrite select files or directories (DANGER: will overwrite existing data)
             
             Using --overwrite=all is the same as using --force
+            
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
             
             [possible values: all, formations, flights, config]
 

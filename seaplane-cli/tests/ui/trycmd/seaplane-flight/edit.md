@@ -30,7 +30,7 @@ ARGS:
 OPTIONS:
     -A, --api-key <STRING>       The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --api-permission         This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime [aliases: api-permissions]
-        --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: arch, arches, architectures] [possible values: amd64, arm64]
+        --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: amd64, arm64]
         --color <COLOR>          Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -h, --help                   Print help information
         --image <SPEC>           The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
@@ -111,6 +111,9 @@ OPTIONS:
 
         --architecture <ARCH>
             The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
+            
+            Multiple items can be passed as a comma separated list, or by using the argument
+            multiple times.
             
             [aliases: arch, arches, architectures]
             [possible values: amd64, arm64]

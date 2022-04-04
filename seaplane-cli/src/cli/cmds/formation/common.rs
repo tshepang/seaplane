@@ -30,13 +30,19 @@ static LONG_AFFINITY: &str = "A Formation that this Formation has an affinity fo
 
 This is a hint to the scheduler to place containers running in each of these
 formations \"close\" to eachother (for some version of close including but
-not limited to latency).";
+not limited to latency).
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
 
 static LONG_CONNECTION: &str = "A Formations that this Formation is connected to.
 
 Two formations can communicate over their formation endpoints (the endpoints configured via
 --formation-endpoints) if and only if both formations opt in to that connection (list
-each other in their connections map)";
+each other in their connections map)
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
 
 static LONG_PUBLIC_ENDPOINT: &str = r#"A publicly exposed endpoint of this Formation
 
@@ -60,7 +66,10 @@ In the future, support for other protocols may be added alongside 'http'
 
 Note 'https' can be used interchangeably with 'http' for convenience sake. It does NOT however
 require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
-using the HTTP" protocol."#;
+using the HTTP" protocol.
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times."#;
 
 static LONG_FORMATION_ENDPOINT: &str = r#"A privately exposed endpoint of this Formation (only expose to other Formations)
 
@@ -86,7 +95,10 @@ traffic will be used for the PROTO of the outgoing traffic to FLIGHT
 
 Note 'https' can be used interchangeably with 'http' for convenience sake. It does NOT however
 require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
-using the HTTP" protocol."#;
+using the HTTP" protocol.
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times."#;
 
 static LONG_FLIGHT_ENDPOINT: &str = r#"A privately exposed endpoint of this Formation (only exposed to other Flights within this same Formation)
 
@@ -112,8 +124,43 @@ the incoming traffic will be used for the PROTO of the outgoing traffic to FLIGH
 
 Note 'https' can be used interchangeably with 'http' for convenience sake. It does NOT however
 require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
-using the HTTP" protocol."#;
+using the HTTP" protocol.
 
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times."#;
+
+static LONG_REGION: &str =
+    "A region in which this Formation's Flights are allowed to run in (See REGION SPEC below)
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
+
+static LONG_PROVIDER: &str = "A provider that this Formation's Flights are permitted to run on
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
+
+static LONG_EXCLUDE_PROVIDER: &str =
+    "A provider that this Formation's Flights are *NOT* permitted to run on
+
+This will override any values given to --provider
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
+
+static LONG_EXCLUDE_REGION: &str =
+    "A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below)
+
+This will override any values given to --region
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
+
+static LONG_FLIGHT: &str =
+    "A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
 /// We provide a shim between the Seaplane Provider so we can do some additional UX work like 'all'
 #[derive(Debug, Copy, Clone, PartialEq, EnumString, EnumVariantNames)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
@@ -230,42 +277,47 @@ pub fn args() -> Vec<Arg<'static>> {
         arg!(--grounded|("no-active"))
             .help("This Formation configuration should be deployed but NOT set as active (requires a formation configuration)"),
         arg!(--flight|flights =["SPEC"]...)
-            .help("A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)")
+            .help("A Flight to add to this formation in the form of ID|NAME|@path|@- (supports comma separated list, or multiple uses) (See FLIGHT SPEC below)")
+            .long_help(LONG_FLIGHT)
             .validator(validate_flight_spec),
         arg!(--affinity|affinities =["NAME|ID"]...)
-            .help("A Formation that this Formation has an affinity for")
+            .help("A Formation that this Formation has an affinity for (supports comma separated list, or multiple uses)")
             .long_help(LONG_AFFINITY)
             .validator(validator),
         arg!(--connection|connections =["NAME|ID"]...)
-            .help("A Formations that this Formation is connected to")
+            .help("A Formations that this Formation is connected to (supports comma separated list, or multiple uses)")
             .long_help(LONG_CONNECTION)
             .validator(validator),
         arg!(--provider|providers =["PROVIDER"=>"all"]... ignore_case)
-            .help("A provider that this Formation's Flights are permitted to run on")
+            .help("A provider that this Formation's Flights are permitted to run on (supports comma separated list, or multiple uses)")
+            .long_help(LONG_PROVIDER)
             .possible_values(Provider::VARIANTS),
         arg!(--("exclude-provider")|("exclude-providers") =["PROVIDER"]... ignore_case)
-            .help("A provider that this Formation's Flights are *NOT* permitted to run on. This will override any matching value given by via --provider")
+            .help("A provider that this Formation's Flights are *NOT* permitted to run on (supports comma separated list, or multiple uses)")
+            .long_help(LONG_EXCLUDE_PROVIDER)
             .possible_values(Provider::VARIANTS),
         arg!(--region|regions =["REGION"=>"all"]... ignore_case)
-            .help("A region in which this Formation's Flights are allowed to run in (See REGION SPEC below)")
+            .help("A region in which this Formation's Flights are allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below)")
+            .long_help(LONG_REGION)
             .possible_values(Region::VARIANTS),
         arg!(--("exclude-region")|("exclude-regions") =["REGION"]... ignore_case)
-            .help("A region in which this Formation's Flights are *NOT* allowed to run in (See REGION SPEC below)")
+            .help("A region in which this Formation's Flights are *NOT* allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below)")
+            .long_help(LONG_EXCLUDE_REGION)
             .possible_values(Region::VARIANTS),
         // TODO: maybe allow omitting http:
         arg!(--("public-endpoint")|("public-endpoints") =["SPEC"]...)
-            .help("A publicly exposed endpoint of this Formation in the form of 'http:ROUTE=FLIGHT:PORT'")
+            .help("A publicly exposed endpoint of this Formation in the form of 'http:ROUTE=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
             .long_help(LONG_PUBLIC_ENDPOINT)
             .validator(validate_public_endpoint),
         // TODO: maybe allow omitting the Flight's port if it's the same
         arg!(--("formation-endpoint")|("formation-endpoints") =["SPEC"]...)
             .validator(validate_endpoint)
-            .help("An endpoints exposed only to other Formations privately. In the form of 'PROTO:TARGET=FLIGHT:PORT'")
+            .help("An endpoints exposed only to other Formations privately. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
             .long_help(LONG_FORMATION_ENDPOINT),
         // TODO: maybe allow omitting the Flight's port if it's the same
         arg!(--("flight-endpoint")|("flight-endpoints") =["SPEC"]...)
             .validator(validate_endpoint)
-            .help("An endpoint exposed only to Flights within this Formation. In the form of 'PROTO:TARGET=FLIGHT:PORT'")
+            .help("An endpoint exposed only to Flights within this Formation. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
             .long_help(LONG_FLIGHT_ENDPOINT),
     ]
 }

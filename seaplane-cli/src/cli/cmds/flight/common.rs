@@ -26,6 +26,10 @@ Rules for a valid name are as follows:
 
 Some of these restrictions may be lifted in the future.";
 
+static LONG_ARCHITECTURE: &str = "The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
+
+Multiple items can be passed as a comma separated list, or by using the argument
+multiple times.";
 /// A newtype wrapper to enforce where the ArgMatches came from which reduces errors in checking if
 /// values of arguments were used or not. i.e. `seaplane formation create` may not have the same
 /// arguments as `seaplane account token` even though both produce an `ArgMatches`.
@@ -51,7 +55,8 @@ pub fn args(image_required: bool) -> Vec<Arg<'static>> {
             .help("The maximum number of container instances that should ever be running (default: infinite)"),
         arg!(--architecture|arch|arches|architectures ignore_case =["ARCH"]...)
             .possible_values(Architecture::VARIANTS)
-            .help("The architectures this flight is capable of running on. No value means it will be auto detected from the image definition"),
+            .help("The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses)")
+            .long_help(LONG_ARCHITECTURE),
         arg!(--("api-permission")|("api-permissions"))
             .overrides_with("no-api-permission")
             .help("This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime"),
