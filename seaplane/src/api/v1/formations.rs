@@ -142,6 +142,8 @@ impl FormationsRequest {
     /// **NOTE:** This is the only endpoint that does not require a Formation name as part of the
     /// request.
     ///
+    /// Uses `GET /formations`
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -160,6 +162,33 @@ impl FormationsRequest {
 
         map_error(resp, None)?
             .json::<FormationNames>()
+            .map_err(Into::into)
+    }
+
+    /// Returns metadata about the Formation itself, such as the URL of the Formation.
+    ///
+    /// Uses `GET /formations/NAME`
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use seaplane::api::v1::{FormationsRequest, ActiveConfiguration, ActiveConfigurations};
+    /// let req = FormationsRequest::builder().token("abc123_token").name("foo").build().unwrap();
+    ///
+    /// let resp = req.get_metadata().unwrap();
+    /// dbg!(resp);
+    /// ```
+    pub fn get_metadata(&self) -> Result<FormationMetadata> {
+        if self.name.is_none() {
+            return Err(SeaplaneError::MissingFormationName);
+        }
+        let url = self
+            .endpoint_url
+            .join(&format!("formations/{}", self.name()))?;
+        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+
+        map_error(resp, None)?
+            .json::<FormationMetadata>()
             .map_err(Into::into)
     }
 

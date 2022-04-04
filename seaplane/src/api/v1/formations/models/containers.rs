@@ -17,12 +17,18 @@ pub struct Containers {
 }
 
 /// A single formation name in the response from `GET /formations/NAME/containers/ID`
-#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Container {
     /// ID of a particular container instance
     uuid: Uuid,
     /// Current Status
     status: ContainerStatus,
+    /// The name of the Flight that this container instance is running for
+    flight_name: String,
+    // TODO: The flight could be a member of multiple configurations within the Formation which
+    // would mean this could be multiple UUIDs, no?
+    /// The Formation Configuration's UUID that this container instance is a part of
+    configuration_id: Uuid,
     /// Exit status if the container has stopped
     #[serde(default)]
     exit_status: Option<i32>,

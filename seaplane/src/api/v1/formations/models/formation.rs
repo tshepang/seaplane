@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -9,6 +10,13 @@ use crate::{
     api::v1::{Architecture, EndpointKey, EndpointValue, ImageReference, Provider, Region},
     error::{Result, SeaplaneError},
 };
+
+/// Response from `GET /formations/NAME` which contains metadata about the Formation itself.
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct FormationMetadata {
+    /// The URL where the Formation is exposed at
+    url: Url,
+}
 
 /// A builder for creating a [`FormationConfiguration`] which is the primary way to describe a
 /// valid configuration for a Formation.

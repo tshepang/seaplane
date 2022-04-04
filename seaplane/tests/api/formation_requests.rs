@@ -1,25 +1,23 @@
 use httpmock::{prelude::*, Method, Then, When};
+use once_cell::sync::Lazy;
 use seaplane::api::v1::{
     ActiveConfiguration, ActiveConfigurations, Flight, FormationConfiguration, FormationsRequest,
 };
 use serde_json::json;
 use uuid::Uuid;
 
-fn mock_server() -> MockServer {
-    MockServer::start()
+// To be used with httpmock standalone server for dev testing
+// MockServer::connect("127.0.0.1:5000")
+static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
 
-    // To be used with httpmock standalone server for dev testing
-    // MockServer::connect("127.0.0.1:5000")
-}
-
-fn when(mock_server: &MockServer, when: When, m: Method, p: &str) -> When {
+fn when(when: When, m: Method, p: &str) -> When {
     when.method(m)
         .path(p)
         .header("authorization", "Bearer abc123")
         .header("accept", "*/*")
         .header(
             "host",
-            &format!("{}:{}", mock_server.host(), mock_server.port()),
+            &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()),
         )
 }
 
@@ -29,10 +27,10 @@ fn then(then: Then, resp_body: serde_json::Value) -> Then {
         .json_body(resp_body)
 }
 
-fn build_req(mock_server: &MockServer) -> FormationsRequest {
+fn build_req() -> FormationsRequest {
     FormationsRequest::builder()
         .token("abc123")
-        .base_url(mock_server.base_url())
+        .base_url(MOCK_SERVER.base_url())
         .name("Stubb")
         .build()
         .unwrap()
@@ -43,14 +41,32 @@ fn build_req(mock_server: &MockServer) -> FormationsRequest {
 fn list_names() {
     let resp_json = json!([{"name":"bar"}, {"name": "baz"}, {"name":"qux"}]);
 
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, t| {
-        when(&mock_server, w, GET, "/v1/formations");
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/formations");
         then(t, resp_json.clone());
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req.list_names().unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
+}
+
+// GET /formations/NAME
+#[test]
+fn get_metadata() {
+    let resp_json = json!({"url":"https://Stubb--bar.on.seaplanet.io/"});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/formations/Stubb").header("content-type", "application/json");
+        then(t, resp_json.clone());
+    });
+
+    let req = build_req();
+    let resp = req.get_metadata().unwrap();
 
     // Ensure the endpoint was hit
     mock.assert();
@@ -63,9 +79,8 @@ fn list_names() {
 fn clone_from() {
     let resp_json = json!(["557f87c3-b26c-428c-b970-cb8acac2bd68"]);
 
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, then| {
-        when(&mock_server, w, POST, "/v1/formations/Stubb")
+    let mock = MOCK_SERVER.mock(|w, then| {
+        when(w, POST, "/v1/formations/Stubb")
             .header("content-type", "application/json")
             .query_param("active", "false")
             .query_param("source", "Ishmael");
@@ -74,7 +89,7 @@ fn clone_from() {
             .json_body(resp_json.clone());
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req.clone_from("Ishmael", false).unwrap();
 
     // Ensure the endpoint was hit
@@ -88,9 +103,8 @@ fn clone_from() {
 fn clone_from_active() {
     let resp_json = json!(["557f87c3-b26c-428c-b970-cb8acac2bd68"]);
 
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, then| {
-        when(&mock_server, w, POST, "/v1/formations/Stubb")
+    let mock = MOCK_SERVER.mock(|w, then| {
+        when(w, POST, "/v1/formations/Stubb")
             .header("content-type", "application/json")
             .query_param("active", "true")
             .query_param("source", "Ishmael");
@@ -99,7 +113,7 @@ fn clone_from_active() {
             .json_body(resp_json.clone());
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req.clone_from("Ishmael", true).unwrap();
 
     // Ensure the endpoint was hit
@@ -130,9 +144,8 @@ macro_rules! test_create {
         fn $fn() {
             let resp_json = json!(["557f87c3-b26c-428c-b970-cb8acac2bd68"]);
 
-            let mock_server = mock_server();
-            let mock = mock_server.mock(|w, then| {
-                when(&mock_server, w, POST, "/v1/formations/Stubb")
+            let mock = MOCK_SERVER.mock(|w, then| {
+                when(w, POST, "/v1/formations/Stubb")
                     .header("content-type", "application/json")
                     .query_param("active", stringify!($param))
                     .json_body_obj(&build_configuration());
@@ -141,7 +154,7 @@ macro_rules! test_create {
                     .json_body(resp_json.clone());
             });
 
-            let req = build_req(&mock_server);
+            let req = build_req();
             let resp = req.create(build_configuration(), $param).unwrap();
 
             // Ensure the endpoint was hit
@@ -162,9 +175,8 @@ macro_rules! test_add_configuration {
         fn $fn() {
             let resp_json = json!("557f87c3-b26c-428c-b970-cb8acac2bd68");
 
-            let mock_server = mock_server();
-            let mock = mock_server.mock(|w, then| {
-                when(&mock_server, w, POST, "/v1/formations/Stubb/configurations")
+            let mock = MOCK_SERVER.mock(|w, then| {
+                when(w, POST, "/v1/formations/Stubb/configurations")
                     .header("content-type", "application/json")
                     .query_param("active", stringify!($param))
                     .json_body_obj(&build_configuration());
@@ -173,7 +185,7 @@ macro_rules! test_add_configuration {
                     .json_body(resp_json.clone());
             });
 
-            let req = build_req(&mock_server);
+            let req = build_req();
             let resp = req
                 .add_configuration(build_configuration(), $param)
                 .unwrap();
@@ -196,10 +208,8 @@ macro_rules! test_remove_configuration {
         fn $fn() {
             let resp_json = json!("557f87c3-b26c-428c-b970-cb8acac2bd68");
 
-            let mock_server = mock_server();
-            let mock = mock_server.mock(|w, t| {
+            let mock = MOCK_SERVER.mock(|w, t| {
                 when(
-                    &mock_server,
                     w,
                     DELETE,
                     "/v1/formations/Stubb/configurations/557f87c3-b26c-428c-b970-cb8acac2bd68",
@@ -209,7 +219,7 @@ macro_rules! test_remove_configuration {
                 then(t, resp_json.clone());
             });
 
-            let req = build_req(&mock_server);
+            let req = build_req();
             let resp = req
                 .remove_configuration(
                     "557f87c3-b26c-428c-b970-cb8acac2bd68".parse().unwrap(),
@@ -232,10 +242,8 @@ test_remove_configuration!(remove_configuration_force, true);
 // GET /formations/NAME/configurations/UUID
 #[test]
 fn get_configuration() {
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, then| {
+    let mock = MOCK_SERVER.mock(|w, then| {
         when(
-            &mock_server,
             w,
             GET,
             "/v1/formations/Stubb/configurations/557f87c3-b26c-428c-b970-cb8acac2bd68",
@@ -244,7 +252,7 @@ fn get_configuration() {
         then.status(200).json_body_obj(&build_configuration());
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req
         .get_configuration("557f87c3-b26c-428c-b970-cb8acac2bd68".parse().unwrap())
         .unwrap();
@@ -263,14 +271,13 @@ fn list_configuration_ids() {
         "aa3b6eaf-dd1b-4055-93b7-21d024d2acc9"
     ]);
 
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, then| {
-        when(&mock_server, w, GET, "/v1/formations/Stubb/configurations")
+    let mock = MOCK_SERVER.mock(|w, then| {
+        when(w, GET, "/v1/formations/Stubb/configurations")
             .header("content-type", "application/json");
         then.status(200).json_body(resp_json.clone());
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req.list_configuration_ids().unwrap();
 
     // Ensure the endpoint was hit
@@ -285,15 +292,14 @@ macro_rules! test_delete {
         fn $fn() {
             let resp_json = json!(["557f87c3-b26c-428c-b970-cb8acac2bd68"]);
 
-            let mock_server = mock_server();
-            let mock = mock_server.mock(|w, t| {
-                when(&mock_server, w, DELETE, "/v1/formations/Stubb")
+            let mock = MOCK_SERVER.mock(|w, t| {
+                when(w, DELETE, "/v1/formations/Stubb")
                     .header("content-type", "application/json")
                     .query_param("force", stringify!($param));
                 then(t, resp_json.clone());
             });
 
-            let req = build_req(&mock_server);
+            let req = build_req();
             let resp = req.delete($param).unwrap();
 
             // Ensure the endpoint was hit
@@ -314,21 +320,24 @@ fn get_containers() {
     let resp_json = json!(
         [{
             "uuid" : "557f87c3-b26c-428c-b970-cb8acac2bd68",
-            "status" : "started"
+            "status" : "started",
+            "flight_name": "foo",
+            "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
         },
         {
             "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
-            "status" : "running"
+            "status" : "running",
+            "flight_name": "foo",
+            "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
         }]
     );
 
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, t| {
-        when(&mock_server, w, GET, "/v1/formations/Stubb/containers");
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/formations/Stubb/containers");
         then(t, resp_json.clone());
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req.get_containers().unwrap();
 
     // Ensure the endpoint was hit
@@ -343,14 +352,14 @@ fn get_container() {
     let resp_json = json!(
         {
             "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
-            "status" : "running"
+            "status" : "running",
+            "flight_name": "foo",
+            "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
         }
     );
 
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, t| {
+    let mock = MOCK_SERVER.mock(|w, t| {
         when(
-            &mock_server,
             w,
             GET,
             "/v1/formations/Stubb/containers/91f191f5-be32-4d44-860f-0eccca325e0f",
@@ -358,7 +367,7 @@ fn get_container() {
         then(t, resp_json.clone());
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req
         .get_container("91f191f5-be32-4d44-860f-0eccca325e0f".parse().unwrap())
         .unwrap();
@@ -383,18 +392,12 @@ fn get_active_configurations() {
         }
     ]);
 
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, t| {
-        when(
-            &mock_server,
-            w,
-            GET,
-            "/v1/formations/Stubb/activeConfiguration",
-        );
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/formations/Stubb/activeConfiguration");
         then(t, resp_json.clone());
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req.get_active_configurations().unwrap();
 
     // Ensure the endpoint was hit
@@ -433,19 +436,13 @@ macro_rules! test_set_active_configurations {
     ($fn:ident, $param:expr) => {
         #[test]
         fn $fn() {
-            let mock_server = mock_server();
-            let mock = mock_server.mock(|w, then| {
-                when(
-                    &mock_server,
-                    w,
-                    PUT,
-                    "/v1/formations/Stubb/activeConfiguration",
-                )
-                .query_param("force", stringify!($param));
+            let mock = MOCK_SERVER.mock(|w, then| {
+                when(w, PUT, "/v1/formations/Stubb/activeConfiguration")
+                    .query_param("force", stringify!($param));
                 then.status(200).body("success");
             });
 
-            let req = build_req(&mock_server);
+            let req = build_req();
             let resp = req.set_active_configurations(build_active_connections(), $param);
 
             // Ensure the endpoint was hit
@@ -463,18 +460,12 @@ test_set_active_configurations!(set_active_configurations_force, true);
 // DELETE /formations/NAME/activeConfiguration
 #[test]
 fn stop() {
-    let mock_server = mock_server();
-    let mock = mock_server.mock(|w, then| {
-        when(
-            &mock_server,
-            w,
-            DELETE,
-            "/v1/formations/Stubb/activeConfiguration",
-        );
+    let mock = MOCK_SERVER.mock(|w, then| {
+        when(w, DELETE, "/v1/formations/Stubb/activeConfiguration");
         then.status(200).body("success");
     });
 
-    let req = build_req(&mock_server);
+    let req = build_req();
     let resp = req.stop();
 
     // Ensure the endpoint was hit
