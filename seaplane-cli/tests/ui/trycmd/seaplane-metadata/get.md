@@ -3,13 +3,13 @@ Short help:
 ```console
 $ seaplane metadata get -h
 seaplane-metadata-get [PKGVER]
-Get one or more metadata key-value pairs
+Retrieve a metadata key-value pair
 
 USAGE:
-    seaplane metadata get <KEY>... [OPTIONS]
+    seaplane metadata get <KEY> [OPTIONS]
 
 ARGS:
-    <KEY>    The key(s) of the metadata key-value pair
+    <KEY>    The key of the metadata key-value pair
 
 OPTIONS:
     -A, --api-key <STRING>           The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -19,11 +19,8 @@ OPTIONS:
     -E, --display-encoding <KIND>    What format to display the decoded (--decode) keys/values (WARNING! See --help) [default: simple] [possible values: simple, utf8, hex]
         --format <FORMAT>            Change the output format [default: table] [possible values: table, json]
     -h, --help                       Print help information
-    -H, --no-header                  Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading]
         --no-color                   Do not color output (alias for --color=never)
         --no-decode                  Print keys and values without decoding them
-        --only-key                   Only print the key [aliases: only-keys]
-        --only-value                 Only print the value [aliases: only-values]
     -q, --quiet                      Suppress output at a specific level and below
     -S, --stateless                  Ignore local state files, do not read from or write to them
     -v, --verbose                    Display more verbose output
@@ -36,14 +33,19 @@ Long help:
 ```console
 $ seaplane metadata get --help
 seaplane-metadata-get [PKGVER]
-Get one or more metadata key-value pairs
+Retrieve a metadata key-value pair
+
+Keys and values will be displayed in base64 encoded format by default because they may contain
+arbitrary binary data. Using --decode allows one to decode them and display the unencoded
+values. However since they may contain arbitrary data, it's possible to re-encode them into a
+different format for display purposes using --display-encoding
 
 USAGE:
-    seaplane metadata get <KEY>... [OPTIONS]
+    seaplane metadata get <KEY> [OPTIONS]
 
 ARGS:
     <KEY>
-            The key(s) of the metadata key-value pair
+            The key of the metadata key-value pair
 
 OPTIONS:
     -A, --api-key <STRING>
@@ -102,26 +104,11 @@ OPTIONS:
     -h, --help
             Print help information
 
-    -H, --no-header
-            Omit the 'KEY' or 'VALUE' heading when printing with `--format=table`
-            
-            [aliases: no-heading]
-
         --no-color
             Do not color output (alias for --color=never)
 
         --no-decode
             Print keys and values without decoding them
-
-        --only-key
-            Only print the key
-            
-            [aliases: only-keys]
-
-        --only-value
-            Only print the value
-            
-            [aliases: only-values]
 
     -q, --quiet
             Suppress output at a specific level and below

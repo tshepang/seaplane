@@ -20,11 +20,11 @@ OPTIONS:
     -f, --from <KEY>                 Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
         --format <FORMAT>            Change the output format [default: table] [possible values: table, json]
     -h, --help                       Print help information
-    -H, --no-header                  Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading]
+    -H, --no-header                  Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading, no-headers]
         --no-color                   Do not color output (alias for --color=never)
         --no-decode                  Print keys and values without decoding them
-        --only-key                   Only print the key [aliases: only-keys]
-        --only-value                 Only print the value [aliases: only-values]
+        --only-keys                  Only print the key [aliases: only-key]
+        --only-values                Only print the value [aliases: only-value]
     -q, --quiet                      Suppress output at a specific level and below
     -S, --stateless                  Ignore local state files, do not read from or write to them
     -v, --verbose                    Display more verbose output
@@ -38,6 +38,11 @@ Long help:
 $ seaplane metadata list --help
 seaplane-metadata-list [PKGVER]
 List one or more metadata key-value pairs
+
+Keys and values will be displayed in base64 encoded format by default because they may contain
+arbitrary binary data. Using --decode allows one to decode them and display the unencoded
+values. However since they may contain arbitrary data, it's possible to re-encode them into a
+different format for display purposes using --display-encoding
 
 USAGE:
     seaplane metadata list <DIR> [OPTIONS]
@@ -109,7 +114,7 @@ OPTIONS:
     -H, --no-header
             Omit the 'KEY' or 'VALUE' heading when printing with `--format=table`
             
-            [aliases: no-heading]
+            [aliases: no-heading, no-headers]
 
         --no-color
             Do not color output (alias for --color=never)
@@ -117,15 +122,15 @@ OPTIONS:
         --no-decode
             Print keys and values without decoding them
 
-        --only-key
+        --only-keys
             Only print the key
             
-            [aliases: only-keys]
+            [aliases: only-key]
 
-        --only-value
+        --only-values
             Only print the value
             
-            [aliases: only-values]
+            [aliases: only-value]
 
     -q, --quiet
             Suppress output at a specific level and below

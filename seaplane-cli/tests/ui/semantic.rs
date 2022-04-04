@@ -614,10 +614,10 @@ fn seaplane_md_get() {
     // provide a key
     assert!(cli!("metadata get foo").is_ok());
     // multiples
-    assert!(cli!("metadata get foo bar baz").is_ok());
-    assert!(cli!("metadata get foo,bar,baz").is_ok());
-    assert!(cli!("metadata get foo bar,baz").is_ok());
-    assert!(cli!("metadata get foo,bar baz").is_ok());
+    // assert!(cli!("metadata get foo bar baz").is_ok());
+    // assert!(cli!("metadata get foo,bar,baz").is_ok());
+    // assert!(cli!("metadata get foo bar,baz").is_ok());
+    // assert!(cli!("metadata get foo,bar baz").is_ok());
 
     // aliases
     assert!(cli!("metadata show foo").is_ok());

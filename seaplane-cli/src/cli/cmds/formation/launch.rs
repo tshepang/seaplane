@@ -115,11 +115,13 @@ impl CliCommand for SeaplaneFormationLaunch {
 
             // Keep track if we had to make a brand new formation or not
             let mut created_new = false;
+            let mut has_public_endpoints = false;
             let mut cfg_uuids = Vec::new();
 
             // Add those configurations to this formation
             'inner: for id in &cfgs_ids {
                 if let Some(cfg) = ctx.db.formations.get_configuration(*id) {
+                    has_public_endpoints = cfg.model.public_endpoints().count() > 0;
                     let add_cfg_req = build_request(Some(&formation_name), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute
@@ -201,12 +203,14 @@ impl CliCommand for SeaplaneFormationLaunch {
                     cli_println!(@Green, "{uuid}");
                 }
             }
+
+            let subdomain = request_token_json(api_key, "")?.subdomain;
+            cli_print!("The Formation URL is ");
+            cli_println!(@Green, "https://{formation_name}--{subdomain}.on.seaplanet.io/");
+            if !has_public_endpoints {
+                cli_println!("(hint: there are no public endpoints configured, the Formation will not be reachable from the public internet)");
+            }
         }
-        let subdomain = request_token_json(api_key, "")?.subdomain;
-        cli_print!("The Formation URL is ");
-        cli_println!(@Green, "https://{}--{subdomain}.on.seaplanet.io/", &ctx.args.name_id.as_ref().unwrap());
-        // TODO: only show this message when no public endpoints are configured
-        cli_println!("(hint: if you have not configured any public endpoints, the Formation will not be reachable from the public internet!)");
 
         ctx.persist_formations()?;
 

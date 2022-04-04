@@ -22,7 +22,7 @@ OPTIONS:
 
 SUBCOMMANDS:
     delete    Delete one or more metadata key-value pairs [aliases: del, remove, rm]
-    get       Get one or more metadata key-value pairs [aliases: show]
+    get       Retrieve a metadata key-value pair [aliases: show]
     help      Print this message or the help of the given subcommand(s)
     list      List one or more metadata key-value pairs [aliases: ls]
     set       Set a metadata key-value pair [aliases: put]
@@ -52,7 +52,7 @@ OPTIONS:
 
 SUBCOMMANDS:
     delete    Delete one or more metadata key-value pairs [aliases: del, remove, rm]
-    get       Get one or more metadata key-value pairs [aliases: show]
+    get       Retrieve a metadata key-value pair [aliases: show]
     help      Print this message or the help of the given subcommand(s)
     list      List one or more metadata key-value pairs [aliases: ls]
     set       Set a metadata key-value pair [aliases: put]
@@ -122,7 +122,7 @@ SUBCOMMANDS:
     delete
             Delete one or more metadata key-value pairs [aliases: del, remove, rm]
     get
-            Get one or more metadata key-value pairs [aliases: show]
+            Retrieve a metadata key-value pair [aliases: show]
     help
             Print this message or the help of the given subcommand(s)
     list

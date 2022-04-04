@@ -10,6 +10,13 @@ use crate::{
     printer::{Output, OutputFormat},
 };
 
+static LONG_ABOUT: &str = "Retrieve a metadata key-value pair
+    
+Keys and values will be displayed in base64 encoded format by default because they may contain
+arbitrary binary data. Using --decode allows one to decode them and display the unencoded
+values. However since they may contain arbitrary data, it's possible to re-encode them into a
+different format for display purposes using --display-encoding";
+
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneMetadataGet;
 
@@ -18,10 +25,15 @@ impl SeaplaneMetadataGet {
         // TODO: add a way to elide long keys or values with ... after a certain char count
         Command::new("get")
             .visible_alias("show")
-            .override_usage("seaplane metadata get <KEY>... [OPTIONS]")
-            .about("Get one or more metadata key-value pairs")
-            .args(common::args())
+            .override_usage("seaplane metadata get <KEY> [OPTIONS]")
+            .about("Retrieve a metadata key-value pair")
+            .long_about(LONG_ABOUT)
+            .arg(common::single_key())
+            .arg(common::base64())
             .args(common::display_args())
+            .mut_arg("no-header", |a| a.hide(true))
+            .mut_arg("only-keys", |a| a.hide(true))
+            .mut_arg("only-values", |a| a.hide(true))
     }
 }
 
@@ -59,6 +71,9 @@ impl CliCommand for SeaplaneMetadataGet {
         let mut mdctx = ctx.md_ctx.get_or_init();
         mdctx.decode = matches.is_present("decode");
         mdctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");
+        mdctx.no_header = true;
+        mdctx.no_keys = true;
+        mdctx.no_values = false;
         Ok(())
     }
 }

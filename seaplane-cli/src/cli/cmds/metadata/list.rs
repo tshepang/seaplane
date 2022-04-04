@@ -12,6 +12,13 @@ use crate::{
     printer::{Output, OutputFormat},
 };
 
+static LONG_ABOUT: &str = "List one or more metadata key-value pairs
+    
+Keys and values will be displayed in base64 encoded format by default because they may contain
+arbitrary binary data. Using --decode allows one to decode them and display the unencoded
+values. However since they may contain arbitrary data, it's possible to re-encode them into a
+different format for display purposes using --display-encoding";
+
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneMetadataList;
 
@@ -21,6 +28,7 @@ impl SeaplaneMetadataList {
             .visible_alias("ls")
             .override_usage("seaplane metadata list <DIR> [OPTIONS]")
             .about("List one or more metadata key-value pairs")
+            .long_about(LONG_ABOUT)
             .arg(
                 arg!(dir =["DIR"])
                     .help("The root directory of the metadata key-value pairs to list"),
@@ -65,6 +73,9 @@ impl CliCommand for SeaplaneMetadataList {
         let mut mdctx = ctx.md_ctx.get_or_init();
         mdctx.base64 = matches.is_present("base64");
         mdctx.decode = matches.is_present("decode");
+        mdctx.no_keys = matches.is_present("only-values");
+        mdctx.no_values = matches.is_present("only-keys");
+        mdctx.no_header = matches.is_present("no-header");
         mdctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");
         mdctx.from =
             maybe_base64_arg!(matches, "from", matches.is_present("base64")).map(Key::from_encoded);

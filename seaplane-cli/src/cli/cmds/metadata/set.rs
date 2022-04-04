@@ -41,7 +41,7 @@ impl CliCommand for SeaplaneMetadataSet {
             build_config_request_key(&key, ctx.args.api_key()?)?
                 .put_value(Value::from_encoded(value.clone()))?;
             if ctx.args.out_format == OutputFormat::Table {
-                cli_println!("Set {key} with value {value}");
+                cli_println!("Success");
             }
         }
 

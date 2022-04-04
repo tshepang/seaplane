@@ -188,6 +188,16 @@ impl KeyValue {
         self.value = Some(KeyValueInner::Base64(value.into()))
     }
 
+    /// Set the key to `None` without touching the value.
+    pub fn clear_key(&mut self) {
+        self.key = None;
+    }
+
+    /// Set the value to `None` without touching the key.
+    pub fn clear_value(&mut self) {
+        self.value = None;
+    }
+
     /// Decodes the key and value if needed
     pub fn decode(&mut self, encoding: DisplayEncodingFormat) -> Result<()> {
         if let Some(key) = self.key.take() {
@@ -260,17 +270,18 @@ impl KeyValues {
         let stdout = io::stdout();
         let mut lock = stdout.lock();
 
-        for kv in self.iter() {
+        let mut iter = self.iter().peekable();
+        while let Some(kv) = iter.next() {
             match &kv.key {
                 Some(Hex(s)) | Some(Utf8(s)) | Some(Base64(s)) => {
                     if headers {
-                        writeln!(&mut lock, "KEY:")?;
+                        write!(&mut lock, "KEY: ")?;
                     }
                     writeln!(&mut lock, "{s}")?;
                 }
                 Some(Simple(v)) => {
                     if headers {
-                        writeln!(&mut lock, "KEY:")?;
+                        write!(&mut lock, "KEY: ")?;
                     }
                     lock.write_all(v)?;
                     writeln!(&mut lock)?;
@@ -286,12 +297,15 @@ impl KeyValues {
                 }
                 Some(Simple(v)) => {
                     if headers {
-                        writeln!(&mut lock, "VALUE:\n")?;
+                        writeln!(&mut lock, "VALUE:")?;
                     }
                     lock.write_all(v)?;
                     writeln!(&mut lock)?;
                 }
                 None => (),
+            }
+            if iter.peek().is_some() {
+                writeln!(&mut lock, "---")?;
             }
         }
         lock.flush()?;

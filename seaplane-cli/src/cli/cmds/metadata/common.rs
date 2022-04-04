@@ -34,7 +34,7 @@ hex    => Raw bytes will hex encoded and displayed as text";
 pub struct SeaplaneMetadataCommonArgMatches<'a>(pub &'a ArgMatches);
 
 pub fn args() -> Vec<Arg<'static>> {
-    vec![key(), base64()]
+    vec![keys(), base64()]
 }
 
 pub fn display_args() -> Vec<Arg<'static>> {
@@ -53,10 +53,10 @@ pub fn display_args() -> Vec<Arg<'static>> {
         arg!(--("no-decode"))
             .help("Print keys and values without decoding them")
             .overrides_with("decode"),
-        arg!(--("no-header") | ("no-heading") - ('H'))
+        arg!(--("no-header") | ("no-heading") | ("no-headers") - ('H'))
             .help("Omit the 'KEY' or 'VALUE' heading when printing with `--format=table`"),
-        arg!(--("only-value") | ("only-values")).help("Only print the value"),
-        arg!(--("only-key") | ("only-keys")).help("Only print the key"),
+        arg!(--("only-values") | ("only-value")).help("Only print the value"),
+        arg!(--("only-keys") | ("only-key")).help("Only print the key"),
     ]
 }
 
@@ -64,6 +64,10 @@ pub fn base64() -> Arg<'static> {
     arg!(--base64 - ('B')).help("The keys/values are already encoded in URL safe Base64")
 }
 
-pub fn key() -> Arg<'static> {
+pub fn single_key() -> Arg<'static> {
+    arg!(key =["KEY"] required ).help("The key of the metadata key-value pair")
+}
+
+pub fn keys() -> Arg<'static> {
     arg!(key =["KEY"]... required ).help("The key(s) of the metadata key-value pair")
 }
