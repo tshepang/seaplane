@@ -1,10 +1,13 @@
 use clap::{ArgMatches, Command};
-use seaplane::api::v1::{ActiveConfiguration, ActiveConfigurations};
+use seaplane::{
+    api::v1::{ActiveConfiguration, ActiveConfigurations, FormationsErrorKind},
+    error::SeaplaneError,
+};
 
 use crate::{
     cli::{
         cmds::formation::{build_request, SeaplaneFormationFetch},
-        errors,
+        errors, request_token_json,
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
     },
@@ -71,6 +74,8 @@ impl SeaplaneFormationLaunch {
 }
 
 impl CliCommand for SeaplaneFormationLaunch {
+    // TODO: maybe validate flight names in endpoints? Argument against is it could fail validation
+    // if you have not fetched first.
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         if ctx.args.fetch {
             let fetch = SeaplaneFormationFetch;
@@ -98,34 +103,69 @@ impl CliCommand for SeaplaneFormationLaunch {
             }
         }
 
+        let api_key = ctx.args.api_key()?;
+        let grounded = ctx.formation_ctx.get_or_init().grounded;
         for idx in indices {
             // re unwrap: the indices returned came from Formations so they have to be valid
             let formation = ctx.db.formations.get_formation(idx).unwrap();
+            let formation_name = formation.name.as_ref().unwrap().clone();
 
             // Get the local configs that don't exist remote yet
             let cfgs_ids = formation.local_only_configs();
 
-            let api_key = ctx.args.api_key()?;
+            // Keep track if we had to make a brand new formation or not
+            let mut created_new = false;
+            let mut cfg_uuids = Vec::new();
+
             // Add those configurations to this formation
-            for id in cfgs_ids {
-                if let Some(cfg) = ctx.db.formations.get_configuration(id) {
-                    let add_cfg_req =
-                        build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
+            'inner: for id in &cfgs_ids {
+                if let Some(cfg) = ctx.db.formations.get_configuration(*id) {
+                    let add_cfg_req = build_request(Some(&formation_name), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute
-                    add_cfg_req.add_configuration(cfg.model.clone(), false)?;
+                    cli_debug!("Looking for existing Formations...");
+                    if let Err(e) = add_cfg_req.add_configuration(cfg.model.clone(), false) {
+                        cli_debugln!(@Green, "None");
+                        match e {
+                            SeaplaneError::FormationsResponse(fr)
+                                if fr.kind == FormationsErrorKind::FormationNotFound =>
+                            {
+                                // If the formation didn't exist, create it
+                                let create_req = build_request(Some(&formation_name), api_key)?;
+                                cli_debug!("Creating new Formation...");
+                                match create_req.create(cfg.model.clone(), !grounded) {
+                                    Err(e) => {
+                                        cli_debugln!(@Red, "Failed");
+                                        return Err(e.into());
+                                    }
+                                    Ok(cfg_uuid) => {
+                                        cli_debugln!(@Green, "Success");
+                                        cfg_uuids.extend(cfg_uuid);
+                                        ctx.db.formations.add_in_air_by_name(&formation_name, *id);
+                                        created_new = true;
+                                        break 'inner;
+                                    }
+                                }
+                            }
+                            _ => return Err(e.into()),
+                        }
+                    } else {
+                        cli_debugln!(@Green, "Found");
+                        ctx.db.formations.add_grounded_by_name(&formation_name, *id);
+                    }
                 } else {
-                    // TODO: Inform the user of possible error?
+                    // TODO: Inform the user of possible error? Somehow there is no config by the
+                    // ID? This is an internal error that shoulnd't happen. We got the ID from our
+                    // own internal state, if that's wrong we have big issues
+                    unreachable!()
                 }
             }
 
-            let mut cfg_uuids = Vec::new();
-            // If the user pasaed `--grounded` they don't want the configuration to be set to
+            // If the user passed `--grounded` they don't want the configuration to be set to
             // active
-            if !ctx.formation_ctx.get_or_init().grounded {
+            if !grounded && !created_new {
                 // Get all configurations for this Formation
-                let list_cfg_uuids_req =
-                    build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
+                let list_cfg_uuids_req = build_request(Some(&formation_name), api_key)?;
                 cfg_uuids.extend(
                     list_cfg_uuids_req
                         .list_configuration_ids()
@@ -141,11 +181,14 @@ impl CliCommand for SeaplaneFormationLaunch {
                             .build()?,
                     );
                 }
-                let set_cfgs_req = build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
+                let set_cfgs_req = build_request(Some(&formation_name), api_key)?;
                 set_cfgs_req
                     .set_active_configurations(active_configs, false)
                     .map_err(CliError::from)
-                    .context("Context: failed to retrieve Formation Configuration IDs\n")?;
+                    .context("Context: failed to start Formation\n")?;
+                for id in cfgs_ids {
+                    ctx.db.formations.add_in_air_by_name(&formation_name, id);
+                }
             }
 
             cli_print!("Successfully Launched Formation '");
@@ -159,6 +202,11 @@ impl CliCommand for SeaplaneFormationLaunch {
                 }
             }
         }
+        let subdomain = request_token_json(api_key, "")?.subdomain;
+        cli_print!("The Formation URL is ");
+        cli_println!(@Green, "https://{}--{subdomain}.on.seaplanet.io/", &ctx.args.name_id.as_ref().unwrap());
+        // TODO: only show this message when no public endpoints are configured
+        cli_println!("(hint: if you have not configured any public endpoints, the Formation will not be reachable from the public internet!)");
 
         ctx.persist_formations()?;
 

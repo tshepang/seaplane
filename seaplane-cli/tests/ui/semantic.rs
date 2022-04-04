@@ -247,15 +247,16 @@ fn seaplane_formation_common() {
     // invalid name
     assert!(cli!("formation create --name way-too-many-hyphens-to-pass-validation").is_err());
 
-    // launch is the default, but should not error when used
     assert!(cli!("formation create --launch").is_ok());
+    assert!(cli!("formation create --grounded").is_ok());
     // Same with it's alias
     assert!(cli!("formation create --active").is_ok());
+    assert!(cli!("formation create --no-active").is_ok());
     // Overrides
-    assert!(cli!("formation create --launch --no-launch").is_ok());
-    assert!(cli!("formation create --active --no-active").is_ok());
-    assert!(cli!("formation create --deploy --no-launch").is_ok());
-    assert!(cli!("formation create --launch --no-deploy").is_ok());
+    assert!(cli!("formation create --launch --active").is_ok());
+    // Should be good
+    assert!(cli!("formation create --launch --no-active").is_ok());
+    assert!(cli!("formation create --launch --grounded").is_ok());
 
     // flight
     // valid (@path requires a valid file...so we're not testing that and relying on the unit
@@ -463,12 +464,11 @@ fn seaplane_formation_create() {
     // options
     assert!(cli!("formation create --force").is_ok());
     assert!(cli!("formation create --launch").is_ok());
-    assert!(cli!("formation create --deploy").is_ok());
+    assert!(cli!("formation create --grounded").is_ok());
     // overrides
-    assert!(cli!("formation create --launch --no-launch").is_ok());
-    assert!(cli!("formation create --deploy --no-deploy").is_ok());
+    assert!(cli!("formation create --launch --active").is_ok());
     // should be OK but not override
-    assert!(cli!("formation create --launch --deploy").is_ok());
+    assert!(cli!("formation create --launch --no-active").is_ok());
 
     // Using any --flight-* (minus image) requires --flight-image
     assert!(cli!("formation create --flight-name foo").is_err());

@@ -113,6 +113,10 @@ impl Formations {
 
     // TODO: add success indicator
     pub fn add_in_air_by_name(&mut self, name: &str, id: Id) {
+        cli_traceln!(
+            "Adding Cfg ID {} for Formation {name} as In Air to local state",
+            &id.to_string()[..8]
+        );
         for f in self.formations.iter_mut() {
             if f.name.as_deref() == Some(name) {
                 f.in_air.insert(id);
@@ -123,6 +127,10 @@ impl Formations {
 
     // TODO: add success indicator
     pub fn add_grounded_by_name(&mut self, name: &str, id: Id) {
+        cli_traceln!(
+            "Adding Cfg ID {} for Formation {name} as Grounded to local state",
+            &id.to_string()[..8]
+        );
         for f in self.formations.iter_mut() {
             if f.name.as_deref() == Some(name) {
                 f.grounded.insert(id);
@@ -141,6 +149,7 @@ impl Formations {
 
     /// Removes an exact name match, returning the removed Formation or None if nothing matched.
     pub fn remove_name(&mut self, name: &str) -> Option<Formation> {
+        cli_traceln!("Removing Formation {name} from local state");
         if let Some(idx) = self.formation_index_of_name(name) {
             return Some(self.formations.swap_remove(idx));
         }
@@ -151,6 +160,7 @@ impl Formations {
     // TODO: this should go away once we're not working with indices anymore
     /// Returns the index of an exact name match
     pub fn formation_index_of_name(&self, name: &str) -> Option<usize> {
+        cli_traceln!("Searching locally for index of Formation {name}");
         self.formations
             .iter()
             .enumerate()
@@ -161,6 +171,7 @@ impl Formations {
     // TODO: this should go away once we're not working with indices anymore
     /// Returns all indices of an exact name or partial ID match
     pub fn formation_indices_of_matches(&self, name: &str) -> Vec<usize> {
+        cli_traceln!("Searching local state for exact matches of Formation {name}");
         self.formations
             .iter()
             .enumerate()
@@ -172,6 +183,7 @@ impl Formations {
     // TODO: this should go away once we're not working with indices anymore
     /// Returns all indices of a partial name or ID match
     pub fn formation_indices_of_left_matches(&self, name: &str) -> Vec<usize> {
+        cli_traceln!("Searching local state for partial matches of Formation {name}");
         self.formations
             .iter()
             .enumerate()
@@ -189,6 +201,7 @@ impl Formations {
     // TODO: this should go away once we're not working with indices anymore
     /// Removes all indices
     pub fn remove_formation_indices(&mut self, indices: &[usize]) -> Vec<Formation> {
+        cli_traceln!("Removing indexes {indices:?} from local state");
         // TODO: There is probably a much more performant way to remove a bunch of times from a Vec
         // but we're talking such a small number of items this should never matter.
 
@@ -370,10 +383,11 @@ impl FromStr for EndpointSrc {
             .next()
             .ok_or_else(|| String::from("missing endpoint protocol"))?;
         let ep = match &*proto.to_ascii_lowercase() {
-            "http" => EndpointSrc::Http(
+            "http" | "https" => EndpointSrc::Http(
                 parts
                     .next()
-                    .ok_or_else(|| String::from("missing network port number"))?
+                    .filter(|s| !s.is_empty())
+                    .ok_or_else(|| String::from("missing http route"))?
                     .to_string(),
             ),
             "tcp" => EndpointSrc::Tcp(
@@ -392,7 +406,7 @@ impl FromStr for EndpointSrc {
             ),
             _ => {
                 return Err(format!(
-                    "invalid protocol '{}' (valid options: http, tcp, udp)",
+                    "invalid protocol '{}' (valid options: http, https, tcp, udp)",
                     proto
                 ))
             }
@@ -449,6 +463,21 @@ mod endpoint_test {
     }
 
     #[test]
+    fn endpoint_valid_https() {
+        let ep: Endpoint = "https:/foo/bar=baz:1234".parse().unwrap();
+        assert_eq!(
+            ep,
+            Endpoint {
+                src: EndpointSrc::Http("/foo/bar".into()),
+                dst: EndpointDst {
+                    flight: "baz".into(),
+                    port: 1234
+                }
+            }
+        )
+    }
+
+    #[test]
     fn endpoint_missing_dst_or_src() {
         assert!("baz:1234".parse::<Endpoint>().is_err());
     }
@@ -462,6 +491,7 @@ mod endpoint_test {
         assert!("/foo/bar=baz:1234".parse::<Endpoint>().is_err());
         assert!("=baz:1234".parse::<Endpoint>().is_err());
         assert!(":=baz:1234".parse::<Endpoint>().is_err());
+        assert!("http:=baz:1234".parse::<Endpoint>().is_err(),);
     }
 
     // TODO: might allow eliding destination port

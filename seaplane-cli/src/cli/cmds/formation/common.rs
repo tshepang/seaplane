@@ -11,7 +11,7 @@ use strum::{EnumString, EnumVariantNames, VariantNames};
 
 use crate::cli::validator::{
     validate_endpoint, validate_flight_name, validate_formation_name, validate_name_id,
-    validate_name_id_path,
+    validate_name_id_path, validate_public_endpoint,
 };
 
 static LONG_NAME: &str =
@@ -25,18 +25,20 @@ Rules for a valid name are as follows:
   - the total length must be <= 27
 
 Some of these restrictions may be lifted in the future.";
+
 static LONG_AFFINITY: &str = "A Formation that this Formation has an affinity for.
 
-This is a hint to the scheduler to place containers run in each of these
+This is a hint to the scheduler to place containers running in each of these
 formations \"close\" to eachother (for some version of close including but
 not limited to latency).";
+
 static LONG_CONNECTION: &str = "A Formations that this Formation is connected to.
 
 Two formations can communicate over their formation endpoints (the endpoints configured via
 --formation-endpoints) if and only if both formations opt in to that connection (list
 each other in their connections map)";
 
-static LONG_PUBLIC_ENDPOINT: &str = r#"A publicly exposed endpoints of this Formations
+static LONG_PUBLIC_ENDPOINT: &str = r#"A publicly exposed endpoint of this Formation
 
 Public Endpoints take the form 'http:{ROUTE}={FLIGHT}:{PORT}'. Where
 
@@ -44,63 +46,73 @@ ROUTE  := An HTTP URL route
 FLIGHT := NAME or ID
 PORT   := Network Port (0-65535)
 
-This describes where traffic arriving at this endpoint's route should be sent.
+This describes which Flight and port should serve the HTTP traffic arriving at this Formation's
+domain URL using the specified route.
 
 For example, consider:
 
 $ seaplane formation edit Foo --public-endpoint=http:/foo/bar=baz:1234
 
-Would mean, route all traffic from the public internet arriving at the path 
-'/foo/bar' on the 'Foo' Formation's domain to this Formation's Flight named 
-'baz' on port '1234'
+Would mean, all HTTP traffic from the public internet hitting the route '/foo/bar' on the 'Foo'
+Formation's domain should be directed to this Formation's Flight named 'baz' on port '1234'
 
-In the future, support for other protocols may be added in place of 'http'
-"#;
+In the future, support for other protocols may be added alongside 'http'
 
-static LONG_FORMATION_ENDPOINT: &str = r#"A privately exposed endpoint of this Formations (only expose to other Formations)
+Note 'https' can be used interchangeably with 'http' for convenience sake. It does NOT however
+require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
+using the HTTP" protocol."#;
+
+static LONG_FORMATION_ENDPOINT: &str = r#"A privately exposed endpoint of this Formation (only expose to other Formations)
 
 Formation Endpoints take the form '{PROTO}:{TARGET}={FLIGHT}:{PORT}'. Where
 
-PROTO  := http | tcp | udp
+PROTO  := http | https | tcp | udp
 TARGET := ROUTE | PORT
 ROUTE  := with PROTO http, and HTTP URL route
 PORT   := with PROTO tcp | PROTO udp a Network Port (0-65535)
 FLIGHT := NAME or ID
 PORT   := Network Port (0-65535)
 
-This describes where traffic arriving at this Formation's endpoint should be sent.
+This describes where traffic arriving at this Formation's domains URL from the private network
+should be sent.
 
 For example, consider:
 
 $ seaplane formation edit Foo --formation-endpoint=tcp:22=baz:2222
 
-Would mean, route all traffic from the private network arriving on TCP/22 on the 'Foo' Formation's
-domain to the this Formation's Flight named 'baz' on port '2222'. The PROTO of the incoming traffic
-will be used for the PROTO of the outgoing traffic to FLIGHT
-"#;
+Would mean, route all traffic arriving to the 'Foo' Formation's domain URL on TCP/22 from the
+private network to the the Formation's Flight named 'baz' on port '2222'. The PROTO of the incoming
+traffic will be used for the PROTO of the outgoing traffic to FLIGHT
 
-static LONG_FLIGHT_ENDPOINT: &str = r#"A privately exposed endpoint of this Formations (only expose to other
-Flights within this Formation)
+Note 'https' can be used interchangeably with 'http' for convenience sake. It does NOT however
+require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
+using the HTTP" protocol."#;
 
-Formation Endpoints take the form '{PROTO}:{TARGET}={FLIGHT}:{PORT}'. Where
+static LONG_FLIGHT_ENDPOINT: &str = r#"A privately exposed endpoint of this Formation (only exposed to other Flights within this same Formation)
 
-PROTO  := http | tcp | udp
+Flight Endpoints take the form '{PROTO}:{TARGET}={FLIGHT}:{PORT}'. Where
+
+PROTO  := http | https | tcp | udp
 TARGET := ROUTE | PORT
 ROUTE  := with PROTO http, and HTTP URL route
 PORT   := with PROTO tcp | PROTO udp a Network Port (0-65535)
 FLIGHT := NAME or ID
 PORT   := Network Port (0-65535)
 
-This describes where traffic arriving at this Formation's endpoint should be sent.
+This describes where traffic arriving at this Formation's domain URL from within this Formation's
+private network should be sent.
 
 For example, consider:
 
 $ seaplane formation edit Foo --flight-endpoint=udp:1234=baz:4321
 
-Would mean, route all traffic from the Formation's private network arriving on UDP/1234 on the
-'Foo' Formation's domain to the this Formation's Flight named 'baz' on port '4321'. The PROTO of
+Would mean, route all traffic arriving to the 'Foo' Formation's domain URL on UDP/1234 from the
+Formation's private network to the the Formation's Flight named 'baz' on port '4321'. The PROTO of
 the incoming traffic will be used for the PROTO of the outgoing traffic to FLIGHT
-"#;
+
+Note 'https' can be used interchangeably with 'http' for convenience sake. It does NOT however
+require the traffic actually be HTTPS. Here 'http' (or convenience 'https') simply means "Traffic
+using the HTTP" protocol."#;
 
 /// We provide a shim between the Seaplane Provider so we can do some additional UX work like 'all'
 #[derive(Debug, Copy, Clone, PartialEq, EnumString, EnumVariantNames)]
@@ -213,17 +225,10 @@ pub fn args() -> Vec<Arg<'static>> {
             .long_help(LONG_NAME)
             .validator(validate_formation_name),
         arg!(--launch|active)
-            .help("This Formation configuration should be deployed and set it as active right away (requires a formation configuration)")
-            .overrides_with("no-launch"),
-        arg!(--("no-launch")|("no-active"))
-            .help("The opposite of --launch, and says that this Formation should not be active")
-            .overrides_with("launch"),
-        arg!(--deploy)
-                .help("Send this formation to Seaplane immediately (requires a Formation configuration) but DO NOT set to active. To also set the configuration to active add or use --launch instead")
-                .overrides_with("no-deploy"),
-        arg!(--("no-deploy"))
-            .overrides_with_all(&["deploy", "launch"])
-            .help("Do *not* send this formation to Seaplane immediately"),
+            .overrides_with("launch") // Override with self so someone can do `--launch --active` which isn't needed, but people will do it
+            .help("This Formation configuration should be deployed and set as active right away (requires a formation configuration)"),
+        arg!(--grounded|("no-active"))
+            .help("This Formation configuration should be deployed but NOT set as active (requires a formation configuration)"),
         arg!(--flight|flights =["SPEC"]...)
             .help("A Flight to add to this formation in the form of ID|NAME|@path|@- (See FLIGHT SPEC below)")
             .validator(validate_flight_spec),
@@ -249,9 +254,9 @@ pub fn args() -> Vec<Arg<'static>> {
             .possible_values(Region::VARIANTS),
         // TODO: maybe allow omitting http:
         arg!(--("public-endpoint")|("public-endpoints") =["SPEC"]...)
-            .help("A publicly exposed endpoints of this Formation in the form of 'http:ROUTE=FLIGHT:PORT'")
+            .help("A publicly exposed endpoint of this Formation in the form of 'http:ROUTE=FLIGHT:PORT'")
             .long_help(LONG_PUBLIC_ENDPOINT)
-            .validator(validate_endpoint),
+            .validator(validate_public_endpoint),
         // TODO: maybe allow omitting the Flight's port if it's the same
         arg!(--("formation-endpoint")|("formation-endpoints") =["SPEC"]...)
             .validator(validate_endpoint)

@@ -156,24 +156,24 @@ macro_rules! cli_warnln {
 macro_rules! cli_debug {
     (@prefix, @$color:ident, $($args:tt)+) => {{
         if $crate::log::log_level() <= &$crate::log::LogLevel::Debug {
-            _print!(@$color, printer, "DEBUG: ");
-            _print!(@$color, printer, $($args)+);
+            _print!(@$color, eprinter, "DEBUG: ");
+            _print!(@$color, eprinter, $($args)+);
         }
     }};
     (@prefix, $($args:tt)+) => {{
         if $crate::log::log_level() <= &$crate::log::LogLevel::Debug {
-            _print!(printer, "DEBUG: ");
-            _print!(printer, $($args)+);
+            _print!(eprinter, "DEBUG: ");
+            _print!(eprinter, $($args)+);
         }
     }};
     (@$color:ident, $($args:tt)+) => {{
         if $crate::log::log_level() <= &$crate::log::LogLevel::Debug {
-            _print!(@$color, printer, $($args)+);
+            _print!(@$color, eprinter, $($args)+);
         }
     }};
     ($($args:tt)+) => {{
         if $crate::log::log_level() <= &$crate::log::LogLevel::Debug {
-            _print!(printer, $($args)+);
+            _print!(eprinter, $($args)+);
         }
     }};
 }
@@ -185,23 +185,81 @@ macro_rules! cli_debug {
 // versions are the opposite, because it's more common to *not* want a prefix i.e. you're writing
 // multiple portions of the same line.
 macro_rules! cli_debugln {
-    (@noprefix, @$color:ident, $($args:tt)+) => {{
-        cli_debug!(@$color, $($args)+);
-        cli_debug!("\n");
-    }};
-    // TODO: change to zero or more (*)
-    (@noprefix, $($args:tt)+) => {{
-        cli_debug!($($args)+);
-        cli_debug!("\n");
-    }};
-    (@$color:ident, $($args:tt)+) => {{
+    (@prefix, @$color:ident, $($args:tt)+) => {{
         cli_debug!(@prefix, @$color, $($args)+);
         cli_debug!("\n");
     }};
     // TODO: change to zero or more (*)
-    ($($args:tt)+) => {{
+    (@prefix, $($args:tt)+) => {{
         cli_debug!(@prefix, $($args)+);
         cli_debug!("\n");
+    }};
+    (@$color:ident, $($args:tt)+) => {{
+        cli_debug!(@$color, $($args)+);
+        cli_debug!("\n");
+    }};
+    // TODO: change to zero or more (*)
+    ($($args:tt)+) => {{
+        cli_debug!($($args)+);
+        cli_debug!("\n");
+    }}
+}
+
+// Akin to trace! level messages
+//
+// The *ln variants it's more common to want a oneshot message with a
+// "warn: " prefix, so that's the default. You opt out of the prefix with `@noprefix`. The non-line
+// versions are the opposite, because it's more common to *not* want a prefix i.e. you're writing
+// multiple portions of the same line.
+macro_rules! cli_trace {
+    (@prefix, @$color:ident, $($args:tt)+) => {{
+        if $crate::log::log_level() <= &$crate::log::LogLevel::Trace {
+            _print!(@$color, eprinter, "TRACE: ");
+            _print!(@$color, eprinter, $($args)+);
+        }
+    }};
+    (@prefix, $($args:tt)+) => {{
+        if $crate::log::log_level() <= &$crate::log::LogLevel::Trace {
+            _print!(eprinter, "TRACE: ");
+            _print!(eprinter, $($args)+);
+        }
+    }};
+    (@$color:ident, $($args:tt)+) => {{
+        if $crate::log::log_level() <= &$crate::log::LogLevel::Trace {
+            _print!(@$color, eprinter, $($args)+);
+        }
+    }};
+    ($($args:tt)+) => {{
+        if $crate::log::log_level() <= &$crate::log::LogLevel::Trace {
+            _print!(eprinter, $($args)+);
+        }
+    }};
+}
+
+// Akin to the trace! level messages.
+//
+// The *ln variants it's more common to want a oneshot message with a
+// "DEBUG: " prefix, so that's the default. You opt out of the prefix with `@noprefix`. The non-line
+// versions are the opposite, because it's more common to *not* want a prefix i.e. you're writing
+// multiple portions of the same line.
+macro_rules! cli_traceln {
+    (@prefix, @$color:ident, $($args:tt)+) => {{
+        cli_trace!(@prefix, @$color, $($args)+);
+        cli_trace!("\n");
+    }};
+    // TODO: change to zero or more (*)
+    (@prefix, $($args:tt)+) => {{
+        cli_trace!(@prefix, $($args)+);
+        cli_trace!("\n");
+    }};
+    (@$color:ident, $($args:tt)+) => {{
+        cli_trace!(@$color, $($args)+);
+        cli_trace!("\n");
+    }};
+    // TODO: change to zero or more (*)
+    ($($args:tt)+) => {{
+        cli_trace!($($args)+);
+        cli_trace!("\n");
     }}
 }
 

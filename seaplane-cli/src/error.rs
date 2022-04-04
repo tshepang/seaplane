@@ -5,7 +5,10 @@ use std::{
     result::Result as StdResult,
 };
 
-use seaplane::{api::v1::ImageReferenceError, error::SeaplaneError};
+use seaplane::{
+    api::v1::{FormationsErrorKind, ImageReferenceError},
+    error::SeaplaneError,
+};
 
 use crate::{
     log::{log_level, LogLevel},
@@ -371,6 +374,14 @@ impl CliErrorKind {
                 SeaplaneError::FormationsResponse(fr) => {
                     cli_eprintln!("{fr}");
                     if let Some(ctx) = &fr.context {
+                        if let FormationsErrorKind::InvalidRequest = fr.kind {
+                            if ctx.contains("force=true") {
+                                cli_eprint!("(hint: set the force parameter with '");
+                                cli_eprint!(@Yellow, "--force");
+                                cli_eprintln!("')");
+                                return;
+                            }
+                        }
                         cli_eprintln!("(hint: {ctx})");
                     }
                 }

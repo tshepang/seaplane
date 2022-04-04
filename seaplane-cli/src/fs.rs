@@ -10,7 +10,8 @@ use tempfile::NamedTempFile;
 use crate::{
     cli::{CliCommand, SeaplaneInit},
     context::Ctx,
-    error::{CliError, CliErrorKind, Result},
+    error::{CliError, CliErrorKind, Context, Result},
+    printer::Color,
 };
 
 /// A utility function to get the correct "project" directories in a platform specific manner
@@ -143,13 +144,19 @@ pub trait FromDisk {
                     let mut ctx = Ctx::default();
                     SeaplaneInit.run(&mut ctx)?;
 
-                    fs::read_to_string(&path).map_err(CliError::from)?
+                    fs::read_to_string(&path)
+                        .map_err(CliError::from)
+                        .context("\n\tpath: ")
+                        .with_color_context(|| (Color::Yellow, format!("{path:?}")))?
                 } else {
                     return Err(CliError::from(e));
                 }
             }
         };
-        let mut item: Self = serde_json::from_str(&flights_str)?;
+        let mut item: Self = serde_json::from_str(&flights_str)
+            .map_err(CliError::from)
+            .context("\n\tpath: ")
+            .with_color_context(|| (Color::Yellow, format!("{path:?}")))?;
 
         item.set_loaded_from(p);
 
@@ -178,7 +185,10 @@ pub trait ToDisk: FromDisk {
         if let Some(path) = self.loaded_from() {
             let file = AtomicFile::new(path)?;
             // TODO: long term consider something like SQLite
-            Ok(serde_json::to_writer(file, self)?)
+            Ok(serde_json::to_writer(file, self)
+                .map_err(CliError::from)
+                .context("\n\tpath: ")
+                .with_color_context(|| (Color::Yellow, format!("{path:?}")))?)
         } else {
             Err(CliErrorKind::MissingPath.into_err())
         }

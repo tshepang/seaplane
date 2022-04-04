@@ -131,12 +131,12 @@ impl FromDisk for RawConfig {
     {
         let path = p.as_ref();
 
-        cli_debugln!("Looking for configuration file at {:?}", path);
+        cli_traceln!("Looking for configuration file at {path:?}");
         if !path.exists() {
             return Err(CliErrorKind::MissingPath.into_err());
         }
 
-        cli_debugln!("Found configuration file {:?}", path);
+        cli_traceln!("Found configuration file {path:?}");
         let mut cfg: RawConfig = toml::from_str(&fs::read_to_string(&p)?)?;
         cfg.set_loaded_from(p);
         Ok(cfg)

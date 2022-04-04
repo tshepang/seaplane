@@ -187,12 +187,12 @@ For example, on a mac, the output looks like this:
 
 ```console
 $ seaplane init --verbose
-DEBUG: Looking for configuration file at "/Users/kevin/Library/Application Support/io.Seaplane.seaplane/seaplane.toml"
-DEBUG: Found configuration file "/Users/kevin/Library/Application Support/io.Seaplane.seaplane/seaplane.toml"
-DEBUG: Looking for configuration file at "/Users/kevin/.config/seaplane/seaplane.toml"
-DEBUG: Looking for configuration file at "/Users/kevin/.seaplane/seaplane.toml"
-DEBUG: Creating directory "/Users/kevin/Library/Application Support/io.Seaplane.seaplane"
-DEBUG: Creating directory "/Users/kevin/Library/Application Support/io.Seaplane.seaplane"
+Looking for configuration file at "/Users/kevin/Library/Application Support/io.Seaplane.seaplane/seaplane.toml"
+Found configuration file "/Users/kevin/Library/Application Support/io.Seaplane.seaplane/seaplane.toml"
+Looking for configuration file at "/Users/kevin/.config/seaplane/seaplane.toml"
+Looking for configuration file at "/Users/kevin/.seaplane/seaplane.toml"
+Creating directory "/Users/kevin/Library/Application Support/io.Seaplane.seaplane"
+Creating directory "/Users/kevin/Library/Application Support/io.Seaplane.seaplane"
 warn: "/Users/kevin/Library/Application Support/io.Seaplane.seaplane/seaplane.toml" already exists
 (hint: use 'seaplane init --overwrite=config to erase and overwrite it)
 

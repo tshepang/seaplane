@@ -6,9 +6,8 @@ use crate::{
     cli::{
         cmds::{
             flight::{SeaplaneFlightCommonArgMatches, SeaplaneFlightCreate},
-            formation::{build_request, common, SeaplaneFormationFetch},
+            formation::{common, SeaplaneFormationFetch, SeaplaneFormationLaunch},
         },
-        request_token_json,
         specs::{FLIGHT_SPEC, REGION_SPEC},
         validator::validate_formation_name,
         CliCommand,
@@ -131,13 +130,10 @@ impl CliCommand for SeaplaneFormationCreate {
 
         // Add the new formation
         let mut new_formation = Formation::new(&formation_ctx.name_id);
-        let mut cfg_id = None;
 
         if let Some(cfg) = formation_ctx.configuration_model(ctx)? {
             let formation_cfg = FormationConfiguration::new(cfg);
-            // TODO: if active / deployed add to appropriate in_air / grounded
             new_formation.local.insert(formation_cfg.id);
-            cfg_id = Some(formation_cfg.id);
             ctx.db.formations.configurations.push(formation_cfg)
         }
 
@@ -152,37 +148,15 @@ impl CliCommand for SeaplaneFormationCreate {
         cli_print!(@Green, "{}", &id[..8]);
         cli_println!("'");
 
-        let api_key = ctx.args.api_key()?;
-        if let Some(cfg_id) = cfg_id {
-            if formation_ctx.deploy {
-                let create_req = build_request(Some(&formation_ctx.name_id), api_key)?;
-                let cfg_uuids = create_req.create(
-                    formation_ctx.configuration_model(ctx)?.unwrap(),
-                    formation_ctx.launch,
-                )?;
-                if formation_ctx.launch {
-                    cli_print!("Successfully launched Formation '");
-                    cli_print!(@Green, "{}", &cfg_id.to_string()[..8]);
-                    cli_println!("' with Configuration UUIDs:");
-                    ctx.db
-                        .formations
-                        .add_in_air_by_name(&formation_ctx.name_id, cfg_id);
-                } else {
-                    ctx.db
-                        .formations
-                        .add_grounded_by_name(&formation_ctx.name_id, cfg_id);
-                }
-                for uuid in cfg_uuids.into_iter() {
-                    cli_println!(@Green, "\t{uuid}");
-                    ctx.db.formations.add_uuid(&cfg_id, uuid);
-                }
-                if formation_ctx.launch {
-                    let subdomain = request_token_json(api_key, "")?.subdomain;
-                    cli_print!("The Formation URL is ");
-                    cli_println!(@Green, "https://{}--{subdomain}.on.seaplanet.io/", &formation_ctx.name_id);
-                    cli_println!("(hint: if you have not configured any public endpoints, the Formation will not be reachable from the public internet!)");
-                }
-            }
+        // Equivalent of doing 'seaplane formation launch NAME --exact'
+        if formation_ctx.launch || formation_ctx.grounded {
+            // Set the name of the formation for launch
+            ctx.args.name_id = Some(formation_ctx.name_id.clone());
+            // We only want to match this exact formation
+            ctx.args.exact = true;
+            // release the MutexGuard
+            drop(formation_ctx);
+            SeaplaneFormationLaunch.run(ctx)?;
         }
 
         Ok(())

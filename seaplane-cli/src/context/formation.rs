@@ -28,7 +28,6 @@ use crate::{
 pub struct FormationCtx {
     pub name_id: String,
     pub launch: bool,
-    pub deploy: bool,
     pub remote: bool,
     pub local: bool,
     pub grounded: bool,
@@ -41,7 +40,6 @@ impl Default for FormationCtx {
         Self {
             name_id: generate_formation_name(),
             launch: false,
-            deploy: false,
             cfg_ctx: FormationCfgCtx::default(),
             remote: false,
             local: true,
@@ -89,19 +87,13 @@ impl FormationCtx {
             }
         }
 
-        let launch = matches.is_present("launch");
-        // If we're launching we also need to deploy
-        if launch && matches.is_present("no-deploy") {
-            return Err(CliErrorKind::ConflictingArguments("--no-deploy", "--launch").into_err());
-        }
-        let deploy = matches.is_present("deploy") || launch;
         Ok(FormationCtx {
             name_id: matches
                 .value_of("name_id")
                 .map(ToOwned::to_owned)
                 .unwrap_or_else(generate_formation_name),
-            deploy: deploy || launch,
-            launch: deploy && !matches.is_present("no-launch"),
+            grounded: matches.is_present("grounded"),
+            launch: matches.is_present("launch"),
             cfg_ctx: FormationCfgCtx {
                 flights: flight_names.iter().map(|s| s.to_string()).collect(),
                 affinities: matches

@@ -7,8 +7,22 @@ use crate::ops::formation::Endpoint;
 
 /// Ensures a valid Endpoint
 pub fn validate_endpoint(s: &str) -> StdResult<(), String> {
-    if s.parse::<Endpoint>().is_err() {
-        return Err("invalid endpoint".to_string());
+    let res = s.parse::<Endpoint>();
+    if res.is_err() {
+        return Err(format!("invalid endpoint SPEC: {}", res.unwrap_err()));
+    }
+    Ok(())
+}
+
+/// Ensures a valid Public Endpoint, we must special case Public Endpoints because it only supports
+/// the 'http' and 'https' protocol field.
+pub fn validate_public_endpoint(s: &str) -> StdResult<(), String> {
+    let res = s.parse::<Endpoint>();
+    if let Err(mut details) = res {
+        if details.starts_with("invalid protocol") {
+            details = "invalid protocol (valid options: http, https)".into();
+        }
+        return Err(format!("invalid endpoint SPEC: {}", details));
     }
     Ok(())
 }
