@@ -12,7 +12,8 @@ So bear with us as explain each term in turn!
 ## Formation
 
 At the heart of Seaplane is your `formation`(s). Formations can be thought of as your high level
-*application* or *service*. This is the entry point for all public traffic.
+*application* or *service* load balancer and entry point. This is the entry point for all public 
+and private traffic.
 
 ```mermaid
 graph TD
@@ -25,38 +26,35 @@ moment.
 
 ### Formation Configurations
 
-Each `formation` has a `configuration`. This `configuration` tell us how to build your `formation`
-along with other details like what type of traffic should be allowed.
+Each `formation` has one (or more!) `configuration`s. A `configuration` tells us how to schedule 
+your `formation` along with other details like what type of traffic should be allowed.
 
-One thing that makes `formation`s a little different, and quite powerful is that they can actually
-have multiple `configuration`s! They can even have multiple active `configuration`s (we refer to
-those as `In Air`) and multiple inactive (`Grounded`) `configuration`s!
+As briefly noted above, one thing that makes `formation`s a little different,
+and quite powerful is that they can actually have multiple `configuration`s!
+They can even have multiple active `configuration`s (we refer to those as `In
+Air`) and multiple inactive (`Grounded`) `configuration`s!
 
 A `configuration` who's status is `In Air` is one that Seaplane is actively sending traffic to.
 Having multiple `configuration`s from a single `formation` listed as `In Air` means Seaplane is
 load balancing between them based on the defined traffic weight setting of each configuration.
 
-A `configuration` who's status is `Grounded` is one that has been `deploy`ed (uploaded to
+A `configuration` who's status is `Grounded` is one that has been deployed (uploaded to
 Seaplane), but is not yet `In Air` (being utilized).
 
 #### Deployed Configurations
 
 When you create a new `formation configuration` using the `seaplane` CLI tool, that configuration
 only resides locally on your computer. You can edit or view this `configuration` freely without
-affecting any of the systems running in the Seaplane Cloud. Once you're satisfied, you can `deploy`
-the `configuration` to our Seaplane Cloud.
+affecting any of the systems running in the Seaplane Cloud. Once you're satisfied, you can `launch`
+the `formation` and any associated `configuration`s to our Seaplane Cloud.
 
-Once a configuration has been `deploy`ed successfully, it now resides in our Seaplane Cloud and is
-able to `launch` at which point it's status will change from `Grounded` to `In Air` and traffic
-will be sent to any of the `flight`s that it describes. Do note that there are command line options
-for `launch`ing a `configuration` immediately when `deploy`ed.
+Once a configuration has been `launch`ed successfully, it now resides in our
+Seaplane Cloud and traffic will be sent to any of the `flight`s that it
+describes. Do note that there are command line options for `launch`ing a
+`formation` and setting it as Grounded or immediately In Air depending on your
+use case.
 
-**NOTE:** Just like their `configuration`s, a `formation` will be displayed as `deploy`ed or not
-depending on if it's definition is only local to your computer, or has been `deploy`ed (uploaded)
-to the Seaplane Cloud. A `formation`'s status will change to `In Air` from `Grounded` by having at
-least one `configuration` `In Air`, not by any manual interaction.
-
-Which brings us to what `formation`s are actually made up of, and what these `configuration`s are
+Which brings us to the heart of `formation`s, and what these `configuration`s are
 actually describing.
 
 That's the `flight`!
@@ -120,14 +118,15 @@ Additionally, let's say you had a version 2.0 of this Landing Gear Website you w
 out. Perhaps it swaps out one metrics server for another, or maybe it consists of entirely
 different `flight`s in total.
 
-You can add a new `configuration` to the existing `formation`. Once activated, Seaplane will
-balance between your two version. Since these two "versions" could be referencing the same
-`flight`s, you can swap out only the parts you want to balance between. Or if you want to do full
-on `A`/`B` testing, all the `flight`s could be different, the sky is the limit!
+You can add a new `configuration` to the existing `formation`. Once activated,
+Seaplane will balance between your two version. Since these two "versions"
+could be referencing the same `flight` definitions, you easily can swap out
+only the parts you want to balance between. Or if you want to do full on
+`A`/`B` testing, all the `flight`s could be different, the sky is the limit!
 
 To visualize the example, image we kept it simple and the only difference between these two
-`configuration`s is the metrics platform. After `deploy`ing and `activate`ing the second
-configuration, your diagram would look like this:
+`configuration`s is the metrics platform. After `launch`ing the `formation` with the second
+configuration added, your diagram would look like this:
 
 ```mermaid
 graph LR
@@ -151,10 +150,6 @@ graph LR
     User --> Seaplane([fa:fa-cloud Seaplane])
     Seaplane --> Webserver
 ```
-
-**NOTE:** This diagram is *slightly* misleading as technically both `ConfigA` and `ConfigB` declare
-the `Web Server` and `Database` (i.e. they're shared). However mermaid diagrams aren't quite able
-to depict a shared subgraph, so we elected to only highlight the *differences* in configurations.
 
 In the more complex scenario, where *all* `flight`s are different, it would look like this:
 
