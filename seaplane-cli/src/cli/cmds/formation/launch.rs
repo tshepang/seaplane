@@ -120,7 +120,7 @@ impl CliCommand for SeaplaneFormationLaunch {
 
             // Add those configurations to this formation
             'inner: for id in &cfgs_ids {
-                if let Some(cfg) = ctx.db.formations.get_configuration(*id) {
+                if let Some(cfg) = ctx.db.formations.get_configuration(id) {
                     has_public_endpoints = cfg.model.public_endpoints().count() > 0;
                     let add_cfg_req = build_request(Some(&formation_name), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to

@@ -60,8 +60,11 @@ impl CliCommand for SeaplaneInit {
             if file.exists() {
                 // Due to how match guards work, we can't use them, we have to use if-else
                 if ctx.args.force
-                    || ctx.args.overwrite.as_deref() == Some(opt)
-                    || ctx.args.overwrite.as_deref() == Some("all")
+                    || ctx
+                        .args
+                        .overwrite
+                        .iter()
+                        .any(|item| item == opt || item == "all")
                 {
                     cli_warn!(@Yellow, "warn: ");
                     cli_warn!("overwriting existing file ");
@@ -92,7 +95,12 @@ impl CliCommand for SeaplaneInit {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.force = matches.is_present("force");
-        ctx.args.overwrite = matches.value_of("overwrite").map(ToOwned::to_owned);
+        ctx.args.overwrite = matches
+            .values_of("overwrite")
+            .unwrap_or_default()
+            .map(ToOwned::to_owned)
+            .collect();
+
         Ok(())
     }
 }

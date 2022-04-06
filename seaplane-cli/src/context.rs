@@ -58,7 +58,7 @@ pub struct Args {
     pub name_id: Option<String>,
 
     /// What to overwrite
-    pub overwrite: Option<String>,
+    pub overwrite: Vec<String>,
 
     /// Do items need to be exact to match
     pub exact: bool,

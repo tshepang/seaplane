@@ -101,7 +101,7 @@ impl CliCommand for SeaplaneFormationDelete {
                 if let Some(name) = &formation.name {
                     let delete_req = build_request(Some(name), api_key)?;
                     let cfg_uuids = delete_req.delete(ctx.args.force)?;
-                    cli_print!("Successfully deleted remote Formation '");
+                    cli_print!("Deleted remote Formation '");
                     cli_print!(@Green, "{}", name);
                     if cfg_uuids.is_empty() {
                         cli_println!("'");
@@ -127,6 +127,8 @@ impl CliCommand for SeaplaneFormationDelete {
             }
         }
         if formation_ctx.local {
+            // No need to potentially clone over and over
+            let mut cloned_ctx = ctx.clone();
             for formation in ctx.db.formations.remove_formation_indices(&indices).iter() {
                 let ids = if ctx.args.force {
                     formation.local.iter().cloned().collect()
@@ -134,13 +136,23 @@ impl CliCommand for SeaplaneFormationDelete {
                     formation.local_only_configs()
                 };
                 for id in ids {
-                    if let Some(cfg) = ctx.db.formations.get_configuration(id) {
-                        let mut cloned_ctx = ctx.clone();
+                    if let Some(cfg) = ctx.db.formations.remove_configuration(&id) {
                         cloned_ctx.internal_run = true;
                         for flight in cfg.model.flights() {
-                            cloned_ctx.args.name_id = Some(flight.name().to_string());
-                            SeaplaneFlightDelete.run(&mut cloned_ctx)?;
-                            deleted += 1;
+                            let flight_name = flight.name();
+                            if !ctx
+                                .db
+                                .formations
+                                .configurations()
+                                .filter(|cfg| cfg.id != id)
+                                .any(|cfg| {
+                                    cfg.model.flights().iter().any(|f| f.name() == flight_name)
+                                })
+                            {
+                                cloned_ctx.args.name_id = Some(flight_name.to_string());
+                                SeaplaneFlightDelete.run(&mut cloned_ctx)?;
+                                deleted += 1;
+                            }
                         }
                     }
                 }

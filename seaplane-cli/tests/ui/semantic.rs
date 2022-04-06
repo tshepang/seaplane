@@ -61,6 +61,12 @@ fn seaplane_init() {
     assert!(cli!("init --overwrite=flights").is_ok());
     assert!(cli!("init --overwrite=formations").is_ok());
 
+    // Multiples
+    assert!(cli!("init --overwrite=config,flights").is_ok());
+    assert!(cli!("init --overwrite=config,flights --overwrite=formations,all").is_ok());
+    assert!(cli!("init --overwrite=config --overwrite=flights").is_ok());
+    assert!(cli!("init --overwrite=config,flights --overwrite=formations").is_ok());
+
     // Invalid overwrite
     assert!(cli!("init --overwrite=foo").is_err());
     // Invalid overwrite with --force is still error

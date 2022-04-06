@@ -50,8 +50,22 @@ pub struct Formations {
 }
 
 impl Formations {
-    pub fn get_configuration(&self, id: Id) -> Option<&FormationConfiguration> {
-        self.configurations.iter().find(|fc| fc.id == id)
+    pub fn configurations(&self) -> impl Iterator<Item = &FormationConfiguration> {
+        self.configurations.iter()
+    }
+
+    pub fn get_configuration(&self, id: &Id) -> Option<&FormationConfiguration> {
+        self.configurations.iter().find(|fc| &fc.id == id)
+    }
+
+    /// Returns the removed FormationConfiguration by ID or None if there was no match
+    ///
+    /// DANGER: this will invalidate any previously held indices after the removed item
+    pub fn remove_configuration(&mut self, id: &Id) -> Option<FormationConfiguration> {
+        if let Some(idx) = self.configuration_index_of_id(id) {
+            return Some(self.configurations.swap_remove(idx));
+        }
+        None
     }
 
     // TODO: this should go away once we're not working with indices anymore
@@ -148,6 +162,8 @@ impl Formations {
     }
 
     /// Removes an exact name match, returning the removed Formation or None if nothing matched.
+    ///
+    /// DANGER: this will invalidate any previously held indices after the removed item
     pub fn remove_name(&mut self, name: &str) -> Option<Formation> {
         cli_traceln!("Removing Formation {name} from local state");
         if let Some(idx) = self.formation_index_of_name(name) {
@@ -165,6 +181,15 @@ impl Formations {
             .iter()
             .enumerate()
             .find(|(_, f)| f.name.as_deref() == Some(name))
+            .map(|(i, _)| i)
+    }
+
+    pub fn configuration_index_of_id(&self, id: &Id) -> Option<usize> {
+        cli_traceln!("Searching locally for index of Configuration ID {id}");
+        self.configurations
+            .iter()
+            .enumerate()
+            .find(|(_, c)| &c.id == id)
             .map(|(i, _)| i)
     }
 
