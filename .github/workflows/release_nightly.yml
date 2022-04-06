@@ -25,12 +25,12 @@ jobs:
       target: x86_64-pc-windows-gnu
       use-short-sha: true
 
-  build-mac-x64:
-    uses: ./.github/workflows/workflow-build-release.yml
-    with:
-      runner: "['macos-latest']"
-      target: x86_64-apple-darwin
-      use-short-sha: true
+  # build-mac-x64:
+  #   uses: ./.github/workflows/workflow-build-release.yml
+  #   with:
+  #     runner: "['macos-latest']"
+  #     target: x86_64-apple-darwin
+  #     use-short-sha: true
 
   build-linux-x64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
@@ -52,9 +52,9 @@ jobs:
     container: ubuntu:focal
     needs:
       - build-win-x64
-      - build-mac-x64
       - build-linux-x64-gnu
       - build-linux-aarch64-gnu
+        #- build-mac-x64
     steps:
       - name: Remove previous Nightly Release
         uses: dev-drprasad/delete-tag-and-release@v0.2.0
