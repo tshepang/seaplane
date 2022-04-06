@@ -711,6 +711,7 @@ impl FormationNames {
 /// A single Formation name in the response from the `GET /formations` API call
 /// ([`FormationsRequest::list_names`])
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(transparent)]
 pub struct FormationName {
     name: String,
 }
@@ -720,6 +721,7 @@ pub struct FormationName {
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(transparent)]
 pub struct ActiveConfigurations {
+    #[serde(flatten)]
     inner: Vec<ActiveConfiguration>,
 }
 
@@ -763,7 +765,7 @@ pub struct ActiveConfiguration {
     /// the sum of the weights of every configuration with that endpoint exposed and divide traffic
     /// according to the percentage of that sum each configuration's weight has.
     #[serde(default)]
-    traffic_weight: Option<u32>,
+    traffic_weight: Option<f32>,
 }
 
 impl ActiveConfiguration {
@@ -781,7 +783,7 @@ impl ActiveConfiguration {
     /// The proportional weight of traffic this configuration should get. For each endpoint we take
     /// the sum of the weights of every configuration with that endpoint exposed and divide traffic
     /// according to the percentage of that sum each configuration's weight has.
-    pub fn traffic_weight(&self) -> Option<u32> {
+    pub fn traffic_weight(&self) -> Option<f32> {
         self.traffic_weight
     }
 }
@@ -798,14 +800,14 @@ impl PartialEq<Self> for ActiveConfiguration {
 #[derive(Copy, Clone, Debug)]
 pub struct ActiveConfigurationBuilder {
     configuration_id: Option<Uuid>,
-    traffic_weight: u32,
+    traffic_weight: f32,
 }
 
 impl Default for ActiveConfigurationBuilder {
     fn default() -> Self {
         Self {
             configuration_id: None,
-            traffic_weight: 1,
+            traffic_weight: 1.,
         }
     }
 }
@@ -829,7 +831,7 @@ impl ActiveConfigurationBuilder {
     ///
     /// Default: `1`
     #[must_use]
-    pub fn traffic_weight(mut self, weight: u32) -> Self {
+    pub fn traffic_weight(mut self, weight: f32) -> Self {
         self.traffic_weight = weight;
         self
     }

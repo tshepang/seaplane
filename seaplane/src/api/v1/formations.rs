@@ -147,7 +147,7 @@ impl FormationsRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// # use seaplane::api::v1::{FormationsRequest, ActiveConfiguration, ActiveConfigurations};
+    /// # use seaplane::api::v1::{FormationsRequest};
     /// let req = FormationsRequest::new("abc123_token");
     ///
     /// let resp = req.list_names().unwrap();
@@ -172,7 +172,7 @@ impl FormationsRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// # use seaplane::api::v1::{FormationsRequest, ActiveConfiguration, ActiveConfigurations};
+    /// # use seaplane::api::v1::{FormationsRequest};
     /// let req = FormationsRequest::builder().token("abc123_token").name("foo").build().unwrap();
     ///
     /// let resp = req.get_metadata().unwrap();
@@ -230,7 +230,7 @@ impl FormationsRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// # use seaplane::api::v1::{FormationsRequest, ActiveConfiguration, ActiveConfigurations};
+    /// # use seaplane::api::v1::{FormationsRequest};
     /// let req = FormationsRequest::builder()
     ///     .token("abc123")
     ///     .name("foo")
@@ -288,7 +288,7 @@ impl FormationsRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// # use seaplane::api::v1::{FormationsRequest, ActiveConfiguration, ActiveConfigurations};
+    /// # use seaplane::api::v1::{FormationsRequest};
     /// let req = FormationsRequest::builder()
     ///     .token("abc123")
     ///     .name("foo")

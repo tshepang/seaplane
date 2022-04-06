@@ -179,7 +179,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                     active_configs.add_configuration_mut(
                         ActiveConfiguration::builder()
                             .uuid(*uuid)
-                            .traffic_weight(1)
+                            .traffic_weight(1.)
                             .build()?,
                     );
                 }
