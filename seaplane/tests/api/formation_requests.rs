@@ -2,6 +2,7 @@ use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
 use seaplane::api::v1::{
     ActiveConfiguration, ActiveConfigurations, Flight, FormationConfiguration, FormationsRequest,
+    Provider, Region,
 };
 use serde_json::json;
 use uuid::Uuid;
@@ -31,7 +32,7 @@ fn build_req() -> FormationsRequest {
     FormationsRequest::builder()
         .token("abc123")
         .base_url(MOCK_SERVER.base_url())
-        .name("Stubb")
+        .name("stubb")
         .build()
         .unwrap()
 }
@@ -58,10 +59,10 @@ fn list_names() {
 // GET /formations/NAME
 #[test]
 fn get_metadata() {
-    let resp_json = json!({"url":"https://Stubb--bar.on.seaplanet.io/"});
+    let resp_json = json!({"url":"https://stubb--bar.on.seaplanet.io/"});
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v1/formations/Stubb").header("content-type", "application/json");
+        when(w, GET, "/v1/formations/stubb").header("content-type", "application/json");
         then(t, resp_json.clone());
     });
 
@@ -80,7 +81,7 @@ fn clone_from() {
     let resp_json = json!(["557f87c3-b26c-428c-b970-cb8acac2bd68"]);
 
     let mock = MOCK_SERVER.mock(|w, then| {
-        when(w, POST, "/v1/formations/Stubb")
+        when(w, POST, "/v1/formations/stubb")
             .header("content-type", "application/json")
             .query_param("active", "false")
             .query_param("source", "Ishmael");
@@ -104,7 +105,7 @@ fn clone_from_active() {
     let resp_json = json!(["557f87c3-b26c-428c-b970-cb8acac2bd68"]);
 
     let mock = MOCK_SERVER.mock(|w, then| {
-        when(w, POST, "/v1/formations/Stubb")
+        when(w, POST, "/v1/formations/stubb")
             .header("content-type", "application/json")
             .query_param("active", "true")
             .query_param("source", "Ishmael");
@@ -126,11 +127,11 @@ fn build_configuration() -> FormationConfiguration {
     FormationConfiguration::builder()
         .add_flight(Flight::new(
             "Pequod",
-            "registry.seaplanet.io/Stubb/alpine:latest",
+            "registry.seaplanet.io/stubb/alpine:latest",
         ))
         .add_flight(Flight::new(
             "Flask",
-            "registry.seaplanet.io/Stubb/alpine:latest",
+            "registry.seaplanet.io/stubb/alpine:latest",
         ))
         .build()
         .unwrap()
@@ -145,7 +146,7 @@ macro_rules! test_create {
             let resp_json = json!(["557f87c3-b26c-428c-b970-cb8acac2bd68"]);
 
             let mock = MOCK_SERVER.mock(|w, then| {
-                when(w, POST, "/v1/formations/Stubb")
+                when(w, POST, "/v1/formations/stubb")
                     .header("content-type", "application/json")
                     .query_param("active", stringify!($param))
                     .json_body_obj(&build_configuration());
@@ -176,7 +177,7 @@ macro_rules! test_add_configuration {
             let resp_json = json!("557f87c3-b26c-428c-b970-cb8acac2bd68");
 
             let mock = MOCK_SERVER.mock(|w, then| {
-                when(w, POST, "/v1/formations/Stubb/configurations")
+                when(w, POST, "/v1/formations/stubb/configurations")
                     .header("content-type", "application/json")
                     .query_param("active", stringify!($param))
                     .json_body_obj(&build_configuration());
@@ -212,7 +213,7 @@ macro_rules! test_remove_configuration {
                 when(
                     w,
                     DELETE,
-                    "/v1/formations/Stubb/configurations/557f87c3-b26c-428c-b970-cb8acac2bd68",
+                    "/v1/formations/stubb/configurations/557f87c3-b26c-428c-b970-cb8acac2bd68",
                 )
                 .header("content-type", "application/json")
                 .query_param("force", stringify!($param));
@@ -246,7 +247,7 @@ fn get_configuration() {
         when(
             w,
             GET,
-            "/v1/formations/Stubb/configurations/557f87c3-b26c-428c-b970-cb8acac2bd68",
+            "/v1/formations/stubb/configurations/557f87c3-b26c-428c-b970-cb8acac2bd68",
         )
         .header("content-type", "application/json");
         then.status(200).json_body_obj(&build_configuration());
@@ -272,7 +273,7 @@ fn list_configuration_ids() {
     ]);
 
     let mock = MOCK_SERVER.mock(|w, then| {
-        when(w, GET, "/v1/formations/Stubb/configurations")
+        when(w, GET, "/v1/formations/stubb/configurations")
             .header("content-type", "application/json");
         then.status(200).json_body(resp_json.clone());
     });
@@ -293,7 +294,7 @@ macro_rules! test_delete {
             let resp_json = json!(["557f87c3-b26c-428c-b970-cb8acac2bd68"]);
 
             let mock = MOCK_SERVER.mock(|w, t| {
-                when(w, DELETE, "/v1/formations/Stubb")
+                when(w, DELETE, "/v1/formations/stubb")
                     .header("content-type", "application/json")
                     .query_param("force", stringify!($param));
                 then(t, resp_json.clone());
@@ -317,7 +318,7 @@ test_delete!(delete_force, true);
 // GET /formations/NAME/containers
 #[test]
 fn get_containers() {
-    let resp_json = json!(
+    let resp_json_minimal = json!(
         [{
             "uuid" : "557f87c3-b26c-428c-b970-cb8acac2bd68",
             "status" : "started",
@@ -332,8 +333,65 @@ fn get_containers() {
         }]
     );
 
+    let mut mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/formations/stubb/containers");
+        then(t, resp_json_minimal.clone());
+    });
+
+    let req = build_req();
+    let resp = req.get_containers().unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp, serde_json::from_value(resp_json_minimal).unwrap());
+    mock.delete();
+
+    let resp_json = json!(
+        [{
+            "uuid" : "557f87c3-b26c-428c-b970-cb8acac2bd68",
+            "status" : "started",
+            "flight_name": "foo",
+            "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
+            "exit_status": 0,
+            "public_ingress_usage": 123456,
+            "public_egress_usage": 123456,
+            "private_ingress_usage": 123456,
+            "private_egress_usage": 123456,
+            "disk_usage": 123456,
+            "ram_usage": 123456,
+            "cpu_usage": 123456,
+            "host_latitude": 29.984142_f32,
+            "host_longitude": -95.332986_f32,
+            "host_iata": "IAH",
+            "host_country": "US",
+            "host_region": Region::XN,
+            "host_provider": Provider::AWS,
+        },
+        {
+            "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
+            "status" : "running",
+            "flight_name": "foo",
+            "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
+            "exit_status": 1_i32,
+            "public_ingress_usage": 123456_u64,
+            "public_egress_usage": 123456_u64,
+            "private_ingress_usage": 123456_u64,
+            "private_egress_usage": 123456_u64,
+            "disk_usage": 123456_u64,
+            "ram_usage": 123456_u64,
+            "cpu_usage": 123456_u64,
+            "host_latitude": 29.984142_f32,
+            "host_longitude": -95.332986_f32,
+            "host_iata": "IAH",
+            "host_country": "US",
+            "host_region": Region::XN,
+            "host_provider": Provider::AWS,
+        }]
+    );
+
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v1/formations/Stubb/containers");
+        when(w, GET, "/v1/formations/stubb/containers");
         then(t, resp_json.clone());
     });
 
@@ -349,7 +407,7 @@ fn get_containers() {
 // GET /formations/NAME/containers/UUID
 #[test]
 fn get_container() {
-    let resp_json = json!(
+    let resp_json_minimal = json!(
         {
             "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
             "status" : "running",
@@ -358,11 +416,54 @@ fn get_container() {
         }
     );
 
+    let mut mock = MOCK_SERVER.mock(|w, t| {
+        when(
+            w,
+            GET,
+            "/v1/formations/stubb/containers/91f191f5-be32-4d44-860f-0eccca325e0f",
+        );
+        then(t, resp_json_minimal.clone());
+    });
+
+    let req = build_req();
+    let resp = req
+        .get_container("91f191f5-be32-4d44-860f-0eccca325e0f".parse().unwrap())
+        .unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp, serde_json::from_value(resp_json_minimal).unwrap());
+    mock.delete();
+
+    let resp_json = json!(
+        {
+            "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
+            "status" : "running",
+            "flight_name": "foo",
+            "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
+            "exit_status": 0_i32,
+            "public_ingress_usage": 123456_u64,
+            "public_egress_usage": 123456_u64,
+            "private_ingress_usage": 123456_u64,
+            "private_egress_usage": 123456_u64,
+            "disk_usage": 123456_u64,
+            "ram_usage": 123456_u64,
+            "cpu_usage": 123456_u64,
+            "host_latitude": 29.984142_f32,
+            "host_longitude": -95.332986_f32,
+            "host_iata": "IAH",
+            "host_country": "US",
+            "host_region": Region::XN,
+            "host_provider": Provider::AWS,
+        }
+    );
+
     let mock = MOCK_SERVER.mock(|w, t| {
         when(
             w,
             GET,
-            "/v1/formations/Stubb/containers/91f191f5-be32-4d44-860f-0eccca325e0f",
+            "/v1/formations/stubb/containers/91f191f5-be32-4d44-860f-0eccca325e0f",
         );
         then(t, resp_json.clone());
     });
@@ -393,7 +494,7 @@ fn get_active_configurations() {
     ]);
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v1/formations/Stubb/activeConfiguration");
+        when(w, GET, "/v1/formations/stubb/activeConfiguration");
         then(t, resp_json.clone());
     });
 
@@ -437,7 +538,7 @@ macro_rules! test_set_active_configurations {
         #[test]
         fn $fn() {
             let mock = MOCK_SERVER.mock(|w, then| {
-                when(w, PUT, "/v1/formations/Stubb/activeConfiguration")
+                when(w, PUT, "/v1/formations/stubb/activeConfiguration")
                     .query_param("force", stringify!($param));
                 then.status(200).body("success");
             });
@@ -461,7 +562,7 @@ test_set_active_configurations!(set_active_configurations_force, true);
 #[test]
 fn stop() {
     let mock = MOCK_SERVER.mock(|w, then| {
-        when(w, DELETE, "/v1/formations/Stubb/activeConfiguration");
+        when(w, DELETE, "/v1/formations/stubb/activeConfiguration");
         then.status(200).body("success");
     });
 
