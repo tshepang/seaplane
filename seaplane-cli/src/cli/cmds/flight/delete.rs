@@ -85,12 +85,13 @@ impl CliCommand for SeaplaneFlightDelete {
 
         ctx.persist_flights()?;
 
-        cli_println!(
-            "\nSuccessfully removed {} item{}",
-            indices.len(),
-            if indices.len() > 1 { "s" } else { "" }
-        );
-
+        if !ctx.internal_run {
+            cli_println!(
+                "\nSuccessfully removed {} item{}",
+                indices.len(),
+                if indices.len() > 1 { "s" } else { "" }
+            );
+        }
         Ok(())
     }
 

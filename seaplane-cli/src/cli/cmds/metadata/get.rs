@@ -40,7 +40,7 @@ impl SeaplaneMetadataGet {
 impl CliCommand for SeaplaneMetadataGet {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let kvs = {
-            let mut mdctx = ctx.md_ctx.get_or_init();
+            let mdctx = ctx.md_ctx.get_mut_or_init();
             for kv in mdctx.kvs.iter_mut() {
                 kv.set_value(
                     // The key is already in Base64 so no need to convert
@@ -68,7 +68,7 @@ impl CliCommand for SeaplaneMetadataGet {
             &common::SeaplaneMetadataCommonArgMatches(matches),
         )?);
         ctx.args.out_format = matches.value_of_t_or_exit("format");
-        let mut mdctx = ctx.md_ctx.get_or_init();
+        let mut mdctx = ctx.md_ctx.get_mut_or_init();
         mdctx.decode = matches.is_present("decode");
         mdctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");
         mdctx.no_header = true;

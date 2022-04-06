@@ -55,7 +55,7 @@ impl CliCommand for SeaplaneFlightEdit {
         if let Err(e) = flights.update_flight(
             ctx.args.name_id.as_ref().unwrap(),
             ctx.args.exact,
-            &ctx.flight_ctx.get_or_init(),
+            ctx.flight_ctx.get_or_init(),
         ) {
             return wrap_cli_context(e, ctx.args.exact, false);
         }

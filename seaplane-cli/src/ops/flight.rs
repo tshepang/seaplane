@@ -116,7 +116,7 @@ impl Flight {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(transparent)]
 pub struct Flights {
     #[serde(skip)]

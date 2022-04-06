@@ -390,28 +390,22 @@ fn seaplane_formation_common() {
     // in unit tests, just that *some* form of validation happens along with any semantics such
     // as multiples, etc.)
     // valid
-    assert!(cli!("formation create --public-endpoint=http:foo/bar=baz:123").is_ok());
-    assert!(cli!("formation create --exclude-region xa xc xf").is_err());
-    // alias
-    assert!(cli!("formation create --exclude-regions=XA,Asia,XC").is_ok());
-
-    // public endpoint (we don't try to enumerate valid endpoints because that should happen
-    // in unit tests, just that *some* form of validation happens along with any semantics such
-    // as multiples, etc.)
-    // valid
-    assert!(cli!("formation create --public-endpoint=http:foo/bar=baz:123").is_ok());
+    assert!(cli!("formation create --public-endpoint=http:/foo/bar=baz:123").is_ok());
+    assert!(cli!("formation create --public-endpoint=/foo/bar=baz:123").is_ok());
     // invalid
     assert!(cli!("formation create --public-endpoint=carpet").is_err());
+    assert!(cli!("formation create --public-endpoint=http:foo/bar=baz:123").is_err());
+    assert!(cli!("formation create --public-endpoint=foo/bar=baz:123").is_err());
     // multiples only with commas or multiple uses
-    assert!( cli!("formation create --public-endpoint=http:foo/bar=baz:123,http:baz/qux=nom:432 --public-endpoint=http:/=que:5432") .is_ok());
-    assert!( cli!("formation create --public-endpoint=http:foo/bar=baz:123 --public-endpoint=http:/=que:5432,http:baz/qux=nom:432") .is_ok());
+    assert!( cli!("formation create --public-endpoint=http:/foo/bar=baz:123,/baz/qux=nom:432 --public-endpoint=http:/=que:5432") .is_ok());
+    assert!( cli!("formation create --public-endpoint=https:/foo/bar=baz:123 --public-endpoint /=que:5432,http:/baz/qux=nom:432") .is_ok());
     assert!(cli!(
-        "formation create --public-endpoint=http:foo/bar=baz:123 --public-endpoint=http:/=que:5432"
+        "formation create --public-endpoint=http:/foo/bar=baz:123 --public-endpoint /=que:5432"
     )
     .is_ok());
     assert!( cli!("formation create --public-endpoint=http:foo/bar=baz:123 http:baz/qux=nom:432 http:/=que:5432") .is_err());
     // alias
-    assert!(cli!("formation create --public-endpoints=http:foo/bar=baz:123").is_ok());
+    assert!(cli!("formation create --public-endpoints /foo/bar=baz:123").is_ok());
 
     // formation endpoint (we don't try to enumerate valid endpoints because that should happen
     // in unit tests, just that *some* form of validation happens along with any semantics such
@@ -421,10 +415,13 @@ fn seaplane_formation_common() {
     // invalid
     assert!(cli!("formation create --formation-endpoint=carpet").is_err());
     // multiples only with commas or multiple uses
-    assert!( cli!("formation create --formation-endpoint=http:foo/bar=baz:123,udp:987=nom:432 --formation-endpoint=http:/=que:5432") .is_ok());
-    assert!( cli!("formation create --formation-endpoint=tcp:123=baz:123 --formation-endpoint=http:/=que:5432,udp:876=nom:432") .is_ok());
-    assert!( cli!("formation create --formation-endpoint=udp:1234=baz:123 --formation-endpoint=http:/=que:5432") .is_ok());
-    assert!( cli!("formation create --formation-endpoint=http:foo/bar=baz:123 tcp:baz/qux=nom:432 http:/=que:5432") .is_err());
+    assert!( cli!("formation create --formation-endpoint=http:/foo/bar=baz:123,udp:987=nom:432 --formation-endpoint=http:/=que:5432") .is_ok());
+    assert!( cli!("formation create --formation-endpoint=tcp:123=baz:123 --formation-endpoint /=que:5432,udp:876=nom:432") .is_ok());
+    assert!(cli!(
+        "formation create --formation-endpoint=udp:1234=baz:123 --formation-endpoint /=que:5432"
+    )
+    .is_ok());
+    assert!( cli!("formation create --formation-endpoint=http:/foo/bar=baz:123 tcp:baz/qux=nom:432 http:/=que:5432") .is_err());
     // alias
     assert!(cli!("formation create --formation-endpoints=udp:1234=baz:123").is_ok());
 
@@ -436,13 +433,13 @@ fn seaplane_formation_common() {
     // invalid
     assert!(cli!("formation create --flight-endpoint=carpet").is_err());
     // multiples only with commas or multiple uses
-    assert!( cli!("formation create --flight-endpoint=http:foo/bar=baz:123,udp:987=nom:432 --flight-endpoint=http:/=que:5432") .is_ok());
+    assert!( cli!("formation create --flight-endpoint=http:/foo/bar=baz:123,udp:987=nom:432 --flight-endpoint=http:/=que:5432") .is_ok());
     assert!( cli!("formation create --flight-endpoint=tcp:123=baz:123 --flight-endpoint=http:/=que:5432,udp:876=nom:432") .is_ok());
     assert!(cli!(
         "formation create --flight-endpoint=udp:1234=baz:123 --flight-endpoint=http:/=que:5432"
     )
     .is_ok());
-    assert!( cli!("formation create --flight-endpoint=http:foo/bar=baz:123 tcp:baz/qux=nom:432 http:/=que:5432") .is_err());
+    assert!( cli!("formation create --flight-endpoint=http:/foo/bar=baz:123 tcp:baz/qux=nom:432 http:/=que:5432") .is_err());
     // alias
     assert!(cli!("formation create --flight-endpoints=udp:1234=baz:123").is_ok());
 }

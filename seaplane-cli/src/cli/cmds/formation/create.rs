@@ -155,7 +155,6 @@ impl CliCommand for SeaplaneFormationCreate {
             // We only want to match this exact formation
             ctx.args.exact = true;
             // release the MutexGuard
-            drop(formation_ctx);
             SeaplaneFormationLaunch.run(ctx)?;
         }
 
@@ -180,7 +179,7 @@ impl CliCommand for SeaplaneFormationCreate {
 
             // Store the newly created Flight as if it was passed via `--flight FOO`
             ctx.formation_ctx
-                .get_or_init()
+                .get_mut_or_init()
                 .cfg_ctx
                 .flights
                 .push(ctx.flight_ctx.get_or_init().name_id.clone());
@@ -193,7 +192,11 @@ impl CliCommand for SeaplaneFormationCreate {
             .filter(|s| s.starts_with('@'))
             .collect();
         for name in ctx.db.flights.add_from_at_strs(&at_flights)? {
-            ctx.formation_ctx.get_or_init().cfg_ctx.flights.push(name);
+            ctx.formation_ctx
+                .get_mut_or_init()
+                .cfg_ctx
+                .flights
+                .push(name);
         }
 
         ctx.persist_flights()?;

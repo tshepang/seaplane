@@ -70,7 +70,7 @@ impl CliCommand for SeaplaneMetadataList {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.md_ctx.init(MetadataCtx::default());
         ctx.args.out_format = matches.value_of_t_or_exit("format");
-        let mut mdctx = ctx.md_ctx.get_or_init();
+        let mut mdctx = ctx.md_ctx.get_mut().unwrap();
         mdctx.base64 = matches.is_present("base64");
         mdctx.decode = matches.is_present("decode");
         mdctx.no_keys = matches.is_present("only-values");

@@ -26,7 +26,7 @@ impl SeaplaneMetadataDelete {
 impl CliCommand for SeaplaneMetadataDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mut len = 0;
-        for kv in ctx.md_ctx.get_or_init().kvs.iter_mut() {
+        for kv in ctx.md_ctx.get_mut().unwrap().kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
             build_config_request_key(&key, ctx.args.api_key()?)?.delete_value()?;
             if ctx.args.out_format == OutputFormat::Table {

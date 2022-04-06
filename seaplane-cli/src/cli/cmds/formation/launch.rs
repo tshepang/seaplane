@@ -207,6 +207,9 @@ impl CliCommand for SeaplaneFormationLaunch {
             let subdomain = request_token_json(api_key, "")?.subdomain;
             cli_print!("The Formation URL is ");
             cli_println!(@Green, "https://{formation_name}--{subdomain}.on.seaplanet.io/");
+            cli_println!(
+                "(hint: it may take up to a minute for the Formation to become fully online)"
+            );
             if !has_public_endpoints {
                 cli_println!("(hint: there are no public endpoints configured, the Formation will not be reachable from the public internet)");
             }

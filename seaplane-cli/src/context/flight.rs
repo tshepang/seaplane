@@ -10,7 +10,7 @@ use crate::{
 /// values into a single structure that can be used later to build models for the API or local
 /// structs for serializing
 // TODO: we may not want to derive this we implement circular references
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FlightCtx {
     pub image: Option<ImageReference>,
     pub name_id: String,

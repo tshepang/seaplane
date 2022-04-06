@@ -2,7 +2,7 @@ use clap::{ArgMatches, Command};
 
 use crate::{
     cli::{
-        cmds::formation::build_request,
+        cmds::{flight::SeaplaneFlightDelete, formation::build_request},
         errors,
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
@@ -26,7 +26,9 @@ impl SeaplaneFormationDelete {
             .arg(arg!(formation =["NAME|ID"] required)
                 .validator(validator)
                 .help("The name or ID of the Formation to remove, must be unambiguous"))
-            .arg(arg!(--force)
+            .arg(arg!(--recursive -('r'))
+                .help("Recursively delete all local objects associated with this Formation"))
+            .arg(arg!(--force -('f'))
                 .help("Delete this Formation even if there are configurations In Flight (active), which will effectively stop all instances of this Formation"))
             .arg(arg!(--all -('a'))
                 .conflicts_with("exact")
@@ -86,6 +88,8 @@ impl CliCommand for SeaplaneFormationDelete {
             }
         }
 
+        let mut deleted = indices.len();
+
         // Remove the Formations
         //
         // First try to delete the remote formation if required, because we don't want to delete
@@ -123,16 +127,25 @@ impl CliCommand for SeaplaneFormationDelete {
             }
         }
         if formation_ctx.local {
-            ctx.db
-                .formations
-                .remove_formation_indices(&indices)
-                .iter()
-                .for_each(|formation| {
-                    cli_println!(
-                        "Successfully deleted local Formation {}",
-                        &formation.id.to_string()
-                    );
-                });
+            for formation in ctx.db.formations.remove_formation_indices(&indices).iter() {
+                let ids = if ctx.args.force {
+                    formation.local.iter().cloned().collect()
+                } else {
+                    formation.local_only_configs()
+                };
+                for id in ids {
+                    if let Some(cfg) = ctx.db.formations.get_configuration(id) {
+                        let mut cloned_ctx = ctx.clone();
+                        cloned_ctx.internal_run = true;
+                        for flight in cfg.model.flights() {
+                            cloned_ctx.args.name_id = Some(flight.name().to_string());
+                            SeaplaneFlightDelete.run(&mut cloned_ctx)?;
+                            deleted += 1;
+                        }
+                    }
+                }
+                cli_println!("Deleted local Formation {}", &formation.id.to_string());
+            }
         }
 
         ctx.persist_formations()?;
@@ -140,8 +153,8 @@ impl CliCommand for SeaplaneFormationDelete {
         // TODO: recalculate dichotomy of local v. remote numbers (i.e. --no-local, etc.)
         cli_println!(
             "\nSuccessfully removed {} item{}",
-            indices.len(),
-            if indices.len() > 1 { "s" } else { "" }
+            deleted,
+            if deleted > 1 { "s" } else { "" }
         );
 
         Ok(())
@@ -149,10 +162,11 @@ impl CliCommand for SeaplaneFormationDelete {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.force = matches.is_present("force");
-        let mut fctx = ctx.formation_ctx.get_or_init();
+        let mut fctx = ctx.formation_ctx.get_mut_or_init();
         fctx.name_id = matches.value_of("formation").unwrap().to_string();
         fctx.remote = !matches.is_present("no-remote");
         fctx.local = !matches.is_present("no-local");
+        fctx.recursive = matches.is_present("recursive");
 
         Ok(())
     }

@@ -29,13 +29,10 @@ pub use formation::{FormationCfgCtx, FormationCtx};
 pub mod metadata;
 pub use metadata::MetadataCtx;
 
-use std::{
-    path::{Path, PathBuf},
-    sync::{Mutex, MutexGuard, PoisonError},
-};
+use std::path::{Path, PathBuf};
 
 use clap_complete::Shell;
-use once_cell::sync::OnceCell;
+use once_cell::unsync::OnceCell;
 
 use crate::{
     config::RawConfig,
@@ -48,7 +45,7 @@ use crate::{
 const FLIGHTS_FILE: &str = "flights.json";
 const FORMATIONS_FILE: &str = "formations.json";
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Args {
     // @TODO we may need to get more granular than binary yes/no. For example, there may be times
     /// when the answer is "yes...but only if the stream is a TTY." In these cases an enum of Never,
@@ -125,6 +122,42 @@ pub struct Ctx {
 
     /// The in memory databases
     pub db: Db,
+
+    /// Allows tracking if we're running a command internally and skippy certain checks or output
+    pub internal_run: bool,
+}
+
+impl Clone for Ctx {
+    fn clone(&self) -> Self {
+        Self {
+            data_dir: self.data_dir.clone(),
+            flight_ctx: if self.flight_ctx.get().is_some() {
+                let li = LateInit::default();
+                li.init(self.flight_ctx.get().cloned().unwrap());
+                li
+            } else {
+                LateInit::default()
+            },
+            formation_ctx: if self.formation_ctx.get().is_some() {
+                let li = LateInit::default();
+                li.init(self.formation_ctx.get().cloned().unwrap());
+                li
+            } else {
+                LateInit::default()
+            },
+            md_ctx: if self.md_ctx.get().is_some() {
+                let li = LateInit::default();
+                li.init(self.md_ctx.get().cloned().unwrap());
+                li
+            } else {
+                LateInit::default()
+            },
+            conf_files: self.conf_files.clone(),
+            args: self.args.clone(),
+            db: self.db.clone(),
+            internal_run: self.internal_run,
+        }
+    }
 }
 
 impl Default for Ctx {
@@ -137,6 +170,7 @@ impl Default for Ctx {
             conf_files: Vec::new(),
             args: Args::default(),
             db: Db::default(),
+            internal_run: false,
         }
     }
 }
@@ -200,7 +234,7 @@ impl Ctx {
 }
 
 /// The in memory "Databases"
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Db {
     /// The in memory Flights database
     pub flights: Flights,
@@ -226,7 +260,7 @@ impl Db {
 // TODO: we may not want to derive this we implement circular references
 #[derive(Debug)]
 pub struct LateInit<T> {
-    inner: OnceCell<Mutex<T>>,
+    inner: OnceCell<T>,
 }
 
 impl<T> Default for LateInit<T> {
@@ -239,18 +273,22 @@ impl<T> Default for LateInit<T> {
 
 impl<T> LateInit<T> {
     pub fn init(&self, val: T) {
-        assert!(self.inner.set(Mutex::new(val)).is_ok())
+        assert!(self.inner.set(val).is_ok())
     }
-    pub fn get(&self) -> Option<&Mutex<T>> {
+    pub fn get(&self) -> Option<&T> {
         self.inner.get()
+    }
+    pub fn get_mut(&mut self) -> Option<&mut T> {
+        self.inner.get_mut()
     }
 }
 
 impl<T: Default> LateInit<T> {
-    pub fn get_or_init(&self) -> MutexGuard<'_, T> {
-        self.inner
-            .get_or_init(|| Mutex::new(T::default()))
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
+    pub fn get_or_init(&self) -> &T {
+        self.inner.get_or_init(|| T::default())
+    }
+    pub fn get_mut_or_init(&mut self) -> &mut T {
+        self.inner.get_or_init(|| T::default());
+        self.inner.get_mut().unwrap()
     }
 }

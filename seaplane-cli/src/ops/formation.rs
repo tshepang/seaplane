@@ -31,7 +31,7 @@ use crate::{
 /// "Formation Model" only a "Formation Configuration Model" This is because a "Formation" so to
 /// speak is really just a named collection of configurations and info about their traffic
 /// weights/activation statuses.
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct Formations {
     // Where was this "DB" loaded from on disk, so we can persist it back later
     #[serde(skip)]
@@ -280,7 +280,7 @@ impl Output for Formations {
 }
 
 // TODO: move ID to the key of a HashMap
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Formation {
     pub id: Id,
     pub name: Option<String>,
@@ -310,7 +310,7 @@ impl Formation {
 }
 
 /// Wraps the [`FormationConfiguration`] model adding a local ID and the UUID associated
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FormationConfiguration {
     pub id: Id,
     remote_id: Option<Uuid>,
@@ -379,17 +379,18 @@ impl FromStr for EndpointSrc {
 
     fn from_str(s: &str) -> StdResult<Self, Self::Err> {
         let mut parts = s.split(':');
-        let proto = parts
-            .next()
-            .ok_or_else(|| String::from("missing endpoint protocol"))?;
+        let proto = parts.next().ok_or_else(|| String::from("http"))?;
         let ep = match &*proto.to_ascii_lowercase() {
-            "http" | "https" => EndpointSrc::Http(
-                parts
-                    .next()
-                    .filter(|s| !s.is_empty())
-                    .ok_or_else(|| String::from("missing http route"))?
-                    .to_string(),
-            ),
+            "http" | "https" => EndpointSrc::Http(if let Some(route) = parts.next() {
+                if route.is_empty() {
+                    return Err(String::from("missing http route"));
+                } else if !route.starts_with('/') {
+                    return Err(String::from("route must start with a leady slash ('/')"));
+                }
+                route.to_string()
+            } else {
+                return Err(String::from("missing http route"));
+            }),
             "tcp" => EndpointSrc::Tcp(
                 parts
                     .next()
@@ -404,6 +405,7 @@ impl FromStr for EndpointSrc {
                     .parse::<u16>()
                     .map_err(|_| String::from("invalid network port number"))?,
             ),
+            proto if proto.starts_with('/') => EndpointSrc::Http(proto.to_string()),
             _ => {
                 return Err(format!(
                     "invalid protocol '{}' (valid options: http, https, tcp, udp)",
@@ -482,15 +484,17 @@ mod endpoint_test {
         assert!("baz:1234".parse::<Endpoint>().is_err());
     }
 
-    // TODO: might remove and allow to elide
     #[test]
-    fn endpoint_missing_http_proto() {
-        assert!("1234=baz:1234".parse::<Endpoint>().is_err());
-        assert!(":1234=baz:1234".parse::<Endpoint>().is_err());
-        assert!("/foo/bar=baz:1234".parse::<Endpoint>().is_err());
-        assert!("/foo/bar=baz:1234".parse::<Endpoint>().is_err());
-        assert!("=baz:1234".parse::<Endpoint>().is_err());
-        assert!(":=baz:1234".parse::<Endpoint>().is_err());
+    fn endpoint_infer_http() {
+        assert!("/foo/bar=baz:1234".parse::<Endpoint>().is_ok());
+    }
+
+    #[test]
+    fn endpoint_http_missing_leading_slash() {
+        assert!("foo/bar=baz:1234".parse::<Endpoint>().is_err());
+        assert!(":foo/bar=baz:1234".parse::<Endpoint>().is_err());
+        assert!("http:foo/bar=baz:1234".parse::<Endpoint>().is_err());
+        assert!("https:foo/bar/=baz:1234".parse::<Endpoint>().is_err());
         assert!("http:=baz:1234".parse::<Endpoint>().is_err(),);
     }
 

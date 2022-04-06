@@ -35,7 +35,8 @@ impl SeaplaneMetadataSet {
 
 impl CliCommand for SeaplaneMetadataSet {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        for kv in ctx.md_ctx.get_or_init().kvs.iter_mut() {
+        let mdctx = ctx.md_ctx.get_mut_or_init();
+        for kv in mdctx.kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
             let value = kv.value.as_ref().unwrap().to_string();
             build_config_request_key(&key, ctx.args.api_key()?)?
@@ -46,8 +47,7 @@ impl CliCommand for SeaplaneMetadataSet {
         }
 
         if ctx.args.out_format == OutputFormat::Json {
-            // Scope to release the MetadataCtx lock
-            let kvs = { ctx.md_ctx.get_or_init().kvs.clone() };
+            let kvs = ctx.md_ctx.get_or_init().kvs.clone();
             kvs.print_json(ctx)?;
         }
 

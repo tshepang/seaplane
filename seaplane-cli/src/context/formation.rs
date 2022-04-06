@@ -24,13 +24,14 @@ use crate::{
 /// speak is really just a named collection of configurations and info about their traffic
 /// weights/activation statuses.
 // TODO: we may not want to derive this we implement circular references
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FormationCtx {
     pub name_id: String,
     pub launch: bool,
     pub remote: bool,
     pub local: bool,
     pub grounded: bool,
+    pub recursive: bool,
     // TODO: make multiple possible
     pub cfg_ctx: FormationCfgCtx,
 }
@@ -44,6 +45,7 @@ impl Default for FormationCtx {
             remote: false,
             local: true,
             grounded: false,
+            recursive: false,
         }
     }
 }
