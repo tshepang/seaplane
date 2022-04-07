@@ -40,7 +40,7 @@ fn build_req() -> FormationsRequest {
 // GET /formations
 #[test]
 fn list_names() {
-    let resp_json = json!([{"name":"bar"}, {"name": "baz"}, {"name":"qux"}]);
+    let resp_json = json!(["bar", "baz", "qux"]);
 
     let mock = MOCK_SERVER.mock(|w, t| {
         when(w, GET, "/v1/formations");
@@ -516,7 +516,7 @@ fn build_active_connections() -> ActiveConfigurations {
                         .parse::<Uuid>()
                         .unwrap(),
                 )
-                .traffic_weight(9)
+                .traffic_weight(9.0)
                 .build()
                 .unwrap(),
         )
@@ -527,7 +527,7 @@ fn build_active_connections() -> ActiveConfigurations {
                         .parse::<Uuid>()
                         .unwrap(),
                 )
-                .traffic_weight(2)
+                .traffic_weight(2.0)
                 .build()
                 .unwrap(),
         )
