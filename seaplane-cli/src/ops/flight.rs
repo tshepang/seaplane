@@ -77,12 +77,15 @@ impl Flight {
         }
 
         // API Permission
-        let orig_api_perms = self.model.api_permission();
-        let cli_api_perms = ctx.api_permission;
-        match (orig_api_perms, cli_api_perms) {
-            (true, false) => dest_builder = dest_builder.api_permission(false),
-            (false, true) => dest_builder = dest_builder.api_permission(true),
-            _ => (),
+        #[cfg(feature = "unstable")]
+        {
+            let orig_api_perms = self.model.api_permission();
+            let cli_api_perms = ctx.api_permission;
+            match (orig_api_perms, cli_api_perms) {
+                (true, false) => dest_builder = dest_builder.api_permission(false),
+                (false, true) => dest_builder = dest_builder.api_permission(true),
+                _ => (),
+            }
         }
 
         self.model = dest_builder.build().expect("Failed to build Flight");
@@ -224,7 +227,10 @@ impl Flights {
                 flight.model.add_architecture(*arch);
             }
 
-            flight.model.set_api_permission(model.api_permission());
+            #[cfg(feature = "unstable")]
+            {
+                flight.model.set_api_permission(model.api_permission());
+            }
         }
 
         if !found {
@@ -297,6 +303,15 @@ impl Output for Flights {
                 .map(ToString::to_string)
                 .collect::<Vec<_>>()
                 .join(",");
+
+            #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+            let mut api_perms = false;
+            // Due to our use of cfg and Rust's "unused-assignment" lint
+            let _ = api_perms;
+            #[cfg(feature = "unstable")]
+            {
+                api_perms = flight.model.api_permission();
+            }
             writeln!(
                 tw,
                 "{}\t{}\t{}\t{}\t{}\t{}\t{}",
@@ -313,7 +328,7 @@ impl Output for Flights {
                     .map(|n| format!("{n}"))
                     .unwrap_or_else(|| "INF".into()),
                 if arch.is_empty() { "auto" } else { &*arch },
-                flight.model.api_permission(),
+                api_perms,
             )?;
         }
         tw.flush()?;

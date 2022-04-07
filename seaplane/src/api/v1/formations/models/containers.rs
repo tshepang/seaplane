@@ -36,6 +36,9 @@ pub struct Containers {
 }
 
 /// A single formation name in the response from `GET /formations/NAME/containers/ID`
+///
+/// **NOTE:** All `usage` and the fields are currently unimplemented in the backend and
+/// will always return `None`
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Container {
     /// ID of a particular container instance

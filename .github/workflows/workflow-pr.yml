@@ -194,7 +194,6 @@ jobs:
           features: ""
         - build: next
           features: "--features unstable"
-    continue-on-error: ${{ matrix.rust != 'stable' }}
     runs-on: [self-hosted, linux, x64]
     container: rust:slim
     steps:

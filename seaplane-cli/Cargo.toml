@@ -44,5 +44,6 @@ const_format = "0.2.22"
 [features]
 default = ["color"]
 color = ["clap/color", "termcolor", "atty"]
-ui_tests = []
-unstable = [] # Items which are in active development and are totally unstable or unimplemented
+semantic_ui_tests = []
+ui_tests = ["semantic_ui_tests"]
+unstable = ["seaplane/unstable"] # Items which are in active development and are totally unstable or unimplemented

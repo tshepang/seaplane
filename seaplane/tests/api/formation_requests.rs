@@ -508,29 +508,28 @@ fn get_active_configurations() {
 }
 
 fn build_active_connections() -> ActiveConfigurations {
+    #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+    let mut cfg1 = ActiveConfiguration::builder().uuid(
+        "91f191f5-be32-4d44-860f-0eccca325e0f"
+            .parse::<Uuid>()
+            .unwrap(),
+    );
+    #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+    let mut cfg2 = ActiveConfiguration::builder().uuid(
+        "876034e4-b5d2-4860-9522-60478fca47f6"
+            .parse::<Uuid>()
+            .unwrap(),
+    );
+    #[cfg(feature = "unstable")]
+    {
+        cfg1 = cfg1.traffic_weight(9.0);
+        cfg2 = cfg2.traffic_weight(2.0);
+    }
+    let cfg1 = cfg1.build().unwrap();
+    let cfg2 = cfg2.build().unwrap();
     ActiveConfigurations::new()
-        .add_configuration(
-            ActiveConfiguration::builder()
-                .uuid(
-                    "91f191f5-be32-4d44-860f-0eccca325e0f"
-                        .parse::<Uuid>()
-                        .unwrap(),
-                )
-                .traffic_weight(9.0)
-                .build()
-                .unwrap(),
-        )
-        .add_configuration(
-            ActiveConfiguration::builder()
-                .uuid(
-                    "876034e4-b5d2-4860-9522-60478fca47f6"
-                        .parse::<Uuid>()
-                        .unwrap(),
-                )
-                .traffic_weight(2.0)
-                .build()
-                .unwrap(),
-        )
+        .add_configuration(cfg1)
+        .add_configuration(cfg2)
 }
 
 macro_rules! test_set_active_configurations {

@@ -165,12 +165,6 @@ impl FormationCtx {
         }
 
         // TODO: clean this up...yuck
-        for item in &self.cfg_ctx.affinities {
-            f_model = f_model.add_affinity(item);
-        }
-        for item in &self.cfg_ctx.connections {
-            f_model = f_model.add_connection(item);
-        }
         for &item in &self.cfg_ctx.providers_allowed {
             f_model = f_model.add_allowed_provider(item);
         }
@@ -186,11 +180,20 @@ impl FormationCtx {
         for item in &self.cfg_ctx.public_endpoints {
             f_model = f_model.add_public_endpoint(item.key(), item.value());
         }
-        for item in &self.cfg_ctx.formation_endpoints {
-            f_model = f_model.add_formation_endpoint(item.key(), item.value());
-        }
         for item in &self.cfg_ctx.flight_endpoints {
             f_model = f_model.add_flight_endpoint(item.key(), item.value());
+        }
+        #[cfg(feature = "unstable")]
+        {
+            for item in &self.cfg_ctx.affinities {
+                f_model = f_model.add_affinity(item);
+            }
+            for item in &self.cfg_ctx.connections {
+                f_model = f_model.add_connection(item);
+            }
+            for item in &self.cfg_ctx.formation_endpoints {
+                f_model = f_model.add_formation_endpoint(item.key(), item.value());
+            }
         }
 
         // TODO: probably match and check errors

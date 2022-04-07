@@ -34,6 +34,7 @@ jobs:
     strategy:
       matrix:
         os: [[self-hosted, linux, x64], [self-hosted, linux, arm64]]
+        features: ['api_tests', 'api_tests,unstable']
     runs-on: ${{ matrix.os }}
     container: rust:slim
     steps:
@@ -52,5 +53,5 @@ jobs:
       run: apt-get update && apt-get install -y libssl-dev pkg-config
       if: ${{ contains(matrix.os, 'self-hosted') }}
 
-    - name: Mock API Tests
-      run: cargo test --features api_tests --manifest-path ./seaplane/Cargo.toml
+    - name: Mock API Tests (${{ matrix.features }})
+      run: cargo test --features ${{ matrix.features }} --manifest-path ./seaplane/Cargo.toml

@@ -176,12 +176,13 @@ impl CliCommand for SeaplaneFormationLaunch {
                 );
                 let mut active_configs = ActiveConfigurations::new();
                 for uuid in &cfg_uuids {
-                    active_configs.add_configuration_mut(
-                        ActiveConfiguration::builder()
-                            .uuid(*uuid)
-                            .traffic_weight(1.)
-                            .build()?,
-                    );
+                    #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+                    let mut cfg = ActiveConfiguration::builder().uuid(*uuid);
+                    #[cfg(feature = "unstable")]
+                    {
+                        cfg = cfg.traffic_weight(1.0);
+                    }
+                    active_configs.add_configuration_mut(cfg.build()?);
                 }
                 let set_cfgs_req = build_request(Some(&formation_name), api_key)?;
                 set_cfgs_req

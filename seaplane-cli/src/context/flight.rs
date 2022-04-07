@@ -86,8 +86,12 @@ impl FlightCtx {
         // Create the new Flight model from the CLI inputs
         let mut flight_model = FlightModel::builder()
             .name(self.name_id.clone())
-            .api_permission(self.api_permission)
             .minimum(self.minimum);
+
+        #[cfg(feature = "unstable")]
+        {
+            flight_model = flight_model.api_permission(self.api_permission);
+        }
 
         if let Some(image) = self.image.clone() {
             flight_model = flight_model.image_reference(image);

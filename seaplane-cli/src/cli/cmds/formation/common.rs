@@ -265,6 +265,14 @@ impl<'a> Into<RegionModel> for &'a Region {
 pub fn args() -> Vec<Arg<'static>> {
     let validate_flight_spec = |s: &str| validate_name_id_path(validate_flight_name, s);
     let validator = |s: &str| validate_name_id(validate_formation_name, s);
+    #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+    let mut hide = true;
+    let _ = hide;
+    #[cfg(feature = "unstable")]
+    {
+        hide = false;
+    }
+
     // TODO: add --from with support for @file and @- (stdin)
     vec![
         arg!(name_id --name -('n') =["STRING"])
@@ -280,14 +288,6 @@ pub fn args() -> Vec<Arg<'static>> {
             .help("A Flight to add to this formation in the form of ID|NAME|@path|@- (supports comma separated list, or multiple uses) (See FLIGHT SPEC below)")
             .long_help(LONG_FLIGHT)
             .validator(validate_flight_spec),
-        arg!(--affinity|affinities =["NAME|ID"]...)
-            .help("A Formation that this Formation has an affinity for (supports comma separated list, or multiple uses)")
-            .long_help(LONG_AFFINITY)
-            .validator(validator),
-        arg!(--connection|connections =["NAME|ID"]...)
-            .help("A Formations that this Formation is connected to (supports comma separated list, or multiple uses)")
-            .long_help(LONG_CONNECTION)
-            .validator(validator),
         arg!(--provider|providers =["PROVIDER"=>"all"]... ignore_case)
             .help("A provider that this Formation's Flights are permitted to run on (supports comma separated list, or multiple uses)")
             .long_help(LONG_PROVIDER)
@@ -310,14 +310,25 @@ pub fn args() -> Vec<Arg<'static>> {
             .long_help(LONG_PUBLIC_ENDPOINT)
             .validator(validate_public_endpoint),
         // TODO: maybe allow omitting the Flight's port if it's the same
-        arg!(--("formation-endpoint")|("formation-endpoints") =["SPEC"]...)
-            .validator(validate_endpoint)
-            .help("An endpoints exposed only to other Formations privately. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
-            .long_help(LONG_FORMATION_ENDPOINT),
-        // TODO: maybe allow omitting the Flight's port if it's the same
         arg!(--("flight-endpoint")|("flight-endpoints") =["SPEC"]...)
             .validator(validate_endpoint)
             .help("An endpoint exposed only to Flights within this Formation. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
             .long_help(LONG_FLIGHT_ENDPOINT),
+        arg!(--affinity|affinities =["NAME|ID"]...)
+            .help("A Formation that this Formation has an affinity for (supports comma separated list, or multiple uses)")
+            .long_help(LONG_AFFINITY)
+            .validator(validator)
+            .hide(hide), // Hidden on feature = unstable
+        arg!(--connection|connections =["NAME|ID"]...)
+            .help("A Formations that this Formation is connected to (supports comma separated list, or multiple uses)")
+            .long_help(LONG_CONNECTION)
+            .validator(validator)
+            .hide(hide), // Hidden on feature = unstable
+        // TODO: maybe allow omitting the Flight's port if it's the same
+        arg!(--("formation-endpoint")|("formation-endpoints") =["SPEC"]...)
+            .validator(validate_endpoint)
+            .help("An endpoints exposed only to other Formations privately. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
+            .long_help(LONG_FORMATION_ENDPOINT)
+            .hide(hide), // Hidden on feature = unstable
     ]
 }

@@ -37,6 +37,13 @@ multiple times.";
 pub struct SeaplaneFlightCommonArgMatches<'a>(pub &'a ArgMatches);
 
 pub fn args(image_required: bool) -> Vec<Arg<'static>> {
+    #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+    let mut hide = true;
+    let _ = hide;
+    #[cfg(feature = "unstable")]
+    {
+        hide = false;
+    }
     vec![
         // TODO: allow omitting of USER (TENANT) portion of image spec too...but this requires an API
         // call to determine the TENANT id (at least until the `seaplane account login` command is done)
@@ -57,14 +64,16 @@ pub fn args(image_required: bool) -> Vec<Arg<'static>> {
             .possible_values(Architecture::VARIANTS)
             .help("The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses)")
             .long_help(LONG_ARCHITECTURE),
-        arg!(--("api-permission")|("api-permissions"))
-            .overrides_with("no-api-permission")
-            .help("This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime"),
-        arg!(--("no-api-permission")|("no-api-permissions"))
-            .overrides_with("api-permission")
-            .help("This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime"),
         arg!(--("no-maximum")|("no-max"))
             .overrides_with("maximum")
-            .help("There is no maximum number of instances")
+            .help("There is no maximum number of instances"),
+        arg!(--("api-permission")|("api-permissions"))
+            .overrides_with("no-api-permission")
+            .help("This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime")
+            .hide(hide), // hidden on feature = unstable
+        arg!(--("no-api-permission")|("no-api-permissions"))
+            .overrides_with("api-permission")
+            .help("This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime")
+            .hide(hide), // hidden on feature = unstable
     ]
 }

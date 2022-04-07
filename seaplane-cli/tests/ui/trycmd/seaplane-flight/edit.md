@@ -29,7 +29,6 @@ ARGS:
 
 OPTIONS:
     -A, --api-key <STRING>       The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --api-permission         This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime [aliases: api-permissions]
         --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: AMD64, ARM64]
         --color <COLOR>          Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -h, --help                   Print help information
@@ -37,7 +36,6 @@ OPTIONS:
         --maximum <NUM>          The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
         --minimum <NUM>          The minimum number of container instances that should ever be running [default: 1] [aliases: min]
     -n, --name <STRING>          A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
-        --no-api-permission      This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime [aliases: no-api-permissions]
         --no-color               Do not color output (alias for --color=never)
         --no-maximum             There is no maximum number of instances [aliases: no-max]
     -q, --quiet                  Suppress output at a specific level and below
@@ -104,11 +102,6 @@ OPTIONS:
             
             [env: SEAPLANE_API_KEY]
 
-        --api-permission
-            This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
-            
-            [aliases: api-permissions]
-
         --architecture <ARCH>
             The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
             
@@ -162,11 +155,6 @@ OPTIONS:
               - the total length must be <= 27
             
             Some of these restrictions may be lifted in the future.
-
-        --no-api-permission
-            This Flight should NOT be allowed to hit Seaplane API endpoints and will NOT be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime
-            
-            [aliases: no-api-permissions]
 
         --no-color
             Do not color output (alias for --color=never)

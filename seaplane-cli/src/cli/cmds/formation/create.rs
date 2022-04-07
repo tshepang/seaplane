@@ -56,6 +56,13 @@ pub struct SeaplaneFormationCreate;
 
 impl SeaplaneFormationCreate {
     pub fn command() -> Command<'static> {
+        #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
+        let mut hide = true;
+        let _ = hide;
+        #[cfg(feature = "unstable")]
+        {
+            hide = false;
+        }
         Command::new("create")
             .after_help(concatcp!(FLIGHT_SPEC, "\n\n", REGION_SPEC))
             .visible_alias("add")
@@ -95,7 +102,8 @@ impl SeaplaneFormationCreate {
                 .help("The architectures this flight is capable of running on. No value means it will be auto detected from the image definition"))
             .arg(arg!(--("flight-api-permission")|("flight-api-permissions"))
                 .requires("flight-image")
-                .help("This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime"))
+                .help("This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime")
+                .hide(hide)) // hidden on feature = unstable
     }
 }
 
