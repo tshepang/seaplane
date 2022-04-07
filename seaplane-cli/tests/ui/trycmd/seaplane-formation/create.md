@@ -37,7 +37,7 @@ OPTIONS:
 
 INLINE FLIGHT OPTIONS:
         --flight-api-permission         This Flight should be allowed to hit Seaplane API endpoints and will be provided a 'SEAPLANE_API_TOKEN' environment variable at runtime [aliases: flight-api-permissions]
-        --flight-architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: flight-arch, flight-arches, flight-architectures] [possible values: amd64, arm64]
+        --flight-architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition [aliases: flight-arch, flight-arches, flight-architectures] [possible values: AMD64, ARM64]
         --flight-image <SPEC>           The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
         --flight-maximum <NUM>          The maximum number of container instances that should ever be running (default: infinite) [aliases: flight-max]
         --flight-minimum <NUM>          The minimum number of container instances that should ever be running [default: 1] [aliases: flight-min]
@@ -339,7 +339,7 @@ INLINE FLIGHT OPTIONS:
             The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
             
             [aliases: flight-arch, flight-arches, flight-architectures]
-            [possible values: amd64, arm64]
+            [possible values: AMD64, ARM64]
 
         --flight-image <SPEC>
             The container image registry reference that this Flight will use (See IMAGE SPEC below)
