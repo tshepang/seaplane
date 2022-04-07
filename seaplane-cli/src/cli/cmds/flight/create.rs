@@ -69,7 +69,10 @@ impl CliCommand for SeaplaneFlightCreate {
                     .into_err()
                     .context("(hint: try '")
                     .color_context(Color::Green, format!("seaplane flight edit {name}"))
-                    .context("' instead)\n"));
+                    .context("' to edit an existing Flight)\n")
+                    .context("(hint: you can also use '")
+                    .color_context(Color::Green, "--force")
+                    .context("' to overwrite existing items)\n"));
             }
 
             // We have duplicates, but the user passed --force. So first we remove the existing

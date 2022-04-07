@@ -163,6 +163,7 @@ impl CliCommand for SeaplaneFormationCreate {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.fetch = matches.is_present("fetch");
+        ctx.args.force = matches.is_present("force");
         ctx.formation_ctx.init(FormationCtx::from_formation_create(
             &SeaplaneFormationCreateArgMatches(matches),
             ctx,
