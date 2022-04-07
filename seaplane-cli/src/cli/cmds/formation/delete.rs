@@ -137,21 +137,23 @@ impl CliCommand for SeaplaneFormationDelete {
                 };
                 for id in ids {
                     if let Some(cfg) = ctx.db.formations.remove_configuration(&id) {
-                        cloned_ctx.internal_run = true;
-                        for flight in cfg.model.flights() {
-                            let flight_name = flight.name();
-                            if !ctx
-                                .db
-                                .formations
-                                .configurations()
-                                .filter(|cfg| cfg.id != id)
-                                .any(|cfg| {
-                                    cfg.model.flights().iter().any(|f| f.name() == flight_name)
-                                })
-                            {
-                                cloned_ctx.args.name_id = Some(flight_name.to_string());
-                                SeaplaneFlightDelete.run(&mut cloned_ctx)?;
-                                deleted += 1;
+                        if formation_ctx.recursive {
+                            cloned_ctx.internal_run = true;
+                            for flight in cfg.model.flights() {
+                                let flight_name = flight.name();
+                                if !ctx
+                                    .db
+                                    .formations
+                                    .configurations()
+                                    .filter(|cfg| cfg.id != id)
+                                    .any(|cfg| {
+                                        cfg.model.flights().iter().any(|f| f.name() == flight_name)
+                                    })
+                                {
+                                    cloned_ctx.args.name_id = Some(flight_name.to_string());
+                                    SeaplaneFlightDelete.run(&mut cloned_ctx)?;
+                                    deleted += 1;
+                                }
                             }
                         }
                     }
