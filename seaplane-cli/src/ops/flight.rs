@@ -206,14 +206,17 @@ impl Flights {
         Ok(Flight::new(model))
     }
 
-    pub fn update_or_create_flight(&mut self, model: FlightModel) -> Vec<(String, Id)> {
-        let found = false;
+    /// Either updates a matching local flight, or creates a new one. Returns NEW flight names and
+    /// IDs
+    pub fn update_or_create_flight(&mut self, model: &FlightModel) -> Vec<(String, Id)> {
+        let mut found = false;
         let mut ret = Vec::new();
         for flight in self
             .inner
             .iter_mut()
             .filter(|f| f.model.name() == model.name() && f.model.image_str() == model.image_str())
         {
+            found = true;
             flight.model.set_minimum(model.minimum());
             flight.model.set_maximum(model.maximum());
 
@@ -222,12 +225,10 @@ impl Flights {
             }
 
             flight.model.set_api_permission(model.api_permission());
-
-            ret.push((flight.model.name().to_owned(), flight.id));
         }
 
         if !found {
-            let f = Flight::new(model);
+            let f = Flight::new(model.clone());
             ret.push((f.model.name().to_owned(), f.id));
             self.inner.push(f);
         }

@@ -78,6 +78,8 @@ impl Formations {
         self.formations.get_mut(idx)
     }
 
+    /// Either updates a matching local Formation Configurations, or creates a new one. Returns NEW
+    /// Formation Configuration IDs
     pub fn update_or_create_configuration(
         &mut self,
         name: &str,
@@ -87,7 +89,11 @@ impl Formations {
     ) -> Vec<Id> {
         let mut ret = Vec::new();
 
-        if !self.configurations.iter().any(|c| c.model == model) {
+        if !self
+            .configurations
+            .iter()
+            .any(|c| c.model == model && c.remote_id == Some(uuid))
+        {
             let mut new_cfg = FormationConfiguration::new(model.clone());
             new_cfg.remote_id = Some(uuid);
             ret.push(new_cfg.id);
@@ -109,10 +115,28 @@ impl Formations {
                 }
                 f.local.insert(cfg.id);
             }
-            ret.push(cfg.id);
         }
 
         ret
+    }
+
+    /// Either updates a matching local Formations, or creates a new one. Returns NEW Formations
+    /// IDs
+    pub fn update_or_create_formation(&mut self, formation: Formation) -> Option<Id> {
+        if let Some(f) = self
+            .formations
+            .iter_mut()
+            .find(|f| f.name == formation.name)
+        {
+            f.in_air.extend(formation.in_air);
+            f.grounded.extend(formation.grounded);
+            f.local.extend(formation.local);
+            None
+        } else {
+            let id = formation.id;
+            self.formations.push(formation);
+            Some(id)
+        }
     }
 
     // TODO: add success indicator

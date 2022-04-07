@@ -1,8 +1,11 @@
+use std::collections::HashSet;
+
 use clap::Command;
 
 use crate::{
     cli::{cmds::formation::build_request, CliCommand},
     error::{CliError, Context, Result},
+    ops::formation::Formation,
     printer::Color,
     Ctx,
 };
@@ -45,21 +48,23 @@ impl CliCommand for SeaplaneFormationFetch {
 
         // TODO: We't requesting tons of new tokens...maybe we could do multiple per and just
         // retry on error?
-        for name in names {
-            let list_cfg_uuids_req = build_request(Some(&name), api_key)?;
+        let mut flights_added = HashSet::new();
+        let mut formations_added = HashSet::new();
+        for name in &names {
+            let list_cfg_uuids_req = build_request(Some(name), api_key)?;
 
             let cfg_uuids = list_cfg_uuids_req
                 .list_configuration_ids()
                 .map_err(CliError::from)
                 .context("Context: failed to retrieve Formation Configuration IDs\n")?;
-            let active_cfgs_req = build_request(Some(&name), api_key)?;
+            let active_cfgs_req = build_request(Some(name), api_key)?;
             let active_cfgs = active_cfgs_req
                 .get_active_configurations()
                 .map_err(CliError::from)
                 .context("Context: failed to retrieve Active Formation Configurations\n")?;
 
             for uuid in cfg_uuids.into_iter() {
-                let get_cfgs_req = build_request(Some(&name), api_key)?;
+                let get_cfgs_req = build_request(Some(name), api_key)?;
                 let cfg_model = get_cfgs_req
                     .get_configuration(uuid)
                     .map_err(CliError::from)
@@ -67,28 +72,51 @@ impl CliCommand for SeaplaneFormationFetch {
                     .with_color_context(|| (Color::Yellow, format!("{uuid}\n")))?;
 
                 for flight in cfg_model.flights() {
-                    let names_ids = ctx.db.flights.update_or_create_flight(flight.clone());
-                    for (name, id) in names_ids {
-                        cli_print!("Successfully fetched Flight '");
-                        cli_print!(@Green, "{name}");
-                        cli_print!("' with ID '");
-                        cli_print!(@Green, "{}", &id.to_string()[..8]);
-                        cli_println!("'!");
-                    }
+                    let names_ids = ctx.db.flights.update_or_create_flight(flight);
+                    flights_added.extend(names_ids);
                 }
 
-                let ids = ctx.db.formations.update_or_create_configuration(
-                    &name,
-                    cfg_model,
-                    active_cfgs.iter().any(|ac| ac.uuid() == &uuid),
-                    uuid,
-                );
-                for id in ids {
-                    cli_print!("Successfully fetched Formation Configuration '");
-                    cli_print!(@Green, "{}", &id.to_string()[..8]);
-                    cli_println!("'!");
+                let is_active = active_cfgs.iter().any(|ac| ac.uuid() == &uuid);
+                let ids = ctx
+                    .db
+                    .formations
+                    .update_or_create_configuration(name, cfg_model, is_active, uuid);
+                let mut formation = Formation::new(name);
+                formation.local.extend(&ids);
+                if is_active {
+                    formation.in_air.extend(ids);
+                } else {
+                    formation.grounded.extend(ids);
+                }
+                if let Some(id) = ctx.db.formations.update_or_create_formation(formation) {
+                    formations_added.insert((name, id));
                 }
             }
+        }
+
+        let mut count = 0;
+        for (name, id) in formations_added {
+            count += 1;
+            cli_print!("Successfully fetched Formation Definition '");
+            cli_print!(@Green, "{name}");
+            cli_print!("' with local ID '");
+            cli_println!(@Green, "{}", &id.to_string()[..8]);
+        }
+        for (name, id) in flights_added {
+            count += 1;
+            cli_print!("Successfully fetched Flight Definition '");
+            cli_print!(@Green, "{name}");
+            cli_print!("' with local ID '");
+            cli_print!(@Green, "{}", &id.to_string()[..8]);
+            cli_println!("'!");
+        }
+        if names.is_empty() {
+            cli_println!("No remote Formations found");
+        } else if count > 0 {
+            cli_println!("");
+            cli_println!("Successfully fetched {count} items");
+        } else {
+            cli_println!("All local definitions are up to date!");
         }
 
         ctx.persist_flights()?;
