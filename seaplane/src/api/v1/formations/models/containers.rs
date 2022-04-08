@@ -1,3 +1,4 @@
+use chrono::{offset::Utc, DateTime};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -15,17 +16,23 @@ pub enum ContainerStatus {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ContainerHostInfo {
     /// The approximate decimal latitude of the container host (in the range of `-90.0..90.0`)
-    host_latitude: Option<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_latitude: Option<f32>,
     /// The approximate decimal longitude of the container host (in the range of `-180.0..180.0`)
-    host_longitude: Option<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_longitude: Option<f32>,
     /// An IATA airport code that the container host is near
-    host_iata: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_iata: Option<String>,
     /// The ISO 3166-1 alpha-2 country code the container host is operating in
-    host_country: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_country: Option<String>,
     /// The regulatory region the container host is within
-    host_region: Option<Region>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_region: Option<Region>,
     /// The provider the container host is backed by
-    host_provider: Option<Provider>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_provider: Option<Provider>,
 }
 
 /// The response from `GET /formations/NAME/containers`
@@ -35,6 +42,18 @@ pub struct Containers {
     inner: Vec<Container>,
 }
 
+impl Containers {
+    /// Iterate through the containers
+    pub fn iter(&self) -> impl Iterator<Item = &Container> {
+        self.inner.iter()
+    }
+
+    /// Iterate through the containers mutably
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Container> {
+        self.inner.iter_mut()
+    }
+}
+
 /// A single formation name in the response from `GET /formations/NAME/containers/ID`
 ///
 /// **NOTE:** All `usage` and the fields are currently unimplemented in the backend and
@@ -42,42 +61,48 @@ pub struct Containers {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Container {
     /// ID of a particular container instance
-    uuid: Uuid,
+    pub uuid: Uuid,
     /// Current Status
-    status: ContainerStatus,
+    pub status: ContainerStatus,
     /// The name of the Flight that this container instance is running for
-    flight_name: String,
+    pub flight_name: String,
     // TODO: The flight could be a member of multiple configurations within the Formation which
     // would mean this could be multiple UUIDs, no?
     /// The Formation Configuration's UUID that this container instance is a part of
-    configuration_id: Uuid,
+    pub configuration_id: Uuid,
     /// Exit status if the container has stopped
-    #[serde(default)]
-    exit_status: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exit_status: Option<i32>,
+    /// The time the container started running
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_time: Option<DateTime<Utc>>,
+    /// The time the container stopped running
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_time: Option<DateTime<Utc>>,
     /// Number of bytes received from the public internet
     #[serde(default)]
-    public_ingress_usage: Option<u64>,
+    pub public_ingress_usage: Option<u64>,
     /// Number of bytes sent to the public internet
     #[serde(default)]
-    public_egress_usage: Option<u64>,
+    pub public_egress_usage: Option<u64>,
     /// Number of bytes received from other container instances
     #[serde(default)]
-    private_ingress_usage: Option<u64>,
+    pub private_ingress_usage: Option<u64>,
     /// Number of bytes sent to other container instances
     #[serde(default)]
-    private_egress_usage: Option<u64>,
+    pub private_egress_usage: Option<u64>,
     /// Number of bytes used by this container's disk
     #[serde(default)]
-    disk_usage: Option<u64>,
+    pub disk_usage: Option<u64>,
     /// Number of bytes of RAM this container has used
     #[serde(default)]
-    ram_usage: Option<u64>,
+    pub ram_usage: Option<u64>,
     /// Total number of CPU seconds this container has used
     #[serde(default)]
-    cpu_usage: Option<u64>,
+    pub cpu_usage: Option<u64>,
     /// Information about the host the container is running on
     #[serde(flatten, default)]
-    host_info: Option<ContainerHostInfo>,
+    pub host_info: Option<ContainerHostInfo>,
 }
 
 // We don't derive the trait because we only need to check the UUID to determine equivalence
