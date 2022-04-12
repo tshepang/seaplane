@@ -31,7 +31,7 @@ OPTIONS:
     -a, --all                 Delete all matching Flight Plans even when the name or ID is ambiguous
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --force               Delete this Flight Plan even if referenced by a local Formation Plan, or deletes ALL Flight Plan referenced by the name or ID even if ambiguous
+    -f, --force               Delete this Flight Plan even if referenced by a local Formation Plan, or deletes ALL Flight Plan referenced by the name or ID even if ambiguous
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
     -q, --quiet               Suppress output at a specific level and below
@@ -74,7 +74,7 @@ OPTIONS:
             [default: auto]
             [possible values: always, ansi, auto, never]
 
-        --force
+    -f, --force
             Delete this Flight Plan even if referenced by a local Formation Plan, or deletes ALL Flight Plan referenced by the name or ID even if ambiguous
 
     -h, --help

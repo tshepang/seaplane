@@ -37,7 +37,7 @@ impl SeaplaneFlightPlan {
 
 impl CliCommand for SeaplaneFlightPlan {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        if ctx.args.stateless {
+        if ctx.args.stateless && !ctx.internal_run {
             cli_eprint!(@Red, "error: ");
             cli_eprint!("'");
             cli_eprint!(@Yellow, "--stateless");

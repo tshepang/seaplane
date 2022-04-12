@@ -283,6 +283,7 @@ pub enum CliErrorKind {
     InlineFlightMissingValue(String),
     ParseInt(std::num::ParseIntError),
     StrumParse(strum::ParseError),
+    FlightsInUse(Vec<String>),
 }
 
 impl CliErrorKind {
@@ -290,6 +291,16 @@ impl CliErrorKind {
         use CliErrorKind::*;
 
         match &*self {
+            FlightsInUse(flights) => {
+                cli_eprintln!("the following Flight Plans are referenced by a Formation Plan and cannot be deleted");
+                for f in flights {
+                    cli_eprintln!(@Yellow, "\t{f}");
+                }
+                cli_eprintln!("");
+                cli_eprint!("(hint: override this check and force delete with '");
+                cli_eprint!(@Yellow, "--force");
+                cli_eprintln!("' which will also remove the Flight Plan from the Formation Plan)");
+            }
             ConflictingArguments(a, b) => {
                 cli_eprint!("cannot use '");
                 cli_eprint!(@Yellow, "{a}");
@@ -482,6 +493,7 @@ impl PartialEq<Self> for CliErrorKind {
             InlineFlightMissingImage => matches!(rhs, InlineFlightMissingImage),
             InlineFlightMissingValue(_) => matches!(rhs, InlineFlightMissingValue(_)),
             ParseInt(_) => matches!(rhs, ParseInt(_)),
+            FlightsInUse(_) => matches!(rhs, FlightsInUse(_)),
         }
     }
 }

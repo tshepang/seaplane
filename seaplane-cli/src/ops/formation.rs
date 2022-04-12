@@ -50,6 +50,12 @@ pub struct Formations {
 }
 
 impl Formations {
+    pub fn has_flight(&self, flight: &str) -> bool {
+        self.configurations
+            .iter()
+            .any(|fc| fc.model.flights().iter().any(|f| f.name() == flight))
+    }
+
     pub fn configurations(&self) -> impl Iterator<Item = &FormationConfiguration> {
         self.configurations.iter()
     }
@@ -259,6 +265,13 @@ impl Formations {
             .enumerate()
             .map(|(i, idx)| self.formations.remove(idx - i))
             .collect()
+    }
+
+    /// Removes the given flight from all formations that reference it
+    pub fn remove_flight(&mut self, flight: &str) {
+        self.configurations.iter_mut().for_each(|cfg| {
+            cfg.model.remove_flight(flight);
+        });
     }
 }
 

@@ -63,11 +63,15 @@ impl CliCommand for SeaplaneFormationPlan {
         let name = &formation_ctx.name_id;
         if ctx.db.formations.contains_name(name) {
             if !ctx.args.force {
-                return Err(CliErrorKind::DuplicateName(name.to_owned())
+                let mut err = CliErrorKind::DuplicateName(name.to_owned())
                     .into_err()
                     .context("(hint: try '")
                     .color_context(Color::Green, format!("seaplane formation edit {}", &name))
-                    .context("' instead)\n"));
+                    .context("' instead)\n");
+                if ctx.db.needs_persist {
+                    err = err.context("\nRolling back created Flight Plans!\n");
+                }
+                return Err(err);
             }
 
             // We have duplicates, but the user passed --force. So first we remove the existing
@@ -77,6 +81,13 @@ impl CliCommand for SeaplaneFormationPlan {
             // TODO: if more than one formation has the exact same name, we remove them all; that's
             // *probably* what we want? But more thought should go into this...
             ctx.db.formations.remove_name(name);
+        }
+
+        if ctx.db.needs_persist {
+            // Any flights we created in update_ctx can now be persisted. We didn't want to persist
+            // them before as we could have still hit an error such as Duplicate Formation Names
+            ctx.persist_flights()?;
+            ctx.db.needs_persist = false;
         }
 
         // Add the new formation
@@ -126,6 +137,10 @@ impl CliCommand for SeaplaneFormationPlan {
         let inline_flights = vec_remove_if!(flights, |f: &str| f.contains('='));
         for flight in inline_flights {
             let mut cloned_ctx = ctx.clone();
+            // We set stateless because we don't want the created flights to be persisted until
+            // we're ready (i.e. we're sure this formation will be created)
+            cloned_ctx.args.stateless = true;
+            cloned_ctx.internal_run = true;
             cloned_ctx
                 .flight_ctx
                 .init(FlightCtx::from_inline_flight(flight)?);
@@ -146,6 +161,8 @@ impl CliCommand for SeaplaneFormationPlan {
                 .cfg_ctx
                 .flights
                 .push(name);
+
+            ctx.db.needs_persist = true;
         }
 
         // Flights using @path or @-
@@ -159,9 +176,11 @@ impl CliCommand for SeaplaneFormationPlan {
                 .cfg_ctx
                 .flights
                 .push(name);
+            ctx.db.needs_persist = true;
         }
 
-        ctx.persist_flights()?;
+        // Any flights we created will be persisted during `run` as we could still hit an error
+        // such as Duplicate Formation Names and would need to roll them back
 
         ctx.formation_ctx
             .get_mut_or_init()

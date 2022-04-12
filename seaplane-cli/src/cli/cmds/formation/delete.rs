@@ -79,8 +79,7 @@ impl CliCommand for SeaplaneFormationDelete {
             0 => errors::no_matching_item(formation_ctx.name_id.clone(), false, ctx.args.all)?,
             1 => (),
             _ => {
-                // TODO: and --force
-                if !ctx.args.all {
+                if !(ctx.args.all || ctx.args.force) {
                     errors::ambiguous_item(formation_ctx.name_id.clone(), true)?;
                 }
             }
@@ -174,6 +173,7 @@ impl CliCommand for SeaplaneFormationDelete {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.force = matches.is_present("force");
+        ctx.args.all = matches.is_present("all");
         let mut fctx = ctx.formation_ctx.get_mut_or_init();
         fctx.name_id = matches.value_of("formation").unwrap().to_string();
         fctx.remote = !matches.is_present("no-remote");

@@ -7,7 +7,7 @@ use crate::{
         CliCommand,
     },
     context::Ctx,
-    error::Result,
+    error::{CliErrorKind, Result},
 };
 
 #[derive(Copy, Clone, Debug)]
@@ -24,7 +24,7 @@ impl SeaplaneFlightDelete {
             .arg(arg!(flight required =["NAME|ID"])
                 .validator(validator)
                 .help("The name or ID of the Flight Plan to remove, must be unambiguous"))
-            .arg(arg!(--force)
+            .arg(arg!(--force -('f'))
                 .help("Delete this Flight Plan even if referenced by a local Formation Plan, or deletes ALL Flight Plan referenced by the name or ID even if ambiguous"))
             .arg(arg!(--all -('a'))
                 .help("Delete all matching Flight Plans even when the name or ID is ambiguous"))
@@ -62,14 +62,40 @@ impl CliCommand for SeaplaneFlightDelete {
             0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), false, ctx.args.all)?,
             1 => (),
             _ => {
-                // TODO: and --force
-                if !ctx.args.all {
+                if !(ctx.args.all || ctx.args.force) {
                     errors::ambiguous_item(ctx.args.name_id.clone().unwrap(), true)?;
                 }
             }
         }
 
-        // TODO: Check Formation References and require --force if found
+        // Check if any of the requested flights are referenced in Formations
+        let flights_in_use: Vec<String> = ctx
+            .db
+            .flights
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| indices.contains(i))
+            .filter_map(|(_, flight)| {
+                if ctx.db.formations.has_flight(flight.model.name()) {
+                    Some(flight.model.name().to_owned())
+                } else {
+                    None
+                }
+            })
+            .collect();
+        // If so, and `--force` wasn't used issue an error
+        if !flights_in_use.is_empty() {
+            if !ctx.args.force {
+                return Err(CliErrorKind::FlightsInUse(flights_in_use).into_err());
+            }
+            // Remove the flights from any Formations
+            for flight in flights_in_use {
+                ctx.db.formations.remove_flight(&flight);
+                // TODO: we should also go through and delete all endpoints that reference this
+                // flight...but we don't have endpoints that are that smart yet
+            }
+            ctx.persist_formations()?;
+        }
 
         // Remove the flights
         ctx.db
@@ -93,6 +119,8 @@ impl CliCommand for SeaplaneFlightDelete {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.args.force = matches.is_present("force");
+        ctx.args.all = matches.is_present("all");
         ctx.args.name_id = matches.value_of("flight").map(ToOwned::to_owned);
         Ok(())
     }

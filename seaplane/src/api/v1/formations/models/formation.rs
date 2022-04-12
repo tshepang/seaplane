@@ -322,6 +322,20 @@ impl FormationConfiguration {
         self.flights.push(flight);
     }
 
+    /// Remove a [`Flight`] from the makeup of this Formation Configuration.
+    pub fn remove_flight(&mut self, name: &str) -> Option<Flight> {
+        if let Some(i) =
+            self.flights
+                .iter()
+                .enumerate()
+                .find_map(|(i, f)| if f.name == name { Some(i) } else { None })
+        {
+            Some(self.flights.swap_remove(i))
+        } else {
+            None
+        }
+    }
+
     /// Set the [`Flight`]s that makeup this Formation Configuration.
     pub fn set_flights(&mut self, flights: Vec<Flight>) {
         self.flights = flights;

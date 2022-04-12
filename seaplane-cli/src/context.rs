@@ -241,6 +241,9 @@ pub struct Db {
 
     /// The in memory Formations database
     pub formations: Formations,
+
+    /// A *hint* that we should persist at some point. Not gospel
+    pub needs_persist: bool,
 }
 
 impl Db {
@@ -253,6 +256,7 @@ impl Db {
             flights: FromDisk::load_if(flights, yes).unwrap_or_else(|| Ok(Flights::default()))?,
             formations: FromDisk::load_if(formations, yes)
                 .unwrap_or_else(|| Ok(Formations::default()))?,
+            needs_persist: false,
         })
     }
 }
