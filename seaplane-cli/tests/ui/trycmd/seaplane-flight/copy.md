@@ -18,8 +18,8 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight copy -h
-seaplane-flight-copy [PKGVER]
 Copy a Flight definition
+seaplane-flight-copy [..]
 
 USAGE:
     seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
@@ -83,8 +83,8 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight copy --help
-seaplane-flight-copy [PKGVER]
 Copy a Flight definition
+seaplane-flight-copy [..]
 
 USAGE:
     seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]

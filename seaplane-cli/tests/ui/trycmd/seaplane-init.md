@@ -2,7 +2,7 @@ Short help message with `-h`:
 
 ```console
 $ seaplane init -h
-seaplane-init [PKGVER]
+seaplane-init [..]
 Create the Seaplane directory structure at the appropriate locations
 
 USAGE:
@@ -26,7 +26,7 @@ The long help message with `--help`:
 
 ```console
 $ seaplane init --help
-seaplane-init [PKGVER]
+seaplane-init [..]
 Create the Seaplane directory structure at the appropriate locations
 
 USAGE:

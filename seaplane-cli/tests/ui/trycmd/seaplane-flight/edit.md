@@ -18,8 +18,8 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight edit -h
-seaplane-flight-edit [PKGVER]
 Edit a Flight definition
+seaplane-flight-edit [..]
 
 USAGE:
     seaplane flight edit <NAME|ID> [OPTIONS]
@@ -82,8 +82,8 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight edit --help
-seaplane-flight-edit [PKGVER]
 Edit a Flight definition
+seaplane-flight-edit [..]
 
 USAGE:
     seaplane flight edit <NAME|ID> [OPTIONS]

@@ -3,8 +3,8 @@ Be default, `seaplane formation` will display the help text:
 ```console
 $ seaplane formation
 ? 2
-seaplane-formation [PKGVER]
 Operate on Seaplane Formations
+seaplane-formation [..]
 
 USAGE:
     seaplane formation [OPTIONS] <SUBCOMMAND>

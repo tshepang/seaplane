@@ -3,8 +3,8 @@ Be default, `seaplane flight` will display the help text:
 ```console
 $ seaplane flight
 ? 2
-seaplane-flight [PKGVER]
 Operate on Seaplane Flights (logical containers), which are the core component of Formations
+seaplane-flight [..]
 
 USAGE:
     seaplane flight [OPTIONS] <SUBCOMMAND>

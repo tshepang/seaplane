@@ -2,7 +2,7 @@ Short help:
 
 ```console
 $ seaplane metadata get -h
-seaplane-metadata-get [PKGVER]
+seaplane-metadata-get [..]
 Retrieve a metadata key-value pair
 
 USAGE:
@@ -32,7 +32,7 @@ Long help:
 
 ```console
 $ seaplane metadata get --help
-seaplane-metadata-get [PKGVER]
+seaplane-metadata-get [..]
 Retrieve a metadata key-value pair
 
 Keys and values will be displayed in base64 encoded format by default because they may contain

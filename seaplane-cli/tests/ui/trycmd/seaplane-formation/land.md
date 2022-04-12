@@ -1,7 +1,7 @@
 ```console
 $ seaplane formation land -h
-seaplane-formation-land [PKGVER]
 Land (Stop) all configurations of a Formation
+seaplane-formation-land [..]
 
 USAGE:
     seaplane formation land [OPTIONS] <NAME|ID>
@@ -25,8 +25,8 @@ OPTIONS:
 
 ```console
 $ seaplane formation land --help
-seaplane-formation-land [PKGVER]
 Land (Stop) all configurations of a Formation
+seaplane-formation-land [..]
 
 USAGE:
     seaplane formation land [OPTIONS] <NAME|ID>

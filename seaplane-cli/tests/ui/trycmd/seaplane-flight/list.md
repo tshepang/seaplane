@@ -2,8 +2,8 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight list -h
-seaplane-flight-list [PKGVER]
 List the current Flight definitions
+seaplane-flight-list [..]
 
 USAGE:
     seaplane flight list [OPTIONS]
@@ -26,8 +26,8 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight list --help
-seaplane-flight-list [PKGVER]
 List the current Flight definitions
+seaplane-flight-list [..]
 
 USAGE:
     seaplane flight list [OPTIONS]

@@ -15,7 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 atty = { version = "0.2.14", optional = true }
-clap = { version = "3.1.2", default-features = false, features = ["std", "unicode", "cargo", "wrap_help", "env", "suggestions"] }
+clap = { version = "3.1.8", default-features = false, features = ["std", "unicode", "cargo", "wrap_help", "env", "suggestions"] }
 clap_complete = "3.0.6"
 const_format = "0.2.22"
 directories = "4.0.1"
@@ -35,7 +35,7 @@ tempfile = "3.3.0"
 base64 = "0.13.0"
 
 [dev-dependencies]
-trycmd = "0.13.2"
+trycmd = "0.13.3"
 const_format = "0.2.22"
 
 [build-dependencies]

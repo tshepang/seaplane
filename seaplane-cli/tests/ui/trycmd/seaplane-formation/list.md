@@ -1,7 +1,7 @@
 ```console
 $ seaplane formation list -h
-seaplane-formation-list [PKGVER]
 List your Seaplane Formations
+seaplane-formation-list [..]
 
 USAGE:
     seaplane formation list [OPTIONS]
@@ -22,8 +22,8 @@ OPTIONS:
 
 ```console
 $ seaplane formation list --help
-seaplane-formation-list [PKGVER]
 List your Seaplane Formations
+seaplane-formation-list [..]
 
 This command will display the status and number of configurations for each of your Formations.
 The Formations displayed come from the local database of know Formations. You may wish to update

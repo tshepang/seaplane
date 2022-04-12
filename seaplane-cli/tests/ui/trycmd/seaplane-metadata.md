@@ -3,7 +3,7 @@ With no args:
 ```console
 $ seaplane metadata
 ? 2
-seaplane-metadata [PKGVER]
+seaplane-metadata [..]
 Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:
@@ -33,7 +33,7 @@ The short help:
 
 ```console
 $ seaplane metadata -h
-seaplane-metadata [PKGVER]
+seaplane-metadata [..]
 Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:
@@ -63,7 +63,7 @@ The long help:
 
 ```console
 $ seaplane metadata --help
-seaplane-metadata [PKGVER]
+seaplane-metadata [..]
 Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:

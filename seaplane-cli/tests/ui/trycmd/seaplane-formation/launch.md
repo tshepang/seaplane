@@ -1,7 +1,7 @@
 ```console
 $ seaplane formation launch -h
-seaplane-formation-launch [PKGVER]
 Start all configurations of a Formation and evenly distribute traffic between them
+seaplane-formation-launch [..]
 
 USAGE:
     seaplane formation launch [OPTIONS] <NAME|ID>

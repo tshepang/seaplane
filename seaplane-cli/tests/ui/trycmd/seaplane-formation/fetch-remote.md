@@ -1,7 +1,7 @@
 ```console
 $ seaplane formation fetch-remote -h
-seaplane-formation-fetch-remote [PKGVER]
 Fetch remote Formation definitions
+seaplane-formation-fetch-remote [..]
 
 USAGE:
     seaplane formation fetch-remote
@@ -24,8 +24,8 @@ OPTIONS:
 
 ```console
 $ seaplane formation fetch-remote --help
-seaplane-formation-fetch-remote [PKGVER]
 Fetch remote Formation definitions
+seaplane-formation-fetch-remote [..]
 
 USAGE:
     seaplane formation fetch-remote

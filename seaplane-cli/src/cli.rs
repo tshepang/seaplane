@@ -20,7 +20,7 @@ use crate::{
     printer::{ColorChoice, Printer},
 };
 
-const VERSION: &str = env!("SEAPLANE_GIT_HASH");
+const VERSION: &str = env!("SEAPLANE_VER_WITH_HASH");
 static AUTHORS: &str = crate_authors!();
 static LONG_VERBOSE: &str = "Display more verbose output
 

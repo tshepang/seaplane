@@ -1,7 +1,7 @@
 ```console
 $ seaplane formation delete -h
-seaplane-formation-delete [PKGVER]
 Delete a Seaplane Formation
+seaplane-formation-delete [..]
 
 USAGE:
     seaplane formation delete <NAME|ID> [OPTIONS]

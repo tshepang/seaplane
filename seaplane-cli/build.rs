@@ -1,6 +1,11 @@
-// The build script is used to get the git short hash of the repository at compile time. This hash
-// is then stored in the env var SEAPLANE_GIT_HASH which we use later to insert into the --version
-// flag. In this manner we can tell exactly which commit a particular binary was built from.
+// The build script is used inject compile time info into a --version flag. The information
+// gathered is:
+//
+// - the git short hash of the repository
+// - any cargo feature flags used
+// - the version of the package as taken from Cargo.toml
+//
+// In this manner we can tell exactly how a particular binary was built.
 
 use const_format::concatcp;
 use std::process::Command;
@@ -18,28 +23,18 @@ const COLOR: &str = "";
 fn main() {
     // If `git` is installed and located in `$PATH` of the build machine, it uses that to determine
     // the latest commit hash. Otherwise uses the string UNKNOWN.
-    //
-    // This could be changed to a cargo compile-time-feature in the future if there are scenarios
-    // where you either know `git` isn't available, or you don't wish to have a hash in the
-    // version.
-    let git_hash: String =
-        if let Ok(output) = Command::new("git").args(&["rev-parse", "HEAD"]).output() {
-            // sha will be empty if there is no git info such as if `.git/` was deleted prior to
-            // building
-            let sha = String::from_utf8(output.stdout).unwrap();
-            if sha.is_empty() {
-                "(UNKNOWN)".into()
-            } else {
-                sha[..8].into()
-            }
-        } else {
-            "(UNKNOWN)".into()
-        };
+    let commit_id = Command::new("git")
+        .args(&["rev-parse", "--short", "HEAD"])
+        .output()
+        .ok()
+        .filter(|output| !output.stdout.is_empty())
+        .map(|output| String::from_utf8(output.stdout).unwrap())
+        .unwrap_or_else(|| String::from("UNKNOWN"));
 
     println!(
-        "cargo:rustc-env=SEAPLANE_GIT_HASH=v{} ({})",
+        "cargo:rustc-env=SEAPLANE_VER_WITH_HASH=v{} ({})",
         env!("CARGO_PKG_VERSION"),
-        &git_hash
+        commit_id.trim()
     );
     println!(
         "cargo:rustc-env=SEAPLANE_BUILD_FEATURES={}",

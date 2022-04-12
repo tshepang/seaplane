@@ -18,8 +18,8 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight delete -h
-seaplane-flight-delete [PKGVER]
 Delete a Flight definition
+seaplane-flight-delete [..]
 
 USAGE:
     seaplane flight delete <NAME|ID> [OPTIONS]
@@ -46,8 +46,8 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight delete --help
-seaplane-flight-delete [PKGVER]
 Delete a Flight definition
+seaplane-flight-delete [..]
 
 USAGE:
     seaplane flight delete <NAME|ID> [OPTIONS]
