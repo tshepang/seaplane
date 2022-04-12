@@ -21,8 +21,15 @@ graph TD
     B(fa:fa-layer-group Formation)
 ```
 
-A `formation` is made up of two items, `configuration`s and `flight`s. We'll discuss `flight`s in a
-moment.
+When using the `seaplane` CLI tool you will create local `formation` *Definitions*. These
+definitions can be used to create remote *Instances* running on our Seaplane Cloud. But what is a
+`formation`? A `formation` is made up of two items, `configuration`s and `flight`s definitions.
+We'll discuss `flight`s in a moment.
+
+**NOTE on Terms:** Throughout this document if we say "Formation" without qualifying whether it's a
+*Definition* (which resides locally on your hard drive), or an *Instance* (which is running in our
+Cloud based on your definition); that means it applies equally to both concepts. Where there are
+differences we will specifically say *Definition* or *Instance* as appropriate!
 
 ### Formation Configurations
 
@@ -57,7 +64,7 @@ use case.
 Which brings us to the heart of `formation`s, and what these `configuration`s are
 actually describing.
 
-That's the `flight`!
+That's the `flight` definition!
 
 ## Flight
 

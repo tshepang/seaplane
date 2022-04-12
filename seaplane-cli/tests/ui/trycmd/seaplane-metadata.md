@@ -10,7 +10,7 @@ USAGE:
     seaplane metadata [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
-    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
         --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
     -h, --help                Print help information
@@ -40,7 +40,7 @@ USAGE:
     seaplane metadata [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
-    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
         --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
     -h, --help                Print help information
@@ -71,7 +71,7 @@ USAGE:
 
 OPTIONS:
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.

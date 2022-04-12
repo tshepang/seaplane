@@ -1,41 +1,42 @@
 ```console
 $ seaplane formation delete -h
-Delete a Seaplane Formation
 seaplane-formation-delete [..]
+Deletes local Formation Plans and/or remote Formation Instances
 
 USAGE:
     seaplane formation delete <NAME|ID> [OPTIONS]
+    seaplane formation delete <NAME|ID> --no-remote [OPTIONS]
 
 ARGS:
     <NAME|ID>    The name or ID of the Formation to remove, must be unambiguous
 
 OPTIONS:
-    -a, --all                 Delete all matching Formations even when FORMATION is ambiguous
-    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -a, --all                 Delete all matching Formations even when the name or ID is ambiguous or a partial match
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -f, --force               Delete this Formation even if there are configurations In Flight (active), which will effectively stop all instances of this Formation
+    -f, --force               Delete this Formation even if there are remote instances In Flight (active), which will effectively stop all remote instances of this Formation
     -h, --help                Print help information
-        --local               Delete local Formations (this is set by the default, use --no-local to skip)
+        --local               Delete local Formation Definitions (this is set by the default, use --no-local to skip)
         --no-color            Do not color output (alias for --color=never)
-        --no-local            DO NOT delete local Formations
-        --no-remote           DO NOT delete remote Formations (this is set by the default, use --remote to remove them)
+        --no-local            DO NOT delete local Formation Definitions
+        --no-remote           DO NOT delete remote Formation Instances (this is set by the default, use --remote to remove them)
     -q, --quiet               Suppress output at a specific level and below
-    -r, --recursive           Recursively delete all local objects associated with this Formation
-        --remote              Delete remote Formations (this is set by default, use --no-remote to skip)
+    -r, --recursive           Recursively delete all local definitions associated with this Formation
+        --remote              Delete remote Formation Instances (this is set by default, use --no-remote to skip)
     -S, --stateless           Ignore local state files, do not read from or write to them
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
-    -x, --exact               The given FORMATION must be an exact match
 
 ```
 
 ```console
 $ seaplane formation delete --help
-seaplane-formation-delete [PKGVER]
-Delete a Seaplane Formation
+seaplane-formation-delete [..]
+Deletes local Formation Plans and/or remote Formation Instances
 
 USAGE:
     seaplane formation delete <NAME|ID> [OPTIONS]
+    seaplane formation delete <NAME|ID> --no-remote [OPTIONS]
 
 ARGS:
     <NAME|ID>
@@ -43,10 +44,10 @@ ARGS:
 
 OPTIONS:
     -a, --all
-            Delete all matching Formations even when FORMATION is ambiguous
+            Delete all matching Formations even when the name or ID is ambiguous or a partial match
 
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.
@@ -61,22 +62,22 @@ OPTIONS:
             [possible values: always, ansi, auto, never]
 
     -f, --force
-            Delete this Formation even if there are configurations In Flight (active), which will effectively stop all instances of this Formation
+            Delete this Formation even if there are remote instances In Flight (active), which will effectively stop all remote instances of this Formation
 
     -h, --help
             Print help information
 
         --local
-            Delete local Formations (this is set by the default, use --no-local to skip)
+            Delete local Formation Definitions (this is set by the default, use --no-local to skip)
 
         --no-color
             Do not color output (alias for --color=never)
 
         --no-local
-            DO NOT delete local Formations
+            DO NOT delete local Formation Definitions
 
         --no-remote
-            DO NOT delete remote Formations (this is set by the default, use --remote to remove them)
+            DO NOT delete remote Formation Instances (this is set by the default, use --remote to remove them)
 
     -q, --quiet
             Suppress output at a specific level and below
@@ -87,10 +88,10 @@ OPTIONS:
                 -qqq: Suppress all output
 
     -r, --recursive
-            Recursively delete all local objects associated with this Formation
+            Recursively delete all local definitions associated with this Formation
 
         --remote
-            Delete remote Formations (this is set by default, use --no-remote to skip)
+            Delete remote Formation Instances (this is set by default, use --no-remote to skip)
 
     -S, --stateless
             Ignore local state files, do not read from or write to them
@@ -104,8 +105,5 @@ OPTIONS:
 
     -V, --version
             Print version information
-
-    -x, --exact
-            The given FORMATION must be an exact match
 
 ```

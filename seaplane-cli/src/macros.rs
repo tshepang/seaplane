@@ -427,3 +427,20 @@ macro_rules! maybe_base64_arg {
         }
     };
 }
+
+/// Remove items from a Vec matching some predicate, returning the removed items as a new Vec
+macro_rules! vec_remove_if {
+    ($v:expr, $f:expr) => {{
+        let idx: Vec<_> = $v
+            .iter()
+            .enumerate()
+            .rev()
+            .filter_map(|(i, item)| if $f(item) { Some(i) } else { None })
+            .collect();
+        let mut ret = Vec::new();
+        for i in idx {
+            ret.push($v.swap_remove(i));
+        }
+        ret
+    }};
+}

@@ -19,21 +19,15 @@ impl SeaplaneFormationLand {
         let validator = |s: &str| validate_name_id(validate_formation_name, s);
         Command::new("land")
             .visible_alias("stop")
-            .about("Land (Stop) all configurations of a Formation")
+            .about("Land (Stop) all configurations of a remote Formation Instance")
             .arg(
                 arg!(formation =["NAME|ID"] required)
-                    .help("The name or ID of the Formation to land")
+                    .help("The name or ID of the Formation Instance to land")
                     .validator(validator),
             )
             .arg(
                 arg!(--all - ('a'))
-                    .conflicts_with("exact")
                     .help("Stop all matching Formations even when FORMATION is ambiguous"),
-            )
-            .arg(
-                arg!(--exact - ('x'))
-                    .conflicts_with("all")
-                    .help("The given FORMATION must be an exact match"),
             )
     }
 }
@@ -41,18 +35,18 @@ impl SeaplaneFormationLand {
 impl CliCommand for SeaplaneFormationLand {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Get the indices of any formations that match the given name/ID
-        let indices = if ctx.args.exact {
-            ctx.db
-                .formations
-                .formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
-        } else {
+        let indices = if ctx.args.all {
             ctx.db
                 .formations
                 .formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
+        } else {
+            ctx.db
+                .formations
+                .formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), ctx.args.exact)?,
+            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), false, ctx.args.all)?,
             1 => (),
             _ => {
                 // TODO: and --force
@@ -79,7 +73,7 @@ impl CliCommand for SeaplaneFormationLand {
 
             ctx.persist_formations()?;
 
-            cli_print!("Successfully Landed Formation '");
+            cli_print!("Successfully Landed Formation Instance '");
             cli_print!(@Green, "{}", &ctx.args.name_id.as_ref().unwrap());
             cli_println!("'");
         }

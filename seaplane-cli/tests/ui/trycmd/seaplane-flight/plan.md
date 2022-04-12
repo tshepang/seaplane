@@ -2,13 +2,13 @@
 With no additional arguments an error is displayed about a missing required argument.
 
 ```console
-$ seaplane flight create
+$ seaplane flight plan
 ? 2
 error: The following required arguments were not provided:
     --image <SPEC>
 
 USAGE:
-    seaplane flight create --image=<SPEC> [OPTIONS]
+    seaplane flight plan --image=<SPEC> [OPTIONS]
 
 For more information try --help
 
@@ -17,22 +17,22 @@ For more information try --help
 The short help message with `-h`:
 
 ```console
-$ seaplane flight create -h
-seaplane-flight-create [PKGVER]
-Create a new Flight definition
+$ seaplane flight plan -h
+seaplane-flight-plan [..]
+Make a new local Flight Plan that Formations can include and reference
 
 USAGE:
-    seaplane flight create --image=<SPEC> [OPTIONS]
+    seaplane flight plan --image=<SPEC> [OPTIONS]
 
 OPTIONS:
-    -A, --api-key <STRING>       The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -A, --api-key <STRING>       The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: AMD64, ARM64]
         --color <COLOR>          Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -f, --force                  Override any existing Flights with the same NAME
-    -F, --fetch                  Fetch remote Flight definitions prior to creating to check for conflicts (by default only local state is considered)
+    -f, --force                  Override any existing Flights Plans with the same NAME
+    -F, --fetch                  Fetch and synchronize remote Formation Instances (which reference Flight Plans) prior to creating this plan to check for conflicts (by default only local plans are checked) [aliases: sync, synchronize]
     -h, --help                   Print help information
         --image <SPEC>           The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
-        --maximum <NUM>          The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
+        --maximum <NUM>          The maximum number of container instances that should ever be running (default: autoscale as needed) [aliases: max]
         --minimum <NUM>          The minimum number of container instances that should ever be running [default: 1] [aliases: min]
     -n, --name <STRING>          A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
         --no-color               Do not color output (alias for --color=never)
@@ -79,16 +79,16 @@ IMAGE SPEC
 The long help message with `--help`:
 
 ```console
-$ seaplane flight create --help
-seaplane-flight-create [PKGVER]
-Create a new Flight definition
+$ seaplane flight plan --help
+seaplane-flight-plan [..]
+Make a new local Flight Plan that Formations can include and reference
 
 USAGE:
-    seaplane flight create --image=<SPEC> [OPTIONS]
+    seaplane flight plan --image=<SPEC> [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.
@@ -112,10 +112,12 @@ OPTIONS:
             [possible values: always, ansi, auto, never]
 
     -f, --force
-            Override any existing Flights with the same NAME
+            Override any existing Flights Plans with the same NAME
 
     -F, --fetch
-            Fetch remote Flight definitions prior to creating to check for conflicts (by default only local state is considered)
+            Fetch and synchronize remote Formation Instances (which reference Flight Plans) prior to creating this plan to check for conflicts (by default only local plans are checked)
+            
+            [aliases: sync, synchronize]
 
     -h, --help
             Print help information
@@ -134,7 +136,7 @@ OPTIONS:
             [aliases: img]
 
         --maximum <NUM>
-            The maximum number of container instances that should ever be running (default: infinite)
+            The maximum number of container instances that should ever be running (default: autoscale as needed)
             
             [aliases: max]
 

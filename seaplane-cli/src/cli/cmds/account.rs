@@ -19,7 +19,7 @@ impl SeaplaneAccount {
     pub fn command() -> Command<'static> {
         Command::new("account")
             .visible_alias("acct")
-            .about("Operate on your Seaplane account, including access tokens")
+            .about("Operate on Seaplane account details, including access tokens")
             .subcommand_required(true)
             .arg_required_else_help(true)
             .subcommand(SeaplaneAccountLogin::command())
@@ -113,7 +113,7 @@ impl CliCommand for SeaplaneAccountLogin {
                     .context("' to overwrite it)\n"));
             }
         }
-        cli_println!("Enter your API key below.");
+        cli_println!("Enter an API key below.");
         cli_print!("(hint: it can be found by visiting ");
         cli_print!(@Green, "{FLIGHTDECK_API_URL}");
         cli_println!(")\n");

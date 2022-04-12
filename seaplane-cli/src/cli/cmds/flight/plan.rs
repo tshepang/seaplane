@@ -19,35 +19,35 @@ use crate::{
 };
 
 #[derive(Copy, Clone, Debug)]
-pub struct SeaplaneFlightCreate;
+pub struct SeaplaneFlightPlan;
 
-impl SeaplaneFlightCreate {
+impl SeaplaneFlightPlan {
     pub fn command() -> Command<'static> {
         // TODO: add --from
-        Command::new("create")
-            .visible_alias("add")
+        Command::new("plan")
+            .visible_aliases(&["create", "add"])
             .after_help(IMAGE_SPEC)
-            .override_usage("seaplane flight create --image=<SPEC> [OPTIONS]")
-            .about("Create a new Flight definition")
-            .arg(arg!(--force - ('f')).help("Override any existing Flights with the same NAME"))
-            .arg(arg!(--fetch - ('F')).help("Fetch remote Flight definitions prior to creating to check for conflicts (by default only local state is considered)"))
+            .override_usage("seaplane flight plan --image=<SPEC> [OPTIONS]")
+            .about("Make a new local Flight Plan that Formations can include and reference")
+            .arg(arg!(--force - ('f')).help("Override any existing Flights Plans with the same NAME"))
+            .arg(arg!(--fetch|sync|synchronize - ('F')).help("Fetch and synchronize remote Formation Instances (which reference Flight Plans) prior to creating this plan to check for conflicts (by default only local plans are checked)"))
             .args(common::args(true))
     }
 }
 
-impl CliCommand for SeaplaneFlightCreate {
+impl CliCommand for SeaplaneFlightPlan {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         if ctx.args.stateless {
             cli_eprint!(@Red, "error: ");
             cli_eprint!("'");
             cli_eprint!(@Yellow, "--stateless");
-            cli_eprint!("' cannot be used with the '");
-            cli_eprint!(@Yellow, "seaplane flight create");
-            cli_eprintln!("' command");
-            cli_eprintln!("(hint: 'seaplane flight create' only modifies local state)");
+            cli_eprint!("' cannot be used with '");
+            cli_eprint!(@Yellow, "seaplane flight plan");
+            cli_eprintln!("'");
+            cli_eprintln!("(hint: 'seaplane flight plan' only modifies local plans)");
             cli_eprint!("(hint: you may want 'seaplane ");
             cli_eprint!(@Green, "formation ");
-            cli_eprintln!("create' instead)");
+            cli_eprintln!("plan' instead)");
             std::process::exit(1);
         }
 
@@ -69,7 +69,7 @@ impl CliCommand for SeaplaneFlightCreate {
                     .into_err()
                     .context("(hint: try '")
                     .color_context(Color::Green, format!("seaplane flight edit {name}"))
-                    .context("' to edit an existing Flight)\n")
+                    .context("' to edit an existing local Flight Plan)\n")
                     .context("(hint: you can also use '")
                     .color_context(Color::Green, "--force")
                     .context("' to overwrite existing items)\n"));
@@ -91,7 +91,7 @@ impl CliCommand for SeaplaneFlightCreate {
 
         ctx.persist_flights()?;
 
-        cli_print!("Successfully created Flight '");
+        cli_print!("Successfully created Flight Plan '");
         cli_print!(@Green, "{new_flight_name}");
         cli_print!("' with ID '");
         cli_print!(@Green, "{}", &id.to_string()[..8]);

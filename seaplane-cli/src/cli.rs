@@ -35,7 +35,7 @@ More uses suppresses higher levels of output
     -qq:  Only display ERROR messages
     -qqq: Suppress all output";
 static LONG_API_KEY: &str =
-    "The API key associated with your account used to access Seaplane API endpoints
+    "The API key associated with a Seaplane account used to access Seaplane API endpoints
 
 The value provided here will override any provided in any configuration files.
 A CLI provided value also overrides any environment variables.
@@ -105,7 +105,7 @@ impl Seaplane {
                 .help("Do not color output (alias for --color=never)"))
             .arg(arg!(--("api-key") -('A') global =["STRING"] hide_env_values)
                 .env("SEAPLANE_API_KEY")
-                .help("The API key associated with your account used to access Seaplane API endpoints")
+                .help("The API key associated with a Seaplane account used to access Seaplane API endpoints")
                 .long_help(LONG_API_KEY))
             .arg(arg!(--("stateless") -('S') global)
                 .help("Ignore local state files, do not read from or write to them"))

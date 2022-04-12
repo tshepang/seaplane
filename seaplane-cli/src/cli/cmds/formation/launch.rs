@@ -15,41 +15,41 @@ use crate::{
     error::{CliError, Context, Result},
 };
 
-static LONG_ABOUT: &str =
-    "Start all configurations of a Formation and evenly distribute traffic between them
+static LONG_ABOUT: &str = "Start a local Formation Plan creating a remote Formation Instance
 
-    In many cases, or at least initially a Formation may only have a single Formation
-    Configuration. In these cases this command will set that one configuration to active.
+In many cases, or at least initially a local Formation Plan may only have a single
+Formation Configuration. In these cases this command will set that one configuration to active
+creating a remote Formation Instance with a single configuration.
 
-    Things become slightly more complex when there are multiple Formation Configurations. Let's
-    look at each possibility in turn.
+Things become slightly more complex when there are multiple Formation Configurations. Let's
+look at each possibility in turn.
 
-    \"Local Only\" Configs Exist:
+\"Local Only\" Configs Exist:
 
-    A \"Local Only\" Config is a configuration that exists in the local database, but has not (yet)
-    been uploaded to the Seaplane Cloud.
+A \"Local Only\" Config is a configuration that exists in the local database, but has not (yet)
+been uploaded to the Seaplane Cloud.
 
-    In these cases the configurations will be sent to the Seaplane Cloud, and set to active. If the
-    Seaplane Cloud already has configurations for the given Formation (either active or inactive),
-    these new configurations will be appended, and traffic will be balanced between any *all*
-    configurations.
+In these cases the configurations will be sent to the Seaplane Cloud, and set to active. If the
+Seaplane Cloud already has configurations for the given Formation (either active or inactive),
+these new configurations will be appended, and traffic will be balanced between any *all*
+configurations.
 
-    \"Remote Active\" Configs Exist:
+\"Remote Active\" Configs Exist:
 
-    A \"Remote Active\" Config is a configuration that the Seaplane Cloud is aware of, and actively
-    sending traffic to.
+A \"Remote Active\" Config is a configuration that the Seaplane Cloud is aware of, and actively
+sending traffic to.
 
-    These configurations will remain active and traffic will be balanced between any *all*
-    configurations.
+These configurations will remain active and traffic will be balanced between any *all*
+configurations.
 
-    \"Remote Inactive\" Configs Exist:
+\"Remote Inactive\" Configs Exist:
 
-    A \"Remote Inactive\" Config is a configuration that the Seaplane Cloud is aware of, and but not
-    sending traffic to.
+A \"Remote Inactive\" Config is a configuration that the Seaplane Cloud is aware of, and but not
+sending traffic to.
 
-    These configurations will be made active. If the Seaplane Cloud already has active
-    configurations for the given Formation, these newly activated configurations will be appended,
-    and traffic will be balanced between any *all* configurations. ";
+These configurations will be made active. If the Seaplane Cloud already has active
+configurations for the given Formation, these newly activated configurations will be appended,
+and traffic will be balanced between any *all* configurations. ";
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneFormationLaunch;
@@ -61,15 +61,25 @@ impl SeaplaneFormationLaunch {
         // TODO: make it possible to selectively start only *some* configs
         Command::new("launch")
             .visible_alias("start")
-            .about("Start all configurations of a Formation and evenly distribute traffic between them")
+            .about("Start a local Formation Plan creating a remote Formation Instance")
             .long_about(LONG_ABOUT)
-            .arg(arg!(formation =["NAME|ID"] required)
-                .validator(validator)
-                .help("The name or ID of the Formation to launch"))
-            .arg(arg!(--all -('a')).conflicts_with("exact").help("Stop all matching Formations even when FORMATION is ambiguous"))
-            .arg(arg!(--exact -('x')).conflicts_with("all").help("The given FORMATION must be an exact match"))
-            .arg(arg!(--fetch -('F')).help("Fetch remote Formation definitions prior to attempting to launch this Formation"))
-            .arg(arg!(--grounded).help("Upload the configuration(s) to Seaplane but *DO NOT* set them to active"))
+            .arg(
+                arg!(formation =["NAME|ID"] required)
+                    .validator(validator)
+                    .help("The name or ID of the Formation Plan to launch and create an Instance of"),
+            )
+            .arg(
+                arg!(--all - ('a'))
+                    .help("Launch all matching local Formation Plans even when the name or ID is ambiguous"),
+            )
+            .arg(arg!(--fetch|sync|synchronize - ('F')).help(
+                "Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to launch",
+            ))
+            .arg(
+                arg!(--grounded).help(
+                    "Upload the configuration(s) defined in this local Formation Plan to Seaplane but *DO NOT* set them to active",
+                ),
+            )
     }
 }
 
@@ -82,18 +92,18 @@ impl CliCommand for SeaplaneFormationLaunch {
             fetch.run(ctx)?;
         }
         // Get the indices of any formations that match the given name/ID
-        let indices = if ctx.args.exact {
-            ctx.db
-                .formations
-                .formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
-        } else {
+        let indices = if ctx.args.all {
             ctx.db
                 .formations
                 .formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
+        } else {
+            ctx.db
+                .formations
+                .formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), ctx.args.exact)?,
+            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), false, ctx.args.all)?,
             1 => (),
             _ => {
                 // TODO: and --force
@@ -125,7 +135,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                     let add_cfg_req = build_request(Some(&formation_name), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute
-                    cli_debug!("Looking for existing Formations...");
+                    cli_debug!("Looking for existing remote Formation Instances...");
                     if let Err(e) = add_cfg_req.add_configuration(cfg.model.clone(), false) {
                         cli_debugln!(@Green, "None");
                         match e {
@@ -134,7 +144,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                             {
                                 // If the formation didn't exist, create it
                                 let create_req = build_request(Some(&formation_name), api_key)?;
-                                cli_debug!("Creating new Formation...");
+                                cli_debug!("Creating new Formation Instance...");
                                 match create_req.create(cfg.model.clone(), !grounded) {
                                     Err(e) => {
                                         cli_debugln!(@Red, "Failed");
@@ -194,7 +204,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                 }
             }
 
-            cli_print!("Successfully Launched Formation '");
+            cli_print!("Successfully Launched remote Formation Instance '");
             cli_print!(@Green, "{}", &ctx.args.name_id.as_ref().unwrap());
             if cfg_uuids.is_empty() {
                 cli_println!("'");
@@ -206,7 +216,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             }
 
             let subdomain = request_token_json(api_key, "")?.subdomain;
-            cli_print!("The Formation URL is ");
+            cli_print!("The remote Formation Instance URL is ");
             cli_println!(@Green, "https://{formation_name}--{subdomain}.on.seaplanet.io/");
             cli_println!(
                 "(hint: it may take up to a minute for the Formation to become fully online)"

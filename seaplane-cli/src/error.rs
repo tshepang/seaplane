@@ -173,7 +173,7 @@ impl Default for CliError {
 // handle it manually.
 impl std::fmt::Display for CliError {
     fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        panic!("std::fmt::Display is not actually implemented for CliError by design")
+        panic!("std::fmt::Display is not actually implemented for CliError by design, use CliError::print instead")
     }
 }
 
@@ -203,6 +203,8 @@ impl_err!(seaplane::error::SeaplaneError, Seaplane);
 impl_err!(seaplane::api::v1::ImageReferenceError, ImageReference);
 impl_err!(std::string::FromUtf8Error, InvalidUtf8);
 impl_err!(hex::FromHexError, HexDecode);
+impl_err!(std::num::ParseIntError, ParseInt);
+impl_err!(strum::ParseError, StrumParse);
 
 impl From<io::Error> for CliError {
     fn from(e: io::Error) -> Self {
@@ -274,6 +276,13 @@ pub enum CliErrorKind {
     PermissionDenied,
     MissingApiKey,
     MultipleAtStdin,
+    InlineFlightHasSpace,
+    InlineFlightMissingImage,
+    InlineFlightInvalidName(String),
+    InlineFlightUnknownItem(String),
+    InlineFlightMissingValue(String),
+    ParseInt(std::num::ParseIntError),
+    StrumParse(strum::ParseError),
 }
 
 impl CliErrorKind {
@@ -324,6 +333,9 @@ impl CliErrorKind {
             InvalidUtf8(e) => {
                 cli_eprintln!("invalid UTF-8: {e}")
             }
+            StrumParse(e) => {
+                cli_eprintln!("string parse error: {e}")
+            }
             Io(e, Some(path)) => {
                 cli_eprintln!("io: {e}");
                 cli_eprint!("\tpath: ");
@@ -340,6 +352,9 @@ impl CliErrorKind {
             }
             TomlSer(e) => {
                 cli_eprintln!("toml: {e}")
+            }
+            ParseInt(e) => {
+                cli_eprintln!("parse integer: {e}")
             }
             UnknownWithContext(e) => {
                 cli_eprintln!("unknown: {e}")
@@ -395,6 +410,23 @@ impl CliErrorKind {
             ExistingValue(value) => {
                 cli_eprintln!("{value} already exists");
             }
+            InlineFlightUnknownItem(item) => {
+                cli_eprintln!("{item} is not a valid INLINE-FLIGHT-SPEC item (valid keys are: name, image, maximum, minimum, api-permission, architecture)");
+            }
+            InlineFlightInvalidName(name) => {
+                cli_eprintln!("'{name}' is not a valid Flight Plan name");
+            }
+            InlineFlightHasSpace => {
+                cli_eprintln!("INLINE-FLIGHT-SPEC contains a space ' ' which isn't allowed.");
+            }
+            InlineFlightMissingImage => {
+                cli_eprintln!(
+                    "INLINE-FLIGHT-SPEC missing image=... key and value which is required"
+                );
+            }
+            InlineFlightMissingValue(key) => {
+                cli_eprintln!("INLINE-FLIGHT-SPEC missing a value for the key {key}");
+            }
         }
     }
 
@@ -403,6 +435,15 @@ impl CliErrorKind {
             kind: self,
             ..Default::default()
         }
+    }
+
+    #[cfg(test)]
+    pub fn is_parse_int(&self) -> bool {
+        matches!(self, Self::ParseInt(_))
+    }
+    #[cfg(test)]
+    pub fn is_strum_parse(&self) -> bool {
+        matches!(self, Self::StrumParse(_))
     }
 }
 
@@ -430,10 +471,17 @@ impl PartialEq<Self> for CliErrorKind {
             ImageReference(_) => matches!(rhs, ImageReference(_)),
             CliArgNotUsed(_) => matches!(rhs, CliArgNotUsed(_)),
             InvalidCliValue(_, _) => matches!(rhs, InvalidCliValue(_, _)),
+            StrumParse(_) => matches!(rhs, StrumParse(_)),
             Base64Decode(_) => matches!(rhs, Base64Decode(_)),
             InvalidUtf8(_) => matches!(rhs, InvalidUtf8(_)),
             HexDecode(_) => matches!(rhs, HexDecode(_)),
             ConflictingArguments(_, _) => matches!(rhs, ConflictingArguments(_, _)),
+            InlineFlightUnknownItem(_) => matches!(rhs, InlineFlightUnknownItem(_)),
+            InlineFlightInvalidName(_) => matches!(rhs, InlineFlightInvalidName(_)),
+            InlineFlightHasSpace => matches!(rhs, InlineFlightHasSpace),
+            InlineFlightMissingImage => matches!(rhs, InlineFlightMissingImage),
+            InlineFlightMissingValue(_) => matches!(rhs, InlineFlightMissingValue(_)),
+            ParseInt(_) => matches!(rhs, ParseInt(_)),
         }
     }
 }

@@ -18,27 +18,26 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight delete -h
-Delete a Flight definition
 seaplane-flight-delete [..]
+Delete a local Flight Plan
 
 USAGE:
     seaplane flight delete <NAME|ID> [OPTIONS]
 
 ARGS:
-    <NAME|ID>    The name or ID of the Flight to remove, must be unambiguous
+    <NAME|ID>    The name or ID of the Flight Plan to remove, must be unambiguous
 
 OPTIONS:
-    -a, --all                 Delete all matching Flights even when FLIGHT is ambiguous
-    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -a, --all                 Delete all matching Flight Plans even when the name or ID is ambiguous
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --force               Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous
+        --force               Delete this Flight Plan even if referenced by a local Formation Plan, or deletes ALL Flight Plan referenced by the name or ID even if ambiguous
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
     -q, --quiet               Suppress output at a specific level and below
     -S, --stateless           Ignore local state files, do not read from or write to them
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
-    -x, --exact               The given FLIGHT must be an exact match
 
 ```
 
@@ -46,22 +45,22 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight delete --help
-Delete a Flight definition
 seaplane-flight-delete [..]
+Delete a local Flight Plan
 
 USAGE:
     seaplane flight delete <NAME|ID> [OPTIONS]
 
 ARGS:
     <NAME|ID>
-            The name or ID of the Flight to remove, must be unambiguous
+            The name or ID of the Flight Plan to remove, must be unambiguous
 
 OPTIONS:
     -a, --all
-            Delete all matching Flights even when FLIGHT is ambiguous
+            Delete all matching Flight Plans even when the name or ID is ambiguous
 
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.
@@ -76,7 +75,7 @@ OPTIONS:
             [possible values: always, ansi, auto, never]
 
         --force
-            Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous
+            Delete this Flight Plan even if referenced by a local Formation Plan, or deletes ALL Flight Plan referenced by the name or ID even if ambiguous
 
     -h, --help
             Print help information
@@ -104,8 +103,5 @@ OPTIONS:
 
     -V, --version
             Print version information
-
-    -x, --exact
-            The given FLIGHT must be an exact match
 
 ```

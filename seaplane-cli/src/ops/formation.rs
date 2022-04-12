@@ -200,7 +200,7 @@ impl Formations {
     // TODO: this should go away once we're not working with indices anymore
     /// Returns the index of an exact name match
     pub fn formation_index_of_name(&self, name: &str) -> Option<usize> {
-        cli_traceln!("Searching locally for index of Formation {name}");
+        cli_traceln!("Searching local DB for index of Formation Plan {name}");
         self.formations
             .iter()
             .enumerate()
@@ -209,7 +209,7 @@ impl Formations {
     }
 
     pub fn configuration_index_of_id(&self, id: &Id) -> Option<usize> {
-        cli_traceln!("Searching locally for index of Configuration ID {id}");
+        cli_traceln!("Searching for index of Configuration ID {id}");
         self.configurations
             .iter()
             .enumerate()
@@ -220,7 +220,7 @@ impl Formations {
     // TODO: this should go away once we're not working with indices anymore
     /// Returns all indices of an exact name or partial ID match
     pub fn formation_indices_of_matches(&self, name: &str) -> Vec<usize> {
-        cli_traceln!("Searching local state for exact matches of Formation {name}");
+        cli_traceln!("Searching local DB for exact matches of Formation Plan {name}");
         self.formations
             .iter()
             .enumerate()
@@ -232,7 +232,7 @@ impl Formations {
     // TODO: this should go away once we're not working with indices anymore
     /// Returns all indices of a partial name or ID match
     pub fn formation_indices_of_left_matches(&self, name: &str) -> Vec<usize> {
-        cli_traceln!("Searching local state for partial matches of Formation {name}");
+        cli_traceln!("Searching local DB for partial matches of Formation Plan {name}");
         self.formations
             .iter()
             .enumerate()

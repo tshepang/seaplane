@@ -1,17 +1,17 @@
 ```console
 $ seaplane formation land -h
-Land (Stop) all configurations of a Formation
 seaplane-formation-land [..]
+Land (Stop) all configurations of a remote Formation Instance
 
 USAGE:
     seaplane formation land [OPTIONS] <NAME|ID>
 
 ARGS:
-    <NAME|ID>    The name or ID of the Formation to land
+    <NAME|ID>    The name or ID of the Formation Instance to land
 
 OPTIONS:
     -a, --all                 Stop all matching Formations even when FORMATION is ambiguous
-    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
@@ -19,28 +19,27 @@ OPTIONS:
     -S, --stateless           Ignore local state files, do not read from or write to them
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
-    -x, --exact               The given FORMATION must be an exact match
 
 ```
 
 ```console
 $ seaplane formation land --help
-Land (Stop) all configurations of a Formation
 seaplane-formation-land [..]
+Land (Stop) all configurations of a remote Formation Instance
 
 USAGE:
     seaplane formation land [OPTIONS] <NAME|ID>
 
 ARGS:
     <NAME|ID>
-            The name or ID of the Formation to land
+            The name or ID of the Formation Instance to land
 
 OPTIONS:
     -a, --all
             Stop all matching Formations even when FORMATION is ambiguous
 
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.
@@ -80,8 +79,5 @@ OPTIONS:
 
     -V, --version
             Print version information
-
-    -x, --exact
-            The given FORMATION must be an exact match
 
 ```

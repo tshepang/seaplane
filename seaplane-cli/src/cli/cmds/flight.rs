@@ -1,9 +1,9 @@
 pub mod common;
 mod copy;
-mod create;
 mod delete;
 mod edit;
 mod list;
+mod plan;
 #[cfg(feature = "unstable")]
 mod template;
 
@@ -16,8 +16,8 @@ use seaplane::api::{
 #[cfg(feature = "unstable")]
 pub use self::template::SeaplaneFlightTemplate;
 pub use self::{
-    common::SeaplaneFlightCommonArgMatches, copy::SeaplaneFlightCopy, create::SeaplaneFlightCreate,
-    delete::SeaplaneFlightDelete, edit::SeaplaneFlightEdit, list::SeaplaneFlightList,
+    common::SeaplaneFlightCommonArgMatches, copy::SeaplaneFlightCopy, delete::SeaplaneFlightDelete,
+    edit::SeaplaneFlightEdit, list::SeaplaneFlightList, plan::SeaplaneFlightPlan,
 };
 use crate::{
     cli::{specs::IMAGE_SPEC, CliCommand},
@@ -45,10 +45,10 @@ impl SeaplaneFlight {
     pub fn command() -> Command<'static> {
         #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
         let mut app = Command::new("flight")
-            .about("Operate on Seaplane Flights (logical containers), which are the core component of Formations")
+            .about("Operate on local Flight Plans which define \"Flights\" (logical containers), and are then referenced by Formations")
             .subcommand_required(true)
             .arg_required_else_help(true)
-            .subcommand(SeaplaneFlightCreate::command())
+            .subcommand(SeaplaneFlightPlan::command())
             .subcommand(SeaplaneFlightCopy::command())
             .subcommand(SeaplaneFlightEdit::command())
             .subcommand(SeaplaneFlightDelete::command())
@@ -68,11 +68,11 @@ impl CliCommand for SeaplaneFlight {
         matches: &'a ArgMatches,
     ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
         match &matches.subcommand() {
-            Some(("create", m)) => Some((Box::new(SeaplaneFlightCreate), m)),
             Some(("copy", m)) => Some((Box::new(SeaplaneFlightCopy), m)),
             Some(("edit", m)) => Some((Box::new(SeaplaneFlightEdit), m)),
             Some(("delete", m)) => Some((Box::new(SeaplaneFlightDelete), m)),
             Some(("list", m)) => Some((Box::new(SeaplaneFlightList), m)),
+            Some(("plan", m)) => Some((Box::new(SeaplaneFlightPlan), m)),
             #[cfg(feature = "unstable")]
             Some(("template", m)) => Some((Box::new(SeaplaneFlightTemplate), m)),
             _ => None,

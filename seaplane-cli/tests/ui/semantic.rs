@@ -249,205 +249,219 @@ fn seaplane_formation_common() {
     // common arguments
 
     // valid name
-    assert!(cli!("formation create --name foo").is_ok());
+    assert!(cli!("formation plan --name foo").is_ok());
     // invalid name
-    assert!(cli!("formation create --name way-too-many-hyphens-to-pass-validation").is_err());
+    assert!(cli!("formation plan --name way-too-many-hyphens-to-pass-validation").is_err());
 
-    assert!(cli!("formation create --launch").is_ok());
-    assert!(cli!("formation create --grounded").is_ok());
+    assert!(cli!("formation plan --launch").is_ok());
+    assert!(cli!("formation plan --grounded").is_ok());
     // Same with it's alias
-    assert!(cli!("formation create --active").is_ok());
-    assert!(cli!("formation create --no-active").is_ok());
+    assert!(cli!("formation plan --active").is_ok());
+    assert!(cli!("formation plan --no-active").is_ok());
     // Overrides
-    assert!(cli!("formation create --launch --active").is_ok());
+    assert!(cli!("formation plan --launch --active").is_ok());
     // Should be good
-    assert!(cli!("formation create --launch --no-active").is_ok());
-    assert!(cli!("formation create --launch --grounded").is_ok());
+    assert!(cli!("formation plan --launch --no-active").is_ok());
+    assert!(cli!("formation plan --launch --grounded").is_ok());
 
     // flight
     // valid (@path requires a valid file...so we're not testing that and relying on the unit
     // tests for that functionality)
-    assert!(cli!("formation create --flight foo").is_ok());
-    assert!(cli!("formation create --flight @-").is_ok());
+    assert!(cli!("formation plan --include-flight-plan foo").is_ok());
+    assert!(cli!("formation plan --include-flight-plan @-").is_ok());
     // invalid
     assert!(
-        cli!("formation create --flight way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
+        cli!("formation plan --include-flight-plan way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
             .is_err()
     );
     // multiples only with commas or multiple uses
-    assert!(cli!("formation create --flight=foo,bar,baz").is_ok());
-    assert!(cli!("formation create --flight=foo --flight=bar,baz").is_ok());
-    assert!(cli!("formation create --flight=foo,bar --flight=baz").is_ok());
-    assert!(cli!("formation create --flight foo bar baz").is_err());
+    assert!(cli!("formation plan --include-flight-plan=foo;bar;baz").is_ok());
+    assert!(cli!("formation plan --include-flight-plan=foo -I=bar;baz").is_ok());
+    assert!(cli!("formation plan --include-flight-plan=foo;bar -Ibaz").is_ok());
+    assert!(cli!("formation plan --include-flight-plan foo bar baz").is_err());
+    assert!(cli!("formation plan --include-flight-plan foo").is_ok());
+    assert!(cli!("formation plan --include-flight-plan foo;bar").is_ok());
+    assert!(cli!("formation plan --include-flight-plan foo;bar --include-flight-plan baz").is_ok());
+    assert!(
+        cli!("formation plan --include-flight-plan foo;bar --include-flight-plan baz;qux").is_ok()
+    );
+    assert!(cli!("formation plan --include-flight-plan foo --include-flight-plan baz;qux").is_ok());
+    assert!(cli!("formation plan --include-flight-plan name=foo,image=demos/nginx:latest").is_ok());
+    assert!(
+        cli!("formation plan --include-flight-plan foo;name=foo,image=demos/nginx:latest").is_ok()
+    );
+    assert!(
+        cli!("formation plan --include-flight-plan foo;name=bar,image=demos/nginx:latest;baz")
+            .is_ok()
+    );
+    assert!(cli!("formation plan --include-flight-plan foo --include-flight-plan name=bar,image=demos/nginx:latest;baz").is_ok());
+    assert!(cli!("formation plan --include-flight-plan foo;name=bar,image=demos/nginx:latest --include-flight-plan baz;qux").is_ok());
+    assert!(cli!("formation plan --include-flight-plan name=bar,image=demos/nginx:latest;name=foo,image=demos/nginx:latest").is_ok());
 
     // affinity
     // valid
-    assert!(cli!("formation create --affinity foo").is_ok());
+    assert!(cli!("formation plan --affinity foo").is_ok());
     // invalid
-    assert!(cli!("formation create --affinity way-too-many-hyphens-to-pass-validation").is_err());
+    assert!(cli!("formation plan --affinity way-too-many-hyphens-to-pass-validation").is_err());
     // multiples only with commas or multiple uses
-    assert!(cli!("formation create --affinity=foo,bar,baz").is_ok());
-    assert!(cli!("formation create --affinity=foo --affinity=bar,baz").is_ok());
-    assert!(cli!("formation create --affinity=foo,bar --affinity=baz").is_ok());
-    assert!(cli!("formation create --affinity foo bar baz").is_err());
+    assert!(cli!("formation plan --affinity=foo,bar,baz").is_ok());
+    assert!(cli!("formation plan --affinity=foo --affinity=bar,baz").is_ok());
+    assert!(cli!("formation plan --affinity=foo,bar --affinity=baz").is_ok());
+    assert!(cli!("formation plan --affinity foo bar baz").is_err());
     // alias
-    assert!(cli!("formation create --affinities foo").is_ok());
+    assert!(cli!("formation plan --affinities foo").is_ok());
 
     // connection
     // valid
-    assert!(cli!("formation create --connection foo").is_ok());
+    assert!(cli!("formation plan --connection foo").is_ok());
     // invalid
-    assert!(cli!("formation create --connection way-too-many-hyphens-to-pass-validation").is_err());
+    assert!(cli!("formation plan --connection way-too-many-hyphens-to-pass-validation").is_err());
     // multiples only with commas or multiple uses
-    assert!(cli!("formation create --connection=foo,bar,baz").is_ok());
-    assert!(cli!("formation create --connection=foo --connection=bar,baz").is_ok());
-    assert!(cli!("formation create --connection=foo,bar --connection=baz").is_ok());
-    assert!(cli!("formation create --connection foo bar baz").is_err());
+    assert!(cli!("formation plan --connection=foo,bar,baz").is_ok());
+    assert!(cli!("formation plan --connection=foo --connection=bar,baz").is_ok());
+    assert!(cli!("formation plan --connection=foo,bar --connection=baz").is_ok());
+    assert!(cli!("formation plan --connection foo bar baz").is_err());
     // alias
-    assert!(cli!("formation create --connections foo").is_ok());
+    assert!(cli!("formation plan --connections foo").is_ok());
 
     // provider
     // valid
-    assert!(cli!("formation create --provider=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok());
+    assert!(cli!("formation plan --provider=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok());
     // invalid
-    assert!(cli!("formation create --provider=carpet").is_err());
+    assert!(cli!("formation plan --provider=carpet").is_err());
     // Case insensitive
-    assert!(cli!("formation create --provider=AWS").is_ok());
-    assert!(cli!("formation create --provider=aws").is_ok());
-    assert!(cli!("formation create --provider=aWs").is_ok());
+    assert!(cli!("formation plan --provider=AWS").is_ok());
+    assert!(cli!("formation plan --provider=aws").is_ok());
+    assert!(cli!("formation plan --provider=aWs").is_ok());
     // multiples only with commas or multiple uses
-    assert!(cli!("formation create --provider=Aws,Azure --provider=DigitalOcean").is_ok());
-    assert!(cli!("formation create --provider=Aws --provider=DigitalOcean,Azure").is_ok());
-    assert!(cli!("formation create --provider=Aws --provider=DigitalOcean").is_ok());
-    assert!(cli!("formation create --provider Aws Azure DigitalOcean").is_err());
+    assert!(cli!("formation plan --provider=Aws,Azure --provider=DigitalOcean").is_ok());
+    assert!(cli!("formation plan --provider=Aws --provider=DigitalOcean,Azure").is_ok());
+    assert!(cli!("formation plan --provider=Aws --provider=DigitalOcean").is_ok());
+    assert!(cli!("formation plan --provider Aws Azure DigitalOcean").is_err());
     // alias
-    assert!(cli!("formation create --providers=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok());
+    assert!(cli!("formation plan --providers=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok());
 
     // exlucde provider
     // valid
     assert!(
-        cli!("formation create --exclude-provider=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok()
+        cli!("formation plan --exclude-provider=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok()
     );
     // invalid
-    assert!(cli!("formation create --exclude-provider=carpet").is_err());
+    assert!(cli!("formation plan --exclude-provider=carpet").is_err());
     // Case insensitive
-    assert!(cli!("formation create --exclude-provider=AWS").is_ok());
-    assert!(cli!("formation create --exclude-provider=aws").is_ok());
-    assert!(cli!("formation create --exclude-provider=aWs").is_ok());
+    assert!(cli!("formation plan --exclude-provider=AWS").is_ok());
+    assert!(cli!("formation plan --exclude-provider=aws").is_ok());
+    assert!(cli!("formation plan --exclude-provider=aWs").is_ok());
     // multiples only with commas or multiple uses
     assert!(
-        cli!("formation create --exclude-provider=Aws,Azure --exclude-provider=DigitalOcean")
-            .is_ok()
+        cli!("formation plan --exclude-provider=Aws,Azure --exclude-provider=DigitalOcean").is_ok()
     );
     assert!(
-        cli!("formation create --exclude-provider=Aws --exclude-provider=DigitalOcean,Azure")
-            .is_ok()
+        cli!("formation plan --exclude-provider=Aws --exclude-provider=DigitalOcean,Azure").is_ok()
     );
-    assert!(
-        cli!("formation create --exclude-provider=Aws --exclude-provider=DigitalOcean").is_ok()
-    );
-    assert!(cli!("formation create --exclude-provider Aws Azure DigitalOcean").is_err());
+    assert!(cli!("formation plan --exclude-provider=Aws --exclude-provider=DigitalOcean").is_ok());
+    assert!(cli!("formation plan --exclude-provider Aws Azure DigitalOcean").is_err());
     // alias
     assert!(
-        cli!("formation create --exclude-providers=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok()
+        cli!("formation plan --exclude-providers=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok()
     );
 
     // region
     // valid
     assert!(
-        cli!("formation create --region=XA,Asia,XC,PRC,PeoplesRepublicofChina,XE,Europe,EU,XF,Africa,XN,NorthAmerica,NAmerica,XO,Oceania,XQ,Antarctica,XS,SAmerica,SouthAmerica,XU,UK,UnitedKingdom,All")
+        cli!("formation plan --region=XA,Asia,XC,PRC,PeoplesRepublicofChina,XE,Europe,EU,XF,Africa,XN,NorthAmerica,NAmerica,XO,Oceania,XQ,Antarctica,XS,SAmerica,SouthAmerica,XU,UK,UnitedKingdom,All")
             .is_ok()
     );
     // invalid
-    assert!(cli!("formation create --region=carpet").is_err());
+    assert!(cli!("formation plan --region=carpet").is_err());
     // Case insensitive
-    assert!(cli!("formation create --region=Oceania").is_ok());
-    assert!(cli!("formation create --region=oceania").is_ok());
-    assert!(cli!("formation create --region=OcEanIa").is_ok());
+    assert!(cli!("formation plan --region=Oceania").is_ok());
+    assert!(cli!("formation plan --region=oceania").is_ok());
+    assert!(cli!("formation plan --region=OcEanIa").is_ok());
     // multiples only with commas or multiple uses
-    assert!(cli!("formation create --region=XA,prc --region=europe").is_ok());
-    assert!(cli!("formation create --region=eu --region=xn,xs").is_ok());
-    assert!(cli!("formation create --region=uk --region=namerica").is_ok());
-    assert!(cli!("formation create --region xa xc xf").is_err());
+    assert!(cli!("formation plan --region=XA,prc --region=europe").is_ok());
+    assert!(cli!("formation plan --region=eu --region=xn,xs").is_ok());
+    assert!(cli!("formation plan --region=uk --region=namerica").is_ok());
+    assert!(cli!("formation plan --region xa xc xf").is_err());
     // alias
-    assert!(cli!("formation create --regions=XA,Asia,XC").is_ok());
+    assert!(cli!("formation plan --regions=XA,Asia,XC").is_ok());
 
     // exclude region
     // valid
     assert!(
-        cli!("formation create --exclude-region=XA,Asia,XC,PRC,PeoplesRepublicofChina,XE,Europe,EU,XF,Africa,XN,NorthAmerica,NAmerica,XO,Oceania,XQ,Antarctica,XS,SAmerica,SouthAmerica,XU,UK,UnitedKingdom,All")
+        cli!("formation plan --exclude-region=XA,Asia,XC,PRC,PeoplesRepublicofChina,XE,Europe,EU,XF,Africa,XN,NorthAmerica,NAmerica,XO,Oceania,XQ,Antarctica,XS,SAmerica,SouthAmerica,XU,UK,UnitedKingdom,All")
             .is_ok()
     );
     // invalid
-    assert!(cli!("formation create --exclude-region=carpet").is_err());
+    assert!(cli!("formation plan --exclude-region=carpet").is_err());
     // Case insensitive
-    assert!(cli!("formation create --exclude-region=Oceania").is_ok());
-    assert!(cli!("formation create --exclude-region=oceania").is_ok());
-    assert!(cli!("formation create --exclude-region=OcEanIa").is_ok());
+    assert!(cli!("formation plan --exclude-region=Oceania").is_ok());
+    assert!(cli!("formation plan --exclude-region=oceania").is_ok());
+    assert!(cli!("formation plan --exclude-region=OcEanIa").is_ok());
     // multiples only with commas or multiple uses
-    assert!(cli!("formation create --exclude-region=XA,prc --exclude-region=europe").is_ok());
-    assert!(cli!("formation create --exclude-region=eu --exclude-region=xn,xs").is_ok());
-    assert!(cli!("formation create --exclude-region=uk --exclude-region=namerica").is_ok());
-    assert!(cli!("formation create --exclude-region xa xc xf").is_err());
+    assert!(cli!("formation plan --exclude-region=XA,prc --exclude-region=europe").is_ok());
+    assert!(cli!("formation plan --exclude-region=eu --exclude-region=xn,xs").is_ok());
+    assert!(cli!("formation plan --exclude-region=uk --exclude-region=namerica").is_ok());
+    assert!(cli!("formation plan --exclude-region xa xc xf").is_err());
     // alias
-    assert!(cli!("formation create --exclude-regions=XA,Asia,XC").is_ok());
+    assert!(cli!("formation plan --exclude-regions=XA,Asia,XC").is_ok());
 
     // public endpoint (we don't try to enumerate valid endpoints because that should happen
     // in unit tests, just that *some* form of validation happens along with any semantics such
     // as multiples, etc.)
     // valid
-    assert!(cli!("formation create --public-endpoint=http:/foo/bar=baz:123").is_ok());
-    assert!(cli!("formation create --public-endpoint=/foo/bar=baz:123").is_ok());
+    assert!(cli!("formation plan --public-endpoint=http:/foo/bar=baz:123").is_ok());
+    assert!(cli!("formation plan --public-endpoint=/foo/bar=baz:123").is_ok());
     // invalid
-    assert!(cli!("formation create --public-endpoint=carpet").is_err());
-    assert!(cli!("formation create --public-endpoint=http:foo/bar=baz:123").is_err());
-    assert!(cli!("formation create --public-endpoint=foo/bar=baz:123").is_err());
+    assert!(cli!("formation plan --public-endpoint=carpet").is_err());
+    assert!(cli!("formation plan --public-endpoint=http:foo/bar=baz:123").is_err());
+    assert!(cli!("formation plan --public-endpoint=foo/bar=baz:123").is_err());
     // multiples only with commas or multiple uses
-    assert!( cli!("formation create --public-endpoint=http:/foo/bar=baz:123,/baz/qux=nom:432 --public-endpoint=http:/=que:5432") .is_ok());
-    assert!( cli!("formation create --public-endpoint=https:/foo/bar=baz:123 --public-endpoint /=que:5432,http:/baz/qux=nom:432") .is_ok());
+    assert!( cli!("formation plan --public-endpoint=http:/foo/bar=baz:123,/baz/qux=nom:432 --public-endpoint=http:/=que:5432") .is_ok());
+    assert!( cli!("formation plan --public-endpoint=https:/foo/bar=baz:123 --public-endpoint /=que:5432,http:/baz/qux=nom:432") .is_ok());
     assert!(cli!(
-        "formation create --public-endpoint=http:/foo/bar=baz:123 --public-endpoint /=que:5432"
+        "formation plan --public-endpoint=http:/foo/bar=baz:123 --public-endpoint /=que:5432"
     )
     .is_ok());
-    assert!( cli!("formation create --public-endpoint=http:foo/bar=baz:123 http:baz/qux=nom:432 http:/=que:5432") .is_err());
+    assert!( cli!("formation plan --public-endpoint=http:foo/bar=baz:123 http:baz/qux=nom:432 http:/=que:5432") .is_err());
     // alias
-    assert!(cli!("formation create --public-endpoints /foo/bar=baz:123").is_ok());
+    assert!(cli!("formation plan --public-endpoints /foo/bar=baz:123").is_ok());
 
     // formation endpoint (we don't try to enumerate valid endpoints because that should happen
     // in unit tests, just that *some* form of validation happens along with any semantics such
     // as multiples, etc.)
     // valid
-    assert!(cli!("formation create --formation-endpoint=tcp:22=baz:123").is_ok());
+    assert!(cli!("formation plan --formation-endpoint=tcp:22=baz:123").is_ok());
     // invalid
-    assert!(cli!("formation create --formation-endpoint=carpet").is_err());
+    assert!(cli!("formation plan --formation-endpoint=carpet").is_err());
     // multiples only with commas or multiple uses
-    assert!( cli!("formation create --formation-endpoint=http:/foo/bar=baz:123,udp:987=nom:432 --formation-endpoint=http:/=que:5432") .is_ok());
-    assert!( cli!("formation create --formation-endpoint=tcp:123=baz:123 --formation-endpoint /=que:5432,udp:876=nom:432") .is_ok());
+    assert!( cli!("formation plan --formation-endpoint=http:/foo/bar=baz:123,udp:987=nom:432 --formation-endpoint=http:/=que:5432") .is_ok());
+    assert!( cli!("formation plan --formation-endpoint=tcp:123=baz:123 --formation-endpoint /=que:5432,udp:876=nom:432") .is_ok());
     assert!(cli!(
-        "formation create --formation-endpoint=udp:1234=baz:123 --formation-endpoint /=que:5432"
+        "formation plan --formation-endpoint=udp:1234=baz:123 --formation-endpoint /=que:5432"
     )
     .is_ok());
-    assert!( cli!("formation create --formation-endpoint=http:/foo/bar=baz:123 tcp:baz/qux=nom:432 http:/=que:5432") .is_err());
+    assert!( cli!("formation plan --formation-endpoint=http:/foo/bar=baz:123 tcp:baz/qux=nom:432 http:/=que:5432") .is_err());
     // alias
-    assert!(cli!("formation create --formation-endpoints=udp:1234=baz:123").is_ok());
+    assert!(cli!("formation plan --formation-endpoints=udp:1234=baz:123").is_ok());
 
     // flight endpoint (we don't try to enumerate valid endpoints because that should happen
     // in unit tests, just that *some* form of validation happens along with any semantics such
     // as multiples, etc.)
     // valid
-    assert!(cli!("formation create --flight-endpoint=tcp:22=baz:123").is_ok());
+    assert!(cli!("formation plan --flight-endpoint=tcp:22=baz:123").is_ok());
     // invalid
-    assert!(cli!("formation create --flight-endpoint=carpet").is_err());
+    assert!(cli!("formation plan --flight-endpoint=carpet").is_err());
     // multiples only with commas or multiple uses
-    assert!( cli!("formation create --flight-endpoint=http:/foo/bar=baz:123,udp:987=nom:432 --flight-endpoint=http:/=que:5432") .is_ok());
-    assert!( cli!("formation create --flight-endpoint=tcp:123=baz:123 --flight-endpoint=http:/=que:5432,udp:876=nom:432") .is_ok());
+    assert!( cli!("formation plan --flight-endpoint=http:/foo/bar=baz:123,udp:987=nom:432 --flight-endpoint=http:/=que:5432") .is_ok());
+    assert!( cli!("formation plan --flight-endpoint=tcp:123=baz:123 --flight-endpoint=http:/=que:5432,udp:876=nom:432") .is_ok());
     assert!(cli!(
-        "formation create --flight-endpoint=udp:1234=baz:123 --flight-endpoint=http:/=que:5432"
+        "formation plan --flight-endpoint=udp:1234=baz:123 --flight-endpoint=http:/=que:5432"
     )
     .is_ok());
-    assert!( cli!("formation create --flight-endpoint=http:/foo/bar=baz:123 tcp:baz/qux=nom:432 http:/=que:5432") .is_err());
+    assert!( cli!("formation plan --flight-endpoint=http:/foo/bar=baz:123 tcp:baz/qux=nom:432 http:/=que:5432") .is_err());
     // alias
-    assert!(cli!("formation create --flight-endpoints=udp:1234=baz:123").is_ok());
+    assert!(cli!("formation plan --flight-endpoints=udp:1234=baz:123").is_ok());
 }
 
 #[test]
@@ -459,62 +473,23 @@ fn seaplane_formation_list() {
 }
 
 #[test]
-fn seaplane_formation_create() {
-    assert!(cli!("formation create").is_ok());
+fn seaplane_formation_plan() {
+    assert!(cli!("formation plan").is_ok());
     // invalid name
-    assert!(cli!("formation --name create way-too-many-hyphens-to-pass-validation").is_err());
+    assert!(cli!("formation --name plan way-too-many-hyphens-to-pass-validation").is_err());
 
     // options
-    assert!(cli!("formation create --force").is_ok());
-    assert!(cli!("formation create --launch").is_ok());
-    assert!(cli!("formation create --grounded").is_ok());
+    assert!(cli!("formation plan --force").is_ok());
+    assert!(cli!("formation plan --launch").is_ok());
+    assert!(cli!("formation plan --grounded").is_ok());
     // overrides
-    assert!(cli!("formation create --launch --active").is_ok());
+    assert!(cli!("formation plan --launch --active").is_ok());
     // should be OK but not override
-    assert!(cli!("formation create --launch --no-active").is_ok());
-
-    // Using any --flight-* (minus image) requires --flight-image
-    assert!(cli!("formation create --flight-name foo").is_err());
-    assert!(cli!("formation create --flight-minimum 2").is_err());
-    assert!(cli!("formation create --flight-maximum 2").is_err());
-    assert!(cli!("formation create --flight-api-permission").is_err());
-    assert!(cli!("formation create --flight-architecture amd64").is_err());
-    // with --flight-image works
-    assert!(cli!("formation create --flight-image foo").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-name foo").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-minimum 2").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-maximum 2").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-api-permission").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-architecture amd64").is_ok());
-    // aliases
-    assert!(cli!("formation create --flight-image foo --flight-min 2").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-max 2").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-api-permissions").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-architectures amd64").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-arch amd64").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-arches amd64").is_ok());
-    // arch is case insensitive
-    assert!(cli!("formation create --flight-image foo --flight-arch amd64").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-arch AMD64").is_ok());
-    assert!(cli!("formation create --flight-image foo --flight-arch AmD64").is_ok());
-    // arch multiples
-    assert!(cli!("formation create --flight-image foo --flight-arch=amd64,arm64").is_ok());
-    assert!(cli!(
-        "formation create --flight-image foo --flight-arch=amd64,arm64 --flight-arch=amd64,arm64"
-    )
-    .is_ok());
-    assert!(
-        cli!("formation create --flight-image foo --flight-arch=amd64 --flight-arch=amd64").is_ok()
-    );
-    assert!(cli!(
-        "formation create --flight-image foo --flight-arch=amd64,arm64 --flight-arch=amd64"
-    )
-    .is_ok());
-    // cannot be multiple without comma or second use
-    assert!(cli!("formation create --flight-image foo --flight-arch amd64 arm64").is_err());
+    assert!(cli!("formation plan --launch --no-active").is_ok());
 
     // add is an alias
     assert!(cli!("formation add").is_ok());
+    assert!(cli!("formation create").is_ok());
 }
 
 #[test]

@@ -1,81 +1,81 @@
 ```console
 $ seaplane formation launch -h
-Start all configurations of a Formation and evenly distribute traffic between them
 seaplane-formation-launch [..]
+Start a local Formation Plan creating a remote Formation Instance
 
 USAGE:
     seaplane formation launch [OPTIONS] <NAME|ID>
 
 ARGS:
-    <NAME|ID>    The name or ID of the Formation to launch
+    <NAME|ID>    The name or ID of the Formation Plan to launch and create an Instance of
 
 OPTIONS:
-    -a, --all                 Stop all matching Formations even when FORMATION is ambiguous
-    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -a, --all                 Launch all matching local Formation Plans even when the name or ID is ambiguous
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -F, --fetch               Fetch remote Formation definitions prior to attempting to launch this Formation
-        --grounded            Upload the configuration(s) to Seaplane but *DO NOT* set them to active
+    -F, --fetch               Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to launch [aliases: sync, synchronize]
+        --grounded            Upload the configuration(s) defined in this local Formation Plan to Seaplane but *DO NOT* set them to active
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
     -q, --quiet               Suppress output at a specific level and below
     -S, --stateless           Ignore local state files, do not read from or write to them
     -v, --verbose             Display more verbose output
     -V, --version             Print version information
-    -x, --exact               The given FORMATION must be an exact match
 
 ```
 
 ```console
 $ seaplane formation launch --help
-seaplane-formation-launch [PKGVER]
-Start all configurations of a Formation and evenly distribute traffic between them
+seaplane-formation-launch [..]
+Start a local Formation Plan creating a remote Formation Instance
 
-    In many cases, or at least initially a Formation may only have a single Formation
-    Configuration. In these cases this command will set that one configuration to active.
+In many cases, or at least initially a local Formation Plan may only have a single
+Formation Configuration. In these cases this command will set that one configuration to active
+creating a remote Formation Instance with a single configuration.
 
-    Things become slightly more complex when there are multiple Formation Configurations. Let's
-    look at each possibility in turn.
+Things become slightly more complex when there are multiple Formation Configurations. Let's
+look at each possibility in turn.
 
-    "Local Only" Configs Exist:
+"Local Only" Configs Exist:
 
-    A "Local Only" Config is a configuration that exists in the local database, but has not (yet)
-    been uploaded to the Seaplane Cloud.
+A "Local Only" Config is a configuration that exists in the local database, but has not (yet)
+been uploaded to the Seaplane Cloud.
 
-    In these cases the configurations will be sent to the Seaplane Cloud, and set to active. If the
-    Seaplane Cloud already has configurations for the given Formation (either active or inactive),
-    these new configurations will be appended, and traffic will be balanced between any *all*
-    configurations.
+In these cases the configurations will be sent to the Seaplane Cloud, and set to active. If the
+Seaplane Cloud already has configurations for the given Formation (either active or inactive),
+these new configurations will be appended, and traffic will be balanced between any *all*
+configurations.
 
-    "Remote Active" Configs Exist:
+"Remote Active" Configs Exist:
 
-    A "Remote Active" Config is a configuration that the Seaplane Cloud is aware of, and actively
-    sending traffic to.
+A "Remote Active" Config is a configuration that the Seaplane Cloud is aware of, and actively
+sending traffic to.
 
-    These configurations will remain active and traffic will be balanced between any *all*
-    configurations.
+These configurations will remain active and traffic will be balanced between any *all*
+configurations.
 
-    "Remote Inactive" Configs Exist:
+"Remote Inactive" Configs Exist:
 
-    A "Remote Inactive" Config is a configuration that the Seaplane Cloud is aware of, and but not
-    sending traffic to.
+A "Remote Inactive" Config is a configuration that the Seaplane Cloud is aware of, and but not
+sending traffic to.
 
-    These configurations will be made active. If the Seaplane Cloud already has active
-    configurations for the given Formation, these newly activated configurations will be appended,
-    and traffic will be balanced between any *all* configurations.
+These configurations will be made active. If the Seaplane Cloud already has active
+configurations for the given Formation, these newly activated configurations will be appended,
+and traffic will be balanced between any *all* configurations.
 
 USAGE:
     seaplane formation launch [OPTIONS] <NAME|ID>
 
 ARGS:
     <NAME|ID>
-            The name or ID of the Formation to launch
+            The name or ID of the Formation Plan to launch and create an Instance of
 
 OPTIONS:
     -a, --all
-            Stop all matching Formations even when FORMATION is ambiguous
+            Launch all matching local Formation Plans even when the name or ID is ambiguous
 
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.
@@ -90,10 +90,12 @@ OPTIONS:
             [possible values: always, ansi, auto, never]
 
     -F, --fetch
-            Fetch remote Formation definitions prior to attempting to launch this Formation
+            Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to launch
+            
+            [aliases: sync, synchronize]
 
         --grounded
-            Upload the configuration(s) to Seaplane but *DO NOT* set them to active
+            Upload the configuration(s) defined in this local Formation Plan to Seaplane but *DO NOT* set them to active
 
     -h, --help
             Print help information
@@ -121,8 +123,5 @@ OPTIONS:
 
     -V, --version
             Print version information
-
-    -x, --exact
-            The given FORMATION must be an exact match
 
 ```

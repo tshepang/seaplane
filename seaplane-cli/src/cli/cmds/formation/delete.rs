@@ -21,33 +21,31 @@ impl SeaplaneFormationDelete {
         // TODO: add --recursive to handle configurations too
         Command::new("delete")
             .visible_aliases(&["del", "remove", "rm"])
-            .about("Delete a Seaplane Formation")
-            .override_usage("seaplane formation delete <NAME|ID> [OPTIONS]")
+            .about("Deletes local Formation Plans and/or remote Formation Instances")
+            .override_usage(
+                "seaplane formation delete <NAME|ID> [OPTIONS]
+    seaplane formation delete <NAME|ID> --no-remote [OPTIONS]")
             .arg(arg!(formation =["NAME|ID"] required)
                 .validator(validator)
                 .help("The name or ID of the Formation to remove, must be unambiguous"))
             .arg(arg!(--recursive -('r'))
-                .help("Recursively delete all local objects associated with this Formation"))
+                .help("Recursively delete all local definitions associated with this Formation"))
             .arg(arg!(--force -('f'))
-                .help("Delete this Formation even if there are configurations In Flight (active), which will effectively stop all instances of this Formation"))
+                .help("Delete this Formation even if there are remote instances In Flight (active), which will effectively stop all remote instances of this Formation"))
             .arg(arg!(--all -('a'))
-                .conflicts_with("exact")
-                .help("Delete all matching Formations even when FORMATION is ambiguous"))
+                .help("Delete all matching Formations even when the name or ID is ambiguous or a partial match"))
             .arg(arg!(--local)
                 .overrides_with("no-local")
-                .help("Delete local Formations (this is set by the default, use --no-local to skip)"))
+                .help("Delete local Formation Definitions (this is set by the default, use --no-local to skip)"))
             .arg(arg!(--("no-local"))
                 .overrides_with("local")
-                .help("DO NOT delete local Formations"))
+                .help("DO NOT delete local Formation Definitions"))
             .arg(arg!(--remote)
                 .overrides_with("no-remote")
-                .help("Delete remote Formations (this is set by default, use --no-remote to skip)"))
+                .help("Delete remote Formation Instances (this is set by default, use --no-remote to skip)"))
             .arg(arg!(--("no-remote"))
                 .overrides_with("remote")
-                .help("DO NOT delete remote Formations (this is set by the default, use --remote to remove them)"))
-            .arg(arg!(--exact -('x'))
-                .conflicts_with("all")
-                .help("The given FORMATION must be an exact match"))
+                .help("DO NOT delete remote Formation Instances (this is set by the default, use --remote to remove them)"))
     }
 }
 
@@ -67,18 +65,18 @@ impl CliCommand for SeaplaneFormationDelete {
         }
 
         // Get the indices of any formations that match the given name/ID
-        let indices = if ctx.args.exact {
-            ctx.db
-                .formations
-                .formation_indices_of_matches(&formation_ctx.name_id)
-        } else {
+        let indices = if ctx.args.all {
             ctx.db
                 .formations
                 .formation_indices_of_left_matches(&formation_ctx.name_id)
+        } else {
+            ctx.db
+                .formations
+                .formation_indices_of_matches(&formation_ctx.name_id)
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(formation_ctx.name_id.clone(), ctx.args.exact)?,
+            0 => errors::no_matching_item(formation_ctx.name_id.clone(), false, ctx.args.all)?,
             1 => (),
             _ => {
                 // TODO: and --force
@@ -101,7 +99,7 @@ impl CliCommand for SeaplaneFormationDelete {
                 if let Some(name) = &formation.name {
                     let delete_req = build_request(Some(name), api_key)?;
                     let cfg_uuids = delete_req.delete(ctx.args.force)?;
-                    cli_print!("Deleted remote Formation '");
+                    cli_print!("Deleted remote Formation Instance '");
                     cli_print!(@Green, "{}", name);
                     if cfg_uuids.is_empty() {
                         cli_println!("'");
@@ -114,13 +112,13 @@ impl CliCommand for SeaplaneFormationDelete {
                 } else {
                     return Err(CliErrorKind::NoMatchingItem(formation_ctx.name_id.clone())
                         .into_err()
-                        .context("(hint: create the Formation with '")
-                        .color_context(Color::Green, "seaplane formation create")
+                        .context("(hint: create the local Formation Plan with '")
+                        .color_context(Color::Green, "seaplane formation plan")
                         .context("')\n")
-                        .context("(hint: or try fetching remote references with '")
+                        .context("(hint: or try synchronizing local Plan definitions with remote instances by using '")
                         .color_context(Color::Green, "seaplane formation fetch-remote")
                         .context("')\n")
-                        .context("(hint: You can also fetch remote references with 'seaplane formation delete ")
+                        .context("(hint: You can also fetch remote instances by adding 'seaplane formation delete ")
                         .color_context(Color::Green, "--fetch")
                         .context("')\n"));
                 }
@@ -158,7 +156,7 @@ impl CliCommand for SeaplaneFormationDelete {
                         }
                     }
                 }
-                cli_println!("Deleted local Formation {}", &formation.id.to_string());
+                cli_println!("Deleted local Formation Plan {}", &formation.id.to_string());
             }
         }
 

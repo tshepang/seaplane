@@ -3,7 +3,6 @@ pub mod common;
 mod configuration;
 #[cfg(feature = "unstable")]
 mod container_stats;
-mod create;
 mod delete;
 mod fetch;
 mod land;
@@ -11,11 +10,12 @@ mod launch;
 mod list;
 #[cfg(feature = "unstable")]
 mod load_balance;
+mod plan;
 #[cfg(feature = "unstable")]
 mod template;
 
 pub use common::{Provider, Region};
-pub use create::SeaplaneFormationCreateArgMatches;
+pub use plan::SeaplaneFormationPlanArgMatches;
 
 use clap::{ArgMatches, Command};
 use seaplane::api::v1::FormationsRequest;
@@ -27,9 +27,8 @@ use self::{
     load_balance::SeaplaneFormationLoadBalance, template::SeaplaneFormationTemplate,
 };
 pub use self::{
-    create::SeaplaneFormationCreate, delete::SeaplaneFormationDelete,
-    fetch::SeaplaneFormationFetch, land::SeaplaneFormationLand, launch::SeaplaneFormationLaunch,
-    list::SeaplaneFormationList,
+    delete::SeaplaneFormationDelete, fetch::SeaplaneFormationFetch, land::SeaplaneFormationLand,
+    launch::SeaplaneFormationLaunch, list::SeaplaneFormationList, plan::SeaplaneFormationPlan,
 };
 use crate::{
     cli::{request_token, CliCommand},
@@ -67,10 +66,12 @@ impl SeaplaneFormation {
     pub fn command() -> Command<'static> {
         #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
         let mut app = Command::new("formation")
-            .about("Operate on Seaplane Formations")
+            .about(
+                "Operate on local Formations Plans and remote Formation Instances of those Plans",
+            )
             .subcommand_required(true)
             .arg_required_else_help(true)
-            .subcommand(SeaplaneFormationCreate::command())
+            .subcommand(SeaplaneFormationPlan::command())
             .subcommand(SeaplaneFormationDelete::command())
             .subcommand(SeaplaneFormationFetch::command())
             .subcommand(SeaplaneFormationLand::command())
@@ -96,7 +97,7 @@ impl CliCommand for SeaplaneFormation {
         matches: &'a ArgMatches,
     ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
         match &matches.subcommand() {
-            Some(("create", m)) => Some((Box::new(SeaplaneFormationCreate), m)),
+            Some(("plan", m)) => Some((Box::new(SeaplaneFormationPlan), m)),
             Some(("delete", m)) => Some((Box::new(SeaplaneFormationDelete), m)),
             Some(("fetch-remote", m)) => Some((Box::new(SeaplaneFormationFetch), m)),
             Some(("land", m)) => Some((Box::new(SeaplaneFormationLand), m)),

@@ -17,8 +17,8 @@ impl SeaplaneFlightList {
         // TODO: add filtering
         Command::new("list")
             .visible_alias("ls")
-            .about("List the current Flight definitions")
-            .arg(arg!(--fetch - ('F')).help("Fetch remote Flight definitions prior to listing (by default only local state is considered)"))
+            .about("List all local Flight Plans")
+            .arg(arg!(--fetch|sync|synchronize - ('F')).help("Fetch and synchronize remote Formation Instances (which reference Flight Plans) prior (by default only local plans displayed)"))
             .arg(
                 arg!(--format =["FORMAT"=>"table"])
                     .help("Change the output format")
@@ -36,10 +36,10 @@ impl CliCommand for SeaplaneFlightList {
             cli_eprint!("' does nothing without also adding '");
             cli_eprint!(@Green, "--fetch");
             cli_eprintln!("'");
-            cli_eprintln!("(hint: 'seaplane flight list' only looks at local state, but '--stateless' ignores local state)");
+            cli_eprintln!("(hint: 'seaplane flight list' only displays local plans, but '--stateless' ignores anything local)");
             cli_eprint!("(hint: 'seaplane flight list ");
             cli_eprint!(@Green, "--fetch");
-            cli_eprintln!("' will download remote references as well)");
+            cli_eprintln!("' will download and display remote references as well)");
             std::process::exit(1);
         }
 

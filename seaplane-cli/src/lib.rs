@@ -30,7 +30,7 @@ pub use crate::{
     printer::OutputFormat,
 };
 
-#[cfg(feature = "ui_tests")]
+#[cfg(any(feature = "ui_tests", feature = "semantic_ui_tests"))]
 mod ui_tests {
     use super::Seaplane;
     use clap::{error::Error as ClapError, ArgMatches};
@@ -43,5 +43,5 @@ mod ui_tests {
         Seaplane::command().try_get_matches_from(argv)
     }
 }
-#[cfg(feature = "ui_tests")]
+#[cfg(any(feature = "ui_tests", feature = "semantic_ui_tests"))]
 pub use ui_tests::test_run;

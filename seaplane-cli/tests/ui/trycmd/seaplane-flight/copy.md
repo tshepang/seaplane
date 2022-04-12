@@ -18,23 +18,23 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight copy -h
-Copy a Flight definition
 seaplane-flight-copy [..]
+Copy a local Flight Plan (optionally make changes to the copy)
 
 USAGE:
     seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
     seaplane flight copy <NAME|ID> [OPTIONS]
 
 ARGS:
-    <NAME|ID>    The source name or ID of the Flight to copy
+    <NAME|ID>    The source name or ID of the Flight Plan to copy
 
 OPTIONS:
-    -A, --api-key <STRING>       The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -A, --api-key <STRING>       The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: AMD64, ARM64]
         --color <COLOR>          Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -h, --help                   Print help information
         --image <SPEC>           The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
-        --maximum <NUM>          The maximum number of container instances that should ever be running (default: infinite) [aliases: max]
+        --maximum <NUM>          The maximum number of container instances that should ever be running (default: autoscale as needed) [aliases: max]
         --minimum <NUM>          The minimum number of container instances that should ever be running [default: 1] [aliases: min]
     -n, --name <STRING>          A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
         --no-color               Do not color output (alias for --color=never)
@@ -83,8 +83,8 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight copy --help
-Copy a Flight definition
 seaplane-flight-copy [..]
+Copy a local Flight Plan (optionally make changes to the copy)
 
 USAGE:
     seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
@@ -92,11 +92,11 @@ USAGE:
 
 ARGS:
     <NAME|ID>
-            The source name or ID of the Flight to copy
+            The source name or ID of the Flight Plan to copy
 
 OPTIONS:
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.
@@ -136,7 +136,7 @@ OPTIONS:
             [aliases: img]
 
         --maximum <NUM>
-            The maximum number of container instances that should ever be running (default: infinite)
+            The maximum number of container instances that should ever be running (default: autoscale as needed)
             
             [aliases: max]
 

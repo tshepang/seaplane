@@ -1,8 +1,11 @@
 use seaplane::api::v1::formations::{Architecture, Flight as FlightModel, ImageReference};
 
 use crate::{
-    cli::cmds::flight::{str_to_image_ref, SeaplaneFlightCommonArgMatches, FLIGHT_MINIMUM_DEFAULT},
-    error::Result,
+    cli::{
+        cmds::flight::{str_to_image_ref, SeaplaneFlightCommonArgMatches, FLIGHT_MINIMUM_DEFAULT},
+        validator::validate_flight_name,
+    },
+    error::{CliErrorKind, Result},
     ops::generate_flight_name,
 };
 
@@ -39,6 +42,101 @@ impl Default for FlightCtx {
 }
 
 impl FlightCtx {
+    /// Builds a FlightCtx from a string value using the inline flight spec syntax:
+    ///
+    /// name=FOO,image=nginx:latest,api-permission,architecture=amd64,minimum=1,maximum,2
+    ///
+    /// Where only image=... is required
+    pub fn from_inline_flight(inline_flight: &str) -> Result<FlightCtx> {
+        if inline_flight.contains(' ') {
+            return Err(CliErrorKind::InlineFlightHasSpace.into_err());
+        }
+
+        let mut fctx = FlightCtx::default();
+
+        let parts = inline_flight.split(',');
+
+        macro_rules! parse_item {
+            ($item:expr, $f:expr) => {{
+                let mut item = $item.split('=');
+                item.next();
+                if let Some(value) = item.next() {
+                    if value.is_empty() {
+                        return Err(
+                            CliErrorKind::InlineFlightMissingValue($item.to_string()).into_err()
+                        );
+                    }
+                    $f(value)
+                } else {
+                    Err(CliErrorKind::InlineFlightMissingValue($item.to_string()).into_err())
+                }
+            }};
+            ($item:expr) => {{
+                parse_item!($item, |n| { Ok(n) })
+            }};
+        }
+
+        for part in parts {
+            match part.trim() {
+                // @TODO technically nameFOOBAR=.. is valid... oh well
+                name if part.starts_with("name") => {
+                    fctx.name_id = parse_item!(name, |n: &str| {
+                        if validate_flight_name(n).is_err() {
+                            Err(CliErrorKind::InlineFlightInvalidName(n.to_string()).into_err())
+                        } else {
+                            Ok(n.to_string())
+                        }
+                    })?;
+                    fctx.generated_name = false;
+                }
+                // @TODO technically imageFOOBAR=.. is valid... oh well
+                img if part.starts_with("image") => {
+                    fctx.image = Some(str_to_image_ref(parse_item!(img)?)?);
+                }
+                // @TODO technically maxFOOBAR=.. is valid... oh well
+                max if part.starts_with("max") => {
+                    fctx.maximum = Some(parse_item!(max)?.parse()?);
+                }
+                // @TODO technically minFOOBAR=.. is valid... oh well
+                min if part.starts_with("min") => {
+                    fctx.minimum = parse_item!(min)?.parse()?;
+                }
+                // @TODO technically archFOOBAR=.. is valid... oh well
+                arch if part.starts_with("arch") => {
+                    fctx.architecture.push(parse_item!(arch)?.parse()?);
+                }
+                "api-permission" | "api-permissions" => {
+                    fctx.api_permission = true;
+                }
+                // @TODO technically api-permissionFOOBAR=.. is valid... oh well
+                perm if part.starts_with("api-permission") => {
+                    let _ = parse_item!(perm, |perm: &str| {
+                        fctx.api_permission = match perm {
+                            t if t.eq_ignore_ascii_case("true") => true,
+                            f if f.eq_ignore_ascii_case("false") => true,
+                            _ => {
+                                return Err(CliErrorKind::InlineFlightUnknownItem(
+                                    perm.to_string(),
+                                )
+                                .into_err());
+                            }
+                        };
+                        Ok(())
+                    });
+                }
+                _ => {
+                    return Err(CliErrorKind::InlineFlightUnknownItem(part.to_string()).into_err());
+                }
+            }
+        }
+
+        if fctx.image.is_none() {
+            return Err(CliErrorKind::InlineFlightMissingImage.into_err());
+        }
+
+        Ok(fctx)
+    }
+
     /// Builds a FlightCtx from ArgMatches using some `prefix` if any to search for args
     pub fn from_flight_common(
         matches: &SeaplaneFlightCommonArgMatches,
@@ -113,5 +211,139 @@ impl FlightCtx {
         flight_model
             .build()
             .expect("Failed to build Flight from inputs")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_inline_flight_valid() {
+        assert!(FlightCtx::from_inline_flight(
+            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission,architecture=amd64"
+        )
+        .is_ok());
+        assert!(FlightCtx::from_inline_flight(
+            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission"
+        )
+        .is_ok());
+        assert!(FlightCtx::from_inline_flight(
+            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2"
+        )
+        .is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo").is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest").is_ok());
+        assert!(FlightCtx::from_inline_flight(
+            "image=demos/nginx:latest,name=foo,max=2,minimum=2,api-permission,architecture=amd64"
+        )
+        .is_ok());
+        assert!(FlightCtx::from_inline_flight(
+            "image=demos/nginx:latest,name=foo,maximum=2,min=2,api-permission"
+        )
+        .is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permissions").is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=amd64").is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=arm64").is_ok());
+        assert!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permission=true").is_ok(),
+        );
+        assert!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permission=false").is_ok()
+        );
+    }
+
+    #[test]
+    fn from_inline_flight_invalid() {
+        assert_eq!(FlightCtx::from_inline_flight(
+            "image= demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission,architecture=amd64"
+        )
+        .unwrap_err().kind(), &CliErrorKind::InlineFlightHasSpace);
+        assert_eq!(
+            FlightCtx::from_inline_flight(
+                "image=demos/nginx:latest, name=foo,maximum=2,minimum=2,api-permission"
+            )
+            .unwrap_err()
+            .kind(),
+            &CliErrorKind::InlineFlightHasSpace
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("name=foo,maximum=2,minimum=2")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightMissingImage
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight(",image=demos/nginx:latest,name=foo")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightUnknownItem("".into())
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightUnknownItem("".into())
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,foo")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightUnknownItem("foo".into())
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=invalid_name")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightInvalidName("invalid_name".into())
+        );
+        assert!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,max=2.3")
+                .unwrap_err()
+                .kind()
+                .is_parse_int(),
+        );
+        assert!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,max=foo")
+                .unwrap_err()
+                .kind()
+                .is_parse_int()
+        );
+        assert!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=foo")
+                .unwrap_err()
+                .kind()
+                .is_strum_parse(),
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightMissingValue("name".into())
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,arch")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightMissingValue("arch".into())
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("image,name=foo")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightMissingValue("image".into())
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,min=")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightMissingValue("min".into())
+        );
+        assert_eq!(
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,max=")
+                .unwrap_err()
+                .kind(),
+            &CliErrorKind::InlineFlightMissingValue("max".into())
+        );
     }
 }

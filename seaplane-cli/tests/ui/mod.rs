@@ -2,4 +2,5 @@
 // structure works.
 
 mod semantic;
+#[cfg(feature = "ui_tests")]
 mod trycmd;

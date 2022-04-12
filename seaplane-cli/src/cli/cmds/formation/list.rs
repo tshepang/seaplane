@@ -8,15 +8,20 @@ use crate::{
     Ctx, OutputFormat,
 };
 
-static LONG_ABOUT: &str = "List your Seaplane Formations
+static LONG_ABOUT: &str = "List all local Formation Plans
 
-This command will display the status and number of configurations for each of your Formations.
-The Formations displayed come from the local database of know Formations. You may wish to update
-the local database with Remote Formations as well by first running:
+This command will display the status and number of configurations for each of your Formation
+Plans. The Formations displayed come from the local database of known Formations. You may wish
+to update the local database with Remote Formation Instances as well by either first running:
 
 $ seaplane formation fetch-remote
 
-After which your local database will contain all remote Formations and their configurations as well.";
+OR including `--fetch` such as:
+
+$ seaplane formation list --fetch
+
+After which your local database of Formation and Flight Plans will contain all remote Formation
+Instances and their configurations as well.";
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneFormationList;
@@ -26,8 +31,8 @@ impl SeaplaneFormationList {
         Command::new("list")
             .visible_alias("ls")
             .long_about(LONG_ABOUT)
-            .about("List your Seaplane Formations")
-            .arg(arg!(--fetch - ('F')).help("Fetch remote Formation definitions prior to listing (by default only local state is considered)"))
+            .about("List all local Formation Plans")
+            .arg(arg!(--fetch|sync|synchronize - ('F')).help("Fetch remote Formation Instances and create/synchronize with local Plan Definitions prior to listing (by default only local Plans are displayed)"))
             .arg(
                 arg!(--format =["FORMAT"=>"table"])
                     .possible_values(OutputFormat::VARIANTS)
@@ -47,10 +52,10 @@ impl CliCommand for SeaplaneFormationList {
             cli_eprint!("' is useless without '");
             cli_eprint!(@Green, "--fetch");
             cli_eprintln!("'");
-            cli_eprintln!("(hint: 'seaplane formation list' only looks at local state)");
+            cli_eprintln!("(hint: 'seaplane formation list' only looks at local Plan definitions)");
             cli_eprint!("(hint: 'seaplane formation list");
             cli_eprint!(@Green, "--fetch");
-            cli_eprintln!("' also fetches remote references)");
+            cli_eprintln!("' also synchronizes local Plan definitions with remote Instances)");
             std::process::exit(1);
         }
 

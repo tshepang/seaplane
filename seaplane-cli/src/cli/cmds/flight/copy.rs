@@ -24,7 +24,7 @@ impl SeaplaneFlightCopy {
         // TODO: add --from
         Command::new("copy")
             .visible_alias("clone")
-            .about("Copy a Flight definition")
+            .about("Copy a local Flight Plan (optionally make changes to the copy)")
             .after_help(IMAGE_SPEC)
             .override_usage(
                 "seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
@@ -33,7 +33,7 @@ impl SeaplaneFlightCopy {
             .arg(
                 arg!(name_id =["NAME|ID"] required)
                     .validator(validator)
-                    .help("The source name or ID of the Flight to copy"),
+                    .help("The source name or ID of the Flight Plan to copy"),
             )
             .arg(arg!(--exact - ('x')).help("The given SOURCE must be an exact match"))
             .args(common::args(false))
@@ -49,7 +49,7 @@ impl CliCommand for SeaplaneFlightCopy {
             cli_eprint!("' cannot be used with the '");
             cli_eprint!(@Yellow, "seaplane flight copy");
             cli_eprintln!("' command");
-            cli_eprintln!("(hint: 'seaplane flight ...' only modifies local state)");
+            cli_eprintln!("(hint: 'seaplane flight ...' only modifies local plans)");
             std::process::exit(1);
         }
         // name_id cannot be None in `flight copy`
@@ -73,9 +73,9 @@ impl CliCommand for SeaplaneFlightCopy {
 
         ctx.persist_flights()?;
 
-        cli_print!("Successfully copied Flight '");
+        cli_print!("Successfully copied Flight Plan '");
         cli_print!(@Yellow, "{}", ctx.args.name_id.as_ref().unwrap());
-        cli_print!("' to new Flight '");
+        cli_print!("' to new Flight Plan '");
         cli_print!(@Green, "{name}");
         cli_print!("' with ID '");
         cli_print!(@Green, "{}", &id[..8]);

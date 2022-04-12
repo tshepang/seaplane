@@ -7,7 +7,7 @@ pub struct SeaplaneFlightTemplate;
 
 impl SeaplaneFlightTemplate {
     pub fn command() -> Command<'static> {
-        todo!("impl SeaplaneFlightTemplate::command")
+        Command::new("template")
     }
 }
 

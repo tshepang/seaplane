@@ -31,7 +31,7 @@ static LONG_ARCHITECTURE: &str = "The architectures this flight is capable of ru
 Multiple items can be passed as a comma separated list, or by using the argument
 multiple times.";
 /// A newtype wrapper to enforce where the ArgMatches came from which reduces errors in checking if
-/// values of arguments were used or not. i.e. `seaplane formation create` may not have the same
+/// values of arguments were used or not. i.e. `seaplane formation plan` may not have the same
 /// arguments as `seaplane account token` even though both produce an `ArgMatches`.
 #[allow(missing_debug_implementations)]
 pub struct SeaplaneFlightCommonArgMatches<'a>(pub &'a ArgMatches);
@@ -59,7 +59,7 @@ pub fn args(image_required: bool) -> Vec<Arg<'static>> {
             .help("The minimum number of container instances that should ever be running"),
         arg!(--maximum|max =["NUM"])
             .overrides_with("no-maximum")
-            .help("The maximum number of container instances that should ever be running (default: infinite)"),
+            .help("The maximum number of container instances that should ever be running (default: autoscale as needed)"),
         arg!(--architecture|arch|arches|architectures ignore_case =["ARCH"]...)
             .possible_values(Architecture::VARIANTS)
             .help("The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses)")

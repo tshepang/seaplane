@@ -3,7 +3,7 @@
 
 use std::{path::Path, result::Result as StdResult};
 
-use crate::ops::formation::Endpoint;
+use crate::{context::FlightCtx, error::CliErrorKind, ops::formation::Endpoint};
 
 /// Ensures a valid Endpoint
 pub fn validate_endpoint(s: &str) -> StdResult<(), String> {
@@ -44,6 +44,24 @@ where
         .map_err(|_| {
             "the value must be a NAME|ID|@PATH|@- where @PATH is a valid path or @- opens STDIN"
                 .to_owned()
+        })
+}
+
+/// The arg can be any of:
+///
+/// - name
+/// - Local ID (32byte hex encoded string)
+/// - @- (means STDIN)
+/// - @path
+/// - INLINE-SPEC for Flights
+pub fn validate_name_id_path_inline(s: &str) -> StdResult<(), String> {
+    validate_flight_name(s)
+        .or_else(|_| validate_id(s))
+        .or_else(|_| validate_at_path(s))
+        .or_else(|_| validate_at_stdin(s))
+        .or_else(|_| validate_inline_flight_spec(s))
+        .map_err(|s| {
+            format!("the value must be a NAME|ID|@PATH|@-|INLINE-SPEC where @PATH is a valid path or @- opens STDIN\n\ncaused by: {s}")
         })
 }
 
@@ -138,6 +156,38 @@ pub fn validate_at_stdin(s: &str) -> StdResult<(), &'static str> {
         return Err("the value '@-' was not provided");
     }
 
+    Ok(())
+}
+
+/// The value may be:
+///
+/// name=NAME,image=IMG,maximum=NUM,minimum=NUM,api-permission[=true|false],architecture=ARCH
+///
+/// where only image is required, and architecture can be passed multiple times.
+pub fn validate_inline_flight_spec(s: &str) -> StdResult<(), String> {
+    if let Err(e) = FlightCtx::from_inline_flight(s) {
+        return Err(format!("invalid INLINE-SPEC: {}", {
+            match e.kind() {
+                CliErrorKind::InlineFlightUnknownItem(s) => format!("unknown item {s}"),
+                CliErrorKind::InlineFlightMissingValue(s) => {
+                    format!("key '{s}' is missing the value")
+                }
+                CliErrorKind::InlineFlightHasSpace => {
+                    String::from("inline flight contains a space (' ')")
+                }
+                CliErrorKind::InlineFlightMissingImage => {
+                    String::from("Missing required image=IMAGE-SPEC")
+                }
+                CliErrorKind::InlineFlightInvalidName(s) => {
+                    format!("Flight Plan name '{s}' isn't valid")
+                }
+                CliErrorKind::ParseInt(e) => format!("failed to parse minimum or maximum: {e}"),
+                CliErrorKind::StrumParse(e) => format!("failed to parse architecture: {e}"),
+                CliErrorKind::ImageReference(e) => format!("invalid IMAGE-SPEC: {e}"),
+                _ => unreachable!(),
+            }
+        }));
+    }
     Ok(())
 }
 

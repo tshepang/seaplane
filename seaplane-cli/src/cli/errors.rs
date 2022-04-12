@@ -17,6 +17,13 @@ pub fn wrap_cli_context(err: CliError, has_exact: bool, has_all: bool) -> Result
                     .context("(hint: try '")
                     .color_context(Color::Yellow, "seaplane formation fetch-remote")
                     .context("' to update remote Formation definitions)\n")
+            } else if has_all {
+                err.context("(hint: try adding '")
+                    .color_context(Color::Yellow, "--all")
+                    .context("' to allow partial matches)\n")
+                    .context("(hint: try '")
+                    .color_context(Color::Yellow, "seaplane formation fetch-remote")
+                    .context("' to sync local definitions)\n")
             } else {
                 err
             }
@@ -36,11 +43,11 @@ pub fn wrap_cli_context(err: CliError, has_exact: bool, has_all: bool) -> Result
     Err(e)
 }
 
-pub fn no_matching_item(item: String, has_exact: bool) -> Result<()> {
+pub fn no_matching_item(item: String, has_exact: bool, has_all: bool) -> Result<()> {
     wrap_cli_context(
         CliErrorKind::NoMatchingItem(item).into_err(),
         has_exact,
-        false,
+        has_all,
     )
 }
 

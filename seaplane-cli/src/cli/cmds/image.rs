@@ -7,7 +7,7 @@ pub struct SeaplaneImage;
 
 impl SeaplaneImage {
     pub fn command() -> Command<'static> {
-        todo!("SeaplaneImage::into_app")
+        Command::new("image").visible_alias("img")
     }
 }
 impl CliCommand for SeaplaneImage {

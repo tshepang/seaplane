@@ -23,15 +23,15 @@ impl SeaplaneFlightEdit {
         // TODO: add --no-maximum or similar
         // TODO: add --from
         Command::new("edit")
-            .about("Edit a Flight definition")
+            .about("Edit a local Flight Plan")
             .after_help(IMAGE_SPEC)
             .override_usage("seaplane flight edit <NAME|ID> [OPTIONS]")
             .arg(
                 arg!(name_id required =["NAME|ID"])
-                    .help("The source name or ID of the Flight to copy")
+                    .help("The source name or ID of the Flight Plan to edit")
                     .validator(validator),
             )
-            .arg(arg!(--exact - ('x')).help("The given SOURCE must be an exact match"))
+            .arg(arg!(--exact - ('x')).help("The given name or ID must be an exact match"))
             .args(common::args(false))
     }
 }
@@ -42,10 +42,13 @@ impl CliCommand for SeaplaneFlightEdit {
             cli_eprint!(@Red, "error: ");
             cli_eprint!("'");
             cli_eprint!(@Yellow, "--stateless");
-            cli_eprint!("' cannot be used with the '");
+            cli_eprint!("' cannot be used with '");
             cli_eprint!(@Yellow, "seaplane flight edit");
-            cli_eprintln!("' command");
-            cli_eprintln!("(hint: 'seaplane flight edit' only modifies local state)");
+            cli_eprintln!("'");
+            cli_eprintln!("(hint: 'seaplane flight edit' only modifies local plans)");
+            cli_eprint!("(hint: you may want 'seaplane ");
+            cli_eprint!(@Green, "formation ");
+            cli_eprintln!("edit' instead)");
             std::process::exit(1);
         }
         let flights = &mut ctx.db.flights;
@@ -62,7 +65,7 @@ impl CliCommand for SeaplaneFlightEdit {
 
         ctx.persist_flights()?;
 
-        cli_print!("Successfully edited Flight '");
+        cli_print!("Successfully edited Flight Plan '");
         cli_print!(@Yellow, "{}", ctx.args.name_id.as_ref().unwrap());
         cli_println!("'");
 

@@ -9,7 +9,7 @@ USAGE:
     seaplane init [OPTIONS]
 
 OPTIONS:
-    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
         --force               Force create the files and directories (DANGER: will overwrite existing files)
     -h, --help                Print help information
@@ -34,7 +34,7 @@ USAGE:
 
 OPTIONS:
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.

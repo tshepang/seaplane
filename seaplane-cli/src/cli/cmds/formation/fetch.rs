@@ -17,15 +17,15 @@ impl SeaplaneFormationFetch {
     pub fn command() -> Command<'static> {
         //TODO: add a --no-overwrite or similar
         Command::new("fetch-remote")
-            .visible_alias("fetch")
-            .about("Fetch remote Formation definitions")
+            .visible_aliases(&["fetch", "sync", "synchronize"])
+            .about("Fetch remote Formation Instances and create/synchronize local Plan definitions")
             .override_usage(
                 "seaplane formation fetch-remote
     seaplane formation fetch-remote [NAME|ID]",
             )
             .arg(
                 arg!(formation = ["NAME|ID"])
-                    .help("The NAME or ID of the formation to fetch, omit to fetch all Formations"),
+                    .help("The NAME or ID of the remote Formation Instance to fetch, omit to fetch all Formation Instances"),
             )
     }
 }
@@ -42,7 +42,7 @@ impl CliCommand for SeaplaneFormationFetch {
             formations_request
                 .list_names()
                 .map_err(CliError::from)
-                .context("Context: failed to retrieve Formation names\n")?
+                .context("Context: failed to retrieve Formation Instance names\n")?
                 .into_inner()
         };
 
@@ -97,21 +97,21 @@ impl CliCommand for SeaplaneFormationFetch {
         let mut count = 0;
         for (name, id) in formations_added {
             count += 1;
-            cli_print!("Successfully fetched Formation Definition '");
+            cli_print!("Successfully fetched Formation Instance '");
             cli_print!(@Green, "{name}");
-            cli_print!("' with local ID '");
+            cli_print!("' with and synchronized with local Plan ID '");
             cli_println!(@Green, "{}", &id.to_string()[..8]);
         }
         for (name, id) in flights_added {
             count += 1;
-            cli_print!("Successfully fetched Flight Definition '");
+            cli_print!("Successfully fetched Flight Plan '");
             cli_print!(@Green, "{name}");
-            cli_print!("' with local ID '");
+            cli_print!("' and synchronized with local ID '");
             cli_print!(@Green, "{}", &id.to_string()[..8]);
             cli_println!("'!");
         }
         if names.is_empty() {
-            cli_println!("No remote Formations found");
+            cli_println!("No remote Formation Instances found");
         } else if count > 0 {
             cli_println!("");
             cli_println!("Successfully fetched {count} items");

@@ -1,15 +1,15 @@
 ```console
 $ seaplane formation list -h
-List your Seaplane Formations
 seaplane-formation-list [..]
+List all local Formation Plans
 
 USAGE:
     seaplane formation list [OPTIONS]
 
 OPTIONS:
-    -A, --api-key <STRING>    The API key associated with your account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -F, --fetch               Fetch remote Formation definitions prior to listing (by default only local state is considered)
+    -F, --fetch               Fetch remote Formation Instances and create/synchronize with local Plan Definitions prior to listing (by default only local Plans are displayed) [aliases: sync, synchronize]
         --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
@@ -22,23 +22,28 @@ OPTIONS:
 
 ```console
 $ seaplane formation list --help
-List your Seaplane Formations
 seaplane-formation-list [..]
+List all local Formation Plans
 
-This command will display the status and number of configurations for each of your Formations.
-The Formations displayed come from the local database of know Formations. You may wish to update
-the local database with Remote Formations as well by first running:
+This command will display the status and number of configurations for each of your Formation
+Plans. The Formations displayed come from the local database of known Formations. You may wish
+to update the local database with Remote Formation Instances as well by either first running:
 
-...
+[..]
 
-After which your local database will contain all remote Formations and their configurations as well.
+OR including `--fetch` such as:
+
+[..]
+
+After which your local database of Formation and Flight Plans will contain all remote Formation
+Instances and their configurations as well.
 
 USAGE:
     seaplane formation list [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>
-            The API key associated with your account used to access Seaplane API endpoints
+            The API key associated with a Seaplane account used to access Seaplane API endpoints
             
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.
@@ -53,7 +58,9 @@ OPTIONS:
             [possible values: always, ansi, auto, never]
 
     -F, --fetch
-            Fetch remote Formation definitions prior to listing (by default only local state is considered)
+            Fetch remote Formation Instances and create/synchronize with local Plan Definitions prior to listing (by default only local Plans are displayed)
+            
+            [aliases: sync, synchronize]
 
         --format <FORMAT>
             Change the output format

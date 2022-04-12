@@ -20,19 +20,14 @@ impl SeaplaneFlightDelete {
         Command::new("delete")
             .visible_aliases(&["del", "remove", "rm"])
             .override_usage("seaplane flight delete <NAME|ID> [OPTIONS]")
-            .about("Delete a Flight definition")
+            .about("Delete a local Flight Plan")
             .arg(arg!(flight required =["NAME|ID"])
                 .validator(validator)
-                .help("The name or ID of the Flight to remove, must be unambiguous"))
+                .help("The name or ID of the Flight Plan to remove, must be unambiguous"))
             .arg(arg!(--force)
-                .help("Delete this Flight even if referenced by a Formation (removes any references in Formations), or deletes ALL Flights referenced by <FLIGHT> even if ambiguous"))
-            .arg(arg!(--exact -('x'))
-                .conflicts_with("all")
-                .help("The given FLIGHT must be an exact match")
-                )
+                .help("Delete this Flight Plan even if referenced by a local Formation Plan, or deletes ALL Flight Plan referenced by the name or ID even if ambiguous"))
             .arg(arg!(--all -('a'))
-                .conflicts_with("exact")
-                .help("Delete all matching Flights even when FLIGHT is ambiguous"))
+                .help("Delete all matching Flight Plans even when the name or ID is ambiguous"))
     }
 }
 
@@ -42,10 +37,10 @@ impl CliCommand for SeaplaneFlightDelete {
             cli_eprint!(@Red, "error: ");
             cli_eprint!("'");
             cli_eprint!(@Yellow, "--stateless");
-            cli_eprint!("' cannot be used with the '");
+            cli_eprint!("' cannot be used with '");
             cli_eprint!(@Yellow, "seaplane flight delete");
-            cli_eprintln!("' command");
-            cli_eprintln!("(hint: 'seaplane flight delete' only modifies local state)");
+            cli_eprintln!("'");
+            cli_eprintln!("(hint: 'seaplane flight delete' only modifies local plans)");
             cli_eprint!("(hint: you may want 'seaplane ");
             cli_eprint!(@Green, "formation ");
             cli_eprintln!("delete' instead)");
@@ -53,18 +48,18 @@ impl CliCommand for SeaplaneFlightDelete {
         }
 
         // Get the indices of any flights that match the given name/ID
-        let indices = if ctx.args.exact {
-            ctx.db
-                .flights
-                .indices_of_matches(ctx.args.name_id.as_ref().unwrap())
-        } else {
+        let indices = if ctx.args.all {
             ctx.db
                 .flights
                 .indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
+        } else {
+            ctx.db
+                .flights
+                .indices_of_matches(ctx.args.name_id.as_ref().unwrap())
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), ctx.args.exact)?,
+            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), false, ctx.args.all)?,
             1 => (),
             _ => {
                 // TODO: and --force
@@ -74,13 +69,15 @@ impl CliCommand for SeaplaneFlightDelete {
             }
         }
 
+        // TODO: Check Formation References and require --force if found
+
         // Remove the flights
         ctx.db
             .flights
             .remove_indices(&indices)
             .iter()
             .for_each(|flight| {
-                cli_println!("Deleted Flight {}", &flight.id.to_string());
+                cli_println!("Deleted local Flight Plan {}", &flight.id.to_string());
             });
 
         ctx.persist_flights()?;

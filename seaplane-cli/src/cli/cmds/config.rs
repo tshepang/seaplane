@@ -7,7 +7,7 @@ pub struct SeaplaneConfig;
 
 impl SeaplaneConfig {
     pub fn command() -> Command<'static> {
-        todo!("SeaplaneConfig::into_app")
+        Command::new("config").visible_alias("cfg")
     }
 }
 
