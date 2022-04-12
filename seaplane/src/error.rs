@@ -2,6 +2,7 @@
 
 use thiserror::Error;
 
+use crate::api::token::TokenError;
 #[cfg(feature = "api_v1")]
 use crate::api::v1::{config::ConfigError, formations::FormationsError};
 
@@ -47,6 +48,8 @@ pub enum SeaplaneError {
     #[error("the Config Consensus API returned an error status")]
     #[cfg(feature = "api_v1")]
     ConfigResponse(#[from] ConfigError),
+    #[error("the Token API returned an error status")]
+    TokenResponse(#[from] TokenError),
 }
 
 impl From<reqwest::Error> for SeaplaneError {

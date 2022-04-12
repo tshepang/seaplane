@@ -1,9 +1,11 @@
 //! The API endpoints related to Tokens and Authentication
 
+use std::{error::Error, fmt};
+
 use reqwest::{
-    blocking,
+    blocking::{self, Response},
     header::{HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE},
-    Url,
+    StatusCode, Url,
 };
 use serde::{Deserialize, Serialize};
 
@@ -107,10 +109,6 @@ impl TokenRequest {
         TokenRequestBuilder::new()
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Malformed Token
-    //   - [ ] 403 - No permission
-    //   - [ ] 500 - Internal
     /// Returns a short lived JWT that can be used to authenticate to other API endpoints
     ///
     /// # Examples
@@ -123,18 +121,14 @@ impl TokenRequest {
     /// dbg!(resp);
     /// ```
     pub fn access_token(&self) -> Result<String> {
-        self.client
+        let resp = self
+            .client
             .post(self.endpoint_url.clone())
             .bearer_auth(&self.api_key)
-            .send()?
-            .text()
-            .map_err(Into::into)
+            .send()?;
+        map_error(resp)?.text().map_err(Into::into)
     }
 
-    // TODO: Distinguish errors:
-    //   - [ ] 401 - Malformed Token
-    //   - [ ] 403 - No permission
-    //   - [ ] 500 - Internal
     /// Returns a JSON response of an `AccessToken` which contains the short lived JWT used to
     /// authenticate to other public API endpoints, along with addition fields for tenant ID and
     /// subdomain
@@ -149,12 +143,73 @@ impl TokenRequest {
     /// dbg!(resp);
     /// ```
     pub fn access_token_json(&self) -> Result<AccessToken> {
-        self.client
+        let resp = self
+            .client
             .post(self.endpoint_url.clone())
             .bearer_auth(&self.api_key)
             .header(ACCEPT, HeaderValue::from_static("application/json"))
-            .send()?
-            .json::<AccessToken>()
-            .map_err(Into::into)
+            .send()?;
+        map_error(resp)?.json::<AccessToken>().map_err(Into::into)
+    }
+}
+
+pub fn map_error(resp: Response) -> Result<Response> {
+    if let Err(source) = resp.error_for_status_ref() {
+        let kind = source.status().into();
+        return Err(TokenError {
+            message: resp.text()?,
+            source,
+            kind,
+        }
+        .into());
+    }
+    Ok(resp)
+}
+
+#[derive(Debug)]
+#[non_exhaustive]
+pub struct TokenError {
+    pub message: String,
+    pub source: reqwest::Error,
+    pub kind: TokenErrorKind,
+}
+
+impl fmt::Display for TokenError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl Error for TokenError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        Some(&self.source)
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[non_exhaustive]
+pub enum TokenErrorKind {
+    /// HTTP Status Code that isn't implemented yet
+    UnimplementedHttpStatus(StatusCode),
+    /// HTTP 400 - Bad Request
+    InvalidRequest,
+    /// HTTP 403 - I know you, but I don't like you
+    UnknownApiKey,
+    /// HTTP 500 - Internal
+    InternalError,
+    /// Not an HTTP status error
+    Unknown,
+}
+
+impl From<Option<StatusCode>> for TokenErrorKind {
+    fn from(code: Option<StatusCode>) -> Self {
+        use TokenErrorKind::*;
+        match code {
+            Some(StatusCode::BAD_REQUEST) => InvalidRequest,
+            Some(StatusCode::FORBIDDEN) => UnknownApiKey,
+            Some(StatusCode::INTERNAL_SERVER_ERROR) => InternalError,
+            Some(code) => UnimplementedHttpStatus(code),
+            None => Unknown,
+        }
     }
 }
