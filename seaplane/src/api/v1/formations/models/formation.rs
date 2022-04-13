@@ -43,6 +43,7 @@ impl FormationConfigurationBuilder {
     /// **NOTE:** This method can be called multiple times. All values will be utilized.
     #[cfg_attr(feature = "unstable", must_use)]
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn add_affinity<S: Into<String>>(mut self, name: S) -> Self {
         self.affinity.push(name.into());
         self
@@ -50,6 +51,7 @@ impl FormationConfigurationBuilder {
 
     /// Removes all `affinity` values
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn clear_affinity(&mut self) {
         self.affinity.clear();
     }
@@ -61,6 +63,7 @@ impl FormationConfigurationBuilder {
     /// **NOTE:** This method can be called multiple times. All values will be utilized.
     #[cfg_attr(feature = "unstable", must_use)]
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn add_connection<S: Into<String>>(mut self, name: S) -> Self {
         self.connections.push(name.into());
         self
@@ -68,6 +71,7 @@ impl FormationConfigurationBuilder {
 
     /// Removes all connection mappings
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn clear_connections(&mut self) {
         self.connections.clear();
     }
@@ -126,6 +130,7 @@ impl FormationConfigurationBuilder {
     /// **NOTE:** This method can be called multiple times. All values will be utilized.
     #[cfg_attr(feature = "unstable", must_use)]
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn add_formation_endpoint(mut self, key: EndpointKey, value: EndpointValue) -> Self {
         self.formation_endpoints.insert(key, value);
         self
@@ -288,6 +293,7 @@ impl FormationConfiguration {
     /// This is a hint to the scheduler to place containers that run in each of these formations
     /// "close" to each other (for some version of close including but not limited to latency).
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn affinities(&self) -> &[String] {
         &*self.affinity
     }
@@ -297,6 +303,7 @@ impl FormationConfiguration {
     /// This is a hint to the scheduler to place containers that run in each of these formations
     /// "close" to each other (for some version of close including but not limited to latency).
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn set_affinities(&mut self, affinities: Vec<String>) {
         self.affinity = affinities;
     }
@@ -305,6 +312,7 @@ impl FormationConfiguration {
     /// communicate over their `FormationConfigurationBuilder::formation_endpoints` if and only if
     /// both formations opt in to that connection by adding each other to their connection mapping.
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn set_connections(&mut self, connections: Vec<String>) {
         self.connections = connections;
     }
@@ -313,6 +321,7 @@ impl FormationConfiguration {
     /// communicate over their `FormationConfigurationBuilder::formation_endpoints` if and only if
     /// both formations opt in to that connection by adding each other to their connection mapping.
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn connections(&self) -> &[String] {
         &*self.connections
     }
@@ -367,6 +376,7 @@ impl FormationConfiguration {
     /// ([`FormationConfigurationBuilder::add_flight_endpoint`]) the configuration will be
     /// rejected upon API request.
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn add_formation_endpoint(&mut self, key: EndpointKey, value: EndpointValue) {
         self.formation_endpoints.insert(key, value);
     }
@@ -376,6 +386,7 @@ impl FormationConfiguration {
     /// to other formations listed in is's `connection` mapping
     /// ([`FormationConfigurationBuilder::add_connection`]).
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn formation_endpoints(
         &self,
         _key: EndpointKey,
@@ -574,6 +585,7 @@ impl FlightBuilder {
     /// environment variable.
     #[cfg(feature = "unstable")]
     #[cfg_attr(feature = "unstable", must_use)]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn api_permission(mut self, yes: bool) -> Self {
         self.api_permission = yes;
         self
@@ -711,12 +723,14 @@ impl Flight {
 
     /// Returns `true` if this [`Flight`] should have access to Seaplane's APIs.
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn api_permission(&self) -> bool {
         self.api_permission
     }
 
     /// Set if this [`Flight`] should have access to Seaplane's APIs.
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn set_api_permission(&mut self, yes: bool) {
         self.api_permission = yes;
     }
@@ -812,6 +826,7 @@ impl ActiveConfiguration {
     /// the sum of the weights of every configuration with that endpoint exposed and divide traffic
     /// according to the percentage of that sum each configuration's weight has.
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn traffic_weight(&self) -> Option<f32> {
         self.traffic_weight
     }
@@ -861,6 +876,7 @@ impl ActiveConfigurationBuilder {
     /// Default: `1`
     #[cfg_attr(feature = "unstable", must_use)]
     #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn traffic_weight(mut self, weight: f32) -> Self {
         self.traffic_weight = weight;
         self

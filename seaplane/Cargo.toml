@@ -30,3 +30,10 @@ default = ["api_v1"]
 api_v1 = []
 api_tests = [] # enables mock API tests
 unstable = [] # Items which are in active development and are totally unstable or unimplemented
+
+# docs.rs-specific configuration
+[package.metadata.docs.rs]
+# document all features
+all-features = true
+# defines the configuration attribute `docsrs`
+rustdoc-args = ["--cfg", "docsrs"]

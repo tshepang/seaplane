@@ -3,6 +3,10 @@
 // (see LICENSE or <http://opensource.org/licenses/Apache-2.0>) All files in the project carrying such
 // notice may not be copied, modified, or distributed except according to those terms.
 
+// only enables the `doc_cfg` feature when the `docsrs` configuration attribute is defined
+// `doc_cfg` enables the "This API is only available on feature `FOO`" in the generated docs such as
+// on docs.rs
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(
     // TODO: we'll get to this
     //missing_docs,
