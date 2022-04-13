@@ -126,7 +126,7 @@ impl FormationCtx {
     }
 
     /// Creates a new seaplane::api::v1::FormationConfiguration from the contained values
-    pub fn configuration_model(&self, ctx: &Ctx) -> Result<Option<FormationConfigurationModel>> {
+    pub fn configuration_model(&self, ctx: &Ctx) -> Result<FormationConfigurationModel> {
         // Create the new Formation model from the CLI inputs
         let mut f_model = FormationConfigurationModel::builder();
 
@@ -172,8 +172,7 @@ impl FormationCtx {
         }
 
         // TODO: probably match and check errors
-        // Create a new Formation struct we can add to our local JSON "DB"
-        Ok(f_model.build().ok())
+        f_model.build().map_err(Into::into)
     }
 }
 

@@ -12,7 +12,8 @@ use crate::{
         CliCommand,
     },
     context::Ctx,
-    error::{CliError, Context, Result},
+    error::{CliError, CliErrorKind, Context, Result},
+    printer::Color,
 };
 
 static LONG_ABOUT: &str = "Start a local Formation Plan creating a remote Formation Instance
@@ -84,31 +85,26 @@ impl SeaplaneFormationLaunch {
 }
 
 impl CliCommand for SeaplaneFormationLaunch {
-    // TODO: maybe validate flight names in endpoints? Argument against is it could fail validation
-    // if you have not fetched first.
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        let name = ctx.args.name_id.as_ref().unwrap().clone();
         if ctx.args.fetch {
             let fetch = SeaplaneFormationFetch;
             fetch.run(ctx)?;
         }
         // Get the indices of any formations that match the given name/ID
         let indices = if ctx.args.all {
-            ctx.db
-                .formations
-                .formation_indices_of_left_matches(ctx.args.name_id.as_ref().unwrap())
+            ctx.db.formations.formation_indices_of_left_matches(&name)
         } else {
-            ctx.db
-                .formations
-                .formation_indices_of_matches(ctx.args.name_id.as_ref().unwrap())
+            ctx.db.formations.formation_indices_of_matches(&name)
         };
 
         match indices.len() {
-            0 => errors::no_matching_item(ctx.args.name_id.clone().unwrap(), false, ctx.args.all)?,
+            0 => errors::no_matching_item(name, false, ctx.args.all)?,
             1 => (),
             _ => {
                 // TODO: and --force
                 if !ctx.args.all {
-                    errors::ambiguous_item(ctx.args.name_id.clone().unwrap(), true)?;
+                    errors::ambiguous_item(name, true)?;
                 }
             }
         }
@@ -132,6 +128,23 @@ impl CliCommand for SeaplaneFormationLaunch {
             'inner: for id in &cfgs_ids {
                 if let Some(cfg) = ctx.db.formations.get_configuration(id) {
                     has_public_endpoints = cfg.model.public_endpoints().count() > 0;
+                    if let Some(flight) = cfg.model.public_endpoints().find_map(|(_, dst)| {
+                        if !ctx.db.formations.has_flight(&dst.flight_name) {
+                            Some(dst.flight_name.clone())
+                        } else {
+                            None
+                        }
+                    }) {
+                        return Err(CliErrorKind::EndpointInvalidFlight(flight).into_err()
+                            .context("perhaps the Flight Plan exists, but only in a remote Formation Instance?\n")
+                            .context("(hint: use '")
+                            .color_context(Color::Yellow, "--fetch")
+                            .context("' to synchronize local Plan definitions with remote Instances)\n")
+                            .context("(hint: alternatively, you create the Flight Plan with '")
+                            .color_context(Color::Green, "seaplane flight plan")
+                            .context("')\n"));
+                    }
+
                     let add_cfg_req = build_request(Some(&formation_name), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute

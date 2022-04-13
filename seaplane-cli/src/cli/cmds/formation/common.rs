@@ -290,6 +290,7 @@ pub fn args() -> Vec<Arg<'static>> {
         arg!(--("include-flight-plan")|("include-flight-plans") -('I') =["SPEC"]...)
             .help("Use local Flight Plan in this Formation in the form of ID|NAME|@path|@-|INLINE-SPEC (supports SEMICOLON (';') separated list, or multiple uses) (See FLIGHT SPEC below)")
             .value_delimiter(';')
+            .required(true)
             .long_help(LONG_FLIGHT)
             .validator(validate_name_id_path_inline),
         arg!(--provider|providers =["PROVIDER"=>"all"]... ignore_case)

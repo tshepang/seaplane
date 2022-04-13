@@ -284,6 +284,7 @@ pub enum CliErrorKind {
     ParseInt(std::num::ParseIntError),
     StrumParse(strum::ParseError),
     FlightsInUse(Vec<String>),
+    EndpointInvalidFlight(String),
 }
 
 impl CliErrorKind {
@@ -300,6 +301,13 @@ impl CliErrorKind {
                 cli_eprint!("(hint: override this check and force delete with '");
                 cli_eprint!(@Yellow, "--force");
                 cli_eprintln!("' which will also remove the Flight Plan from the Formation Plan)");
+            }
+            EndpointInvalidFlight(flight) => {
+                cli_eprint!("Flight Plan '");
+                cli_eprint!(@Red, "{flight}");
+                cli_eprintln!(
+                    "' is referenced in an endpoint but does not exist in the local Plans"
+                );
             }
             ConflictingArguments(a, b) => {
                 cli_eprint!("cannot use '");
@@ -464,6 +472,7 @@ impl PartialEq<Self> for CliErrorKind {
         use CliErrorKind::*;
 
         match self {
+            EndpointInvalidFlight(_) => matches!(rhs, EndpointInvalidFlight(_)),
             AmbiguousItem(_) => matches!(rhs, AmbiguousItem(_)),
             Io(_, _) => matches!(rhs, Io(_, _)),
             DuplicateName(_) => matches!(rhs, DuplicateName(_)),

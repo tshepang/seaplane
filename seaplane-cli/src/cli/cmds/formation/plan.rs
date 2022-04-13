@@ -40,8 +40,7 @@ impl SeaplaneFormationPlan {
         Command::new("plan")
             .after_help(concatcp!(FLIGHT_SPEC, "\n\n", REGION_SPEC))
             .visible_aliases(&["create", "add"])
-            .override_usage("seaplane formation plan [OPTIONS]
-    seaplane formation plan --include-flight-plan=SPEC... [FORMATION CFG OPTIONS]")
+            .override_usage("seaplane formation plan --include-flight-plan=SPEC... [OPTIONS]")
             .about("Create a Seaplane Formation")
             .long_about(LONG_ABOUT)
             .args(common::args())
@@ -93,11 +92,10 @@ impl CliCommand for SeaplaneFormationPlan {
         // Add the new formation
         let mut new_formation = Formation::new(&formation_ctx.name_id);
 
-        if let Some(cfg) = formation_ctx.configuration_model(ctx)? {
-            let formation_cfg = FormationConfiguration::new(cfg);
-            new_formation.local.insert(formation_cfg.id);
-            ctx.db.formations.configurations.push(formation_cfg)
-        }
+        let cfg = formation_ctx.configuration_model(ctx)?;
+        let formation_cfg = FormationConfiguration::new(cfg);
+        new_formation.local.insert(formation_cfg.id);
+        ctx.db.formations.configurations.push(formation_cfg);
 
         let id = new_formation.id.to_string();
         ctx.db.formations.formations.push(new_formation);

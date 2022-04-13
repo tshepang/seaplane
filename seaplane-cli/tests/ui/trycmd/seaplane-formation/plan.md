@@ -6,8 +6,7 @@ seaplane-formation-plan [..]
 Create a Seaplane Formation
 
 USAGE:
-    seaplane formation plan [OPTIONS]
-    seaplane formation plan --include-flight-plan=SPEC... [FORMATION CFG OPTIONS]
+    seaplane formation plan --include-flight-plan=SPEC... [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>               The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -82,8 +81,7 @@ You can also create a new Flight Plan using the INLINE-SPEC option of `--include
 Flight Plans created using INLINE-SPEC are automatically included in the Formation Plan.
 
 USAGE:
-    seaplane formation plan [OPTIONS]
-    seaplane formation plan --include-flight-plan=SPEC... [FORMATION CFG OPTIONS]
+    seaplane formation plan --include-flight-plan=SPEC... [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>

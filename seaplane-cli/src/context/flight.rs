@@ -31,7 +31,7 @@ impl Default for FlightCtx {
         Self {
             name_id: generate_flight_name(),
             image: None,
-            minimum: 0,
+            minimum: FLIGHT_MINIMUM_DEFAULT,
             maximum: None,
             architecture: Vec::new(),
             api_permission: false,
