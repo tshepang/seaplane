@@ -18,7 +18,6 @@ pub use common::{Provider, Region};
 pub use plan::SeaplaneFormationPlanArgMatches;
 
 use clap::{ArgMatches, Command};
-use seaplane::api::v1::FormationsRequest;
 
 #[cfg(feature = "unstable")]
 use self::{
@@ -30,34 +29,7 @@ pub use self::{
     delete::SeaplaneFormationDelete, fetch::SeaplaneFormationFetch, land::SeaplaneFormationLand,
     launch::SeaplaneFormationLaunch, list::SeaplaneFormationList, plan::SeaplaneFormationPlan,
 };
-use crate::{
-    cli::{request_token, CliCommand},
-    error::{CliError, Context, Result},
-    Ctx,
-};
-
-/// Requests an Access Token using an API key and returns the FormationsRequest
-/// The access token is only good for 60 seconds
-///
-/// If the name is None the only request that can be made is FormationRequest::list_names
-pub fn build_request(formation_name: Option<&str>, api_key: &str) -> Result<FormationsRequest> {
-    let mut builder = FormationsRequest::builder();
-    let formation_context = if let Some(name) = formation_name {
-        builder = builder.name(name);
-        format!("\n\tFormation: {name}")
-    } else {
-        String::new()
-    };
-
-    let token = request_token(api_key, &formation_context)?;
-    builder
-        .token(token)
-        .build()
-        .map_err(CliError::from)
-        .with_context(|| {
-            format!("Context: failed to build /formations endpoint request{formation_context}\n")
-        })
-}
+use crate::{cli::CliCommand, error::Result, Ctx};
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneFormation;

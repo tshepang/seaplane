@@ -53,7 +53,7 @@ const TAG_TOTAL_LENGTH_MAX: usize = 127;
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
 /// A container image reference
-#[derive(Debug, PartialEq, Clone, Hash, Eq)]
+#[derive(Debug, Clone, Eq)]
 pub struct ImageReference {
     pub domain: String,
     pub path: String,
@@ -62,6 +62,16 @@ pub struct ImageReference {
 }
 
 impl ImageReference {
+    /// This equality check requires all fields to match exactly with `other`. Unlike in the
+    /// `PartialEq` implementation where a value of `None` for either the `tag` or `digest` will be
+    /// treated as a wild card and can match any value in `other` for the respective field.
+    pub fn eq_strict(&self, other: &Self) -> bool {
+        self.domain == other.domain
+            && self.path == other.path
+            && self.tag == other.tag
+            && self.digest == other.digest
+    }
+
     pub fn domain(&self) -> &str {
         &self.domain
     }
@@ -76,6 +86,23 @@ impl ImageReference {
             digest: Some(digest.into()),
             ..self
         }
+    }
+}
+
+impl PartialEq for ImageReference {
+    /// Compares equality but allows a value of `None` for either the `tag` or `digest` to be
+    /// treated as a wild card and will therefore match any value in `other` for the respective
+    /// field.
+    fn eq(&self, other: &Self) -> bool {
+        let tag_match = match (self.tag.as_ref(), other.tag.as_ref()) {
+            (Some(a), Some(b)) => a == b,
+            _ => true,
+        };
+        let digest_match = match (self.digest.as_ref(), other.digest.as_ref()) {
+            (Some(a), Some(b)) => a == b,
+            _ => true,
+        };
+        self.domain == other.domain && self.path == other.path && tag_match && digest_match
     }
 }
 
@@ -402,5 +429,15 @@ mod tests {
         assert_eq!(validate_domain("registry.seaplanet.io"), Ok(()));
         assert_eq!(validate_domain("localhost"), Ok(()));
         assert_eq!(validate_domain("localhost:80"), Ok(()));
+    }
+
+    #[test]
+    fn partial_eq() {
+        assert_eq!(parse("domain.io/nginx:latest"), parse("domain.io/nginx@sha256:83d487b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6"));
+        assert_eq!(parse("domain.io/nginx:latest"), parse("domain.io/nginx"));
+        assert!(parse("domain.io/nginx:latest") != parse("domain.io/nginx:buster"));
+        assert!(parse("domain.io/nginx@sha256:aaaaa7b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6") != parse("domain.io/nginx@sha256:83d487b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6"));
+        assert!(parse("domain.io/nginx:latest@sha256:aaaaa7b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6") != parse("domain.io/nginx@sha256:83d487b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6"));
+        assert!(parse("domain.io/nginx:latest@sha256:83d487b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6") != parse("domain.io/nginx:slim@sha256:83d487b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6"));
     }
 }

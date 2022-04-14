@@ -56,6 +56,9 @@ impl Formations {
             .any(|fc| fc.model.flights().iter().any(|f| f.name() == flight))
     }
 
+    pub fn formations(&self) -> impl Iterator<Item = &Formation> {
+        self.formations.iter()
+    }
     pub fn configurations(&self) -> impl Iterator<Item = &FormationConfiguration> {
         self.configurations.iter()
     }
@@ -84,46 +87,21 @@ impl Formations {
         self.formations.get_mut(idx)
     }
 
-    /// Either updates a matching local Formation Configurations, or creates a new one. Returns NEW
-    /// Formation Configuration IDs
-    pub fn update_or_create_configuration(
-        &mut self,
-        name: &str,
-        model: FormationConfigurationModel,
-        in_air: bool,
-        uuid: Uuid,
-    ) -> Vec<Id> {
-        let mut ret = Vec::new();
-
-        if !self
+    /// Either updates a matching local Formation Configurations, or creates a new one. Returns the
+    /// existing ID of the config that was updated if any
+    pub fn update_or_create_configuration(&mut self, cfg: FormationConfiguration) -> Option<Id> {
+        if let Some(old_cfg) = self
             .configurations
-            .iter()
-            .any(|c| c.model == model && c.remote_id == Some(uuid))
+            .iter_mut()
+            .find(|c| c.model == cfg.model)
         {
-            let mut new_cfg = FormationConfiguration::new(model.clone());
-            new_cfg.remote_id = Some(uuid);
-            ret.push(new_cfg.id);
-            self.configurations.push(new_cfg);
+            // This should have come from the API and thus requires a UUID
+            old_cfg.remote_id = Some(cfg.remote_id.unwrap());
+            Some(old_cfg.id)
+        } else {
+            self.configurations.push(cfg);
+            None
         }
-
-        for cfg in self.configurations.iter().filter(|cfg| cfg.model == model) {
-            for f in self
-                .formations
-                .iter_mut()
-                .filter(|f| f.name.as_deref() == Some(name))
-            {
-                if in_air {
-                    f.in_air.insert(cfg.id);
-                    f.grounded.remove(&cfg.id);
-                } else {
-                    f.grounded.insert(cfg.id);
-                    f.in_air.remove(&cfg.id);
-                }
-                f.local.insert(cfg.id);
-            }
-        }
-
-        ret
     }
 
     /// Either updates a matching local Formations, or creates a new one. Returns NEW Formations
@@ -362,10 +340,32 @@ impl Formation {
         }
     }
 
+    /// Replaces all occurrences of `old_id` with `new_id`
+    pub fn replace_id(&mut self, old_id: &Id, new_id: Id) {
+        if self.local.remove(old_id) {
+            self.local.insert(new_id);
+        }
+        if self.in_air.remove(old_id) {
+            self.in_air.insert(new_id);
+        }
+        if self.grounded.remove(old_id) {
+            self.grounded.insert(new_id);
+        }
+    }
+
     /// Returns the Formation Configuration IDs that are neither Grounded (Inactive) or In Air (active)
     pub fn local_only_configs(&self) -> Vec<Id> {
         self.local
             .difference(&self.in_air.union(&self.grounded).copied().collect())
+            .copied()
+            .collect()
+    }
+
+    /// Returns a deduplicated union of all the configuration IDs.
+    pub fn configs(&self) -> Vec<Id> {
+        self.local
+            .iter()
+            .chain(self.in_air.iter().chain(self.grounded.iter()))
             .copied()
             .collect()
     }
@@ -375,7 +375,7 @@ impl Formation {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FormationConfiguration {
     pub id: Id,
-    remote_id: Option<Uuid>,
+    pub remote_id: Option<Uuid>,
     pub model: FormationConfigurationModel,
 }
 
@@ -384,6 +384,13 @@ impl FormationConfiguration {
         Self {
             id: Id::new(),
             remote_id: None,
+            model,
+        }
+    }
+    pub fn with_uuid(uuid: Uuid, model: FormationConfigurationModel) -> Self {
+        Self {
+            id: Id::new(),
+            remote_id: Some(uuid),
             model,
         }
     }

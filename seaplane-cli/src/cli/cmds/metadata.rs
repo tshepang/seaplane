@@ -16,7 +16,8 @@ pub use self::{
     set::{SeaplaneMetadataSet, SeaplaneMetadataSetArgMatches},
 };
 use crate::{
-    cli::{request_token, CliCommand},
+    api::request_token,
+    cli::CliCommand,
     error::{CliError, Context, Result},
     printer::OutputFormat,
 };

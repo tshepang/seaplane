@@ -65,6 +65,8 @@ to interact with the Seaplane System.
   is responsible for deconflicting mutually exclusive items, and combining all
   inputs (configuration file, environment, CLI arguments, etc.) into a single
   structure that code can use at runtime to make a decision.
+- `src/api.rs`: Wraps the SDK provided calls and makes convenience methods, or converts errors,
+  wraps with context, etc. Anything that isn't a one-off touching the SDK should probably go here.
 - `src/error.rs`: Provides a custom CLI error and result type for fine grained
   control over the errors, and how they get displayed to the user.
 - `src/fs.rs`: Utility functions for interacting with the file system in a

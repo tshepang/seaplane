@@ -3,10 +3,9 @@ use std::collections::HashSet;
 use clap::Command;
 
 use crate::{
-    cli::{cmds::formation::build_request, CliCommand},
-    error::{CliError, Context, Result},
-    ops::formation::Formation,
-    printer::Color,
+    api::{get_all_formations, get_formation_names},
+    cli::CliCommand,
+    error::Result,
     Ctx,
 };
 
@@ -34,63 +33,59 @@ impl CliCommand for SeaplaneFormationFetch {
     // TODO: async
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let api_key = ctx.args.api_key()?;
-        let names = if let Some(name) = &ctx.args.name_id {
-            vec![name.to_owned()]
-        } else {
-            // First download all formation names
-            let formations_request = build_request(None, api_key)?;
-            formations_request
-                .list_names()
-                .map_err(CliError::from)
-                .context("Context: failed to retrieve Formation Instance names\n")?
-                .into_inner()
-        };
+        let names = get_formation_names(api_key, ctx.args.name_id.as_deref())?;
 
-        // TODO: We't requesting tons of new tokens...maybe we could do multiple per and just
-        // retry on error?
+        // This gets us everything the API knows about, but with totally new local IDs. So we need
+        // to ignore those except how they relate to eachother (i.e. they won't match anything in
+        // our local DB, but they will match within these instances returned by the API).
+        //
+        // We need to map them to our OWN local IDs and update the DB.
+        let mut remote_instances = get_all_formations(api_key, &names)?;
+
+        // Keep track of what new items we've downloaded that our local DB didn't know about
         let mut flights_added = HashSet::new();
         let mut formations_added = HashSet::new();
-        for name in &names {
-            let list_cfg_uuids_req = build_request(Some(name), api_key)?;
 
-            let cfg_uuids = list_cfg_uuids_req
-                .list_configuration_ids()
-                .map_err(CliError::from)
-                .context("Context: failed to retrieve Formation Configuration IDs\n")?;
-            let active_cfgs_req = build_request(Some(name), api_key)?;
-            let active_cfgs = active_cfgs_req
-                .get_active_configurations()
-                .map_err(CliError::from)
-                .context("Context: failed to retrieve Active Formation Configurations\n")?;
-
-            for uuid in cfg_uuids.into_iter() {
-                let get_cfgs_req = build_request(Some(name), api_key)?;
-                let cfg_model = get_cfgs_req
-                    .get_configuration(uuid)
-                    .map_err(CliError::from)
-                    .context("Context: failed to retrieve Formation Configuration\n\tUUID: ")
-                    .with_color_context(|| (Color::Yellow, format!("{uuid}\n")))?;
-
-                for flight in cfg_model.flights() {
+        // Start going through the instances by formation
+        for formation in remote_instances.formations.iter_mut() {
+            // Loop through all the Formation Configurations defined in this Formation
+            for cfg in formation.configs().iter().map(|id| {
+                // Map a config ID to an actual Config. We have to use these long chained calls so
+                // Rust can tell that `formations` itself isn't being borrowed, just it's fields.
+                remote_instances.configurations.swap_remove(
+                    // get the index of the Config where the ID matches
+                    remote_instances
+                        .configurations
+                        .iter()
+                        .enumerate()
+                        .find_map(|(i, cfg)| if &cfg.id == id { Some(i) } else { None })
+                        .unwrap(),
+                )
+            }) {
+                // Add or update all flights this configuration references
+                for flight in cfg.model.flights() {
+                    // If the name AND image match something in our local DB we update, otherwise
+                    // we assume it's new and add it to our local DB, new ID and all
                     let names_ids = ctx.db.flights.update_or_create_flight(flight);
                     flights_added.extend(names_ids);
                 }
 
-                let is_active = active_cfgs.iter().any(|ac| ac.uuid() == &uuid);
-                let ids = ctx
-                    .db
-                    .formations
-                    .update_or_create_configuration(name, cfg_model, is_active, uuid);
-                let mut formation = Formation::new(name);
-                formation.local.extend(&ids);
-                if is_active {
-                    formation.in_air.extend(ids);
-                } else {
-                    formation.grounded.extend(ids);
+                // Keep track of the old ID incase we need to replace it
+                let old_id = cfg.id;
+                // if we only updated, and didn't create, we need to replace the random local ID
+                // that was assigned when we downloaded all the configs, with the *real* local ID
+                if let Some(real_id) = ctx.db.formations.update_or_create_configuration(cfg) {
+                    formation.replace_id(&old_id, real_id);
                 }
-                if let Some(id) = ctx.db.formations.update_or_create_formation(formation) {
-                    formations_added.insert((name, id));
-                }
+            }
+            // Add or update the formation itself (which is really just a list of configuration
+            // local IDs)
+            if let Some(id) = ctx
+                .db
+                .formations
+                .update_or_create_formation(formation.clone())
+            {
+                formations_added.insert((formation.name.clone().unwrap(), id));
             }
         }
 

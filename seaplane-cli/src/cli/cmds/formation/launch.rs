@@ -5,9 +5,10 @@ use seaplane::{
 };
 
 use crate::{
+    api::{build_formations_request, request_token_json},
     cli::{
-        cmds::formation::{build_request, SeaplaneFormationFetch},
-        errors, request_token_json,
+        cmds::formation::SeaplaneFormationFetch,
+        errors,
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
     },
@@ -145,7 +146,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                             .context("')\n"));
                     }
 
-                    let add_cfg_req = build_request(Some(&formation_name), api_key)?;
+                    let add_cfg_req = build_formations_request(Some(&formation_name), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute
                     cli_debug!("Looking for existing remote Formation Instances...");
@@ -156,7 +157,8 @@ impl CliCommand for SeaplaneFormationLaunch {
                                 if fr.kind == FormationsErrorKind::FormationNotFound =>
                             {
                                 // If the formation didn't exist, create it
-                                let create_req = build_request(Some(&formation_name), api_key)?;
+                                let create_req =
+                                    build_formations_request(Some(&formation_name), api_key)?;
                                 cli_debug!("Creating new Formation Instance...");
                                 match create_req.create(cfg.model.clone(), !grounded) {
                                     Err(e) => {
@@ -190,7 +192,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             // active
             if !grounded && !created_new {
                 // Get all configurations for this Formation
-                let list_cfg_uuids_req = build_request(Some(&formation_name), api_key)?;
+                let list_cfg_uuids_req = build_formations_request(Some(&formation_name), api_key)?;
                 cfg_uuids.extend(
                     list_cfg_uuids_req
                         .list_configuration_ids()
@@ -207,7 +209,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                     }
                     active_configs.add_configuration_mut(cfg.build()?);
                 }
-                let set_cfgs_req = build_request(Some(&formation_name), api_key)?;
+                let set_cfgs_req = build_formations_request(Some(&formation_name), api_key)?;
                 set_cfgs_req
                     .set_active_configurations(active_configs, false)
                     .map_err(CliError::from)

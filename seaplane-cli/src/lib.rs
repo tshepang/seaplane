@@ -16,6 +16,7 @@
 
 #[macro_use]
 pub mod macros;
+pub mod api;
 pub mod cli;
 pub mod config;
 pub mod context;

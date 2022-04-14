@@ -2,8 +2,9 @@ use clap::{ArgMatches, Command};
 use seaplane::{api::v1::FormationsErrorKind, error::SeaplaneError};
 
 use crate::{
+    api::build_formations_request,
     cli::{
-        cmds::{flight::SeaplaneFlightDelete, formation::build_request},
+        cmds::flight::SeaplaneFlightDelete,
         errors,
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
@@ -97,7 +98,7 @@ impl CliCommand for SeaplaneFormationDelete {
             for idx in &indices {
                 let formation = ctx.db.formations.get_formation(*idx).unwrap();
                 if let Some(name) = &formation.name {
-                    let delete_req = build_request(Some(name), api_key)?;
+                    let delete_req = build_formations_request(Some(name), api_key)?;
                     let cfg_uuids = match delete_req.delete(ctx.args.force) {
                         Err(SeaplaneError::FormationsResponse(fr))
                             if fr.kind == FormationsErrorKind::FormationNotFound =>

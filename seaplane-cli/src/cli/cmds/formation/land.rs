@@ -1,8 +1,8 @@
 use clap::{ArgMatches, Command};
 
 use crate::{
+    api::build_formations_request,
     cli::{
-        cmds::formation::build_request,
         errors,
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
@@ -59,7 +59,8 @@ impl CliCommand for SeaplaneFormationLand {
             let formation = ctx.db.formations.get_formation_mut(idx).unwrap();
 
             // re unwrap: We got the formation from the local DB so it has to have a name
-            let stop_req = build_request(Some(formation.name.as_ref().unwrap()), api_key)?;
+            let stop_req =
+                build_formations_request(Some(formation.name.as_ref().unwrap()), api_key)?;
             stop_req.stop()?;
 
             // Move all configurations from in air to grounded
