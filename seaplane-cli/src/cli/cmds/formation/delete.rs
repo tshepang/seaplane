@@ -4,7 +4,7 @@ use seaplane::{api::v1::FormationsErrorKind, error::SeaplaneError};
 use crate::{
     api::build_formations_request,
     cli::{
-        cmds::flight::SeaplaneFlightDelete,
+        cmds::{flight::SeaplaneFlightDelete, formation::SeaplaneFormationFetch},
         errors,
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
@@ -48,11 +48,19 @@ impl SeaplaneFormationDelete {
             .arg(arg!(--("no-remote"))
                 .overrides_with("remote")
                 .help("DO NOT delete remote Formation Instances (this is set by the default, use --remote to remove them)"))
+            .arg(arg!(--fetch|sync|synchronize - ('F')).help(
+                "Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to delete",
+            ))
     }
 }
 
 impl CliCommand for SeaplaneFormationDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.fetch {
+            let fetch = SeaplaneFormationFetch;
+            fetch.run(ctx)?;
+        }
+
         let formation_ctx = ctx.formation_ctx.get_or_init();
 
         if !formation_ctx.local && !formation_ctx.remote {
@@ -184,6 +192,7 @@ impl CliCommand for SeaplaneFormationDelete {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.force = matches.is_present("force");
         ctx.args.all = matches.is_present("all");
+        ctx.args.fetch = matches.is_present("fetch");
         let mut fctx = ctx.formation_ctx.get_mut_or_init();
         fctx.name_id = matches.value_of("formation").unwrap().to_string();
         fctx.remote = !matches.is_present("no-remote");

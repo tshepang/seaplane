@@ -15,6 +15,7 @@ OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -f, --force               Delete this Formation even if there are remote instances In Flight (active), which will effectively stop all remote instances of this Formation
+    -F, --fetch               Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to delete [aliases: sync, synchronize]
     -h, --help                Print help information
         --local               Delete local Formation Definitions (this is set by the default, use --no-local to skip)
         --no-color            Do not color output (alias for --color=never)
@@ -63,6 +64,11 @@ OPTIONS:
 
     -f, --force
             Delete this Formation even if there are remote instances In Flight (active), which will effectively stop all remote instances of this Formation
+
+    -F, --fetch
+            Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to delete
+            
+            [aliases: sync, synchronize]
 
     -h, --help
             Print help information

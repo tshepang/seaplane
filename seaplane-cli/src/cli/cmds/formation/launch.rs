@@ -5,7 +5,7 @@ use seaplane::{
 };
 
 use crate::{
-    api::{build_formations_request, request_token_json},
+    api::build_formations_request,
     cli::{
         cmds::formation::SeaplaneFormationFetch,
         errors,
@@ -219,6 +219,9 @@ impl CliCommand for SeaplaneFormationLaunch {
                     ctx.db.formations.add_in_air_by_name(&formation_name, id);
                 }
             }
+            pb.set_message("Getting Formation URL...");
+            let domain_req = build_formations_request(Some(&formation_name), api_key)?;
+            let domain = domain_req.get_metadata()?.url;
 
             pb.finish_and_clear();
             cli_print!("Successfully Launched remote Formation Instance '");
@@ -232,9 +235,8 @@ impl CliCommand for SeaplaneFormationLaunch {
                 }
             }
 
-            let subdomain = request_token_json(api_key, "")?.subdomain;
             cli_print!("The remote Formation Instance URL is ");
-            cli_println!(@Green, "https://{formation_name}--{subdomain}.on.seaplanet.io/");
+            cli_println!(@Green, "https://{domain}");
             cli_println!(
                 "(hint: it may take up to a minute for the Formation to become fully online)"
             );

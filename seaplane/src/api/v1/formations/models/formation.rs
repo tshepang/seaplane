@@ -1,6 +1,5 @@
 use std::collections::{HashMap, HashSet};
 
-use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -15,7 +14,7 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct FormationMetadata {
     /// The URL where the Formation is exposed at
-    pub url: Url,
+    pub url: String,
 }
 
 /// A builder for creating a [`FormationConfiguration`] which is the primary way to describe a
