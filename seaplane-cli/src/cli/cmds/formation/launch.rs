@@ -239,6 +239,9 @@ impl CliCommand for SeaplaneFormationLaunch {
             if !has_public_endpoints {
                 cli_println!("(hint: there are no public endpoints configured, the Formation will not be reachable from the public internet)");
             }
+            cli_print!("(hint: check the status of this Formation Instance with '");
+            cli_print!(@Green, "seaplane formation status {formation_name}");
+            cli_println!("')");
         }
 
         ctx.persist_formations()?;

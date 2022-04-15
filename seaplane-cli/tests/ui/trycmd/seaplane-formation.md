@@ -27,5 +27,6 @@ SUBCOMMANDS:
     launch          Start a local Formation Plan creating a remote Formation Instance [aliases: start]
     list            List all local Formation Plans [aliases: ls]
     plan            Create a Seaplane Formation [aliases: create, add]
+    status          Show the status of a remote Formation Instance
 
 ```

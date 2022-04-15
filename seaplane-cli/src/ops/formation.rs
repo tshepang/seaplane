@@ -1,21 +1,22 @@
+mod endpoint;
+pub use endpoint::*;
+
 use std::{
     collections::HashSet,
     io::Write,
     path::{Path, PathBuf},
-    result::Result as StdResult,
-    str::FromStr,
 };
 
 use seaplane::api::v1::formations::{
-    EndpointKey as EndpointKeyModel, EndpointValue as EndpointValueModel, Flight as FlightModel,
+    Container as ContainerModel, ContainerStatus, Flight as FlightModel,
     FormationConfiguration as FormationConfigurationModel,
 };
 use serde::{Deserialize, Serialize};
+use strum::{EnumString, EnumVariantNames};
 use tabwriter::TabWriter;
 use uuid::Uuid;
 
 use crate::{
-    cli::validator::validate_flight_name,
     context::Ctx,
     error::{CliError, Result},
     fs::{FromDisk, ToDisk},
@@ -50,6 +51,20 @@ pub struct Formations {
 }
 
 impl Formations {
+    pub fn get_configuration_by_uuid(&self, uuid: Uuid) -> Option<&FormationConfiguration> {
+        self.configurations
+            .iter()
+            .find(|fc| fc.remote_id == Some(uuid))
+    }
+
+    pub fn remote_names(&self) -> Vec<&str> {
+        self.formations
+            .iter()
+            .filter(|f| !f.in_air.is_empty() || !f.grounded.is_empty())
+            .filter_map(|f| f.name.as_deref())
+            .collect()
+    }
+
     pub fn has_flight(&self, flight: &str) -> bool {
         self.configurations
             .iter()
@@ -412,205 +427,500 @@ impl FormationConfiguration {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct Endpoint {
-    src: EndpointSrc,
-    dst: EndpointDst,
+// Possible Symbols?: ◯ ◉ ◍ ◐ ● ○ ◯
+const SYM: char = '◉';
+
+#[derive(Debug, PartialEq, Clone, Serialize)]
+pub struct FormationStatus {
+    name: String,
+    status: OpStatus,
+    configurations: FormationConfigStatuses,
 }
 
-impl Endpoint {
-    pub fn key(&self) -> EndpointKeyModel {
-        match &self.src {
-            EndpointSrc::Http(p) => EndpointKeyModel::Http { path: p.to_owned() },
-            EndpointSrc::Tcp(p) => EndpointKeyModel::Tcp { port: *p },
-            EndpointSrc::Udp(p) => EndpointKeyModel::Udp { port: *p },
-        }
-    }
-    pub fn value(&self) -> EndpointValueModel {
-        EndpointValueModel {
-            flight_name: self.dst.flight.clone(),
-            port: self.dst.port,
-        }
-    }
+#[derive(Debug, Default, PartialEq, Clone, Serialize)]
+#[serde(transparent)]
+pub struct FormationConfigStatuses {
+    inner: Vec<FormationConfigStatus>,
 }
 
-impl FromStr for Endpoint {
-    type Err = String;
-
-    fn from_str(s: &str) -> StdResult<Self, Self::Err> {
-        let mut parts = s.split('=');
-        Ok(Self {
-            src: parts
-                .next()
-                .ok_or_else(|| String::from("invalid endpoint source"))?
-                .parse()?,
-            dst: parts
-                .next()
-                .ok_or_else(|| String::from("invalid endpoint destination"))?
-                .parse()?,
-        })
-    }
+#[derive(Debug, Default, PartialEq, Clone, Serialize)]
+pub struct FormationConfigStatus {
+    status: OpStatus,
+    uuid: Uuid,
+    flights: FlightStatuses,
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum EndpointSrc {
-    Http(String),
-    Tcp(u16),
-    Udp(u16),
+#[derive(Debug, Default, PartialEq, Clone, Serialize)]
+#[serde(transparent)]
+pub struct FlightStatuses {
+    inner: Vec<FlightStatus>,
 }
 
-impl FromStr for EndpointSrc {
-    type Err = String;
+#[derive(Debug, PartialEq, Clone, Serialize)]
+pub struct FlightStatus {
+    name: String,
+    running: u64,
+    minimum: u64,
+    exited: u64,
+    errored: u64,
+    starting: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    maximum: Option<u64>,
+}
 
-    fn from_str(s: &str) -> StdResult<Self, Self::Err> {
-        let mut parts = s.split(':');
-        let proto = parts.next().ok_or_else(|| String::from("http"))?;
-        let ep = match &*proto.to_ascii_lowercase() {
-            "http" | "https" => EndpointSrc::Http(if let Some(route) = parts.next() {
-                if route.is_empty() {
-                    return Err(String::from("missing http route"));
-                } else if !route.starts_with('/') {
-                    return Err(String::from("route must start with a leady slash ('/')"));
+#[derive(Debug, Copy, Clone, PartialEq, EnumString, EnumVariantNames, Serialize)]
+#[strum(ascii_case_insensitive, serialize_all = "lowercase")]
+pub enum OpStatus {
+    Up,
+    Down,
+    Degraded,
+    Starting,
+}
+
+impl OpStatus {
+    pub fn worse_only(&mut self, other: Self) {
+        use OpStatus::*;
+        match self {
+            Up => match other {
+                Down => *self = Down,
+                Degraded => *self = Degraded,
+                Starting => *self = Starting,
+                _ => (),
+            },
+            Down => (),
+            Degraded => {
+                if other == Down {
+                    *self = Down;
                 }
-                route.to_string()
+            }
+            Starting => match other {
+                Down => *self = Down,
+                Degraded => *self = Degraded,
+                _ => (),
+            },
+        }
+    }
+
+    /// Prints the SYM character color coded to the current status
+    pub fn print_sym(self) {
+        match self {
+            OpStatus::Up => cli_print!(@Green, "{SYM}"),
+            OpStatus::Down => cli_print!(@Red, "{SYM}"),
+            OpStatus::Degraded | OpStatus::Starting => cli_print!(@Yellow, "{SYM}"),
+        }
+    }
+
+    /// Prints string version of self color coded to the current status
+    pub fn print(self) {
+        match self {
+            OpStatus::Up => cli_print!(@Green, "UP"),
+            OpStatus::Down => cli_print!(@Red, "DOWN"),
+            OpStatus::Degraded => cli_print!(@Yellow, "DEGRADED"),
+            OpStatus::Starting => cli_print!(@Yellow, "STARTING"),
+        }
+    }
+
+    /// Prints a string color coded to the current status
+    pub fn print_msg(self, msg: &str) {
+        match self {
+            OpStatus::Up => cli_print!(@Green, "{msg}"),
+            OpStatus::Down => cli_print!(@Red, "{msg}"),
+            OpStatus::Degraded | OpStatus::Starting => cli_print!(@Yellow, "{msg}"),
+        }
+    }
+}
+
+impl Default for OpStatus {
+    fn default() -> Self {
+        OpStatus::Starting
+    }
+}
+
+impl FormationStatus {
+    /// Create a new FormationStatus from a given Formation name.
+    pub fn new<S: Into<String>>(name: S) -> Self {
+        Self {
+            name: name.into(),
+            status: OpStatus::default(),
+            configurations: FormationConfigStatuses::default(),
+        }
+    }
+
+    /// Add the appropriate Flights and Configurations from a given Container Instance
+    pub fn add_container(&mut self, c: &ContainerModel, min: u64, max: Option<u64>) {
+        match c.status {
+            ContainerStatus::Running => self.configurations.add_running_flight(
+                c.configuration_id,
+                c.flight_name.clone(),
+                min,
+                max,
+            ),
+            ContainerStatus::Started => self.configurations.add_starting_flight(
+                c.configuration_id,
+                c.flight_name.clone(),
+                min,
+                max,
+            ),
+            ContainerStatus::Stopped => self.configurations.add_stopped_flight(
+                c.configuration_id,
+                c.flight_name.clone(),
+                c.exit_status == None || c.exit_status == Some(0),
+                min,
+                max,
+            ),
+        }
+    }
+
+    pub fn update_status(&mut self) {
+        let mut status = OpStatus::Up;
+        for cfg in self.configurations.inner.iter_mut() {
+            cfg.update_status();
+            status.worse_only(cfg.status);
+        }
+        self.status = status;
+    }
+}
+
+impl FlightStatus {
+    pub fn new<S: Into<String>>(name: S) -> Self {
+        Self {
+            name: name.into(),
+            running: 0,
+            minimum: 0,
+            exited: 0,
+            starting: 0,
+            errored: 0,
+            maximum: None,
+        }
+    }
+
+    #[allow(unused_assignments)]
+    pub fn get_status(&self) -> OpStatus {
+        let mut status = OpStatus::Up;
+        if self.running >= self.minimum {
+            status = OpStatus::Up;
+        } else {
+            status = OpStatus::Degraded;
+        }
+        if self.running == 0 && self.starting > 0 {
+            status = OpStatus::Degraded;
+        }
+        if self.errored > 0 {
+            // TODO even if running > minimum?
+            status = OpStatus::Degraded;
+        }
+        status
+    }
+}
+
+impl FormationConfigStatuses {
+    pub fn add_running_flight<S: Into<String>>(
+        &mut self,
+        uuid: Uuid,
+        name: S,
+        min: u64,
+        max: Option<u64>,
+    ) {
+        if let Some(cfg) = self.inner.iter_mut().find(|cfg| cfg.uuid == uuid) {
+            cfg.flights.add_running(name, min, max)
+        } else {
+            let mut fs = FlightStatuses::default();
+
+            fs.add_running(name, min, max);
+            self.inner.push(FormationConfigStatus {
+                status: OpStatus::Starting,
+                uuid,
+                flights: fs,
+            })
+        }
+    }
+    pub fn add_starting_flight<S: Into<String>>(
+        &mut self,
+        uuid: Uuid,
+        name: S,
+        min: u64,
+        max: Option<u64>,
+    ) {
+        if let Some(cfg) = self.inner.iter_mut().find(|cfg| cfg.uuid == uuid) {
+            cfg.flights.add_starting(name, min, max)
+        } else {
+            let mut fs = FlightStatuses::default();
+
+            fs.add_starting(name, min, max);
+            self.inner.push(FormationConfigStatus {
+                status: OpStatus::Starting,
+                uuid,
+                flights: fs,
+            })
+        }
+    }
+    pub fn add_stopped_flight<S: Into<String>>(
+        &mut self,
+        uuid: Uuid,
+        name: S,
+        error: bool,
+        min: u64,
+        max: Option<u64>,
+    ) {
+        if let Some(cfg) = self.inner.iter_mut().find(|cfg| cfg.uuid == uuid) {
+            cfg.flights.add_stopped(name, error, min, max)
+        } else {
+            let mut fs = FlightStatuses::default();
+
+            fs.add_stopped(name, error, min, max);
+            self.inner.push(FormationConfigStatus {
+                status: OpStatus::Starting,
+                uuid,
+                flights: fs,
+            })
+        }
+    }
+
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
+}
+
+impl FormationConfigStatus {
+    pub fn update_status(&mut self) {
+        let mut status = OpStatus::Up;
+        for flight in self.flights.inner.iter() {
+            status.worse_only(flight.get_status());
+        }
+        self.status = status;
+    }
+
+    pub fn print_pretty(&self, last: bool) {
+        // Chars we'll need: │ ├ ─ └
+        if self.flights.is_empty() {
+            return;
+        }
+        if last {
+            cli_print!("└─");
+        } else {
+            cli_print!("├─");
+        }
+        self.status.print_sym();
+        cli_print!(" Configuration {}: ", self.uuid);
+        self.status.print();
+        cli_println!("");
+
+        if self.flights.is_empty() {
+            return;
+        }
+        let prefix = if last { "  " } else { "│ " };
+        cli_println!("{prefix}│");
+        // Unfortunately we can't use tabwriter here as we can't color the symbol with that. So we
+        // just manually calculate the spaces since it's only a few fields anyways. We also assume
+        // the numbered fields aren't going to be higher than 99999999999 and if they are we most
+        // likely have other problems.
+        macro_rules! nspaces {
+            ($n:expr, $w:expr) => {{
+                nspaces!(($w.chars().count() + 4) - $n.to_string().chars().count())
+            }};
+            ($n:expr) => {{
+                let mut spaces = String::with_capacity($n);
+                for _ in 0..$n {
+                    spaces.push(' ');
+                }
+                spaces
+            }};
+        }
+        let longest_flight_name = self
+            .flights
+            .inner
+            .iter()
+            .map(|f| f.name.len())
+            .max()
+            .unwrap();
+        let total_slot_size = std::cmp::max(longest_flight_name, 10);
+        let spaces_after_flight = total_slot_size - 6; // 6 = FLIGHT
+        cli_println!(
+            "{prefix}│   FLIGHT{}RUNNING    EXITED    ERRORED    STARTING    MIN / MAX",
+            nspaces!(spaces_after_flight)
+        );
+        for (i, flight) in self.flights.inner.iter().enumerate() {
+            if i == self.flights.inner.len() - 1 {
+                cli_print!("{prefix}└─");
             } else {
-                return Err(String::from("missing http route"));
-            }),
-            "tcp" => EndpointSrc::Tcp(
-                parts
-                    .next()
-                    .ok_or_else(|| String::from("missing network port number"))?
-                    .parse::<u16>()
-                    .map_err(|_| String::from("invalid network port number"))?,
-            ),
-            "udp" => EndpointSrc::Udp(
-                parts
-                    .next()
-                    .ok_or_else(|| String::from("missing network port number"))?
-                    .parse::<u16>()
-                    .map_err(|_| String::from("invalid network port number"))?,
-            ),
-            proto if proto.starts_with('/') => EndpointSrc::Http(proto.to_string()),
-            _ => {
-                return Err(format!(
-                    "invalid protocol '{}' (valid options: http, https, tcp, udp)",
-                    proto
-                ))
+                cli_print!("{prefix}├─");
             }
-        };
-        Ok(ep)
+            self.status.print_sym();
+
+            let name = &flight.name;
+            let running = flight.running;
+            let exited = flight.exited;
+            let errored = flight.errored;
+            let starting = flight.starting;
+            let minimum = flight.minimum;
+            let maximum = if let Some(maximum) = flight.maximum {
+                format!("{maximum}")
+            } else {
+                "AUTO".to_string()
+            };
+
+            let s_after_name = nspaces!(total_slot_size - name.len());
+            let s_after_running = nspaces!(running, "RUNNING");
+            let s_after_exited = nspaces!(exited, "EXITED");
+            let s_after_errored = nspaces!(errored, "ERRORED");
+            let s_after_starting = nspaces!(starting, "STARTING");
+
+            cli_println!(" {name}{s_after_name}{running}{s_after_running}{exited}{s_after_exited}{errored}{s_after_errored}{starting}{s_after_starting}{minimum} / {maximum}");
+        }
+        if last {
+            cli_println!("");
+        } else {
+            cli_println!("│");
+        }
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct EndpointDst {
-    flight: String,
-    port: u16,
+impl FlightStatuses {
+    pub fn add_running<S: Into<String>>(&mut self, name: S, minimum: u64, maximum: Option<u64>) {
+        let name = name.into();
+        if let Some(f) = self.inner.iter_mut().find(|f| f.name == name) {
+            f.running += 1;
+        } else {
+            self.inner.push(FlightStatus {
+                name,
+                running: 1,
+                exited: 0,
+                errored: 0,
+                starting: 0,
+                minimum,
+                maximum,
+            })
+        }
+    }
+
+    pub fn add_stopped<S: Into<String>>(
+        &mut self,
+        name: S,
+        error: bool,
+        minimum: u64,
+        maximum: Option<u64>,
+    ) {
+        let name = name.into();
+        if let Some(f) = self.inner.iter_mut().find(|f| f.name == name) {
+            if error {
+                f.errored += 1;
+            } else {
+                f.exited += 1;
+            }
+        } else {
+            self.inner.push(FlightStatus {
+                name,
+                running: 0,
+                starting: 0,
+                exited: if error { 0 } else { 1 },
+                errored: if error { 1 } else { 0 },
+                minimum,
+                maximum,
+            })
+        }
+    }
+
+    pub fn add_starting<S: Into<String>>(&mut self, name: S, minimum: u64, maximum: Option<u64>) {
+        let name = name.into();
+        if let Some(f) = self.inner.iter_mut().find(|f| f.name == name) {
+            f.starting += 1;
+        } else {
+            self.inner.push(FlightStatus {
+                name,
+                running: 0,
+                starting: 1,
+                exited: 0,
+                errored: 0,
+                minimum,
+                maximum,
+            })
+        }
+    }
+
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
 }
 
-impl FromStr for EndpointDst {
-    type Err = String;
+impl Output for FormationStatus {
+    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
+        cli_println!("{}", serde_json::to_string(self)?);
 
-    fn from_str(s: &str) -> StdResult<Self, Self::Err> {
-        let mut parts = s.split(':');
-        let flight = parts
-            .next()
-            .ok_or_else(|| ("missing destinaion flight").to_string())?;
-        validate_flight_name(flight)?;
-        let port = parts
-            .next()
-            .ok_or_else(|| ("missing destination port number").to_string())?
-            .parse::<u16>()
-            .map_err(|_| ("invalid port number").to_string())?;
+        Ok(())
+    }
 
-        Ok(Self {
-            flight: flight.to_string(),
-            port,
-        })
+    fn print_table(&self, _ctx: &Ctx) -> Result<()> {
+        // Chars we'll need: │ ├ ─ └
+        self.status.print_sym();
+
+        if !self.configurations.is_empty() {
+            cli_print!(" Formation {}: ", self.name);
+            self.status.print();
+            cli_println!("");
+            cli_println!("│");
+
+            for (i, cfg) in self.configurations.inner.iter().enumerate() {
+                cfg.print_pretty(i == self.configurations.len() - 1)
+            }
+        }
+
+        Ok(())
     }
 }
 
-#[cfg(test)]
-mod endpoint_test {
-    use super::*;
+impl Output for Vec<FormationStatus> {
+    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
+        cli_println!("{}", serde_json::to_string(self)?);
 
-    #[test]
-    fn endpoint_valid_http() {
-        let ep: Endpoint = "http:/foo/bar=baz:1234".parse().unwrap();
-        assert_eq!(
-            ep,
-            Endpoint {
-                src: EndpointSrc::Http("/foo/bar".into()),
-                dst: EndpointDst {
-                    flight: "baz".into(),
-                    port: 1234
-                }
-            }
-        )
+        Ok(())
     }
 
-    #[test]
-    fn endpoint_valid_https() {
-        let ep: Endpoint = "https:/foo/bar=baz:1234".parse().unwrap();
-        assert_eq!(
-            ep,
-            Endpoint {
-                src: EndpointSrc::Http("/foo/bar".into()),
-                dst: EndpointDst {
-                    flight: "baz".into(),
-                    port: 1234
-                }
-            }
-        )
-    }
+    fn print_table(&self, ctx: &Ctx) -> Result<()> {
+        for fstatus in self.iter() {
+            fstatus.print_table(ctx)?;
+        }
 
-    #[test]
-    fn endpoint_missing_dst_or_src() {
-        assert!("baz:1234".parse::<Endpoint>().is_err());
-    }
-
-    #[test]
-    fn endpoint_infer_http() {
-        assert!("/foo/bar=baz:1234".parse::<Endpoint>().is_ok());
-    }
-
-    #[test]
-    fn endpoint_http_missing_leading_slash() {
-        assert!("foo/bar=baz:1234".parse::<Endpoint>().is_err());
-        assert!(":foo/bar=baz:1234".parse::<Endpoint>().is_err());
-        assert!("http:foo/bar=baz:1234".parse::<Endpoint>().is_err());
-        assert!("https:foo/bar/=baz:1234".parse::<Endpoint>().is_err());
-        assert!("http:=baz:1234".parse::<Endpoint>().is_err(),);
-    }
-
-    // TODO: might allow eliding destination port
-    #[test]
-    fn endpoint_missing_dst() {
-        assert!("tcp:1234=baz".parse::<Endpoint>().is_err());
-        assert!("udp:1234=:1234".parse::<Endpoint>().is_err());
-        assert!("http:/foo/bar=baz:".parse::<Endpoint>().is_err());
-        assert!("http:/foo/bar=".parse::<Endpoint>().is_err());
-    }
-
-    #[test]
-    fn endpoint_valid_tcp() {
-        let ep: Endpoint = "tcp:1234=baz:4321".parse().unwrap();
-        assert_eq!(
-            ep,
-            Endpoint {
-                src: EndpointSrc::Tcp(1234),
-                dst: EndpointDst {
-                    flight: "baz".into(),
-                    port: 4321
-                }
-            }
-        )
-    }
-
-    #[test]
-    fn endpoint_invalid_tcp_udp() {
-        assert!("udp:/foo/bar=baz:1234".parse::<Endpoint>().is_err());
-        assert!("udp:1234=baz:9999999".parse::<Endpoint>().is_err());
-        assert!("udp:1234=baz:/foo".parse::<Endpoint>().is_err());
+        Ok(())
     }
 }
+
+// impl From<Formations> for Vec<FormationStatus> {
+//     fn from(fs: Formations) -> Vec<FormationStatus> {
+//         let mut statuses = Vec::new();
+//         for formation in fs.formations.iter() {
+//             let mut f_status = FormationStatus::new(formation.name.as_ref().unwrap());
+
+//             // Loop through all the Formation Configurations defined in this Formation
+//             for cfg in formation.configs().iter().map(|id| {
+//                 // Map a config ID to an actual Config. We have to use these long chained calls so
+//                 // Rust can tell that `formations` itself isn't being borrowed, just it's fields.
+//                 fs.configurations.swap_remove(
+//                     // get the index of the Config where the ID matches
+//                     fs.configurations
+//                         .iter()
+//                         .enumerate()
+//                         .find_map(|(i, cfg)| if &cfg.id == id { Some(i) } else { None })
+//                         .unwrap(),
+//                 )
+//             }) {
+//                 let mut fc_status = FormationConfigStatus::default();
+//                 // Add or update all flights this configuration references
+//                 for flight in cfg.model.flights() {
+//                     fc_status.flights.push(FlightStatus::new(flight.name()));
+//                 }
+
+//                 f_status.configurations.push(fc_status);
+//             }
+//             statuses.push(f_status);
+//         }
+
+//         statuses
+//     }
+// }

@@ -11,6 +11,7 @@ mod list;
 #[cfg(feature = "unstable")]
 mod load_balance;
 mod plan;
+mod status;
 #[cfg(feature = "unstable")]
 mod template;
 
@@ -28,6 +29,7 @@ use self::{
 pub use self::{
     delete::SeaplaneFormationDelete, fetch::SeaplaneFormationFetch, land::SeaplaneFormationLand,
     launch::SeaplaneFormationLaunch, list::SeaplaneFormationList, plan::SeaplaneFormationPlan,
+    status::SeaplaneFormationStatus,
 };
 use crate::{cli::CliCommand, error::Result, Ctx};
 
@@ -48,7 +50,8 @@ impl SeaplaneFormation {
             .subcommand(SeaplaneFormationFetch::command())
             .subcommand(SeaplaneFormationLand::command())
             .subcommand(SeaplaneFormationLaunch::command())
-            .subcommand(SeaplaneFormationList::command());
+            .subcommand(SeaplaneFormationList::command())
+            .subcommand(SeaplaneFormationStatus::command());
 
         #[cfg(feature = "unstable")]
         {
@@ -75,6 +78,7 @@ impl CliCommand for SeaplaneFormation {
             Some(("land", m)) => Some((Box::new(SeaplaneFormationLand), m)),
             Some(("launch", m)) => Some((Box::new(SeaplaneFormationLaunch), m)),
             Some(("list", m)) => Some((Box::new(SeaplaneFormationList), m)),
+            Some(("status", m)) => Some((Box::new(SeaplaneFormationStatus), m)),
             #[cfg(feature = "unstable")]
             Some(("configuration", m)) => Some((Box::new(SeaplaneFormationConfiguration), m)),
             #[cfg(feature = "unstable")]
