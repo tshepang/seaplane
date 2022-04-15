@@ -1,10 +1,12 @@
 use std::{
+    borrow::Cow,
     io,
     result::Result as StdResult,
     str::FromStr,
     sync::{Mutex, MutexGuard, PoisonError},
 };
 
+use indicatif::{ProgressBar, ProgressStyle};
 use once_cell::sync::OnceCell;
 use serde::{
     de::{self, Deserializer},
@@ -18,6 +20,35 @@ static GLOBAL_PRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new(
 static GLOBAL_EPRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();
 
 pub use self::_printer::{eprinter, printer, Printer};
+
+/// We wrap the progress bar to be able to hide output when we need to
+#[allow(missing_debug_implementations)]
+pub struct Pb(Option<ProgressBar>);
+
+impl Pb {
+    pub fn new(ctx: &Ctx) -> Self {
+        if !ctx.disable_pb && crate::log::log_level() <= &crate::log::LogLevel::Info {
+            let pb = ProgressBar::new_spinner();
+            pb.enable_steady_tick(120);
+            pb.set_style(ProgressStyle::default_bar().template("{spinner:.green} {msg}"));
+            Pb(Some(pb))
+        } else {
+            Pb(None)
+        }
+    }
+
+    pub fn set_message(&self, msg: impl Into<Cow<'static, str>>) {
+        if let Some(pb) = &self.0 {
+            pb.set_message(msg);
+        }
+    }
+
+    pub fn finish_and_clear(&self) {
+        if let Some(pb) = &self.0 {
+            pb.finish_and_clear()
+        }
+    }
+}
 
 #[derive(
     EnumString, strum::Display, EnumVariantNames, Deserialize, Copy, Clone, Debug, PartialEq,

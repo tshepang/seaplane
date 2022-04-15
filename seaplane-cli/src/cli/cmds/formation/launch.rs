@@ -14,7 +14,7 @@ use crate::{
     },
     context::Ctx,
     error::{CliError, CliErrorKind, Context, Result},
-    printer::Color,
+    printer::{Color, Pb},
 };
 
 static LONG_ABOUT: &str = "Start a local Formation Plan creating a remote Formation Instance
@@ -110,6 +110,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             }
         }
 
+        let pb = Pb::new(ctx);
         let api_key = ctx.args.api_key()?;
         let grounded = ctx.formation_ctx.get_or_init().grounded;
         for idx in indices {
@@ -149,9 +150,8 @@ impl CliCommand for SeaplaneFormationLaunch {
                     let add_cfg_req = build_formations_request(Some(&formation_name), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute
-                    cli_debug!("Looking for existing remote Formation Instances...");
+                    pb.set_message("Searching for existing Formations...");
                     if let Err(e) = add_cfg_req.add_configuration(cfg.model.clone(), false) {
-                        cli_debugln!(@Green, "None");
                         match e {
                             SeaplaneError::FormationsResponse(fr)
                                 if fr.kind == FormationsErrorKind::FormationNotFound =>
@@ -159,14 +159,13 @@ impl CliCommand for SeaplaneFormationLaunch {
                                 // If the formation didn't exist, create it
                                 let create_req =
                                     build_formations_request(Some(&formation_name), api_key)?;
-                                cli_debug!("Creating new Formation Instance...");
+                                pb.set_message("Creating new Formation Instance...");
                                 match create_req.create(cfg.model.clone(), !grounded) {
                                     Err(e) => {
-                                        cli_debugln!(@Red, "Failed");
+                                        pb.finish_and_clear();
                                         return Err(e.into());
                                     }
                                     Ok(cfg_uuid) => {
-                                        cli_debugln!(@Green, "Success");
                                         cfg_uuids.extend(cfg_uuid);
                                         ctx.db.formations.add_in_air_by_name(&formation_name, *id);
                                         created_new = true;
@@ -177,7 +176,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                             _ => return Err(e.into()),
                         }
                     } else {
-                        cli_debugln!(@Green, "Found");
+                        pb.set_message("Found existing Formation Instance...");
                         ctx.db.formations.add_grounded_by_name(&formation_name, *id);
                     }
                 } else {
@@ -192,6 +191,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             // active
             if !grounded && !created_new {
                 // Get all configurations for this Formation
+                pb.set_message("Synchronizing Formation Configurations...");
                 let list_cfg_uuids_req = build_formations_request(Some(&formation_name), api_key)?;
                 cfg_uuids.extend(
                     list_cfg_uuids_req
@@ -209,6 +209,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                     }
                     active_configs.add_configuration_mut(cfg.build()?);
                 }
+                pb.set_message("Adding Formation Configurations to remote Instance...");
                 let set_cfgs_req = build_formations_request(Some(&formation_name), api_key)?;
                 set_cfgs_req
                     .set_active_configurations(active_configs, false)
@@ -219,6 +220,7 @@ impl CliCommand for SeaplaneFormationLaunch {
                 }
             }
 
+            pb.finish_and_clear();
             cli_print!("Successfully Launched remote Formation Instance '");
             cli_print!(@Green, "{}", &ctx.args.name_id.as_ref().unwrap());
             if cfg_uuids.is_empty() {

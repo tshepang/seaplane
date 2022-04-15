@@ -10,7 +10,7 @@ use crate::{
     },
     error::Result,
     ops::formation::FormationStatus,
-    printer::Output,
+    printer::{Output, Pb},
     Ctx, OutputFormat,
 };
 
@@ -39,6 +39,7 @@ impl SeaplaneFormationStatus {
                     .possible_values(OutputFormat::VARIANTS)
                     .help("Change the output format"),
             )
+            .arg(arg!(--("no-fetch")).help("Skip fetching and synchronizing of remote instances"))
     }
 }
 
@@ -46,14 +47,19 @@ impl CliCommand for SeaplaneFormationStatus {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let old_stateless = ctx.args.stateless;
 
-        // Make sure the local DB is up to date, but don't persist the data. Also keep track of if
-        // we were originally in stateless mode or not so we can go back after this call.
-        ctx.internal_run = true;
-        ctx.args.stateless = true;
-        let fetch = SeaplaneFormationFetch;
-        fetch.run(ctx)?;
-        ctx.internal_run = false;
-        ctx.args.stateless = old_stateless;
+        if ctx.args.fetch {
+            // Make sure the local DB is up to date, but don't persist the data. Also keep track of if
+            // we were originally in stateless mode or not so we can go back after this call.
+            ctx.internal_run = true;
+            ctx.disable_pb = ctx.args.out_format == OutputFormat::Json;
+            ctx.args.stateless = true;
+            let fetch = SeaplaneFormationFetch;
+            fetch.run(ctx)?;
+            ctx.internal_run = false;
+            ctx.args.stateless = old_stateless;
+        }
+
+        let pb = Pb::new(ctx);
 
         let names = if let Some(name) = ctx.args.name_id.as_deref() {
             vec![name]
@@ -65,6 +71,7 @@ impl CliCommand for SeaplaneFormationStatus {
 
         let api_key = ctx.args.api_key()?;
         for name in names {
+            pb.set_message(format!("Gathering {name} container info..."));
             let containers_req = build_formations_request(Some(name), api_key)?;
             let mut f_status = FormationStatus::new(name);
             for container in containers_req.get_containers()?.iter() {
@@ -83,6 +90,8 @@ impl CliCommand for SeaplaneFormationStatus {
             statuses.push(f_status);
         }
 
+        pb.finish_and_clear();
+
         match ctx.args.out_format {
             OutputFormat::Json => statuses.print_json(ctx)?,
             OutputFormat::Table => statuses.print_table(ctx)?,
@@ -94,6 +103,7 @@ impl CliCommand for SeaplaneFormationStatus {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.out_format = matches.value_of_t("format").unwrap_or_default();
         ctx.args.name_id = matches.value_of("formation").map(ToOwned::to_owned);
+        ctx.args.fetch = !matches.is_present("no-fetch");
         Ok(())
     }
 }

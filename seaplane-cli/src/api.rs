@@ -5,7 +5,7 @@ use seaplane::api::{v1::formations::FormationsRequest, AccessToken, TokenRequest
 use crate::{
     error::{CliError, Context, Result},
     ops::formation::{Formation, FormationConfiguration, Formations},
-    printer::Color,
+    printer::{Color, Pb},
 };
 
 /// Makes a request against the `/token` endpoint of FlightDeck using the discovered API key and
@@ -66,12 +66,14 @@ pub fn build_formations_request(
 pub fn get_all_formations<S: AsRef<str>>(
     api_key: &str,
     formation_names: &[S],
+    pb: &Pb,
 ) -> Result<Formations> {
     let mut formations = Formations::default();
     // TODO: We're requesting tons of new tokens...maybe we could do multiple per and just
     // retry on error?
     for name in formation_names {
         let name = name.as_ref();
+        pb.set_message(format!("Syncing Formation {name}..."));
         let mut formation = Formation::new(name);
         let list_cfg_uuids_req = build_formations_request(Some(name), api_key)?;
 
@@ -85,6 +87,7 @@ pub fn get_all_formations<S: AsRef<str>>(
             .map_err(CliError::from)
             .context("Context: failed to retrieve Active Formation Configurations\n")?;
 
+        pb.set_message(format!("Syncing Formation {name} Configurations..."));
         for uuid in cfg_uuids.into_iter() {
             let get_cfgs_req = build_formations_request(Some(name), api_key)?;
             let cfg_model = get_cfgs_req

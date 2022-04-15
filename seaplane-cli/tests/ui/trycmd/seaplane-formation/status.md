@@ -15,6 +15,7 @@ OPTIONS:
         --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
+        --no-fetch            Skip fetching and synchronizing of remote instances
     -q, --quiet               Suppress output at a specific level and below
     -S, --stateless           Ignore local state files, do not read from or write to them
     -v, --verbose             Display more verbose output
@@ -65,6 +66,9 @@ OPTIONS:
 
         --no-color
             Do not color output (alias for --color=never)
+
+        --no-fetch
+            Skip fetching and synchronizing of remote instances
 
     -q, --quiet
             Suppress output at a specific level and below

@@ -6,6 +6,7 @@ use crate::{
     api::{get_all_formations, get_formation_names},
     cli::CliCommand,
     error::Result,
+    printer::Pb,
     Ctx,
 };
 
@@ -32,15 +33,19 @@ impl SeaplaneFormationFetch {
 impl CliCommand for SeaplaneFormationFetch {
     // TODO: async
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        let pb = Pb::new(ctx);
+        pb.set_message("Gathering Formation Names...");
+
         let api_key = ctx.args.api_key()?;
         let names = get_formation_names(api_key, ctx.args.name_id.as_deref())?;
 
+        pb.set_message("Syncing Formations...");
         // This gets us everything the API knows about, but with totally new local IDs. So we need
         // to ignore those except how they relate to eachother (i.e. they won't match anything in
         // our local DB, but they will match within these instances returned by the API).
         //
         // We need to map them to our OWN local IDs and update the DB.
-        let mut remote_instances = get_all_formations(api_key, &names)?;
+        let mut remote_instances = get_all_formations(api_key, &names, &pb)?;
 
         // Keep track of what new items we've downloaded that our local DB didn't know about
         let mut flights_added = HashSet::new();
@@ -92,6 +97,8 @@ impl CliCommand for SeaplaneFormationFetch {
                 formations_added.insert((formation.name.clone().unwrap(), id));
             }
         }
+
+        pb.finish_and_clear();
 
         if !ctx.internal_run {
             let mut count = 0;

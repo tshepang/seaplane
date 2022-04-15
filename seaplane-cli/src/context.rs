@@ -125,6 +125,9 @@ pub struct Ctx {
 
     /// Allows tracking if we're running a command internally and skippy certain checks or output
     pub internal_run: bool,
+
+    /// Disable progress bar indicators
+    pub disable_pb: bool,
 }
 
 impl Clone for Ctx {
@@ -156,6 +159,7 @@ impl Clone for Ctx {
             args: self.args.clone(),
             db: self.db.clone(),
             internal_run: self.internal_run,
+            disable_pb: self.disable_pb,
         }
     }
 }
@@ -171,6 +175,7 @@ impl Default for Ctx {
             args: Args::default(),
             db: Db::default(),
             internal_run: false,
+            disable_pb: false,
         }
     }
 }
