@@ -61,7 +61,7 @@ impl Containers {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Container {
     /// ID of a particular container instance
-    pub uuid: Uuid,
+    pub container_id: Uuid,
     /// Current Status
     pub status: ContainerStatus,
     /// The name of the Flight that this container instance is running for
@@ -108,6 +108,6 @@ pub struct Container {
 // We don't derive the trait because we only need to check the UUID to determine equivalence
 impl PartialEq<Self> for Container {
     fn eq(&self, other: &Self) -> bool {
-        self.uuid == other.uuid
+        self.container_id == other.container_id
     }
 }

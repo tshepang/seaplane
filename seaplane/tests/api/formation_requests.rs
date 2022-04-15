@@ -320,13 +320,13 @@ test_delete!(delete_force, true);
 fn get_containers() {
     let resp_json_minimal = json!(
         [{
-            "uuid" : "557f87c3-b26c-428c-b970-cb8acac2bd68",
+            "container_id" : "557f87c3-b26c-428c-b970-cb8acac2bd68",
             "status" : "started",
             "flight_name": "foo",
             "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
         },
         {
-            "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
+            "container_id" : "91f191f5-be32-4d44-860f-0eccca325e0f",
             "status" : "running",
             "flight_name": "foo",
             "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
@@ -349,7 +349,7 @@ fn get_containers() {
 
     let resp_json = json!(
         [{
-            "uuid" : "557f87c3-b26c-428c-b970-cb8acac2bd68",
+            "container_id" : "557f87c3-b26c-428c-b970-cb8acac2bd68",
             "status" : "started",
             "flight_name": "foo",
             "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
@@ -371,7 +371,7 @@ fn get_containers() {
             "host_provider": Provider::AWS,
         },
         {
-            "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
+            "container_id" : "91f191f5-be32-4d44-860f-0eccca325e0f",
             "status" : "running",
             "flight_name": "foo",
             "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
@@ -413,7 +413,7 @@ fn get_containers() {
 fn get_container() {
     let resp_json_minimal = json!(
         {
-            "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
+            "container_id" : "91f191f5-be32-4d44-860f-0eccca325e0f",
             "status" : "running",
             "flight_name": "foo",
             "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",
@@ -442,7 +442,7 @@ fn get_container() {
 
     let resp_json = json!(
         {
-            "uuid" : "91f191f5-be32-4d44-860f-0eccca325e0f",
+            "container_id" : "91f191f5-be32-4d44-860f-0eccca325e0f",
             "status" : "running",
             "flight_name": "foo",
             "configuration_id" : "46c5d58c-7b8b-4e8d-9e98-26bb31b9ab8f",

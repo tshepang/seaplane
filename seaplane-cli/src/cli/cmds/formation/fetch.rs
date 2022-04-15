@@ -45,22 +45,25 @@ impl CliCommand for SeaplaneFormationFetch {
         // Keep track of what new items we've downloaded that our local DB didn't know about
         let mut flights_added = HashSet::new();
         let mut formations_added = HashSet::new();
+        let mut configs_updated = HashSet::new();
 
         // Start going through the instances by formation
         for formation in remote_instances.formations.iter_mut() {
             // Loop through all the Formation Configurations defined in this Formation
-            for cfg in formation.configs().iter().map(|id| {
-                // Map a config ID to an actual Config. We have to use these long chained calls so
-                // Rust can tell that `formations` itself isn't being borrowed, just it's fields.
-                remote_instances.configurations.swap_remove(
-                    // get the index of the Config where the ID matches
-                    remote_instances
-                        .configurations
-                        .iter()
-                        .enumerate()
-                        .find_map(|(i, cfg)| if &cfg.id == id { Some(i) } else { None })
-                        .unwrap(),
-                )
+            for cfg in formation.configs().iter().filter_map(|id| {
+                // get the index of the Config where the ID matches
+                if let Some(i) = remote_instances
+                    .configurations
+                    .iter()
+                    .enumerate()
+                    .find_map(|(i, cfg)| if &cfg.id == id { Some(i) } else { None })
+                {
+                    // Map a config ID to an actual Config. We have to use these long chained calls so
+                    // Rust can tell that `formations` itself isn't being borrowed, just it's fields.
+                    Some(remote_instances.configurations.swap_remove(i))
+                } else {
+                    None
+                }
             }) {
                 // Add or update all flights this configuration references
                 for flight in cfg.model.flights() {
@@ -76,6 +79,7 @@ impl CliCommand for SeaplaneFormationFetch {
                 // that was assigned when we downloaded all the configs, with the *real* local ID
                 if let Some(real_id) = ctx.db.formations.update_or_create_configuration(cfg) {
                     formation.replace_id(&old_id, real_id);
+                    configs_updated.insert((formation.name.clone().unwrap(), real_id));
                 }
             }
             // Add or update the formation itself (which is really just a list of configuration
@@ -89,29 +93,40 @@ impl CliCommand for SeaplaneFormationFetch {
             }
         }
 
-        let mut count = 0;
-        for (name, id) in formations_added {
-            count += 1;
-            cli_print!("Successfully fetched Formation Instance '");
-            cli_print!(@Green, "{name}");
-            cli_print!("' with and synchronized with local Plan ID '");
-            cli_println!(@Green, "{}", &id.to_string()[..8]);
-        }
-        for (name, id) in flights_added {
-            count += 1;
-            cli_print!("Successfully fetched Flight Plan '");
-            cli_print!(@Green, "{name}");
-            cli_print!("' and synchronized with local ID '");
-            cli_print!(@Green, "{}", &id.to_string()[..8]);
-            cli_println!("'!");
-        }
-        if names.is_empty() {
-            cli_println!("No remote Formation Instances found");
-        } else if count > 0 {
-            cli_println!("");
-            cli_println!("Successfully fetched {count} items");
-        } else {
-            cli_println!("All local definitions are up to date!");
+        if !ctx.internal_run {
+            let mut count = 0;
+            for (name, id) in formations_added {
+                count += 1;
+                cli_print!("Successfully synchronized Formation Instance '");
+                cli_print!(@Green, "{name}");
+                cli_print!("' with local Formation ID '");
+                cli_print!(@Green, "{}", &id.to_string()[..8]);
+                cli_println!("'");
+            }
+            for (name, id) in configs_updated {
+                count += 1;
+                cli_print!("Successfully synchronized Formation Configuration in Formation '");
+                cli_print!(@Green, "{name}");
+                cli_print!("' with local Formation Configuration ID '");
+                cli_print!(@Green, "{}", &id.to_string()[..8]);
+                cli_println!("'");
+            }
+            for (name, id) in flights_added {
+                count += 1;
+                cli_print!("Successfully synchronized Flight Plan '");
+                cli_print!(@Green, "{name}");
+                cli_print!("' with local Flight Plan ID '");
+                cli_print!(@Green, "{}", &id.to_string()[..8]);
+                cli_println!("'!");
+            }
+            if names.is_empty() {
+                cli_println!("No remote Formation Instances found");
+            } else if count > 0 {
+                cli_println!("");
+                cli_println!("Successfully fetched {count} items");
+            } else {
+                cli_println!("All local definitions are up to date!");
+            }
         }
 
         ctx.persist_flights()?;

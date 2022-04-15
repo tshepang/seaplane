@@ -7,7 +7,7 @@ use std::{
 };
 
 use seaplane::api::v1::formations::{
-    EndpointKey as EndpointKeyModel, EndpointValue as EndpointValueModel,
+    EndpointKey as EndpointKeyModel, EndpointValue as EndpointValueModel, Flight as FlightModel,
     FormationConfiguration as FormationConfigurationModel,
 };
 use serde::{Deserialize, Serialize};
@@ -90,31 +90,37 @@ impl Formations {
     /// Either updates a matching local Formation Configurations, or creates a new one. Returns the
     /// existing ID of the config that was updated if any
     pub fn update_or_create_configuration(&mut self, cfg: FormationConfiguration) -> Option<Id> {
+        let has_matching_uuid = self
+            .configurations
+            .iter()
+            .any(|c| c.remote_id == cfg.remote_id);
         if let Some(old_cfg) = self
             .configurations
             .iter_mut()
-            .find(|c| c.model == cfg.model)
+            .find(|c| c.model == cfg.model && (c.remote_id.is_none() && !has_matching_uuid))
         {
             // This should have come from the API and thus requires a UUID
             old_cfg.remote_id = Some(cfg.remote_id.unwrap());
             Some(old_cfg.id)
+        } else if self.configurations.iter().any(|c| c.eq_without_id(&cfg)) {
+            None
         } else {
             self.configurations.push(cfg);
             None
         }
     }
 
-    /// Either updates a matching local Formations, or creates a new one. Returns NEW Formations
-    /// IDs
+    /// Either updates a matching local Formations by replacing the local IDs, or creates a new
+    /// one. Returns NEW Formations IDs
     pub fn update_or_create_formation(&mut self, formation: Formation) -> Option<Id> {
         if let Some(f) = self
             .formations
             .iter_mut()
             .find(|f| f.name == formation.name)
         {
-            f.in_air.extend(formation.in_air);
-            f.grounded.extend(formation.grounded);
-            f.local.extend(formation.local);
+            f.in_air = formation.in_air;
+            f.grounded = formation.grounded;
+            f.local = formation.local;
             None
         } else {
             let id = formation.id;
@@ -387,12 +393,22 @@ impl FormationConfiguration {
             model,
         }
     }
+
     pub fn with_uuid(uuid: Uuid, model: FormationConfigurationModel) -> Self {
         Self {
             id: Id::new(),
             remote_id: Some(uuid),
             model,
         }
+    }
+
+    pub fn get_flight(&self, flight: &str) -> Option<&FlightModel> {
+        self.model.flights().iter().find(|f| f.name() == flight)
+    }
+
+    /// Performs equality check without consider the local ID
+    pub fn eq_without_id(&self, other: &Self) -> bool {
+        self.remote_id == other.remote_id && self.model == other.model
     }
 }
 
