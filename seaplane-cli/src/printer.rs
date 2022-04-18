@@ -50,6 +50,12 @@ impl Pb {
     }
 }
 
+impl Drop for Pb {
+    fn drop(&mut self) {
+        self.finish_and_clear()
+    }
+}
+
 #[derive(
     EnumString, strum::Display, EnumVariantNames, Deserialize, Copy, Clone, Debug, PartialEq,
 )]

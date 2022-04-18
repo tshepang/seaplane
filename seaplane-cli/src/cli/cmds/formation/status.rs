@@ -2,7 +2,7 @@ use clap::{ArgMatches, Command};
 use strum::VariantNames;
 
 use crate::{
-    api::build_formations_request,
+    api::FormationsReq,
     cli::{
         cmds::formation::SeaplaneFormationFetch,
         validator::{validate_formation_name, validate_name_id},
@@ -70,11 +70,13 @@ impl CliCommand for SeaplaneFormationStatus {
         let mut statuses: Vec<FormationStatus> = Vec::new();
 
         let api_key = ctx.args.api_key()?;
+
+        let mut req = FormationsReq::new_delay_token(api_key)?;
         for name in names {
             pb.set_message(format!("Gathering {name} container info..."));
-            let containers_req = build_formations_request(Some(name), api_key)?;
+            req.set_name(name)?;
             let mut f_status = FormationStatus::new(name);
-            for container in containers_req.get_containers()?.iter() {
+            for container in req.get_containers()?.iter() {
                 if let Some(cfg) = ctx
                     .db
                     .formations

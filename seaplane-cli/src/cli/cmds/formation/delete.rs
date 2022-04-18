@@ -2,7 +2,7 @@ use clap::{ArgMatches, Command};
 use seaplane::{api::v1::FormationsErrorKind, error::SeaplaneError};
 
 use crate::{
-    api::build_formations_request,
+    api::FormationsReq,
     cli::{
         cmds::{flight::SeaplaneFlightDelete, formation::SeaplaneFormationFetch},
         errors,
@@ -103,17 +103,19 @@ impl CliCommand for SeaplaneFormationDelete {
         // the local one too if this fails
         if formation_ctx.remote {
             let api_key = ctx.args.api_key()?;
+            let mut req = FormationsReq::new_delay_token(api_key)?;
             for idx in &indices {
                 let formation = ctx.db.formations.get_formation(*idx).unwrap();
                 if let Some(name) = &formation.name {
-                    let delete_req = build_formations_request(Some(name), api_key)?;
-                    let cfg_uuids = match delete_req.delete(ctx.args.force) {
-                        Err(SeaplaneError::FormationsResponse(fr))
-                            if fr.kind == FormationsErrorKind::FormationNotFound =>
-                        {
-                            continue;
+                    req.set_name(name)?;
+                    let cfg_uuids = match req.delete(ctx.args.force) {
+                        Err(e) => {
+                            if matches!(e.kind(), CliErrorKind::Seaplane(SeaplaneError::FormationsResponse(fr)) if fr.kind == FormationsErrorKind::FormationNotFound)
+                            {
+                                continue;
+                            }
+                            return Err(e);
                         }
-                        Err(e) => return Err(e.into()),
                         Ok(cfg_uuids) => cfg_uuids,
                     };
                     cli_print!("Deleted remote Formation Instance '");

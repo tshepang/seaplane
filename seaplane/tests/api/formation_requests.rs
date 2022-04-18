@@ -156,7 +156,7 @@ macro_rules! test_create {
             });
 
             let req = build_req();
-            let resp = req.create(build_configuration(), $param).unwrap();
+            let resp = req.create(&build_configuration(), $param).unwrap();
 
             // Ensure the endpoint was hit
             mock.assert();
@@ -188,7 +188,7 @@ macro_rules! test_add_configuration {
 
             let req = build_req();
             let resp = req
-                .add_configuration(build_configuration(), $param)
+                .add_configuration(&build_configuration(), $param)
                 .unwrap();
 
             // Ensure the endpoint was hit
@@ -547,7 +547,7 @@ macro_rules! test_set_active_configurations {
             });
 
             let req = build_req();
-            let resp = req.set_active_configurations(build_active_connections(), $param);
+            let resp = req.set_active_configurations(&build_active_connections(), $param);
 
             // Ensure the endpoint was hit
             mock.assert();

@@ -1,7 +1,7 @@
 use clap::{ArgMatches, Command};
 
 use crate::{
-    api::build_formations_request,
+    api::FormationsReq,
     cli::{
         errors,
         validator::{validate_formation_name, validate_name_id},
@@ -54,14 +54,14 @@ impl CliCommand for SeaplaneFormationLand {
         }
 
         let api_key = ctx.args.api_key()?;
+        let mut req = FormationsReq::new_delay_token(api_key)?;
         for idx in indices {
             // re unwrap: the indices returned came from Formations so they have to be valid
             let formation = ctx.db.formations.get_formation_mut(idx).unwrap();
+            req.set_name(formation.name.as_ref().unwrap())?;
 
             // re unwrap: We got the formation from the local DB so it has to have a name
-            let stop_req =
-                build_formations_request(Some(formation.name.as_ref().unwrap()), api_key)?;
-            stop_req.stop()?;
+            req.stop()?;
 
             // Move all configurations from in air to grounded
             let ids: Vec<_> = formation.in_air.drain().collect();

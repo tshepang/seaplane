@@ -16,7 +16,7 @@ pub use self::{
     set::{SeaplaneMetadataSet, SeaplaneMetadataSetArgMatches},
 };
 use crate::{
-    api::request_token,
+    api::request_token_jwt,
     cli::CliCommand,
     error::{CliError, Context, Result},
     printer::OutputFormat,
@@ -67,7 +67,7 @@ pub fn build_config_request_key<S: Into<String>>(
     api_key: &str,
 ) -> Result<ConfigRequest> {
     ConfigRequest::builder()
-        .token(request_token(api_key, "")?)
+        .token(request_token_jwt(api_key)?)
         .encoded_key(target)
         .build()
         .map_err(CliError::from)
@@ -76,7 +76,7 @@ pub fn build_config_request_key<S: Into<String>>(
 
 pub fn build_config_request_dir(range: RangeQueryContext, api_key: &str) -> Result<ConfigRequest> {
     ConfigRequest::builder()
-        .token(request_token(api_key, "")?)
+        .token(request_token_jwt(api_key)?)
         .range(range)
         .build()
         .map_err(CliError::from)

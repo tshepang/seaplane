@@ -1,14 +1,8 @@
 use std::collections::HashSet;
 
-use clap::Command;
+use clap::{ArgMatches, Command};
 
-use crate::{
-    api::{get_all_formations, get_formation_names},
-    cli::CliCommand,
-    error::Result,
-    printer::Pb,
-    Ctx,
-};
+use crate::{api::FormationsReq, cli::CliCommand, error::Result, printer::Pb, Ctx};
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneFormationFetch;
@@ -37,7 +31,8 @@ impl CliCommand for SeaplaneFormationFetch {
         pb.set_message("Gathering Formation Names...");
 
         let api_key = ctx.args.api_key()?;
-        let names = get_formation_names(api_key, ctx.args.name_id.as_deref())?;
+        let mut req = FormationsReq::new(api_key, ctx.args.name_id.as_deref())?;
+        let names = req.get_formation_names()?;
 
         pb.set_message("Syncing Formations...");
         // This gets us everything the API knows about, but with totally new local IDs. So we need
@@ -45,7 +40,7 @@ impl CliCommand for SeaplaneFormationFetch {
         // our local DB, but they will match within these instances returned by the API).
         //
         // We need to map them to our OWN local IDs and update the DB.
-        let mut remote_instances = get_all_formations(api_key, &names, &pb)?;
+        let mut remote_instances = req.get_all_formations(&names, &pb)?;
 
         // Keep track of what new items we've downloaded that our local DB didn't know about
         let mut flights_added = HashSet::new();
@@ -139,6 +134,11 @@ impl CliCommand for SeaplaneFormationFetch {
         ctx.persist_flights()?;
         ctx.persist_formations()?;
 
+        Ok(())
+    }
+
+    fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        ctx.args.name_id = matches.value_of("formation").map(ToOwned::to_owned);
         Ok(())
     }
 }

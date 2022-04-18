@@ -215,10 +215,14 @@ impl FormationsRequest {
     ///         .build().unwrap())
     ///     .build()
     ///     .unwrap();
-    /// let resp = req.create(config, false).unwrap();
+    /// let resp = req.create(&config, false).unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn create(&self, configuration: FormationConfiguration, active: bool) -> Result<Vec<Uuid>> {
+    pub fn create(
+        &self,
+        configuration: &FormationConfiguration,
+        active: bool,
+    ) -> Result<Vec<Uuid>> {
         self._post_formation(Some(configuration), active, None)
     }
 
@@ -247,7 +251,7 @@ impl FormationsRequest {
     // The private internal function to deduplicate create/clone formation
     fn _post_formation(
         &self,
-        configuration: Option<FormationConfiguration>,
+        configuration: Option<&FormationConfiguration>,
         active: bool,
         source: Option<&str>,
     ) -> Result<Vec<Uuid>> {
@@ -400,7 +404,7 @@ impl FormationsRequest {
     ///     .unwrap();
     ///
     /// let resp = req.set_active_configurations(
-    ///     ActiveConfigurations::new()
+    ///     &ActiveConfigurations::new()
     ///         .add_configuration(ActiveConfiguration::builder()
     ///             .uuid("aa8522e7-06cc-4e35-8966-484ae26e02a9".parse::<Uuid>().unwrap())
     ///             .build()
@@ -413,7 +417,7 @@ impl FormationsRequest {
     /// ```
     pub fn set_active_configurations(
         &self,
-        configs: ActiveConfigurations,
+        configs: &ActiveConfigurations,
         force: bool,
     ) -> Result<()> {
         if self.name.is_none() {
@@ -642,12 +646,12 @@ impl FormationsRequest {
     ///         .build().unwrap())
     ///     .build()
     ///     .unwrap();
-    /// let resp = req.create(config, false).unwrap();
+    /// let resp = req.create(&config, false).unwrap();
     /// dbg!(resp);
     /// ```
     pub fn add_configuration(
         &self,
-        configuration: FormationConfiguration,
+        configuration: &FormationConfiguration,
         active: bool,
     ) -> Result<Uuid> {
         if self.name.is_none() {

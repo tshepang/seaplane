@@ -61,3 +61,42 @@ impl From<reqwest::Error> for SeaplaneError {
         }
     }
 }
+
+impl PartialEq for SeaplaneError {
+    fn eq(&self, rhs: &Self) -> bool {
+        use SeaplaneError::*;
+
+        match self {
+            UnknownHttp(_) => matches!(rhs, UnknownHttp(_)),
+            Decode(_) => matches!(rhs, Decode(_)),
+            MissingRequestApiKey => matches!(rhs, MissingRequestApiKey),
+            MissingRequestAuthToken => matches!(rhs, MissingRequestAuthToken),
+            MissingFormationName => matches!(rhs, MissingFormationName),
+            UrlParse(_) => matches!(rhs, UrlParse(_)),
+            Json(_) => matches!(rhs, Json(_)),
+            MissingActiveConfiguration => matches!(rhs, MissingActiveConfiguration),
+            MissingUuid => matches!(rhs, MissingUuid),
+            ConflictingParams => matches!(rhs, ConflictingParams),
+            EmptyFlights => matches!(rhs, EmptyFlights),
+            MissingFlightName => matches!(rhs, MissingFlightName),
+            MissingFlightImageReference => matches!(rhs, MissingFlightImageReference),
+            ConflictingRequirements => matches!(rhs, ConflictingRequirements),
+            MissingConfigKey => matches!(rhs, MissingConfigKey),
+            IncorrectConfigRequestTarget => matches!(rhs, IncorrectConfigRequestTarget),
+            #[cfg(feature = "api_v1")]
+            FormationsResponse(fe) => match rhs {
+                FormationsResponse(ofe) => fe == ofe,
+                _ => false,
+            },
+            #[cfg(feature = "api_v1")]
+            ConfigResponse(ce) => match rhs {
+                ConfigResponse(oce) => ce == oce,
+                _ => false,
+            },
+            TokenResponse(te) => match rhs {
+                TokenResponse(ote) => te == ote,
+                _ => false,
+            },
+        }
+    }
+}

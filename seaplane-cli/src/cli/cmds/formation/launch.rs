@@ -5,7 +5,7 @@ use seaplane::{
 };
 
 use crate::{
-    api::build_formations_request,
+    api::FormationsReq,
     cli::{
         cmds::formation::SeaplaneFormationFetch,
         errors,
@@ -13,7 +13,7 @@ use crate::{
         CliCommand,
     },
     context::Ctx,
-    error::{CliError, CliErrorKind, Context, Result},
+    error::{CliErrorKind, Context, Result},
     printer::{Color, Pb},
 };
 
@@ -113,10 +113,12 @@ impl CliCommand for SeaplaneFormationLaunch {
         let pb = Pb::new(ctx);
         let api_key = ctx.args.api_key()?;
         let grounded = ctx.formation_ctx.get_or_init().grounded;
+        let mut req = FormationsReq::new_delay_token(api_key)?;
         for idx in indices {
             // re unwrap: the indices returned came from Formations so they have to be valid
             let formation = ctx.db.formations.get_formation(idx).unwrap();
             let formation_name = formation.name.as_ref().unwrap().clone();
+            req.set_name(&formation_name)?;
 
             // Get the local configs that don't exist remote yet
             let cfgs_ids = formation.local_only_configs();
@@ -147,33 +149,23 @@ impl CliCommand for SeaplaneFormationLaunch {
                             .context("')\n"));
                     }
 
-                    let add_cfg_req = build_formations_request(Some(&formation_name), api_key)?;
                     // We don't set the configuration to active because we'll be doing that to
                     // *all* formation configs in a minute
                     pb.set_message("Searching for existing Formations...");
-                    if let Err(e) = add_cfg_req.add_configuration(cfg.model.clone(), false) {
-                        match e {
-                            SeaplaneError::FormationsResponse(fr)
+                    if let Err(e) = req.add_configuration(&cfg.model, false) {
+                        match e.kind() {
+                            CliErrorKind::Seaplane(SeaplaneError::FormationsResponse(fr))
                                 if fr.kind == FormationsErrorKind::FormationNotFound =>
                             {
                                 // If the formation didn't exist, create it
-                                let create_req =
-                                    build_formations_request(Some(&formation_name), api_key)?;
                                 pb.set_message("Creating new Formation Instance...");
-                                match create_req.create(cfg.model.clone(), !grounded) {
-                                    Err(e) => {
-                                        pb.finish_and_clear();
-                                        return Err(e.into());
-                                    }
-                                    Ok(cfg_uuid) => {
-                                        cfg_uuids.extend(cfg_uuid);
-                                        ctx.db.formations.add_in_air_by_name(&formation_name, *id);
-                                        created_new = true;
-                                        break 'inner;
-                                    }
-                                }
+                                let cfg_uuid = req.create(&cfg.model, !grounded)?;
+                                cfg_uuids.extend(cfg_uuid);
+                                ctx.db.formations.add_in_air_by_name(&formation_name, *id);
+                                created_new = true;
+                                break 'inner;
                             }
-                            _ => return Err(e.into()),
+                            _ => return Err(e),
                         }
                     } else {
                         pb.set_message("Found existing Formation Instance...");
@@ -192,11 +184,8 @@ impl CliCommand for SeaplaneFormationLaunch {
             if !grounded && !created_new {
                 // Get all configurations for this Formation
                 pb.set_message("Synchronizing Formation Configurations...");
-                let list_cfg_uuids_req = build_formations_request(Some(&formation_name), api_key)?;
                 cfg_uuids.extend(
-                    list_cfg_uuids_req
-                        .list_configuration_ids()
-                        .map_err(CliError::from)
+                    req.list_configuration_ids()
                         .context("Context: failed to retrieve Formation Configuration IDs\n")?,
                 );
                 let mut active_configs = ActiveConfigurations::new();
@@ -210,18 +199,14 @@ impl CliCommand for SeaplaneFormationLaunch {
                     active_configs.add_configuration_mut(cfg.build()?);
                 }
                 pb.set_message("Adding Formation Configurations to remote Instance...");
-                let set_cfgs_req = build_formations_request(Some(&formation_name), api_key)?;
-                set_cfgs_req
-                    .set_active_configurations(active_configs, false)
-                    .map_err(CliError::from)
+                req.set_active_configurations(&active_configs, false)
                     .context("Context: failed to start Formation\n")?;
                 for id in cfgs_ids {
                     ctx.db.formations.add_in_air_by_name(&formation_name, id);
                 }
             }
             pb.set_message("Getting Formation URL...");
-            let domain_req = build_formations_request(Some(&formation_name), api_key)?;
-            let domain = domain_req.get_metadata()?.url;
+            let domain = req.get_metadata()?.url;
 
             pb.finish_and_clear();
             cli_print!("Successfully Launched remote Formation Instance '");

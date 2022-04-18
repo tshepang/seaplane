@@ -53,6 +53,12 @@ impl Error for FormationsError {
     }
 }
 
+impl PartialEq for FormationsError {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[non_exhaustive]
 pub enum FormationsErrorKind {
