@@ -4,7 +4,7 @@ mod error;
 mod models;
 
 use crate::{
-    api::COORD_API_URL,
+    api::METADATA_API_URL,
     error::{Result, SeaplaneError},
 };
 
@@ -103,7 +103,7 @@ impl ConfigRequestBuilder {
         let url = if let Some(url) = self.base_url {
             url.join("v1/config/")?
         } else {
-            let mut url: Url = COORD_API_URL.parse()?;
+            let mut url: Url = METADATA_API_URL.parse()?;
             url.set_path("v1/config/");
             url
         };

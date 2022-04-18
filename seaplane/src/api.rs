@@ -22,5 +22,5 @@ pub static FLIGHTDECK_API_URL: &str = "https://flightdeck.seaplanet.io/";
 /// reference.
 pub static IMAGE_REGISTRY_URL: &str = "registry.seaplanet.io/";
 
-/// The base URL for our Data Coordination endpoints
-pub static COORD_API_URL: &str = "https://coord.seaplanet.io/";
+/// The base URL for our Metadata endpoints
+pub static METADATA_API_URL: &str = "https://metadata.seaplanet.io/";
