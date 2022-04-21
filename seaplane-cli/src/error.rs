@@ -285,6 +285,7 @@ pub enum CliErrorKind {
     StrumParse(strum::ParseError),
     FlightsInUse(Vec<String>),
     EndpointInvalidFlight(String),
+    OneOff(String),
 }
 
 impl CliErrorKind {
@@ -292,6 +293,9 @@ impl CliErrorKind {
         use CliErrorKind::*;
 
         match &*self {
+            OneOff(msg) => {
+                cli_eprintln!("{msg}");
+            }
             FlightsInUse(flights) => {
                 cli_eprintln!("the following Flight Plans are referenced by a Formation Plan and cannot be deleted");
                 for f in flights {
@@ -472,6 +476,7 @@ impl PartialEq<Self> for CliErrorKind {
         use CliErrorKind::*;
 
         match self {
+            OneOff(_) => matches!(rhs, OneOff(_)),
             EndpointInvalidFlight(_) => matches!(rhs, EndpointInvalidFlight(_)),
             AmbiguousItem(_) => matches!(rhs, AmbiguousItem(_)),
             Io(_, _) => matches!(rhs, Io(_, _)),

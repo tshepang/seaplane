@@ -53,8 +53,9 @@ impl CliCommand for SeaplaneFormationStatus {
             ctx.internal_run = true;
             ctx.disable_pb = ctx.args.out_format == OutputFormat::Json;
             ctx.args.stateless = true;
-            let fetch = SeaplaneFormationFetch;
-            fetch.run(ctx)?;
+            let old_name = ctx.args.name_id.take();
+            SeaplaneFormationFetch.run(ctx)?;
+            ctx.args.name_id = old_name;
             ctx.internal_run = false;
             ctx.args.stateless = old_stateless;
         }

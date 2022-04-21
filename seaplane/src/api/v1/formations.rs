@@ -271,15 +271,9 @@ impl FormationsRequest {
             self.client.post(url).bearer_auth(&self.token)
         };
         let resp = req.send()?;
-        map_error(
-            resp,
-            Some((
-                FormationsErrorKind::FormationNotFound,
-                "'source' not found".into(),
-            )),
-        )?
-        .json::<Vec<Uuid>>()
-        .map_err(Into::into)
+        map_error(resp, None)?
+            .json::<Vec<Uuid>>()
+            .map_err(Into::into)
     }
 
     /// Deletes a formation
@@ -667,15 +661,7 @@ impl FormationsRequest {
             .bearer_auth(&self.token)
             .body(serde_json::to_string(&configuration)?)
             .send()?;
-        map_error(
-            resp,
-            Some((
-                FormationsErrorKind::FormationNotFound,
-                "'source' not found".into(),
-            )),
-        )?
-        .json::<Uuid>()
-        .map_err(Into::into)
+        map_error(resp, None)?.json::<Uuid>().map_err(Into::into)
     }
 
     // Internal, only used when can only be a valid name.

@@ -52,8 +52,9 @@ impl CliCommand for SeaplaneFlightPlan {
         }
 
         if ctx.args.fetch {
-            let fetch = SeaplaneFormationFetch;
-            fetch.run(ctx)?;
+            let old_name = ctx.args.name_id.take();
+            SeaplaneFormationFetch.run(ctx)?;
+            ctx.args.name_id = old_name;
         }
 
         let new_flight = ctx.flight_ctx.get_or_init().model();

@@ -1,8 +1,4 @@
-use std::{
-    fmt,
-    io::{self, Write},
-    result::Result as StdResult,
-};
+use std::{fmt, io::Write, result::Result as StdResult};
 
 use seaplane::api::v1::config::{Key as KeyModel, KeyValue as KeyValueModel};
 use serde::{ser::Serializer, Serialize};
@@ -10,7 +6,7 @@ use serde::{ser::Serializer, Serialize};
 use crate::{
     context::{metadata::DisplayEncodingFormat, Ctx},
     error::Result,
-    printer::Output,
+    printer::{printer, Output},
 };
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -267,48 +263,47 @@ impl KeyValues {
     fn impl_print_table(&self, headers: bool) -> Result<()> {
         use KeyValueInner::*;
         // TODO: we may have to add ways to elide long keys or values with ... after some char count
-        let stdout = io::stdout();
-        let mut lock = stdout.lock();
+        let mut ptr = printer();
 
         let mut iter = self.iter().peekable();
         while let Some(kv) = iter.next() {
             match &kv.key {
                 Some(Hex(s)) | Some(Utf8(s)) | Some(Base64(s)) => {
                     if headers {
-                        write!(&mut lock, "KEY: ")?;
+                        write!(ptr, "KEY: ")?;
                     }
-                    writeln!(&mut lock, "{s}")?;
+                    writeln!(ptr, "{s}")?;
                 }
                 Some(Simple(v)) => {
                     if headers {
-                        write!(&mut lock, "KEY: ")?;
+                        write!(ptr, "KEY: ")?;
                     }
-                    lock.write_all(v)?;
-                    writeln!(&mut lock)?;
+                    ptr.write_all(v)?;
+                    writeln!(ptr)?;
                 }
                 None => (),
             }
             match &kv.value {
                 Some(Hex(s)) | Some(Utf8(s)) | Some(Base64(s)) => {
                     if headers {
-                        writeln!(&mut lock, "VALUE:")?;
+                        writeln!(ptr, "VALUE:")?;
                     }
-                    writeln!(&mut lock, "{s}")?;
+                    writeln!(ptr, "{s}")?;
                 }
                 Some(Simple(v)) => {
                     if headers {
-                        writeln!(&mut lock, "VALUE:")?;
+                        writeln!(ptr, "VALUE:")?;
                     }
-                    lock.write_all(v)?;
-                    writeln!(&mut lock)?;
+                    ptr.write_all(v)?;
+                    writeln!(ptr)?;
                 }
                 None => (),
             }
             if iter.peek().is_some() {
-                writeln!(&mut lock, "---")?;
+                writeln!(ptr, "---")?;
             }
         }
-        lock.flush()?;
+        ptr.flush()?;
 
         Ok(())
     }

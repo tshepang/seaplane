@@ -44,7 +44,9 @@ impl CliCommand for SeaplaneFlightList {
         }
 
         if ctx.args.fetch {
+            let old_name = ctx.args.name_id.take();
             SeaplaneFormationFetch.run(ctx)?;
+            ctx.args.name_id = old_name;
         }
 
         match ctx.args.out_format {

@@ -3,6 +3,7 @@ use clap::{ArgMatches, Command};
 use crate::{
     api::FormationsReq,
     cli::{
+        cmds::formation::SeaplaneFormationFetch,
         errors,
         validator::{validate_formation_name, validate_name_id},
         CliCommand,
@@ -29,11 +30,21 @@ impl SeaplaneFormationLand {
                 arg!(--all - ('a'))
                     .help("Stop all matching Formations even when FORMATION is ambiguous"),
             )
+            .arg(arg!(--fetch|sync|synchronize - ('F')).help(
+                "Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to land",
+            ))
     }
 }
 
 impl CliCommand for SeaplaneFormationLand {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        if ctx.args.fetch {
+            let old_name = ctx.args.name_id.take();
+            ctx.internal_run = true;
+            SeaplaneFormationFetch.run(ctx)?;
+            ctx.internal_run = false;
+            ctx.args.name_id = old_name;
+        }
         let name = ctx.args.name_id.as_ref().unwrap();
         // Get the indices of any formations that match the given name/ID
         let indices = if ctx.args.all {
@@ -46,7 +57,6 @@ impl CliCommand for SeaplaneFormationLand {
             0 => errors::no_matching_item(name.to_string(), false, ctx.args.all)?,
             1 => (),
             _ => {
-                // TODO: and --force
                 if !ctx.args.all {
                     errors::ambiguous_item(name.to_string(), true)?;
                 }
@@ -82,6 +92,7 @@ impl CliCommand for SeaplaneFormationLand {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.all = matches.is_present("all");
         ctx.args.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
+        ctx.args.fetch = matches.is_present("fetch");
         Ok(())
     }
 }

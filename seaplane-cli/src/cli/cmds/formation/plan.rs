@@ -52,8 +52,11 @@ impl SeaplaneFormationPlan {
 impl CliCommand for SeaplaneFormationPlan {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         if ctx.args.fetch {
-            let fetch = SeaplaneFormationFetch;
-            fetch.run(ctx)?;
+            let old_name = ctx.args.name_id.take();
+            ctx.internal_run = true;
+            SeaplaneFormationFetch.run(ctx)?;
+            ctx.internal_run = false;
+            ctx.args.name_id = old_name;
         }
 
         let formation_ctx = ctx.formation_ctx.get_or_init();
@@ -114,6 +117,8 @@ impl CliCommand for SeaplaneFormationPlan {
             ctx.args.name_id = Some(formation_ctx.name_id.clone());
             // We only want to match this exact formation
             ctx.args.exact = true;
+            // If `--fetch` was passed, we already did it, no need to do it again
+            ctx.args.fetch = false;
             // release the MutexGuard
             SeaplaneFormationLaunch.run(ctx)?;
         }

@@ -13,6 +13,7 @@ OPTIONS:
     -a, --all                 Stop all matching Formations even when FORMATION is ambiguous
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+    -F, --fetch               Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to land [aliases: sync, synchronize]
     -h, --help                Print help information
         --no-color            Do not color output (alias for --color=never)
     -q, --quiet               Suppress output at a specific level and below
@@ -52,6 +53,11 @@ OPTIONS:
             
             [default: auto]
             [possible values: always, ansi, auto, never]
+
+    -F, --fetch
+            Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to land
+            
+            [aliases: sync, synchronize]
 
     -h, --help
             Print help information

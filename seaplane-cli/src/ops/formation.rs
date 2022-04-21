@@ -361,6 +361,10 @@ impl Formation {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.local.is_empty() && self.in_air.is_empty() && self.grounded.is_empty()
+    }
+
     /// Replaces all occurrences of `old_id` with `new_id`
     pub fn replace_id(&mut self, old_id: &Id, new_id: Id) {
         if self.local.remove(old_id) {
@@ -378,6 +382,18 @@ impl Formation {
     pub fn local_only_configs(&self) -> Vec<Id> {
         self.local
             .difference(&self.in_air.union(&self.grounded).copied().collect())
+            .copied()
+            .collect()
+    }
+
+    /// Returns the Formation Configuration IDs that are either Grounded (Inactive) or Local
+    pub fn local_or_grounded_configs(&self) -> Vec<Id> {
+        self.local
+            .iter()
+            .chain(self.grounded.iter())
+            .copied()
+            .collect::<HashSet<_>>()
+            .difference(&self.in_air)
             .copied()
             .collect()
     }

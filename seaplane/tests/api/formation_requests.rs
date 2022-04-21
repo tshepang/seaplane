@@ -59,7 +59,7 @@ fn list_names() {
 // GET /formations/NAME
 #[test]
 fn get_metadata() {
-    let resp_json = json!({"url":"https://stubb--bar.on.seaplanet.io/"});
+    let resp_json = json!({"url":"stubb--bar.on.seaplanet.io/"});
 
     let mock = MOCK_SERVER.mock(|w, t| {
         when(w, GET, "/v1/formations/stubb").header("content-type", "application/json");
@@ -126,11 +126,11 @@ fn clone_from_active() {
 fn build_configuration() -> FormationConfiguration {
     FormationConfiguration::builder()
         .add_flight(Flight::new(
-            "Pequod",
+            "pequod",
             "registry.seaplanet.io/stubb/alpine:latest",
         ))
         .add_flight(Flight::new(
-            "Flask",
+            "flask",
             "registry.seaplanet.io/stubb/alpine:latest",
         ))
         .build()
@@ -542,7 +542,8 @@ macro_rules! test_set_active_configurations {
         fn $fn() {
             let mock = MOCK_SERVER.mock(|w, then| {
                 when(w, PUT, "/v1/formations/stubb/activeConfiguration")
-                    .query_param("force", stringify!($param));
+                    .query_param("force", stringify!($param))
+                    .body(serde_json::to_string(&build_active_connections()).unwrap());
                 then.status(200).body("success");
             });
 

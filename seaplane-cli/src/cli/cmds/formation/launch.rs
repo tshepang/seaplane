@@ -89,8 +89,12 @@ impl CliCommand for SeaplaneFormationLaunch {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let name = ctx.args.name_id.as_ref().unwrap().clone();
         if ctx.args.fetch {
-            let fetch = SeaplaneFormationFetch;
-            fetch.run(ctx)?;
+            let old_name = ctx.args.name_id.take();
+            let old_ir = ctx.internal_run;
+            ctx.internal_run = true;
+            SeaplaneFormationFetch.run(ctx)?;
+            ctx.internal_run = old_ir;
+            ctx.args.name_id = old_name;
         }
         // Get the indices of any formations that match the given name/ID
         let indices = if ctx.args.all {
@@ -121,7 +125,26 @@ impl CliCommand for SeaplaneFormationLaunch {
             req.set_name(&formation_name)?;
 
             // Get the local configs that don't exist remote yet
-            let cfgs_ids = formation.local_only_configs();
+            let cfgs_ids = if grounded {
+                formation.local_only_configs()
+            } else {
+                formation.local_or_grounded_configs()
+            };
+
+            if cfgs_ids.is_empty() {
+                if ctx.args.fetch && grounded {
+                    cli_println!("Formation Plan '{formation_name}' is already uploaded and in status Grounded");
+                    return Ok(());
+                } else {
+                    return Err(CliErrorKind::OneOff(
+                        "Cannot find local Formation Plan '{formation_name}'".into(),
+                    )
+                    .into_err())
+                    .context(
+                        "(hint: you can try adding '--fetch' to synchronize remote instances)\n",
+                    );
+                }
+            }
 
             // Keep track if we had to make a brand new formation or not
             let mut created_new = false;
@@ -241,6 +264,8 @@ impl CliCommand for SeaplaneFormationLaunch {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.name_id = matches.value_of("formation").map(ToOwned::to_owned);
         ctx.args.fetch = matches.is_present("fetch");
+        let fctx = ctx.formation_ctx.get_mut_or_init();
+        fctx.grounded = matches.is_present("grounded");
         Ok(())
     }
 }

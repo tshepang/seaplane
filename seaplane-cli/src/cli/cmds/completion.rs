@@ -1,10 +1,9 @@
-use std::io;
-
 use clap::{ArgMatches, Command};
 
 use crate::{
     cli::{CliCommand, Seaplane},
     error::Result,
+    printer::printer,
     Ctx,
 };
 
@@ -130,7 +129,7 @@ impl CliCommand for SeaplaneShellCompletion {
             ctx.args.shell.unwrap(),
             &mut app,
             "seaplane",
-            &mut io::stdout(),
+            &mut *printer(),
         );
 
         Ok(())

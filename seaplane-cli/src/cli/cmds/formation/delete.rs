@@ -57,8 +57,11 @@ impl SeaplaneFormationDelete {
 impl CliCommand for SeaplaneFormationDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         if ctx.args.fetch {
-            let fetch = SeaplaneFormationFetch;
-            fetch.run(ctx)?;
+            let old_name = ctx.args.name_id.take();
+            ctx.internal_run = true;
+            SeaplaneFormationFetch.run(ctx)?;
+            ctx.internal_run = false;
+            ctx.args.name_id = old_name;
         }
 
         let formation_ctx = ctx.formation_ctx.get_or_init();
@@ -143,7 +146,7 @@ impl CliCommand for SeaplaneFormationDelete {
                 }
             }
         }
-        if formation_ctx.local {
+        if formation_ctx.local && !ctx.args.stateless {
             // No need to potentially clone over and over
             let mut cloned_ctx = ctx.clone();
             for formation in ctx.db.formations.remove_formation_indices(&indices).iter() {

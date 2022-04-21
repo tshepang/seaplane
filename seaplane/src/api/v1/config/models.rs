@@ -100,7 +100,7 @@ pub struct Directory {
 impl_base64!(Directory);
 
 /// The full context with which to perform a range query
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Clone)]
 pub struct RangeQueryContext {
     /// The directory, if any, within which to perform the range query.
     dir: Option<Directory>,
