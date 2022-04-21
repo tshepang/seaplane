@@ -1,8 +1,12 @@
 
-name: UI Test CI Workflow
+name: API Test CI Workflow
 
 on:
   workflow_call:
+    inputs:
+      manifest_path:
+        type: string
+        required: true
 
 env:
   CARGO_TERM_COLOR: always
@@ -27,7 +31,7 @@ jobs:
     - uses: Swatinem/rust-cache@v1
 
     - name: Mock API Tests
-      run: cargo test --features api_tests --manifest-path ./seaplane/Cargo.toml
+      run: cargo test --features api_tests --manifest-path ${{ inputs.manifest_path }}
 
   api-test-self-hosted:
     name: Mock API Tests
@@ -54,4 +58,4 @@ jobs:
       if: ${{ contains(matrix.os, 'self-hosted') }}
 
     - name: Mock API Tests (${{ matrix.features }})
-      run: cargo test --features ${{ matrix.features }} --manifest-path ./seaplane/Cargo.toml
+      run: cargo test --features ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }}

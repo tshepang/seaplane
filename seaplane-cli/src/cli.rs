@@ -164,11 +164,15 @@ impl CliCommand for Seaplane {
 
         ctx.args.stateless = matches.is_present("stateless");
 
-        ctx.db = crate::context::Db::load_if(
-            ctx.flights_file(),
-            ctx.formations_file(),
-            !ctx.args.stateless,
-        )?;
+        // API tests sometimes write their own DB to test, so we don't want to overwrite that
+        #[cfg(not(feature = "api_tests"))]
+        {
+            ctx.db = crate::context::Db::load_if(
+                ctx.flights_file(),
+                ctx.formations_file(),
+                !ctx.args.stateless,
+            )?;
+        }
 
         if let Some(key) = &matches.value_of("api-key") {
             if key == &"-" {

@@ -2,9 +2,8 @@ use clap::{ArgMatches, Command};
 use serde_json::json;
 
 use crate::{
-    cli::cmds::metadata::{
-        build_config_request_key, common, common::SeaplaneMetadataCommonArgMatches, CliCommand,
-    },
+    api::ConfigReq,
+    cli::cmds::metadata::{common, common::SeaplaneMetadataCommonArgMatches, CliCommand},
     context::{Ctx, MetadataCtx},
     error::Result,
     printer::OutputFormat,
@@ -26,9 +25,15 @@ impl SeaplaneMetadataDelete {
 impl CliCommand for SeaplaneMetadataDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mut len = 0;
+        let mut req = ConfigReq::new(ctx.args.api_key()?)?;
+        #[cfg(feature = "api_tests")]
+        {
+            req.base_url(ctx.base_url.as_deref().unwrap());
+        }
         for kv in ctx.md_ctx.get_mut().unwrap().kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
-            build_config_request_key(&key, ctx.args.api_key()?)?.delete_value()?;
+            req.set_key(key.clone())?;
+            req.delete_value()?;
             if ctx.args.out_format == OutputFormat::Table {
                 cli_println!("Removed {key}");
             }

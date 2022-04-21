@@ -128,6 +128,9 @@ pub struct Ctx {
 
     /// Disable progress bar indicators
     pub disable_pb: bool,
+
+    #[cfg(feature = "api_tests")]
+    pub base_url: Option<String>,
 }
 
 impl Clone for Ctx {
@@ -160,6 +163,8 @@ impl Clone for Ctx {
             db: self.db.clone(),
             internal_run: self.internal_run,
             disable_pb: self.disable_pb,
+            #[cfg(feature = "api_tests")]
+            base_url: self.base_url.clone(),
         }
     }
 }
@@ -176,6 +181,8 @@ impl Default for Ctx {
             db: Db::default(),
             internal_run: false,
             disable_pb: false,
+            #[cfg(feature = "api_tests")]
+            base_url: None,
         }
     }
 }

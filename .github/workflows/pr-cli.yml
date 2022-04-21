@@ -26,3 +26,8 @@ jobs:
 
   call-ui-test-workflow:
     uses: ./.github/workflows/workflow-ui-test.yml
+
+  call-api-test-workflow:
+    uses: ./.github/workflows/workflow-api-test.yml
+    with:
+      manifest_path: ./seaplane-cli/Cargo.toml

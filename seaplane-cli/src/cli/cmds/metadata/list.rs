@@ -2,10 +2,8 @@ use clap::{ArgMatches, Command};
 use seaplane::api::v1::config::{Directory, Key, RangeQueryContext};
 
 use crate::{
-    cli::{
-        cmds::metadata::{build_config_request_dir, common},
-        CliCommand,
-    },
+    api::ConfigReq,
+    cli::{cmds::metadata::common, CliCommand},
     context::{Ctx, MetadataCtx},
     error::Result,
     ops::metadata::KeyValues,
@@ -54,9 +52,13 @@ impl CliCommand for SeaplaneMetadataList {
                 range.set_from(from.clone());
             }
             // Using the KeyValues container makes displaying easy
-            KeyValues::from_model(
-                build_config_request_dir(range, ctx.args.api_key()?)?.get_all_pages()?,
-            )
+            let mut req = ConfigReq::new(ctx.args.api_key()?)?;
+            #[cfg(feature = "api_tests")]
+            {
+                req.base_url(ctx.base_url.as_deref().unwrap());
+            }
+            req.set_dir(range)?;
+            KeyValues::from_model(req.get_all_pages()?)
         };
 
         match ctx.args.out_format {

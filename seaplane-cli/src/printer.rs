@@ -16,7 +16,9 @@ use strum::{EnumString, EnumVariantNames};
 
 use crate::{error::Result, Ctx};
 
+#[cfg_attr(feature = "api_tests", allow(dead_code))]
 static GLOBAL_PRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();
+#[cfg_attr(feature = "api_tests", allow(dead_code))]
 static GLOBAL_EPRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();
 
 pub use self::_printer::{eprinter, printer, Printer};
@@ -127,7 +129,7 @@ pub trait Output {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(all(feature = "color", not(feature = "api_tests")))]
 mod _printer {
     use super::*;
 
@@ -217,7 +219,7 @@ mod _printer {
     }
 }
 
-#[cfg(not(feature = "color"))]
+#[cfg(all(not(feature = "color"), not(feature = "api_tests")))]
 mod _printer {
     use super::*;
 
@@ -267,6 +269,61 @@ mod _printer {
                 StandardStream::Stdout(ref mut s) => s.flush(),
                 StandardStream::Stderr(ref mut s) => s.flush(),
             }
+        }
+    }
+}
+
+#[cfg(feature = "api_tests")]
+mod _printer {
+    use super::*;
+    use std::borrow::Cow;
+
+    static GLOBAL_TEST_PRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();
+    static GLOBAL_TEST_EPRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();
+
+    #[allow(missing_debug_implementations)]
+    pub struct Printer(pub Vec<u8>);
+
+    pub fn printer() -> MutexGuard<'static, Printer> {
+        GLOBAL_TEST_PRINTER
+            .get_or_init(|| Mutex::new(Printer(Vec::new())))
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+    }
+
+    pub fn eprinter() -> MutexGuard<'static, Printer> {
+        GLOBAL_TEST_EPRINTER
+            .get_or_init(|| Mutex::new(Printer(Vec::new())))
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+    }
+
+    impl Printer {
+        pub fn init(_color: ColorChoice) {
+            let _a = printer();
+            let _a = eprinter();
+        }
+
+        pub fn set_color(&mut self, _color: Color) {}
+
+        pub fn reset(&mut self) {}
+
+        pub fn clear(&mut self) {
+            self.0.clear()
+        }
+
+        pub fn as_string(&self) -> Cow<'_, str> {
+            String::from_utf8_lossy(&self.0)
+        }
+    }
+
+    impl io::Write for Printer {
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+            self.0.write(buf)
+        }
+
+        fn flush(&mut self) -> io::Result<()> {
+            Ok(())
         }
     }
 }

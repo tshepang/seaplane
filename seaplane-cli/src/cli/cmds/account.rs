@@ -53,10 +53,15 @@ impl SeaplaneAccountToken {
 
 impl CliCommand for SeaplaneAccountToken {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let t = TokenRequest::builder()
-            .api_key(ctx.args.api_key()?)
-            .build()
-            .map_err(CliError::from)?;
+        #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
+        let mut builder = TokenRequest::builder().api_key(ctx.args.api_key()?);
+
+        #[cfg(feature = "api_tests")]
+        {
+            builder = builder.base_url(ctx.base_url.as_deref().unwrap());
+        }
+
+        let t = builder.build().map_err(CliError::from)?;
 
         if ctx.args.out_format == OutputFormat::Json {
             cli_println!("{}", serde_json::to_string(&t.access_token_json()?)?);

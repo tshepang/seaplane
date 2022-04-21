@@ -5,7 +5,6 @@ mod list;
 mod set;
 
 use clap::{ArgMatches, Command};
-use seaplane::api::v1::config::{ConfigRequest, RangeQueryContext};
 use strum::VariantNames;
 
 pub use self::{
@@ -15,12 +14,7 @@ pub use self::{
     list::SeaplaneMetadataList,
     set::{SeaplaneMetadataSet, SeaplaneMetadataSetArgMatches},
 };
-use crate::{
-    api::request_token_jwt,
-    cli::CliCommand,
-    error::{CliError, Context, Result},
-    printer::OutputFormat,
-};
+use crate::{cli::CliCommand, printer::OutputFormat};
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneMetadata;
@@ -57,28 +51,4 @@ impl CliCommand for SeaplaneMetadata {
             _ => None,
         }
     }
-}
-
-/// Requests an Access token and returns a built ConfigRequest.
-///
-/// The target *must* be URL Safe base64 encoded already
-pub fn build_config_request_key<S: Into<String>>(
-    target: S,
-    api_key: &str,
-) -> Result<ConfigRequest> {
-    ConfigRequest::builder()
-        .token(request_token_jwt(api_key)?)
-        .encoded_key(target)
-        .build()
-        .map_err(CliError::from)
-        .context("Context: failed to build /config endpoint request\n")
-}
-
-pub fn build_config_request_dir(range: RangeQueryContext, api_key: &str) -> Result<ConfigRequest> {
-    ConfigRequest::builder()
-        .token(request_token_jwt(api_key)?)
-        .range(range)
-        .build()
-        .map_err(CliError::from)
-        .context("Context: failed to build /config endpoint request\n")
 }

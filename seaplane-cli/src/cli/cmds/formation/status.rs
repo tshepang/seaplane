@@ -73,6 +73,10 @@ impl CliCommand for SeaplaneFormationStatus {
         let api_key = ctx.args.api_key()?;
 
         let mut req = FormationsReq::new_delay_token(api_key)?;
+        #[cfg(feature = "api_tests")]
+        {
+            req.base_url(ctx.base_url.as_deref().unwrap());
+        }
         for name in names {
             pb.set_message(format!("Gathering {name} container info..."));
             req.set_name(name)?;

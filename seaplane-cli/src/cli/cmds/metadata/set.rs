@@ -3,10 +3,8 @@ use clap::{ArgMatches, Command};
 use seaplane::api::v1::config::Value;
 
 use crate::{
-    cli::{
-        cmds::metadata::{build_config_request_key, common},
-        CliCommand,
-    },
+    api::ConfigReq,
+    cli::{cmds::metadata::common, CliCommand},
     context::{Ctx, MetadataCtx},
     error::Result,
     printer::{Output, OutputFormat},
@@ -36,11 +34,16 @@ impl SeaplaneMetadataSet {
 impl CliCommand for SeaplaneMetadataSet {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mdctx = ctx.md_ctx.get_mut_or_init();
+        let mut req = ConfigReq::new(ctx.args.api_key()?)?;
+        #[cfg(feature = "api_tests")]
+        {
+            req.base_url(ctx.base_url.as_deref().unwrap());
+        }
         for kv in mdctx.kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
             let value = kv.value.as_ref().unwrap().to_string();
-            build_config_request_key(&key, ctx.args.api_key()?)?
-                .put_value(Value::from_encoded(value.clone()))?;
+            req.set_key(&key)?;
+            req.put_value(Value::from_encoded(value.clone()))?;
             if ctx.args.out_format == OutputFormat::Table {
                 cli_println!("Success");
             }

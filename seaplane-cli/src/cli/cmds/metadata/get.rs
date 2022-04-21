@@ -1,10 +1,8 @@
 use clap::{ArgMatches, Command};
 
 use crate::{
-    cli::{
-        cmds::metadata::{build_config_request_key, common},
-        CliCommand,
-    },
+    api::ConfigReq,
+    cli::{cmds::metadata::common, CliCommand},
     context::{Ctx, MetadataCtx},
     error::Result,
     printer::{Output, OutputFormat},
@@ -41,15 +39,17 @@ impl CliCommand for SeaplaneMetadataGet {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let kvs = {
             let mdctx = ctx.md_ctx.get_mut_or_init();
+
+            let mut req = ConfigReq::new(ctx.args.api_key()?)?;
+            #[cfg(feature = "api_tests")]
+            {
+                req.base_url(ctx.base_url.as_deref().unwrap());
+            }
             for kv in mdctx.kvs.iter_mut() {
+                req.set_key(kv.key.as_ref().unwrap().to_string())?;
                 kv.set_value(
                     // The key is already in Base64 so no need to convert
-                    build_config_request_key(
-                        kv.key.as_ref().unwrap().to_string(),
-                        ctx.args.api_key()?,
-                    )?
-                    .get_value()?
-                    .to_string(),
+                    req.get_value()?.to_string(),
                 );
             }
 

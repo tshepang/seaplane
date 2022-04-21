@@ -118,6 +118,10 @@ impl CliCommand for SeaplaneFormationLaunch {
         let api_key = ctx.args.api_key()?;
         let grounded = ctx.formation_ctx.get_or_init().grounded;
         let mut req = FormationsReq::new_delay_token(api_key)?;
+        #[cfg(feature = "api_tests")]
+        {
+            req.base_url(ctx.base_url.as_deref().unwrap());
+        }
         for idx in indices {
             // re unwrap: the indices returned came from Formations so they have to be valid
             let formation = ctx.db.formations.get_formation(idx).unwrap();
