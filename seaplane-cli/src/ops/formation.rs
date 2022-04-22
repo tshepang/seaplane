@@ -874,9 +874,8 @@ impl Output for FormationStatus {
 
     fn print_table(&self, _ctx: &Ctx) -> Result<()> {
         // Chars we'll need: │ ├ ─ └
-        self.status.print_sym();
-
         if !self.configurations.is_empty() {
+            self.status.print_sym();
             cli_print!(" Formation {}: ", self.name);
             self.status.print();
             cli_println!("");
@@ -885,6 +884,16 @@ impl Output for FormationStatus {
             for (i, cfg) in self.configurations.inner.iter().enumerate() {
                 cfg.print_pretty(i == self.configurations.len() - 1)
             }
+        } else {
+            // If we have no configurations to display we assume the Formation is down
+            // We have to make a new status though because we're behind a & reference. Luckily,
+            // we're making an empty status struct so it's cheap.
+            let mut fs = FormationStatus::new(&self.name);
+            fs.status = OpStatus::Down;
+            fs.status.print_sym();
+            cli_print!(" Formation {}: ", fs.name);
+            fs.status.print();
+            cli_println!("");
         }
 
         Ok(())

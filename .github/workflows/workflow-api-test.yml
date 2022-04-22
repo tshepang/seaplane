@@ -31,7 +31,7 @@ jobs:
     - uses: Swatinem/rust-cache@v1
 
     - name: Mock API Tests
-      run: cargo test --features api_tests --manifest-path ${{ inputs.manifest_path }}
+      run: cargo test --features api_tests --manifest-path ${{ inputs.manifest_path }} -- --test-threads=1
 
   api-test-self-hosted:
     name: Mock API Tests
@@ -58,4 +58,4 @@ jobs:
       if: ${{ contains(matrix.os, 'self-hosted') }}
 
     - name: Mock API Tests (${{ matrix.features }})
-      run: cargo test --features ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }}
+      run: cargo test --features ${{ matrix.features }} --manifest-path ${{ inputs.manifest_path }} -- --test-threads=1
