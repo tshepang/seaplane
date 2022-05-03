@@ -345,12 +345,12 @@ mod tests {
     #[test]
     fn test_parse_name() {
         assert_eq!(
-            parse_name("registry.seaplanet.io/seaplane/busybox:latest"),
-            Ok((":latest", "registry.seaplanet.io/seaplane/busybox"))
+            parse_name("registry.cplane.cloud/seaplane/busybox:latest"),
+            Ok((":latest", "registry.cplane.cloud/seaplane/busybox"))
         );
         assert_eq!(
-            parse_name("registry.seaplanet.io/seaplane/busybox@sha256:XXX"),
-            Ok(("@sha256:XXX", "registry.seaplanet.io/seaplane/busybox"))
+            parse_name("registry.cplane.cloud/seaplane/busybox@sha256:XXX"),
+            Ok(("@sha256:XXX", "registry.cplane.cloud/seaplane/busybox"))
         );
     }
 
@@ -426,7 +426,7 @@ mod tests {
             ))
         );
         assert_eq!(validate_domain("docker.io"), Ok(()));
-        assert_eq!(validate_domain("registry.seaplanet.io"), Ok(()));
+        assert_eq!(validate_domain("registry.cplane.cloud"), Ok(()));
         assert_eq!(validate_domain("localhost"), Ok(()));
         assert_eq!(validate_domain("localhost:80"), Ok(()));
     }

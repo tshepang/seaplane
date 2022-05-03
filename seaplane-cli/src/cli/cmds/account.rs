@@ -1,7 +1,7 @@
 use std::io::{self, BufRead};
 
 use clap::{ArgMatches, Command};
-use seaplane::api::{TokenRequest, FLIGHTDECK_API_URL};
+use seaplane::api::TokenRequest;
 
 use crate::{
     cli::CliCommand,
@@ -120,7 +120,7 @@ impl CliCommand for SeaplaneAccountLogin {
         }
         cli_println!("Enter an API key below.");
         cli_print!("(hint: it can be found by visiting ");
-        cli_print!(@Green, "{FLIGHTDECK_API_URL}");
+        cli_print!(@Green, "https://cplane.cloud/");
         cli_println!(")\n");
 
         let stdin = io::stdin();

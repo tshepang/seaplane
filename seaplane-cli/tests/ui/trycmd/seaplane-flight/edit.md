@@ -46,7 +46,7 @@ OPTIONS:
 
 IMAGE SPEC
 
-    NOTE that at this point the only domain supported is `registry.seaplanet.io`. Other registries
+    NOTE that at this point the only domain supported is `registry.cplane.cloud`. Other registries
     may be added in the future.
 
     Valid images can be defined using the grammar
@@ -73,8 +73,8 @@ IMAGE SPEC
 
     EXAMPLES
 
-    registry.seaplanet.io/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
-    registry.seaplanet.io/seaplane/busybox:latest
+    registry.cplane.cloud/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
+    registry.cplane.cloud/seaplane/busybox:latest
 
 ```
 
@@ -123,11 +123,11 @@ OPTIONS:
         --image <SPEC>
             The container image registry reference that this Flight will use (See IMAGE SPEC below)
             
-            All image references using the 'registry.seaplanet.io' registry may omit the domain portions of the
-            image reference as it is implied. For example, 'registry.seaplanet.io/USER/myimage:latest' can be
+            All image references using the 'registry.cplane.cloud' registry may omit the domain portions of the
+            image reference as it is implied. For example, 'registry.cplane.cloud/USER/myimage:latest' can be
             supplied simply as 'USER/myimage:latest'
             
-            NOTE at this time the only registry supported is registry.seaplanet.io. In the future when other
+            NOTE at this time the only registry supported is registry.cplane.cloud. In the future when other
             registries are supported, you must specify the full registry domain and path if using those
             alternate registries in order to properly reference your image.
             
@@ -190,7 +190,7 @@ OPTIONS:
 
 IMAGE SPEC
 
-    NOTE that at this point the only domain supported is `registry.seaplanet.io`. Other registries
+    NOTE that at this point the only domain supported is `registry.cplane.cloud`. Other registries
     may be added in the future.
 
     Valid images can be defined using the grammar
@@ -217,7 +217,7 @@ IMAGE SPEC
 
     EXAMPLES
 
-    registry.seaplanet.io/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
-    registry.seaplanet.io/seaplane/busybox:latest
+    registry.cplane.cloud/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
+    registry.cplane.cloud/seaplane/busybox:latest
 
 ```

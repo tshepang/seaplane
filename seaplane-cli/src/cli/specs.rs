@@ -34,7 +34,7 @@ pub const REGION_SPEC: &str = "REGION SPEC
 
 pub const IMAGE_SPEC: &str = r#"IMAGE SPEC
 
-    NOTE that at this point the only domain supported is `registry.seaplanet.io`. Other registries
+    NOTE that at this point the only domain supported is `registry.cplane.cloud`. Other registries
     may be added in the future.
 
     Valid images can be defined using the grammar
@@ -61,5 +61,5 @@ pub const IMAGE_SPEC: &str = r#"IMAGE SPEC
 
     EXAMPLES
 
-    registry.seaplanet.io/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
-    registry.seaplanet.io/seaplane/busybox:latest"#;
+    registry.cplane.cloud/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
+    registry.cplane.cloud/seaplane/busybox:latest"#;

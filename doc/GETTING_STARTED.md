@@ -75,7 +75,7 @@ Successfully launched remote Formation Instance 'few-actor' with remote Configur
 To see it working:
 
 ```
-$ curl https://few-actor--seaplane-demo.on.seaplanet.io/ | head -n 4
+$ curl https://few-actor--seaplane-demo.on.cplane.cloud/ | head -n 4
 <!DOCTYPE html>
 <html>
 <head>
@@ -303,7 +303,7 @@ appropriate location of the configuration file.
 ```console
 $ seaplane account login
 Enter your API key below.
-(hint: it can be found by visiting https://flightdeck.seaplanet.io/)
+(hint: it can be found by visiting https://cplane.cloud/)
 
 InlifethevisiblesurfaceoftheSpermWhaleisnottheleastamongthemanymarvelshepresents
 Successfully saved the API key!
@@ -591,7 +591,7 @@ If all went according to plan, you should have a container image running and
 addressable from:
 
 ```
-$ curl https://nimble-bike--seaplane-demo.on.seaplanet.io/ | head -n 4
+$ curl https://nimble-bike--seaplane-demo.on.cplane.cloud/ | head -n 4
 <!DOCTYPE html>
 <html>
 <head>
@@ -602,7 +602,7 @@ Yay!
 
 [//]: # (Links)
 
-[Flightdeck]: https://flightdeck.seaplanet.io/
+[Flightdeck]: https://cplane.cloud/
 [Github Releases]: https://github.com/seaplane-io/seaplane/releases
 [TOML]: https://toml.io
 [doc/CONFIGURATION_SPEC.md]: https://github.com/seaplane-io/seaplane/blob/main/doc/CONFIGURATION_SPEC.md

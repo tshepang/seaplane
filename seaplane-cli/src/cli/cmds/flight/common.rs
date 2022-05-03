@@ -6,11 +6,11 @@ use crate::cli::validator::validate_flight_name;
 static LONG_IMAGE: &str =
     "The container image registry reference that this Flight will use (See IMAGE SPEC below)
 
-All image references using the 'registry.seaplanet.io' registry may omit the domain portions of the
-image reference as it is implied. For example, 'registry.seaplanet.io/USER/myimage:latest' can be
+All image references using the 'registry.cplane.cloud' registry may omit the domain portions of the
+image reference as it is implied. For example, 'registry.cplane.cloud/USER/myimage:latest' can be
 supplied simply as 'USER/myimage:latest'
 
-NOTE at this time the only registry supported is registry.seaplanet.io. In the future when other
+NOTE at this time the only registry supported is registry.cplane.cloud. In the future when other
 registries are supported, you must specify the full registry domain and path if using those
 alternate registries in order to properly reference your image.";
 

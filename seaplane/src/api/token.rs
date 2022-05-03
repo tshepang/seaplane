@@ -10,7 +10,7 @@ use reqwest::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    api::FLIGHTDECK_API_URL,
+    api::IDENTITY_API_URL,
     error::{Result, SeaplaneError},
 };
 
@@ -72,7 +72,7 @@ impl TokenRequestBuilder {
         let url = if let Some(url) = self.base_url {
             url.join("token")?
         } else {
-            let mut url: Url = FLIGHTDECK_API_URL.parse()?;
+            let mut url: Url = IDENTITY_API_URL.parse()?;
             url.set_path("token");
             url
         };

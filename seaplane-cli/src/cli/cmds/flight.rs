@@ -26,7 +26,7 @@ use crate::{
 
 pub const FLIGHT_MINIMUM_DEFAULT: u64 = 1;
 
-/// Allows eliding `registry.seaplanet.io` but otherwise just proxies parsing to ImageReference
+/// Allows eliding `registry.cplane.cloud` but otherwise just proxies parsing to ImageReference
 pub fn str_to_image_ref(image_str: &str) -> Result<ImageReference> {
     match image_str.parse::<ImageReference>() {
         Ok(ir) => Ok(ir),

@@ -11,16 +11,16 @@ pub use token::*;
 ///
 /// The compute API handles all things compute such as building `FormationConfiguration`s to
 /// `Flight`s to the underlying Containers.
-pub static COMPUTE_API_URL: &str = "https://compute.seaplanet.io/";
+pub static COMPUTE_API_URL: &str = "https://compute.cplane.cloud/";
 
-/// The base URL for our FlightDeck API endpoints.
+/// The base URL for our Identity API endpoints.
 ///
-/// FlightDeck contains endpoints for things such as Authentication
-pub static FLIGHTDECK_API_URL: &str = "https://flightdeck.seaplanet.io/";
+/// Identity contains endpoints for things such as Authentication
+pub static IDENTITY_API_URL: &str = "https://identity.cplane.cloud/";
 
 /// The OCI registry URL. The `https://` is omitted because that is not part of an OCI registry
 /// reference.
-pub static IMAGE_REGISTRY_URL: &str = "registry.seaplanet.io/";
+pub static IMAGE_REGISTRY_URL: &str = "registry.cplane.cloud/";
 
 /// The base URL for our Metadata endpoints
-pub static METADATA_API_URL: &str = "https://metadata.seaplanet.io/";
+pub static METADATA_API_URL: &str = "https://metadata.cplane.cloud/";

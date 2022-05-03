@@ -59,7 +59,7 @@ fn list_names() {
 // GET /formations/NAME
 #[test]
 fn get_metadata() {
-    let resp_json = json!({"url":"stubb--bar.on.seaplanet.io/"});
+    let resp_json = json!({"url":"stubb--bar.on.cplane.cloud/"});
 
     let mock = MOCK_SERVER.mock(|w, t| {
         when(w, GET, "/v1/formations/stubb").header("content-type", "application/json");
@@ -127,11 +127,11 @@ fn build_configuration() -> FormationConfiguration {
     FormationConfiguration::builder()
         .add_flight(Flight::new(
             "pequod",
-            "registry.seaplanet.io/stubb/alpine:latest",
+            "registry.cplane.cloud/stubb/alpine:latest",
         ))
         .add_flight(Flight::new(
             "flask",
-            "registry.seaplanet.io/stubb/alpine:latest",
+            "registry.cplane.cloud/stubb/alpine:latest",
         ))
         .build()
         .unwrap()
