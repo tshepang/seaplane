@@ -32,6 +32,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use reqwest::Url;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
@@ -49,7 +50,7 @@ pub trait ExtendConfig {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawConfig {
     #[serde(skip)]
     pub loaded_from: Vec<PathBuf>,
@@ -63,6 +64,9 @@ pub struct RawConfig {
 
     #[serde(default)]
     pub account: RawAccountConfig,
+
+    #[serde(default)]
+    pub api: RawApiConfig,
 }
 
 impl RawConfig {
@@ -110,6 +114,15 @@ impl RawConfig {
         }
         if let Some(choice) = new_cfg.seaplane.color {
             self.seaplane.color = Some(choice);
+        }
+        if let Some(url) = new_cfg.api.compute_url {
+            self.api.compute_url = Some(url);
+        }
+        if let Some(url) = new_cfg.api.identity_url {
+            self.api.identity_url = Some(url);
+        }
+        if let Some(url) = new_cfg.api.metadata_url {
+            self.api.metadata_url = Some(url);
         }
         self.loaded_from.extend(new_cfg.loaded_from);
         Ok(())
@@ -163,7 +176,7 @@ impl ToDisk for RawConfig {
 
 #[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawSeaplaneConfig {
     #[serde(default)]
     pub color: Option<ColorChoice>,
@@ -171,10 +184,24 @@ pub struct RawSeaplaneConfig {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawAccountConfig {
     #[serde(default)]
     pub api_key: Option<String>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[cfg_attr(test, derive(PartialEq))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct RawApiConfig {
+    #[serde(default)]
+    pub compute_url: Option<Url>,
+
+    #[serde(default)]
+    pub identity_url: Option<Url>,
+
+    #[serde(default)]
+    pub metadata_url: Option<Url>,
 }
 
 #[cfg(test)]
@@ -211,6 +238,16 @@ mod test {
     }
 
     #[test]
+    fn deser_empty_api_config() {
+        let cfg_str = r#"
+        [api]
+        "#;
+
+        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
+        assert_eq!(cfg, RawConfig::default())
+    }
+
+    #[test]
     fn deser_api_key() {
         let cfg_str = r#"
         [account]
@@ -225,6 +262,7 @@ mod test {
                 found: false,
                 loaded_from: Vec::new(),
                 seaplane: RawSeaplaneConfig::default(),
+                api: RawApiConfig::default(),
                 account: RawAccountConfig {
                     api_key: Some("abc123def456".into())
                 }
@@ -250,6 +288,34 @@ mod test {
                     color: Some(ColorChoice::Always),
                 },
                 account: RawAccountConfig::default(),
+                api: RawApiConfig::default(),
+            }
+        )
+    }
+
+    #[test]
+    fn deser_api_urls() {
+        let cfg_str = r#"
+        [api]
+        compute-url = "https://compute.local/"
+        identity-url = "https://identity.local/"
+        metadata-url = "https://metadata.local/"
+        "#;
+
+        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
+
+        assert_eq!(
+            cfg,
+            RawConfig {
+                found: false,
+                loaded_from: Vec::new(),
+                seaplane: RawSeaplaneConfig::default(),
+                account: RawAccountConfig::default(),
+                api: RawApiConfig {
+                    compute_url: Some("https://compute.local/".parse().unwrap()),
+                    metadata_url: Some("https://metadata.local/".parse().unwrap()),
+                    identity_url: Some("https://identity.local".parse().unwrap()),
+                },
             }
         )
     }

@@ -34,7 +34,7 @@ uuid = { version = "0.8.2", features = ["v4", "serde"] }
 tempfile = "3.3.0"
 base64 = "0.13.0"
 indicatif = "0.16.2"
-reqwest = { version = "0.11.9", features = ["blocking", "json"], optional = true }
+reqwest = { version = "0.11.9", features = ["blocking", "json"]}
 
 [dev-dependencies]
 trycmd = "0.13.3"
@@ -49,7 +49,7 @@ const_format = "0.2.22"
 [features]
 default = ["color"]
 color = ["clap/color", "termcolor", "atty"]
-api_tests = ["seaplane/api_tests", "reqwest"]
+api_tests = ["seaplane/api_tests"]
 semantic_ui_tests = []
 ui_tests = ["semantic_ui_tests"]
 unstable = ["seaplane/unstable"] # Items which are in active development and are totally unstable or unimplemented

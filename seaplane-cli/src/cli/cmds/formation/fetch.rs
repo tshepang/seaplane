@@ -30,12 +30,7 @@ impl CliCommand for SeaplaneFormationFetch {
         let pb = Pb::new(ctx);
         pb.set_message("Gathering Formation Names...");
 
-        let api_key = ctx.args.api_key()?;
-        let mut req = FormationsReq::new_delay_token(api_key)?;
-        #[cfg(feature = "api_tests")]
-        {
-            req.base_url(ctx.base_url.as_deref().unwrap());
-        }
+        let mut req = FormationsReq::new_delay_token(ctx)?;
         if let Some(name) = &ctx.args.name_id {
             req.set_name(name)?;
         }

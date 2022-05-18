@@ -1,4 +1,3 @@
-#[cfg(feature = "api_tests")]
 use reqwest::Url;
 use seaplane::{
     api::{
@@ -16,6 +15,7 @@ use uuid::Uuid;
 
 use crate::{
     api::request_token,
+    context::Ctx,
     error::{CliError, Context, Result},
     ops::formation::{Formation, FormationConfiguration, Formations},
     printer::{Color, Pb},
@@ -29,8 +29,8 @@ pub struct FormationsReq {
     name: Option<String>,
     token: Option<AccessToken>,
     inner: Option<FormationsRequest>,
-    #[cfg(feature = "api_tests")]
-    base_url: Option<Url>,
+    identity_url: Option<Url>,
+    compute_url: Option<Url>,
 }
 
 impl FormationsReq {
@@ -38,8 +38,8 @@ impl FormationsReq {
     ///
     /// If the `name` is `None` it should be noted that the only request that can be made without
     /// error is `FormationsRequest::list_names`
-    pub fn new<S: Into<String>>(api_key: S, name: Option<S>) -> Result<Self> {
-        let mut this = Self::new_delay_token(api_key)?;
+    pub fn new<S: Into<String>>(ctx: &Ctx, name: Option<S>) -> Result<Self> {
+        let mut this = Self::new_delay_token(ctx)?;
         this.name = name.map(Into::into);
         this.refresh_token()?;
         Ok(this)
@@ -48,30 +48,20 @@ impl FormationsReq {
     /// Builds a FormationsRequest but *does not* request an access token using the given API key.
     ///
     /// You must call `refresh_token` to have the access token requested.
-    pub fn new_delay_token<S: Into<String>>(api_key: S) -> Result<Self> {
+    pub fn new_delay_token(ctx: &Ctx) -> Result<Self> {
         Ok(Self {
-            api_key: api_key.into(),
+            api_key: ctx.args.api_key()?.into(),
             name: None,
             token: None,
             inner: None,
-            #[cfg(feature = "api_tests")]
-            base_url: None,
+            identity_url: ctx.identity_url.clone(),
+            compute_url: ctx.compute_url.clone(),
         })
-    }
-
-    #[cfg(feature = "api_tests")]
-    #[cfg_attr(feature = "api_tests", doc(hidden))]
-    pub fn base_url(&mut self, url: impl AsRef<str>) {
-        self.base_url = Some(url.as_ref().parse().unwrap());
     }
 
     /// Request a new Access Token
     pub fn refresh_token(&mut self) -> Result<()> {
-        self.token = Some(request_token(
-            &self.api_key,
-            #[cfg(feature = "api_tests")]
-            self.base_url.as_ref().unwrap(),
-        )?);
+        self.token = Some(request_token(&self.api_key, self.identity_url.as_ref())?);
         Ok(())
     }
 
@@ -80,12 +70,12 @@ impl FormationsReq {
     /// method will also refresh the access token, only if required.
     fn refresh_inner(&mut self) -> Result<()> {
         let mut builder = FormationsRequest::builder().token(self.token_or_refresh()?);
+        if let Some(url) = &self.compute_url {
+            builder = builder.base_url(url);
+        }
+
         if let Some(name) = &self.name {
             builder = builder.name(name);
-        }
-        #[cfg(feature = "api_tests")]
-        {
-            builder = builder.base_url(self.base_url.as_ref().unwrap());
         }
 
         self.inner = Some(builder.build().map_err(CliError::from)?);
@@ -190,11 +180,7 @@ macro_rules! maybe_retry {
             Err(SeaplaneError::FormationsResponse(fr))
                 if fr.kind == FormationsErrorKind::NotLoggedIn =>
             {
-                $this.token = Some(request_token(
-                        &$this.api_key,
-                        #[cfg(feature = "api_tests")]
-                        $this.base_url.as_ref().unwrap()
-                        )?);
+                $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref())?);
                 Ok(req.$fn($( $arg ,)*)?)
             }
             Err(e) => Err(e),

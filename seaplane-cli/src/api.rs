@@ -6,22 +6,15 @@ mod metadata;
 pub use formations::FormationsReq;
 pub use metadata::ConfigReq;
 
+use reqwest::Url;
 use seaplane::api::{AccessToken, TokenRequest};
 
 use crate::error::{CliError, Context, Result};
 
 /// Follows the same process as `request_token` but only returns the raw JWT string part of the
 /// token
-pub fn request_token_jwt(
-    api_key: &str,
-    #[cfg(feature = "api_tests")] base_url: impl AsRef<str>,
-) -> Result<String> {
-    Ok(request_token(
-        api_key,
-        #[cfg(feature = "api_tests")]
-        base_url,
-    )?
-    .token)
+pub fn request_token_jwt(api_key: &str, identity_url: Option<&Url>) -> Result<String> {
+    Ok(request_token(api_key, identity_url)?.token)
 }
 
 /// Makes a request against the `/token` endpoint of FlightDeck using the discovered API key and
@@ -31,16 +24,11 @@ pub fn request_token_jwt(
 /// `token` field contains `iat`, `nbf` and `exp` fields to determine the exact length of time the
 /// token is valid for. However we don't want to introspect the token if possible as it's not
 /// stable)
-pub fn request_token(
-    api_key: &str,
-    #[cfg(feature = "api_tests")] base_url: impl AsRef<str>,
-) -> Result<AccessToken> {
-    #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
+pub fn request_token(api_key: &str, identity_url: Option<&Url>) -> Result<AccessToken> {
     let mut builder = TokenRequest::builder().api_key(api_key);
 
-    #[cfg(feature = "api_tests")]
-    {
-        builder = builder.base_url(base_url);
+    if let Some(url) = identity_url {
+        builder = builder.base_url(url);
     }
 
     builder

@@ -70,13 +70,7 @@ impl CliCommand for SeaplaneFormationStatus {
 
         let mut statuses: Vec<FormationStatus> = Vec::new();
 
-        let api_key = ctx.args.api_key()?;
-
-        let mut req = FormationsReq::new_delay_token(api_key)?;
-        #[cfg(feature = "api_tests")]
-        {
-            req.base_url(ctx.base_url.as_deref().unwrap());
-        }
+        let mut req = FormationsReq::new_delay_token(ctx)?;
         for name in names {
             pb.set_message(format!("Gathering {name} container info..."));
             req.set_name(name)?;

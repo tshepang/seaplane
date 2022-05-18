@@ -53,12 +53,10 @@ impl SeaplaneAccountToken {
 
 impl CliCommand for SeaplaneAccountToken {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
         let mut builder = TokenRequest::builder().api_key(ctx.args.api_key()?);
 
-        #[cfg(feature = "api_tests")]
-        {
-            builder = builder.base_url(ctx.base_url.as_deref().unwrap());
+        if let Some(url) = ctx.identity_url.as_ref() {
+            builder = builder.base_url(url);
         }
 
         let t = builder.build().map_err(CliError::from)?;

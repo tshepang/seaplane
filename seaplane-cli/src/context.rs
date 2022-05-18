@@ -33,6 +33,7 @@ use std::path::{Path, PathBuf};
 
 use clap_complete::Shell;
 use once_cell::unsync::OnceCell;
+use reqwest::Url;
 
 use crate::{
     config::RawConfig,
@@ -129,8 +130,10 @@ pub struct Ctx {
     /// Disable progress bar indicators
     pub disable_pb: bool,
 
-    #[cfg(feature = "api_tests")]
-    pub base_url: Option<String>,
+    /// Set the base URL for the request
+    pub compute_url: Option<Url>,
+    pub identity_url: Option<Url>,
+    pub metadata_url: Option<Url>,
 }
 
 impl Clone for Ctx {
@@ -163,8 +166,9 @@ impl Clone for Ctx {
             db: self.db.clone(),
             internal_run: self.internal_run,
             disable_pb: self.disable_pb,
-            #[cfg(feature = "api_tests")]
-            base_url: self.base_url.clone(),
+            compute_url: self.compute_url.clone(),
+            identity_url: self.identity_url.clone(),
+            metadata_url: self.metadata_url.clone(),
         }
     }
 }
@@ -181,8 +185,9 @@ impl Default for Ctx {
             db: Db::default(),
             internal_run: false,
             disable_pb: false,
-            #[cfg(feature = "api_tests")]
-            base_url: None,
+            compute_url: None,
+            identity_url: None,
+            metadata_url: None,
         }
     }
 }
@@ -199,6 +204,9 @@ impl From<RawConfig> for Ctx {
                 api_key: cfg.account.api_key,
                 ..Default::default()
             },
+            compute_url: cfg.api.compute_url,
+            identity_url: cfg.api.identity_url,
+            metadata_url: cfg.api.metadata_url,
             ..Self::default()
         }
     }

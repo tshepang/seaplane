@@ -32,7 +32,8 @@ fn build_ctx_with_default_formation(local_only: bool) -> Ctx {
     }
 
     let mut ctx = Ctx::default();
-    ctx.base_url = Some(MOCK_SERVER.base_url());
+    ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
+    ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
     ctx.db.formations.formations.push(f);
     ctx.db.formations.configurations.push(fc);
     ctx
@@ -167,7 +168,8 @@ macro_rules! test_fn_land {
             };
 
             let mut ctx = Ctx::default();
-            ctx.base_url = Some(MOCK_SERVER.base_url());
+            ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
+            ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
             ctx.db.formations.formations.push(Formation::new("stubb"));
             let res = test_main_with_ctx(&cli!($argv), ctx);
             assert!(res.is_ok(), "{res:?}");
@@ -229,7 +231,8 @@ macro_rules! test_fn_delete {
             };
 
             let mut ctx = Ctx::default();
-            ctx.base_url = Some(MOCK_SERVER.base_url());
+            ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
+            ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
             ctx.db.formations.formations.push(Formation::new("stubb"));
             let res = test_main_with_ctx(&cli!($argv), ctx);
             assert!(res.is_ok(), "{res:?}");
@@ -525,7 +528,8 @@ The remote Formation Instance URL is https://stubb--bar.on.cplane.cloud/
     }};
     ($argv:expr, should_create = $should_create:expr, remote_instances = $remote_instances:expr, expected_json = $expected_json:expr) => {{
         let mut ctx = Ctx::default();
-        ctx.base_url = Some(MOCK_SERVER.base_url());
+        ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
+        ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
         mock_launch!(@impl
             $expected_json,
             $argv,
@@ -535,8 +539,11 @@ The remote Formation Instance URL is https://stubb--bar.on.cplane.cloud/
         );
     }};
     ($argv:expr, $ctx:expr, should_create = $should_create:expr, remote_instances = $remote_instances:expr) => {{
-        if $ctx.base_url.is_none() {
-            $ctx.base_url = Some(MOCK_SERVER.base_url());
+        if $ctx.compute_url.is_none() {
+            $ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
+        }
+        if $ctx.identity_url.is_none() {
+            $ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
         }
         mock_launch!(@impl
             default_cfg_json(),
@@ -915,7 +922,8 @@ fn ctx_with_remote_id() -> Ctx {
     f.in_air.insert(fc.id);
 
     let mut ctx = Ctx::default();
-    ctx.base_url = Some(MOCK_SERVER.base_url());
+    ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
+    ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
     ctx.db.formations.formations.push(f);
     ctx.db.formations.configurations.push(fc);
     ctx

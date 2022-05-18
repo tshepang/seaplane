@@ -115,9 +115,8 @@ impl ConfigRequestBuilder {
         })
     }
 
-    // Used in testing to manually set the URL
-    #[cfg(feature = "api_tests")]
-    #[cfg_attr(feature = "api_tests", doc(hidden))]
+    // Used in testing and development to manually set the URL
+    #[doc(hidden)]
     pub fn base_url<S: AsRef<str>>(mut self, url: S) -> Self {
         self.base_url = Some(url.as_ref().parse().unwrap());
         self

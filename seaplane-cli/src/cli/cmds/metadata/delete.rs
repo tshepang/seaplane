@@ -25,11 +25,7 @@ impl SeaplaneMetadataDelete {
 impl CliCommand for SeaplaneMetadataDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mut len = 0;
-        let mut req = ConfigReq::new(ctx.args.api_key()?)?;
-        #[cfg(feature = "api_tests")]
-        {
-            req.base_url(ctx.base_url.as_deref().unwrap());
-        }
+        let mut req = ConfigReq::new(ctx)?;
         for kv in ctx.md_ctx.get_mut().unwrap().kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
             req.set_key(key.clone())?;

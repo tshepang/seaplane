@@ -52,11 +52,7 @@ impl CliCommand for SeaplaneMetadataList {
                 range.set_from(from.clone());
             }
             // Using the KeyValues container makes displaying easy
-            let mut req = ConfigReq::new(ctx.args.api_key()?)?;
-            #[cfg(feature = "api_tests")]
-            {
-                req.base_url(ctx.base_url.as_deref().unwrap());
-            }
+            let mut req = ConfigReq::new(ctx)?;
             req.set_dir(range)?;
             KeyValues::from_model(req.get_all_pages()?)
         };

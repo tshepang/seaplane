@@ -33,12 +33,8 @@ impl SeaplaneMetadataSet {
 
 impl CliCommand for SeaplaneMetadataSet {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
+        let mut req = ConfigReq::new(ctx)?;
         let mdctx = ctx.md_ctx.get_mut_or_init();
-        let mut req = ConfigReq::new(ctx.args.api_key()?)?;
-        #[cfg(feature = "api_tests")]
-        {
-            req.base_url(ctx.base_url.as_deref().unwrap());
-        }
         for kv in mdctx.kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
             let value = kv.value.as_ref().unwrap().to_string();

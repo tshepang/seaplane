@@ -64,6 +64,29 @@ such as your Formations and Flights.
 
 The `api-key` field is a string.
 
+### The `[api]` Section
+
+The third section in a `seaplane.toml` is the `[api]` table which contains the
+base URL used to reach each of the resources APIs.
+
+#### The `compute-url` Field
+
+The base URL used for the Compute API.
+
+Default: `https://compute.cplane.cloud/`
+
+#### The `metadata-url` Field
+
+The base URL used for the Metadata Service API.
+
+Default: `https://metadata.cplane.cloud/`
+
+#### The `identity-url` Field
+
+The base URL used for the Identity API.
+
+Default: `https://identity.cplane.cloud/`
+
 [//]: # (links)
 
 [toml]: https://toml.io/

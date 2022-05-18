@@ -1,4 +1,3 @@
-#[cfg(feature = "api_tests")]
 use reqwest::Url;
 use seaplane::{
     api::{
@@ -13,6 +12,7 @@ use seaplane::{
 
 use crate::{
     api::request_token,
+    context::Ctx,
     error::{CliError, Result},
 };
 
@@ -25,27 +25,21 @@ pub struct ConfigReq {
     range: Option<RangeQueryContext>,
     token: Option<AccessToken>,
     inner: Option<ConfigRequest>,
-    #[cfg(feature = "api_tests")]
-    base_url: Option<Url>,
+    identity_url: Option<Url>,
+    metadata_url: Option<Url>,
 }
 
 impl ConfigReq {
-    pub fn new<S: Into<String>>(api_key: S) -> Result<Self> {
+    pub fn new(ctx: &Ctx) -> Result<Self> {
         Ok(Self {
-            api_key: api_key.into(),
+            api_key: ctx.args.api_key()?.into(),
             key: None,
             range: None,
             token: None,
             inner: None,
-            #[cfg(feature = "api_tests")]
-            base_url: None,
+            identity_url: ctx.identity_url.clone(),
+            metadata_url: ctx.identity_url.clone(),
         })
-    }
-
-    #[cfg(feature = "api_tests")]
-    #[cfg_attr(feature = "api_tests", doc(hidden))]
-    pub fn base_url(&mut self, url: impl AsRef<str>) {
-        self.base_url = Some(url.as_ref().parse().unwrap());
     }
 
     pub fn set_key<S: Into<String>>(&mut self, key: S) -> Result<()> {
@@ -62,11 +56,7 @@ impl ConfigReq {
 
     /// Request a new Access Token
     pub fn refresh_token(&mut self) -> Result<()> {
-        self.token = Some(request_token(
-            &self.api_key,
-            #[cfg(feature = "api_tests")]
-            self.base_url.as_ref().unwrap(),
-        )?);
+        self.token = Some(request_token(&self.api_key, self.identity_url.as_ref())?);
         Ok(())
     }
 
@@ -75,9 +65,9 @@ impl ConfigReq {
     /// method will also refresh the access token, only if required.
     fn refresh_inner(&mut self) -> Result<()> {
         let mut builder = ConfigRequest::builder().token(self.token_or_refresh()?);
-        #[cfg(feature = "api_tests")]
-        {
-            builder = builder.base_url(self.base_url.as_ref().unwrap());
+
+        if let Some(url) = &self.metadata_url {
+            builder = builder.base_url(url);
         }
 
         if let Some(key) = &self.key {
@@ -116,11 +106,7 @@ macro_rules! maybe_retry {
             Err(SeaplaneError::ConfigResponse(fr))
                 if fr.kind == ConfigErrorKind::NotLoggedIn =>
             {
-                $this.token = Some(request_token(
-                        &$this.api_key,
-                        #[cfg(feature = "api_tests")]
-                        $this.base_url.as_ref().unwrap()
-                        )?);
+                $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref())?);
                 Ok(req.$fn($( $arg ,)*)?)
             }
             Err(e) => Err(e),

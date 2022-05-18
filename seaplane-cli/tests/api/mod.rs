@@ -4,6 +4,7 @@
 use clap::ArgMatches;
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
+use reqwest::Url;
 use seaplane_cli::{
     cli::{CliCommand, Seaplane},
     context::Ctx,
@@ -26,7 +27,10 @@ mod metadata;
 
 fn test_main(matches: &ArgMatches, url: String) -> Result<(), CliError> {
     let mut ctx = Ctx::default();
-    ctx.base_url = Some(url);
+    let url: Url = url.parse().unwrap();
+    ctx.compute_url = Some(url.clone());
+    ctx.identity_url = Some(url.clone());
+    ctx.metadata_url = Some(url);
     test_main_with_ctx(matches, ctx)
 }
 

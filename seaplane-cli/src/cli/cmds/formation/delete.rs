@@ -105,12 +105,7 @@ impl CliCommand for SeaplaneFormationDelete {
         // First try to delete the remote formation if required, because we don't want to delete
         // the local one too if this fails
         if formation_ctx.remote {
-            let api_key = ctx.args.api_key()?;
-            let mut req = FormationsReq::new_delay_token(api_key)?;
-            #[cfg(feature = "api_tests")]
-            {
-                req.base_url(ctx.base_url.as_deref().unwrap());
-            }
+            let mut req = FormationsReq::new_delay_token(ctx)?;
             for idx in &indices {
                 let formation = ctx.db.formations.get_formation(*idx).unwrap();
                 if let Some(name) = &formation.name {
