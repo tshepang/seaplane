@@ -19,6 +19,7 @@
 #![forbid(unsafe_code)]
 
 pub mod api;
+pub mod base64;
 pub mod error;
 
 /// Allows using the exact same traits derived from these dependencies. If re-exported here, that

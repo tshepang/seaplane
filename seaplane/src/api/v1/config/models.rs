@@ -1,43 +1,7 @@
 use std::fmt;
 
-mod encoded;
-
-use encoded::Base64Encoded;
+use crate::{base64::Base64Encoded, impl_base64};
 use serde::{Deserialize, Serialize};
-
-/// Convenience macro for implementing encode/decode getters/setters for a struct with an inner `Base64Encoded`
-//TODO: Is this actually any more "hidden" than a trait? I'm not sure
-macro_rules! impl_base64 {
-    ($a:ty) => {
-        impl $a {
-            /// Constructs from an unencoded byte array, encoding with URL-safe base64 in the process
-            pub fn from_unencoded(unencoded: impl AsRef<[u8]>) -> Self {
-                Self {
-                    inner: Base64Encoded::from_unencoded(unencoded),
-                }
-            }
-
-            /// Constructs a `Base64Encoded`, assuming the input is already encoded.
-            pub fn from_encoded(encoded: impl Into<String>) -> Self {
-                Self {
-                    inner: Base64Encoded::from_encoded(encoded),
-                }
-            }
-
-            /// Returns the inner string
-            pub fn encoded(&self) -> &str {
-                self.inner.encoded()
-            }
-
-            /// Returns the result of decoding the inner string.
-            /// # Panics
-            /// Will panic if the inner string is not correctly encoded.
-            pub fn decode(&self) -> Vec<u8> {
-                self.inner.decoded()
-            }
-        }
-    };
-}
 
 /// A single key value pair, encoded in url-safe base64.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]

@@ -105,12 +105,12 @@ fn put_value() {
     });
 
     let req = partial_build().encoded_key("Zm9vMQ").build().unwrap();
-    let resp = req.put_value(Value::from_encoded("YmFy")).unwrap();
+    let resp = req.put_value(Value::from_encoded("YmFy"));
 
     // Ensure the endpoint was hit
     mock.assert();
 
-    assert_eq!(resp, ());
+    assert!(resp.is_ok())
 }
 
 // PUT /config/base64:{key}
@@ -124,12 +124,12 @@ fn put_value_unencoded() {
     });
 
     let req = partial_build().encoded_key("Zm9vMg").build().unwrap();
-    let resp = req.put_value_unencoded("bar").unwrap();
+    let resp = req.put_value_unencoded("bar");
 
     // Ensure the endpoint was hit
     mock.assert();
 
-    assert_eq!(resp, ());
+    assert!(resp.is_ok())
 }
 
 // DELETE /config/base64:{key}
@@ -143,10 +143,10 @@ fn delete_value() {
     });
 
     let req = partial_build().encoded_key("Zm9v").build().unwrap();
-    let resp = req.delete_value().unwrap();
+    let resp = req.delete_value();
 
     // Ensure the endpoint was hit
     mock.assert();
 
-    assert_eq!(resp, ());
+    assert!(resp.is_ok())
 }

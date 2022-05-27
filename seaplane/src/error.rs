@@ -4,7 +4,7 @@ use thiserror::Error;
 
 use crate::api::token::TokenError;
 #[cfg(feature = "api_v1")]
-use crate::api::v1::{config::ConfigError, formations::FormationsError};
+use crate::api::v1::{config::ConfigError, formations::FormationsError, locks::LocksError};
 
 pub type Result<T> = std::result::Result<T, SeaplaneError>;
 
@@ -45,11 +45,16 @@ pub enum SeaplaneError {
     #[cfg(feature = "api_v1")]
     #[error("the Formations Compute API returned an error status")]
     FormationsResponse(#[from] FormationsError),
+    #[cfg(feature = "api_v1")]
+    #[error("the Locks API returned an error status")]
+    LocksResponse(#[from] LocksError),
     #[error("the Config Consensus API returned an error status")]
     #[cfg(feature = "api_v1")]
     ConfigResponse(#[from] ConfigError),
     #[error("the Token API returned an error status")]
     TokenResponse(#[from] TokenError),
+    #[error("locks requests must target either a lock by name or a held lock")]
+    IncorrectLocksRequestTarget,
 }
 
 impl From<reqwest::Error> for SeaplaneError {
@@ -83,6 +88,7 @@ impl PartialEq for SeaplaneError {
             ConflictingRequirements => matches!(rhs, ConflictingRequirements),
             MissingConfigKey => matches!(rhs, MissingConfigKey),
             IncorrectConfigRequestTarget => matches!(rhs, IncorrectConfigRequestTarget),
+            IncorrectLocksRequestTarget => matches!(rhs, IncorrectLocksRequestTarget),
             #[cfg(feature = "api_v1")]
             FormationsResponse(fe) => match rhs {
                 FormationsResponse(ofe) => fe == ofe,
@@ -91,6 +97,11 @@ impl PartialEq for SeaplaneError {
             #[cfg(feature = "api_v1")]
             ConfigResponse(ce) => match rhs {
                 ConfigResponse(oce) => ce == oce,
+                _ => false,
+            },
+            #[cfg(feature = "api_v1")]
+            LocksResponse(le) => match rhs {
+                LocksResponse(ole) => le == ole,
                 _ => false,
             },
             TokenResponse(te) => match rhs {

@@ -3,4 +3,5 @@
 
 mod config_requests;
 mod formation_requests;
+mod locks_requests;
 mod token_requests;
