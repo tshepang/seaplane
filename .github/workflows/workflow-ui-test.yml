@@ -26,7 +26,7 @@ jobs:
 #     - uses: Swatinem/rust-cache@v1
 
 #     - name: UI Tests
-#       run: cargo test --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
+#       run: cargo test --features ui_tests --manifest-path ${{ inputs.manifest_path }}
 
   ui-test-self-hosted:
     name: UI Tests
@@ -53,4 +53,4 @@ jobs:
     - uses: Swatinem/rust-cache@v1
 
     - name: UI Tests
-      run: cargo test --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
+      run: cargo test --features ui_tests --manifest-path ${{ inputs.manifest_path }}
