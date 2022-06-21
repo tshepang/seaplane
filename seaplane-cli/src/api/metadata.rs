@@ -1,9 +1,12 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        v1::config::{
-            ConfigErrorKind, ConfigRequest, KeyValue as KeyValueModel,
-            KeyValueRange as KeyValueRangeModel, RangeQueryContext, Value as ValueModel,
+        v1::{
+            config::{
+                ConfigErrorKind, ConfigRequest, KeyValue as KeyValueModel,
+                KeyValueRange as KeyValueRangeModel, Value as ValueModel,
+            },
+            Key, RangeQueryContext,
         },
         AccessToken,
     },
@@ -22,7 +25,7 @@ use crate::{
 pub struct ConfigReq {
     api_key: String,
     key: Option<String>,
-    range: Option<RangeQueryContext>,
+    range: Option<RangeQueryContext<Key>>,
     token: Option<AccessToken>,
     inner: Option<ConfigRequest>,
     identity_url: Option<Url>,
@@ -48,7 +51,7 @@ impl ConfigReq {
         self.refresh_inner()
     }
 
-    pub fn set_dir(&mut self, dir: RangeQueryContext) -> Result<()> {
+    pub fn set_dir(&mut self, dir: RangeQueryContext<Key>) -> Result<()> {
         self.range = Some(dir);
         self.key = None;
         self.refresh_inner()

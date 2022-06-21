@@ -1,5 +1,5 @@
 use clap::{ArgMatches, Command};
-use seaplane::api::v1::config::{Directory, Key, RangeQueryContext};
+use seaplane::api::v1::{config::Key, Directory, RangeQueryContext};
 
 use crate::{
     api::ConfigReq,

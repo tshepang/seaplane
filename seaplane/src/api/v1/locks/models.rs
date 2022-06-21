@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{base64::Base64Encoded, impl_base64};
+use crate::{api::v1::RangeQueryContext, base64::Base64Encoded, impl_base64};
 
 /// A single lock name, encoded in url-safe base64, may not contain `\0` bytes
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
@@ -60,6 +60,7 @@ impl HeldLock {
 pub enum RequestTarget {
     SingleLock(LockName),
     HeldLock(HeldLock),
+    Range(RangeQueryContext<LockName>),
 }
 
 /// Information about an existing held lockn
@@ -76,4 +77,13 @@ pub struct LockInfoInner {
     #[serde(rename = "client-id")]
     pub client_id: String,
     pub ip: String,
+}
+
+/// The response given from a range query
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LockInfoRange {
+    /// A lower bound of the next page of results
+    pub next: Option<LockName>,
+    /// The range of held lock information
+    pub infos: Vec<LockInfo>,
 }

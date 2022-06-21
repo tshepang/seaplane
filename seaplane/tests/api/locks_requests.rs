@@ -1,6 +1,9 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::{HeldLock, LockID, LockInfo, LockInfoInner, LockName, LocksRequestBuilder};
+use seaplane::api::v1::{
+    Directory, HeldLock, LockID, LockInfo, LockInfoInner, LockInfoRange, LockName,
+    LocksRequestBuilder, RangeQueryContext,
+};
 use serde_json::json;
 
 // To be used with httpmock standalone server for dev testing
@@ -109,7 +112,7 @@ fn release_lock() {
 
 // GET /locks/base64:{key}
 #[test]
-fn list_lock() {
+fn list_single_lock() {
     let resp = LockInfo {
         name: LockName::from_encoded("Zm9l"),
         id: LockID::from_encoded("D4lbVpdBE_U"),
@@ -127,6 +130,92 @@ fn list_lock() {
 
     let req = partial_build().encoded_lock_name("Zm9l").build().unwrap();
     let resp_val = req.get_lock_info().unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp_val, resp);
+}
+
+// GET /locks/
+#[test]
+fn get_root_values() {
+    let resp = LockInfoRange {
+        next: None,
+        infos: vec![
+            LockInfo {
+                name: LockName::from_encoded("Zm9l"),
+                id: LockID::from_encoded("D4lbVpdBE_U"),
+                info: LockInfoInner {
+                    ttl: 5,
+                    client_id: "test-client".to_string(),
+                    ip: "192.0.2.137".to_string(),
+                },
+            },
+            LockInfo {
+                name: LockName::from_encoded("Zm9j"),
+                id: LockID::from_encoded("D4lbVpdBF_U"),
+                info: LockInfoInner {
+                    ttl: 10,
+                    client_id: "test-client".to_string(),
+                    ip: "192.0.2.137".to_string(),
+                },
+            },
+        ],
+    };
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/locks/");
+        then(t, json!(resp));
+    });
+
+    let range = RangeQueryContext::new();
+    let req = partial_build().range(range).build().unwrap();
+    let resp_val = req.get_page().unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp_val, resp);
+}
+
+// GET /locks/base64:{dir}/?from=base64:{from_key}
+#[test]
+fn get_dir() {
+    let resp = LockInfoRange {
+        next: None,
+        infos: vec![
+            LockInfo {
+                name: LockName::from_encoded("dGVzdC1kaXIvb25l"),
+                id: LockID::from_encoded("D4lbVpdBE_U"),
+                info: LockInfoInner {
+                    ttl: 5,
+                    client_id: "test-client".to_string(),
+                    ip: "192.0.2.137".to_string(),
+                },
+            },
+            LockInfo {
+                name: LockName::from_encoded("dGVzdC1kaXIvdHdv"),
+                id: LockID::from_encoded("D4lbVpdBF_U"),
+                info: LockInfoInner {
+                    ttl: 10,
+                    client_id: "test-client".to_string(),
+                    ip: "192.0.2.137".to_string(),
+                },
+            },
+        ],
+    };
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/locks/base64:dGVzdC1kaXI/").query_param("from", "base64:dGVzdC1kaXIvbw");
+        then(t, json!(resp));
+    });
+
+    let mut range: RangeQueryContext<LockName> = RangeQueryContext::new();
+    range.set_from(LockName::from_unencoded("test-dir/o"));
+    range.set_directory(Directory::from_unencoded("test-dir"));
+    let req = partial_build().range(range).build().unwrap();
+    let resp_val = req.get_page().unwrap();
 
     // Ensure the endpoint was hit
     mock.assert();

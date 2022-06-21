@@ -18,6 +18,8 @@ use reqwest::{
 pub use error::*;
 pub use models::*;
 
+use super::range_query::RangeQueryContext;
+
 /// A builder struct for creating a [`ConfigRequest`] which will then be used for making a
 /// request against the `/config` APIs
 #[derive(Debug, Default)]
@@ -70,7 +72,7 @@ impl ConfigRequestBuilder {
     ///
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
-    pub fn range(mut self, context: RangeQueryContext) -> Self {
+    pub fn range(mut self, context: RangeQueryContext<Key>) -> Self {
         self.target = Some(RequestTarget::Range(context));
         self
     }

@@ -8,3 +8,6 @@ pub use config::*;
 
 pub mod locks;
 pub use locks::*;
+
+pub mod range_query;
+pub use range_query::*;

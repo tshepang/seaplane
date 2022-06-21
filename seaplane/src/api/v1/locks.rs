@@ -20,6 +20,8 @@ pub use models::*;
 mod error;
 pub use error::*;
 
+use super::RangeQueryContext;
+
 /// A builder struct for creating a [`LocksRequest`] which will then be used for making a
 /// request against the `/locks` APIs
 #[derive(Debug, Default)]
@@ -76,6 +78,15 @@ impl LocksRequestBuilder {
     /// **NOTE:** This is not required for all endpoints
     pub fn held_lock(mut self, lock: HeldLock) -> Self {
         self.target = Some(RequestTarget::HeldLock(lock));
+        self
+    }
+
+    /// The context with which to perform a range query
+    ///
+    /// **NOTE:** This is not required for all endpoints
+    #[must_use]
+    pub fn range(mut self, context: RangeQueryContext<LockName>) -> Self {
+        self.target = Some(RequestTarget::Range(context));
         self
     }
 
@@ -137,7 +148,9 @@ impl LocksRequest {
     // Internal method creating the URL for all single key endpoints
     fn single_lock_url(&self) -> Result<Url> {
         match &self.target {
-            RequestTarget::HeldLock(_) => Err(SeaplaneError::IncorrectLocksRequestTarget),
+            RequestTarget::HeldLock(_) | RequestTarget::Range(_) => {
+                Err(SeaplaneError::IncorrectLocksRequestTarget)
+            }
             RequestTarget::SingleLock(l) => Ok(add_base64_path_segment(
                 self.endpoint_url.clone(),
                 l.encoded(),
@@ -148,7 +161,9 @@ impl LocksRequest {
     // Internal method for creating the URL for held lock endpoints
     fn held_lock_url(&self) -> Result<Url> {
         match &self.target {
-            RequestTarget::SingleLock(_) => Err(SeaplaneError::IncorrectLocksRequestTarget),
+            RequestTarget::SingleLock(_) | RequestTarget::Range(_) => {
+                Err(SeaplaneError::IncorrectLocksRequestTarget)
+            }
 
             RequestTarget::HeldLock(HeldLock { name, id, .. }) => {
                 let mut url = add_base64_path_segment(self.endpoint_url.clone(), name.encoded());
@@ -158,10 +173,36 @@ impl LocksRequest {
         }
     }
 
+    // Internal method for creating the URL for range endpoints
+    fn range_url(&self) -> Result<Url> {
+        match &self.target {
+            RequestTarget::SingleLock(_) | RequestTarget::HeldLock(_) => {
+                Err(SeaplaneError::IncorrectLocksRequestTarget)
+            }
+            RequestTarget::Range(context) => {
+                let mut url = self.endpoint_url.clone();
+
+                if let Some(encoded_dir) = context.directory() {
+                    url = add_base64_path_segment(url, encoded_dir.encoded());
+                    // A directory is distinguished from a key by the trailing slash
+                    url.set_path(&format!("{}/", url.path()));
+                }
+
+                if let Some(from) = context.from() {
+                    url.set_query(Some(&format!("from=base64:{}", from.encoded())));
+                }
+
+                Ok(url)
+            }
+        }
+    }
+
     // Internal method for getting the lock name
     fn lock_name(&self) -> Result<LockName> {
         match &self.target {
-            RequestTarget::HeldLock(_) => Err(SeaplaneError::IncorrectLocksRequestTarget),
+            RequestTarget::HeldLock(_) | RequestTarget::Range(_) => {
+                Err(SeaplaneError::IncorrectLocksRequestTarget)
+            }
             RequestTarget::SingleLock(l) => Ok(l.clone()),
         }
     }
@@ -306,5 +347,97 @@ impl LocksRequest {
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
 
         map_error(resp)?.json::<LockInfo>().map_err(Into::into)
+    }
+
+    /// Returns a single page of lock information for the given directory, beginning with the `from` key.
+    ///
+    /// If no directory is given, the root directory is used.
+    /// If no `from` is given, the range begins from the start.
+    ///
+    /// If more pages are desired, perform another range request using the `next` value from the first request
+    /// as the `from` value of the following request, or use `get_all_pages`.
+    ///
+    /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
+    /// # Examples
+    /// ```no_run
+    /// use seaplane::api::v1::{LocksRequestBuilder, LocksRequest, RangeQueryContext, LockName};
+    ///
+    /// let root_dir_range: RangeQueryContext<LockName> = RangeQueryContext::new();
+    ///
+    /// let req = LocksRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .range(root_dir_range)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.get_page().unwrap();
+    ///
+    /// if let Some(next_key) = resp.next {
+    ///     let mut next_page_range = RangeQueryContext::new();
+    ///     next_page_range.set_from(next_key);
+    ///     
+    ///     let req = LocksRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .range(next_page_range)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    ///     let next_page_resp = req.get_page().unwrap();
+    ///     dbg!(next_page_resp);
+    /// }
+    /// ```
+    pub fn get_page(&self) -> Result<LockInfoRange> {
+        match &self.target {
+            RequestTarget::SingleLock(_) | RequestTarget::HeldLock(_) => {
+                Err(SeaplaneError::IncorrectLocksRequestTarget)
+            }
+            RequestTarget::Range(_) => {
+                let url = self.range_url()?;
+
+                let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+                map_error(resp)?.json::<LockInfoRange>().map_err(Into::into)
+            }
+        }
+    }
+
+    /// Returns all held lock information for the given directory, from the `from` key onwards. May perform multiple requests.
+    ///
+    /// If no directory is given, the root directory is used.
+    /// If no `from` is given, the range begins from the start.
+    ///
+    /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
+    /// # Examples
+    /// ```no_run
+    /// use seaplane::api::v1::{LocksRequestBuilder, LocksRequest, RangeQueryContext};
+    ///
+    /// let root_dir_range = RangeQueryContext::new();
+    ///
+    /// let mut req = LocksRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .range(root_dir_range)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.get_all_pages().unwrap();
+    /// dbg!(resp);
+    /// ```
+    //TODO: Replace this with a collect on a Pages/Entries iterator
+    pub fn get_all_pages(&mut self) -> Result<Vec<LockInfo>> {
+        let mut pages = Vec::new();
+        loop {
+            let mut lir = self.get_page()?;
+            pages.append(&mut lir.infos);
+            if let Some(next_key) = lir.next {
+                // TODO: Regrettable duplication here suggests that there should be a ConfigKeyRequest and a ConfigRangeRequest
+                if let RequestTarget::Range(ref mut context) = self.target {
+                    context.set_from(next_key);
+                } else {
+                    return Err(SeaplaneError::IncorrectLocksRequestTarget);
+                }
+            } else {
+                break;
+            }
+        }
+        Ok(pages)
     }
 }

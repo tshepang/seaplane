@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{base64::Base64Encoded, impl_base64};
+use crate::{api::v1::range_query::RangeQueryContext, base64::Base64Encoded, impl_base64};
 use serde::{Deserialize, Serialize};
 
 /// A single key value pair, encoded in url-safe base64.
@@ -56,52 +56,11 @@ impl fmt::Display for Value {
     }
 }
 
-/// The directory from which to perform a given range query, excluding the trailing slash, encoded in url-safe base64
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Directory {
-    inner: Base64Encoded,
-}
-impl_base64!(Directory);
-
-/// The full context with which to perform a range query
-#[derive(Debug, PartialEq, Eq, Default, Clone)]
-pub struct RangeQueryContext {
-    /// The directory, if any, within which to perform the range query.
-    dir: Option<Directory>,
-    /// The lower bound on the page of results to return.
-    from: Option<Key>,
-}
-
-impl RangeQueryContext {
-    /// Creates a blank context, suitable for querying the root directory at the first available key
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Set the directory within which to perform the query
-    pub fn set_directory(&mut self, dir: Directory) {
-        self.dir = Some(dir);
-    }
-
-    /// Set the key to use when beginning the next page of the query
-    pub fn set_from(&mut self, next_key: Key) {
-        self.from = Some(next_key);
-    }
-
-    pub fn directory(&self) -> &Option<Directory> {
-        &self.dir
-    }
-
-    pub fn from(&self) -> &Option<Key> {
-        &self.from
-    }
-}
-
 /// The target of a request, representing either a single key or a range of keys.
 #[derive(Debug, PartialEq, Eq)]
 pub enum RequestTarget {
     Key(Key),
-    Range(RangeQueryContext),
+    Range(RangeQueryContext<Key>),
 }
 
 /// The response given from a range query

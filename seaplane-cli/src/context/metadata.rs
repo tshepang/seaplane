@@ -3,7 +3,7 @@ use std::{
     io::{self, Read},
 };
 
-use seaplane::api::v1::config::{Directory, Key};
+use seaplane::api::v1::{config::Key, Directory};
 use strum::{EnumString, EnumVariantNames};
 
 use crate::{
