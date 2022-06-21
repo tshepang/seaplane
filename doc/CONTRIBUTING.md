@@ -45,6 +45,70 @@ Our Github Continuous Integration (CI) testing will ensure everything is working
 save time waiting for the CI servers to process the PR it can help to ensure all the tests work on
 your local machine first.
 
+Keep in mind that our tool ships on several operating systems, and system architectures so if you
+have the ability to test in those environments as well that's wonderful! However, if you don't
+that's no problem; ensuring the tests pass on your local machine is a great starting place where we
+can let the CI servers test across the matrix of Operating Systems and Architectures.
+
+The full support matrix can be found in the [doc/ARCHITECTURE.md][architecture] file of this
+repository.
+
+There are two ways to run our tests, either using `just` (recommended) or manually.
+
+#### Local Tests Using [`just`](https://github.com/casey/just)
+
+If you have `just` you can run a test suite that mimics much of our CI, but locally and only for
+your native architecture.
+
+To run the full test suite use:
+
+```
+$ just ci
+```
+
+If your PR only affects the CLI, or the SDK there are recipes to run the test suites for only those
+components. 
+
+```
+$ just cli-ci
+  .. run CLI test suite
+
+$ just sdk-ci
+  .. run SDK test suite
+```
+
+All of these run the full gamut of tests, even doc tests, clippy, and rustfmt. Other recipes exist
+for smaller or more targeted operations. 
+
+To see the full list of recipes use `just` by itself:
+
+```
+$ just
+Available recipes:
+    audit                          # Run cargo-audit to scan for vulnerable crates
+    ci                             # Run the full CI suite (only runs for your native os/arch!)
+    cli-ci                         # Run the CI suite for the CLI (only runs for your native os/arch!)
+    clippy CRATE='' FEATURES=''    # Run clippy and with warnings denied
+    git-shortsha                   # Get the short SHA commit for HEAD
+    rustfmt CRATE='seaplane'       # Format code using rustfmt
+    rustfmt-check CRATE='seaplane' # Check if rustfmt would make changes
+    sdk-ci                         # Run the CI suite for the SDK (only runs for your native os/arch!)
+    setup                          # Install all needed components and tools
+    test-api CRATE='seaplane'      # Run API tests using a mock HTTP server
+    test-docs CRATE='seaplane'     # Ensure documentation builds
+    test-ui                        # Run UI tests
+    update-licenses                # Update all third party licenses
+```
+
+If you've made changes to any of the `Cargo.toml` files it's probably a good idea to also update
+the third party licenses by:
+
+```
+$ just update-licenses
+```
+
+#### Local Tests (manually)
+
 To run local tests:
 
 ```sh
@@ -66,14 +130,6 @@ If your changes affect the output, or CLI you should also run the UI tests with:
 $ cargo test --features ui_tests
 [.. snip ..]
 ```
-
-Keep in mind that our tool ships on several operating systems, and system architectures so if you
-have the ability to test in those environments as well that's wonderful! However, if you don't
-that's no problem; ensuring the tests pass on your local machine is a great starting place where we
-can let the CI servers test across the matrix of Operating Systems and Architectures.
-
-The full support matrix can be found in the [doc/ARCHITECTURE.md][architecture] file of this
-repository.
 
 ### Our Merge Strategy
 
