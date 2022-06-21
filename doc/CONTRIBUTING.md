@@ -56,7 +56,7 @@ If your changes affect the Seaplane library and it's use of the Seaplane APIs yo
 the API tests with:
 
 ```sh
-$ cargo test --features api_tests
+$ cargo test --features api_tests -- --test-threads=1
 [.. snip ..]
 ```
 
