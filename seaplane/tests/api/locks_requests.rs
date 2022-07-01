@@ -1,13 +1,14 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
 use seaplane::api::v1::{
-    Directory, HeldLock, LockID, LockInfo, LockInfoInner, LockInfoRange, LockName,
+    Directory, HeldLock, LockId, LockInfo, LockInfoInner, LockInfoRange, LockName,
     LocksRequestBuilder, RangeQueryContext,
 };
 use serde_json::json;
 
 // To be used with httpmock standalone server for dev testing
 // MockServer::connect("127.0.0.1:5000")
+// static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::connect("127.0.0.1:5000"));
 static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
 
 fn when(when: When, m: Method, p: &str) -> When {
@@ -38,7 +39,7 @@ fn partial_build() -> LocksRequestBuilder {
 fn acquire_lock() {
     let resp = HeldLock::new(
         LockName::from_encoded("Zm9v"),
-        LockID::from_encoded("D4lbVpdBE_U"),
+        LockId::from_encoded("D4lbVpdBE_U"),
         2,
     );
 
@@ -72,7 +73,7 @@ fn renew_lock() {
 
     let lock = HeldLock::new(
         LockName::from_encoded("Zm9j"),
-        LockID::from_encoded("D4lbVpdBE_U"),
+        LockId::from_encoded("D4lbVpdBE_U"),
         2,
     );
 
@@ -97,7 +98,7 @@ fn release_lock() {
 
     let lock = HeldLock::new(
         LockName::from_encoded("Zm9k"),
-        LockID::from_encoded("D4lbVpdBE_U"),
+        LockId::from_encoded("D4lbVpdBE_U"),
         2,
     );
 
@@ -115,7 +116,7 @@ fn release_lock() {
 fn list_single_lock() {
     let resp = LockInfo {
         name: LockName::from_encoded("Zm9l"),
-        id: LockID::from_encoded("D4lbVpdBE_U"),
+        id: LockId::from_encoded("D4lbVpdBE_U"),
         info: LockInfoInner {
             ttl: 5,
             client_id: "test-client".to_string(),
@@ -145,7 +146,7 @@ fn get_root_values() {
         infos: vec![
             LockInfo {
                 name: LockName::from_encoded("Zm9l"),
-                id: LockID::from_encoded("D4lbVpdBE_U"),
+                id: LockId::from_encoded("D4lbVpdBE_U"),
                 info: LockInfoInner {
                     ttl: 5,
                     client_id: "test-client".to_string(),
@@ -154,7 +155,7 @@ fn get_root_values() {
             },
             LockInfo {
                 name: LockName::from_encoded("Zm9j"),
-                id: LockID::from_encoded("D4lbVpdBF_U"),
+                id: LockId::from_encoded("D4lbVpdBF_U"),
                 info: LockInfoInner {
                     ttl: 10,
                     client_id: "test-client".to_string(),
@@ -187,7 +188,7 @@ fn get_dir() {
         infos: vec![
             LockInfo {
                 name: LockName::from_encoded("dGVzdC1kaXIvb25l"),
-                id: LockID::from_encoded("D4lbVpdBE_U"),
+                id: LockId::from_encoded("D4lbVpdBE_U"),
                 info: LockInfoInner {
                     ttl: 5,
                     client_id: "test-client".to_string(),
@@ -196,7 +197,7 @@ fn get_dir() {
             },
             LockInfo {
                 name: LockName::from_encoded("dGVzdC1kaXIvdHdv"),
-                id: LockID::from_encoded("D4lbVpdBF_U"),
+                id: LockId::from_encoded("D4lbVpdBF_U"),
                 info: LockInfoInner {
                     ttl: 10,
                     client_id: "test-client".to_string(),

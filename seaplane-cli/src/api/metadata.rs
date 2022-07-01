@@ -41,7 +41,7 @@ impl ConfigReq {
             token: None,
             inner: None,
             identity_url: ctx.identity_url.clone(),
-            metadata_url: ctx.identity_url.clone(),
+            metadata_url: ctx.metadata_url.clone(),
         })
     }
 
@@ -63,9 +63,9 @@ impl ConfigReq {
         Ok(())
     }
 
-    /// Re-build the inner `ConfigRequest`. This is mostly useful when one wants to point at a
-    /// different Formation than the original request was pointed at (i.e. via `set_name`). This
-    /// method will also refresh the access token, only if required.
+    /// Re-build the inner `ConfigRequest`. This is mostly useful when one wants to point at
+    /// different Metadata than the original request was pointed at. This method will also refresh
+    /// the access token, only if required.
     fn refresh_inner(&mut self) -> Result<()> {
         let mut builder = ConfigRequest::builder().token(self.token_or_refresh()?);
 

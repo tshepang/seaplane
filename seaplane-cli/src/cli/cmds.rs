@@ -8,6 +8,7 @@ pub mod formation;
 mod image;
 mod init;
 mod license;
+pub mod locks;
 pub mod metadata;
 
 pub use self::{
@@ -17,6 +18,7 @@ pub use self::{
     formation::{Provider, Region, SeaplaneFormation},
     init::SeaplaneInit,
     license::SeaplaneLicense,
+    locks::SeaplaneLocks,
     metadata::SeaplaneMetadata,
 };
 #[cfg(feature = "unstable")]

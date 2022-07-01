@@ -7,6 +7,7 @@ use super::test_main;
 
 // To be used with httpmock standalone server for dev testing
 // MockServer::connect("127.0.0.1:5000")
+// static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::connect("127.0.0.1:5000"));
 static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
 
 #[test]

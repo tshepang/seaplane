@@ -1,8 +1,10 @@
 //! This module provides types that wrap the API endpoint models and add additional fields/context
 //! that is only relevant for the CLI or purposes of consuming the API.
 
+pub mod encoded_string;
 pub mod flight;
 pub mod formation;
+pub mod locks;
 pub mod metadata;
 
 use std::fmt;
@@ -10,6 +12,7 @@ use std::fmt;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
+pub use self::encoded_string::{DisplayEncodingFormat, EncodedString};
 use crate::cli::validator::{validate_flight_name, validate_formation_name};
 
 pub fn generate_flight_name() -> String {

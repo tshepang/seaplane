@@ -1,9 +1,11 @@
 //! Wrapping seaplane SDK calls with things like CLI specific contexts, errors, etc.
 
 mod formations;
+mod locks;
 mod metadata;
 
 pub use formations::FormationsReq;
+pub use locks::LocksReq;
 pub use metadata::ConfigReq;
 
 use reqwest::Url;

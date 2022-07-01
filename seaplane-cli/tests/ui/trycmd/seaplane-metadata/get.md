@@ -90,7 +90,7 @@ OPTIONS:
             simple => No encoding, just display as is
             utf8   => Lossily encode to UTF-8. Invalid UTF-8 sequences will be converted to U+FFFD REPLACEMENT
                       CHARACTER which looks like this �
-            hex    => Raw bytes will hex encoded and displayed as text
+            hex    => Raw bytes will be hex encoded and displayed as text
             
             [default: simple]
             [possible values: simple, utf8, hex]

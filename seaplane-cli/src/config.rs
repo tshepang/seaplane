@@ -124,6 +124,9 @@ impl RawConfig {
         if let Some(url) = new_cfg.api.metadata_url {
             self.api.metadata_url = Some(url);
         }
+        if let Some(url) = new_cfg.api.locks_url {
+            self.api.locks_url = Some(url);
+        }
         self.loaded_from.extend(new_cfg.loaded_from);
         Ok(())
     }
@@ -202,6 +205,9 @@ pub struct RawApiConfig {
 
     #[serde(default)]
     pub metadata_url: Option<Url>,
+
+    #[serde(default)]
+    pub locks_url: Option<Url>,
 }
 
 #[cfg(test)]
@@ -300,6 +306,7 @@ mod test {
         compute-url = "https://compute.local/"
         identity-url = "https://identity.local/"
         metadata-url = "https://metadata.local/"
+        locks-url = "https://locks.local/"
         "#;
 
         let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
@@ -313,8 +320,9 @@ mod test {
                 account: RawAccountConfig::default(),
                 api: RawApiConfig {
                     compute_url: Some("https://compute.local/".parse().unwrap()),
+                    identity_url: Some("https://identity.local/".parse().unwrap()),
                     metadata_url: Some("https://metadata.local/".parse().unwrap()),
-                    identity_url: Some("https://identity.local".parse().unwrap()),
+                    locks_url: Some("https://locks.local/".parse().unwrap()),
                 },
             }
         )

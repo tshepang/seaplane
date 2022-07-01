@@ -29,7 +29,7 @@ impl SeaplaneFlightCopy {
             .override_usage(
                 "seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
     seaplane flight copy <NAME|ID> [OPTIONS]",
-            )
+            ) // TODO: DEST_NAME is never used?!
             .arg(
                 arg!(name_id =["NAME|ID"] required)
                     .validator(validator)

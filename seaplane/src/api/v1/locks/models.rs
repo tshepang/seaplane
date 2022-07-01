@@ -11,18 +11,18 @@ pub struct LockName {
 impl_base64!(LockName);
 
 /// An ID to a held lock instance
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct LockID {
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct LockId {
     inner: Base64Encoded,
 }
-impl_base64!(LockID);
+impl_base64!(LockId);
 
 /// A lock that at some point was held by this client.
 /// At any point this may have lapsed.
 #[derive(Debug, Serialize, PartialEq, Eq)]
 pub struct HeldLock {
     pub(crate) name: LockName,
-    pub(crate) id: LockID,
+    pub(crate) id: LockId,
     pub(crate) sequencer: u32,
 }
 
@@ -33,7 +33,7 @@ impl HeldLock {
     }
 
     /// Get a reference to the held lock's id.
-    pub fn id(&self) -> &LockID {
+    pub fn id(&self) -> &LockId {
         &self.id
     }
 
@@ -42,9 +42,7 @@ impl HeldLock {
         self.sequencer
     }
 
-    /// Used in testing for mapping responses
-    #[cfg(feature = "api_tests")]
-    pub fn new(name: LockName, id: LockID, sequencer: u32) -> HeldLock {
+    pub fn new(name: LockName, id: LockId, sequencer: u32) -> HeldLock {
         HeldLock {
             name,
             id,
@@ -63,11 +61,11 @@ pub enum RequestTarget {
     Range(RangeQueryContext<LockName>),
 }
 
-/// Information about an existing held lockn
+/// Information about an existing held lock
 #[derive(Deserialize, Serialize, Debug, PartialEq, Eq)]
 pub struct LockInfo {
     pub name: LockName,
-    pub id: LockID,
+    pub id: LockId,
     pub info: LockInfoInner,
 }
 

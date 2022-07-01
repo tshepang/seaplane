@@ -76,6 +76,7 @@ impl LocksRequestBuilder {
     /// The held lock with which to perform held lock operations.
     ///
     /// **NOTE:** This is not required for all endpoints
+    #[must_use]
     pub fn held_lock(mut self, lock: HeldLock) -> Self {
         self.target = Some(RequestTarget::HeldLock(lock));
         self
@@ -145,7 +146,7 @@ impl LocksRequest {
         LocksRequestBuilder::new()
     }
 
-    // Internal method creating the URL for all single key endpoints
+    // Internal method creating the URL for all single lock endpoints
     fn single_lock_url(&self) -> Result<Url> {
         match &self.target {
             RequestTarget::HeldLock(_) | RequestTarget::Range(_) => {
@@ -225,15 +226,14 @@ impl LocksRequest {
     /// let resp = req.acquire(15, "test-client").unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn acquire(self, ttl: u32, client_id: &str) -> Result<HeldLock> {
+    pub fn acquire(&self, ttl: u32, client_id: &str) -> Result<HeldLock> {
         let mut url = self.single_lock_url()?;
-
         url.set_query(Some(&format!("ttl={ttl}&client-id={client_id}")));
         let resp = self.client.put(url).bearer_auth(&self.token).send()?;
 
         #[derive(Deserialize)]
         struct AcquireResponse {
-            id: LockID,
+            id: LockId,
             sequencer: u32,
         }
 
@@ -274,7 +274,7 @@ impl LocksRequest {
     /// let resp = release_req.release().unwrap();
     /// dbg!(resp)
     /// ```
-    pub fn release(self) -> Result<()> {
+    pub fn release(&self) -> Result<()> {
         let url = self.held_lock_url()?;
 
         let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
@@ -311,7 +311,7 @@ impl LocksRequest {
     /// let resp = renew_req.renew(20).unwrap();
     /// dbg!(resp)
     /// ```
-    pub fn renew(self, ttl: u32) -> Result<()> {
+    pub fn renew(&self, ttl: u32) -> Result<()> {
         let mut url = self.held_lock_url()?;
 
         url.query_pairs_mut().append_pair("ttl", &ttl.to_string());
@@ -341,7 +341,7 @@ impl LocksRequest {
     /// let resp = req.get_lock_info().unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn get_lock_info(self) -> Result<LockInfo> {
+    pub fn get_lock_info(&self) -> Result<LockInfo> {
         let url = self.single_lock_url()?;
 
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
@@ -375,7 +375,7 @@ impl LocksRequest {
     /// if let Some(next_key) = resp.next {
     ///     let mut next_page_range = RangeQueryContext::new();
     ///     next_page_range.set_from(next_key);
-    ///     
+    ///
     ///     let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
     ///     .range(next_page_range)

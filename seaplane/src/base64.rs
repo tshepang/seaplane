@@ -86,11 +86,11 @@ impl Base64Encoded {
     }
 }
 
-/// Adds a path segment to endpoint_url in the form "base64:{key}", assumes the path ends in /
+/// Adds a path segment to endpoint_url in the form "base64:{value}", assumes the path ends in /
 // Needed as Url::join parses the new ending as a URL, and thus treats "base64" as a scheme.
 // There might be a good reason it parses it though
-pub fn add_base64_path_segment<S: AsRef<str>>(mut url: Url, key: S) -> Url {
-    let new_path = format!("{}base64:{}", url.path(), key.as_ref());
+pub fn add_base64_path_segment<S: AsRef<str>>(mut url: Url, value: S) -> Url {
+    let new_path = format!("{}base64:{}", url.path(), value.as_ref());
     url.set_path(&new_path);
     url
 }

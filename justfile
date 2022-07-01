@@ -62,7 +62,7 @@ _sign $AC_PASSWORD SIGNER='${USER}': _install-gon
 
 _test CRATE='seaplane' FEATURES='' $RUSTFLAGS='-D warnings':
 	cargo test {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml  --no-run
-	{{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml 
+	{{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
 
 # Run cargo-audit to scan for vulnerable crates
 audit: (_cargo-install 'cargo-audit')
@@ -70,7 +70,7 @@ audit: (_cargo-install 'cargo-audit')
 
 # Ensure documentation builds
 test-docs CRATE='seaplane' $RUSTDOCFLAGS="-D warnings":
-    cargo doc --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --no-deps --all-features --document-private-items 
+    cargo doc --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --no-deps --all-features --document-private-items
 
 # Run UI tests
 test-ui $RUSTFLAGS='-D warnings':
@@ -97,6 +97,13 @@ test-api CRATE='seaplane' $RUSTFLAGS='-D warnings':
 	{{ TEST_RUNNER }}  --features api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --test-threads=1
 	cargo test --no-run  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
 	{{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --test-threads=1
+
+# Run cli-API tests using a mock HTTP server
+test-cli-api:
+	{{ TEST_RUNNER }} --features api_tests --test-threads=1
+
+test-cli-locks:
+	{{ TEST_RUNNER }} locks_list --features api_tests --no-capture -- --exact --test-threads=1
 
 # Update all third party licenses
 update-licenses: (_cargo-install 'cargo-lichking')

@@ -411,7 +411,7 @@ macro_rules! arg {
     };
 }
 
-/// Shorthand for checking if an argument in the key-value commands was base64 or not, and doing
+/// Shorthand for checking if an argument in the CLI commands was base64 or not, and doing
 /// the conversion if necessary
 macro_rules! maybe_base64_arg {
     ($m:expr, $arg:expr, $is_base64:expr) => {

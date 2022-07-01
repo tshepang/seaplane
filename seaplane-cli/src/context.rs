@@ -28,6 +28,8 @@ pub mod formation;
 pub use formation::{FormationCfgCtx, FormationCtx};
 pub mod metadata;
 pub use metadata::MetadataCtx;
+pub mod locks;
+pub use locks::LocksCtx;
 
 use std::path::{Path, PathBuf};
 
@@ -115,6 +117,9 @@ pub struct Ctx {
     /// Context relate to exclusively to key-value operations and commands
     pub md_ctx: LateInit<MetadataCtx>,
 
+    /// Context relate to exclusively to Locks operations and commands
+    pub locks_ctx: LateInit<LocksCtx>,
+
     /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
 
@@ -134,6 +139,7 @@ pub struct Ctx {
     pub compute_url: Option<Url>,
     pub identity_url: Option<Url>,
     pub metadata_url: Option<Url>,
+    pub locks_url: Option<Url>,
 }
 
 impl Clone for Ctx {
@@ -161,6 +167,13 @@ impl Clone for Ctx {
             } else {
                 LateInit::default()
             },
+            locks_ctx: if self.locks_ctx.get().is_some() {
+                let li = LateInit::default();
+                li.init(self.locks_ctx.get().cloned().unwrap());
+                li
+            } else {
+                LateInit::default()
+            },
             conf_files: self.conf_files.clone(),
             args: self.args.clone(),
             db: self.db.clone(),
@@ -169,6 +182,7 @@ impl Clone for Ctx {
             compute_url: self.compute_url.clone(),
             identity_url: self.identity_url.clone(),
             metadata_url: self.metadata_url.clone(),
+            locks_url: self.locks_url.clone(),
         }
     }
 }
@@ -180,6 +194,7 @@ impl Default for Ctx {
             flight_ctx: LateInit::default(),
             formation_ctx: LateInit::default(),
             md_ctx: LateInit::default(),
+            locks_ctx: LateInit::default(),
             conf_files: Vec::new(),
             args: Args::default(),
             db: Db::default(),
@@ -188,6 +203,7 @@ impl Default for Ctx {
             compute_url: None,
             identity_url: None,
             metadata_url: None,
+            locks_url: None,
         }
     }
 }
@@ -207,6 +223,7 @@ impl From<RawConfig> for Ctx {
             compute_url: cfg.api.compute_url,
             identity_url: cfg.api.identity_url,
             metadata_url: cfg.api.metadata_url,
+            locks_url: cfg.api.locks_url,
             ..Self::default()
         }
     }

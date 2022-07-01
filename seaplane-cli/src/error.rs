@@ -426,6 +426,9 @@ impl CliErrorKind {
                 SeaplaneError::ConfigResponse(cr) => {
                     cli_eprintln!("{cr}")
                 }
+                SeaplaneError::LocksResponse(lr) => {
+                    cli_eprintln!("{lr}")
+                }
                 _ => {
                     cli_eprintln!("seaplane API: {e}")
                 }

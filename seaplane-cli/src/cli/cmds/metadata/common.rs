@@ -1,7 +1,7 @@
 use clap::{Arg, ArgMatches};
 use strum::VariantNames;
 
-use crate::context::metadata::DisplayEncodingFormat;
+use crate::ops::DisplayEncodingFormat;
 
 const LONG_DECODE: &str = "Decode the keys and values before printing them
 
@@ -25,12 +25,13 @@ format by omitting `--decode` (or use `--no-decode`)
 simple => No encoding, just display as is
 utf8   => Lossily encode to UTF-8. Invalid UTF-8 sequences will be converted to U+FFFD REPLACEMENT
           CHARACTER which looks like this \u{FFFD}
-hex    => Raw bytes will hex encoded and displayed as text";
+hex    => Raw bytes will be hex encoded and displayed as text";
 
 /// A newtype wrapper to enforce where the ArgMatches came from which reduces errors in checking if
 /// values of arguments were used or not. i.e. `seaplane formation create` may not have the same
 /// arguments as `seaplane account token` even though both produce an `ArgMatches`.
 #[allow(missing_debug_implementations)]
+#[derive(Debug)]
 pub struct SeaplaneMetadataCommonArgMatches<'a>(pub &'a ArgMatches);
 
 pub fn args() -> Vec<Arg<'static>> {

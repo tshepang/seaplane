@@ -11,7 +11,7 @@ use crate::{
 };
 
 static LONG_ABOUT: &str = "List one or more metadata key-value pairs
-    
+
 Keys and values will be displayed in base64 encoded format by default because they may contain
 arbitrary binary data. Using --decode allows one to decode them and display the unencoded
 values. However since they may contain arbitrary data, it's possible to re-encode them into a

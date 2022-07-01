@@ -3,29 +3,18 @@ use std::{
     io::{self, Read},
 };
 
-use seaplane::api::v1::{config::Key, Directory};
-use strum::{EnumString, EnumVariantNames};
+use seaplane::api::v1::config::Key;
+use seaplane::api::v1::Directory;
 
 use crate::{
     cli::cmds::metadata::{SeaplaneMetadataCommonArgMatches, SeaplaneMetadataSetArgMatches},
     error::{CliError, Context, Result},
-    ops::metadata::{KeyValue, KeyValues},
+    ops::{
+        metadata::{KeyValue, KeyValues},
+        DisplayEncodingFormat,
+    },
     printer::Color,
 };
-
-#[derive(EnumString, strum::Display, EnumVariantNames, Copy, Clone, Debug, PartialEq)]
-#[strum(ascii_case_insensitive, serialize_all = "lowercase")]
-pub enum DisplayEncodingFormat {
-    Simple,
-    Utf8,
-    Hex,
-}
-
-impl Default for DisplayEncodingFormat {
-    fn default() -> Self {
-        Self::Simple
-    }
-}
 
 /// Represents the "Source of Truth" i.e. it combines all the CLI options, ENV vars, and config
 /// values into a single structure that can be used later to build models for the API or local

@@ -1,141 +1,14 @@
-use std::{fmt, io::Write, result::Result as StdResult};
+use std::io::Write;
 
 use seaplane::api::v1::config::{Key as KeyModel, KeyValue as KeyValueModel};
-use serde::{ser::Serializer, Serialize};
+use serde::Serialize;
 
 use crate::{
-    context::{metadata::DisplayEncodingFormat, Ctx},
+    context::Ctx,
     error::Result,
+    ops::{DisplayEncodingFormat, EncodedString},
     printer::{printer, Output},
 };
-
-#[derive(Clone, PartialEq, Eq, Debug)]
-pub enum KeyValueInner {
-    Base64(String),
-    Utf8(String),
-    Hex(String),
-    Simple(Vec<u8>),
-}
-
-impl Serialize for KeyValueInner {
-    fn serialize<S: Serializer>(&self, serializer: S) -> StdResult<S::Ok, S::Error> {
-        self.to_string().serialize(serializer)
-    }
-}
-
-impl KeyValueInner {
-    /// Either decodes the base64 into the specified encoding, or converts the already decoded into
-    /// a different encoding
-    pub fn decode(self, encoding: DisplayEncodingFormat) -> Result<Self> {
-        use KeyValueInner::*;
-        if !self.is_base64() {
-            return self.convert(encoding);
-        }
-
-        let base64_str = match self {
-            Base64(s) => s,
-            // We already checked that we are in fact currently Base64
-            _ => unreachable!(),
-        };
-
-        Ok(match encoding {
-            DisplayEncodingFormat::Simple => {
-                Simple(base64::decode_config(&base64_str, base64::URL_SAFE_NO_PAD)?)
-            }
-            DisplayEncodingFormat::Utf8 => Utf8(
-                String::from_utf8_lossy(&base64::decode_config(
-                    &base64_str,
-                    base64::URL_SAFE_NO_PAD,
-                )?)
-                .to_string(),
-            ),
-            DisplayEncodingFormat::Hex => Hex(hex::encode(base64::decode_config(
-                &base64_str,
-                base64::URL_SAFE_NO_PAD,
-            )?)),
-        })
-    }
-
-    /// Converts from one already encoded format to another. Will recursively call (a single time)
-    /// `decode` if the value is not yet decoded from Base64
-    ///
-    /// **Note**: Converting *from* `Utf8` does not restore the lost bytes that were replaced with
-    /// U+FFFD.
-    pub fn convert(mut self, encoding: DisplayEncodingFormat) -> Result<Self> {
-        use KeyValueInner::*;
-        if self.is_base64() {
-            return self.decode(encoding);
-        }
-
-        self = match encoding {
-            DisplayEncodingFormat::Simple => match self {
-                Simple(_) => self,
-                Hex(s) => Simple(hex::decode(s)?),
-                Utf8(s) => Simple(s.into_bytes()),
-                Base64(_) => unreachable!(),
-            },
-            DisplayEncodingFormat::Utf8 => match self {
-                Simple(v) => Utf8(String::from_utf8_lossy(&v).to_string()),
-                Hex(s) => Utf8(String::from_utf8_lossy(&hex::decode(s)?).to_string()),
-                Utf8(_) => self,
-                Base64(_) => unreachable!(),
-            },
-            DisplayEncodingFormat::Hex => match self {
-                Simple(v) => Hex(hex::encode(v)),
-                Hex(_) => self,
-                Utf8(s) => Hex(hex::encode(s.into_bytes())),
-                Base64(_) => unreachable!(),
-            },
-        };
-
-        Ok(self)
-    }
-
-    /// Returns true if the data is currently Base64 encoded
-    pub fn is_base64(&self) -> bool {
-        matches!(self, KeyValueInner::Base64(_))
-    }
-
-    /// Returns true if the data is currently hex encoded
-    pub fn is_hex(&self) -> bool {
-        matches!(self, KeyValueInner::Hex(_))
-    }
-
-    /// Returns true if the data is currently decoded raw bytes
-    pub fn is_simple(&self) -> bool {
-        matches!(self, KeyValueInner::Simple(_))
-    }
-
-    /// Returns true if the data is currently decoded to a UTF-8 Lossy String
-    pub fn is_utf8(&self) -> bool {
-        matches!(self, KeyValueInner::Utf8(_))
-    }
-
-    /// Creates a new Key from self's data.
-    ///
-    /// NOTE: If self is currently Utf8, the encoded Base64 value may not match the original if
-    /// invalid UTF-8 bytes were lost and replaced with U+FFFD
-    pub fn to_key_model(&self) -> Result<KeyModel> {
-        Ok(match self {
-            KeyValueInner::Base64(s) => KeyModel::from_encoded(s.to_string()),
-            KeyValueInner::Utf8(s) => KeyModel::from_unencoded(s),
-            KeyValueInner::Hex(s) => KeyModel::from_unencoded(hex::decode(s)?),
-            KeyValueInner::Simple(s) => KeyModel::from_unencoded(s),
-        })
-    }
-}
-
-impl fmt::Display for KeyValueInner {
-    /// NOTE: Displaying a Simple value will first convert it to Utf8
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            KeyValueInner::Base64(s) => write!(f, "{}", s),
-            KeyValueInner::Utf8(s) => write!(f, "{}", s),
-            KeyValueInner::Hex(s) => write!(f, "{}", s),
-            KeyValueInner::Simple(v) => write!(f, "{}", String::from_utf8_lossy(v)),
-        }
-    }
-}
 
 /// We use our own KeyValue instead of the models because we need to *not* enforce base64 encoding,
 /// and implement a bunch of additional methods and traits that wouldn't make sense for the models
@@ -143,8 +16,8 @@ impl fmt::Display for KeyValueInner {
 /// We also need to keep track if the values are encoded or not
 #[derive(Debug, Default, Clone, Serialize)]
 pub struct KeyValue {
-    pub key: Option<KeyValueInner>,
-    pub value: Option<KeyValueInner>,
+    pub key: Option<EncodedString>,
+    pub value: Option<EncodedString>,
 }
 
 impl KeyValue {
@@ -152,8 +25,8 @@ impl KeyValue {
     /// value are URL safe base64 encoded or Bad Things may happen.
     pub fn new<S: Into<String>>(key: S, value: S) -> Self {
         Self {
-            key: Some(KeyValueInner::Base64(key.into())),
-            value: Some(KeyValueInner::Base64(value.into())),
+            key: Some(EncodedString::Base64(key.into())),
+            value: Some(EncodedString::Base64(value.into())),
         }
     }
 
@@ -174,14 +47,14 @@ impl KeyValue {
     /// is URL safe base64 encoded or Bad Things may happen.
     pub fn from_key<S: Into<String>>(key: S) -> Self {
         Self {
-            key: Some(KeyValueInner::Base64(key.into())),
+            key: Some(EncodedString::Base64(key.into())),
             ..Self::default()
         }
     }
 
     /// Sets the value to some base64 encoded value
     pub fn set_value<S: Into<String>>(&mut self, value: S) {
-        self.value = Some(KeyValueInner::Base64(value.into()))
+        self.value = Some(EncodedString::Base64(value.into()))
     }
 
     /// Set the key to `None` without touching the value.
@@ -192,6 +65,20 @@ impl KeyValue {
     /// Set the value to `None` without touching the key.
     pub fn clear_value(&mut self) {
         self.value = None;
+    }
+
+    /// Creates a new Key from self's data.
+    ///
+    /// NOTE: If self is currently Utf8, the encoded Base64 value may not match the original if
+    /// invalid UTF-8 bytes were lost and replaced with U+FFFD
+    pub fn to_key_model(&self) -> Result<KeyModel> {
+        Ok(match &self.key {
+            Some(EncodedString::Base64(s)) => KeyModel::from_encoded(s.to_string()),
+            Some(EncodedString::Utf8(s)) => KeyModel::from_unencoded(s),
+            Some(EncodedString::Hex(s)) => KeyModel::from_unencoded(hex::decode(s)?),
+            Some(EncodedString::Simple(s)) => KeyModel::from_unencoded(s),
+            None => unimplemented!("TODO error for no key"),
+        })
     }
 
     /// Decodes the key and value if needed
@@ -261,7 +148,7 @@ impl KeyValues {
 
     // print a table in whatever state we happen to be in (encoded/unencoded)
     fn impl_print_table(&self, headers: bool) -> Result<()> {
-        use KeyValueInner::*;
+        use EncodedString::*;
         // TODO: we may have to add ways to elide long keys or values with ... after some char count
         let mut ptr = printer();
 
@@ -359,7 +246,7 @@ mod tests {
     use serde_json::json;
 
     fn build_kvs() -> KeyValues {
-        use KeyValueInner::*;
+        use EncodedString::*;
         KeyValues {
             inner: vec![
                 KeyValue {
@@ -379,7 +266,7 @@ mod tests {
     }
 
     fn build_kvs_invalid_utf8() -> KeyValues {
-        use KeyValueInner::*;
+        use EncodedString::*;
         KeyValues {
             inner: vec![KeyValue {
                 key: Some(Simple(vec![107, 101, 121, 0xFF, 49])),

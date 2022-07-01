@@ -23,6 +23,7 @@ macro_rules! cli {
 
 mod account;
 mod formation;
+mod locks;
 mod metadata;
 
 fn test_main(matches: &ArgMatches, url: String) -> Result<(), CliError> {
@@ -30,7 +31,8 @@ fn test_main(matches: &ArgMatches, url: String) -> Result<(), CliError> {
     let url: Url = url.parse().unwrap();
     ctx.compute_url = Some(url.clone());
     ctx.identity_url = Some(url.clone());
-    ctx.metadata_url = Some(url);
+    ctx.metadata_url = Some(url.clone());
+    ctx.locks_url = Some(url.clone());
     test_main_with_ctx(matches, ctx)
 }
 
@@ -45,6 +47,7 @@ fn test_main_with_ctx(matches: &ArgMatches, mut ctx: Ctx) -> Result<(), CliError
 static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| {
     let resp_json = json!({"token": "abc.123.def", "tenant": 1_u64, "subdomain": "pequod"});
     let s = MockServer::start();
+    // let s = MockServer::connect("127.0.0.1:5000");
     let _mock = s.mock(|when, then| {
         when.method(POST)
             .path("/token")
