@@ -33,7 +33,7 @@ The short help:
 
 ```console
 $ seaplane locks -h
-seaplane-locks v0.1.0 (ef6a53e)
+seaplane-locks v0.1.0 (0c07762)
 Operate on the Locks API
 
 USAGE:
@@ -72,22 +72,22 @@ USAGE:
 OPTIONS:
     -A, --api-key <STRING>
             The API key associated with a Seaplane account used to access Seaplane API endpoints
-            
+
             The value provided here will override any provided in any configuration files.
             A CLI provided value also overrides any environment variables.
             One can use a special value of '-' to signal the value should be read from STDIN.
-            
+
             [env: SEAPLANE_API_KEY]
 
         --color <COLOR>
             Should the output include color?
-            
+
             [default: auto]
             [possible values: always, ansi, auto, never]
 
         --format <FORMAT>
             Change the output format
-            
+
             [default: table]
             [possible values: table, json]
 
@@ -99,7 +99,7 @@ OPTIONS:
 
     -q, --quiet
             Suppress output at a specific level and below
-            
+
             More uses suppresses higher levels of output
                 -q:   Only display WARN messages and above
                 -qq:  Only display ERROR messages
@@ -110,7 +110,7 @@ OPTIONS:
 
     -v, --verbose
             Display more verbose output
-            
+
             More uses displays more verbose output
                 -v:  Display debug info
                 -vv: Display trace info

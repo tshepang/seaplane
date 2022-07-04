@@ -615,9 +615,9 @@ fn seaplane_md_get() {
     // can not have multiples
     assert!(cli!("metadata get foo bar").is_err());
     assert!(cli!("metadata get foo bar baz").is_err());
-    assert!(cli!("metadata get foo,bar,baz").is_err());
-    assert!(cli!("metadata get foo bar,baz").is_err());
-    assert!(cli!("metadata get foo,bar baz").is_err());
+    assert!(cli!("metadata get foo, bar, baz").is_err());
+    assert!(cli!("metadata get foo bar, baz").is_err());
+    assert!(cli!("metadata get foo, bar baz").is_err());
 
     // aliases
     assert!(cli!("metadata show foo").is_ok());
@@ -632,12 +632,12 @@ fn seaplane_md_set() {
     assert!(cli!("metadata set foo bar").is_ok());
     // multiples are not allowed
     assert!(cli!("metadata set foo bar baz").is_err());
-    assert!(cli!("metadata set foo,bar,baz").is_err());
-    assert!(cli!("metadata set foo bar,baz").is_err());
-    assert!(cli!("metadata set foo,bar baz").is_err());
+    assert!(cli!("metadata set foo, bar, baz").is_err());
+    assert!(cli!("metadata set foo bar, baz").is_err());
+    assert!(cli!("metadata set foo, bar baz").is_err());
 
     // aliases
-    assert!(cli!("metadata put foo bar")).is_ok();
+    assert!(cli!("metadata put foo bar").is_ok());
 }
 
 #[test]
@@ -649,9 +649,9 @@ fn seaplane_md_list() {
     // Multiples not supported
     assert!(cli!("metadata list foo bar").is_err());
     assert!(cli!("metadata list foo bar baz").is_err());
-    assert!(cli!("metadata list foo,bar,baz").is_err());
-    assert!(cli!("metadata list foo bar,baz").is_err());
-    assert!(cli!("metadata list foo,bar baz").is_err());
+    assert!(cli!("metadata list foo, bar, baz").is_err());
+    assert!(cli!("metadata list foo bar, baz").is_err());
+    assert!(cli!("metadata list foo, bar baz").is_err());
 
     // aliases
     assert!(cli!("metadata ls foo").is_ok());
@@ -694,9 +694,9 @@ fn seaplane_locks_list() {
     // can not have multiples
     assert!(cli!("locks list foo bar").is_err());
     assert!(cli!("locks list foo bar baz").is_err());
-    assert!(cli!("locks list foo,bar,baz").is_err());
-    assert!(cli!("locks list foo bar,baz").is_err());
-    assert!(cli!("locks list foo,bar baz").is_err());
+    assert!(cli!("locks list foo, bar, baz").is_err());
+    assert!(cli!("locks list foo bar, baz").is_err());
+    assert!(cli!("locks list foo, bar baz").is_err());
 
     // aliases
     assert!(cli!("locks l foo").is_ok());
