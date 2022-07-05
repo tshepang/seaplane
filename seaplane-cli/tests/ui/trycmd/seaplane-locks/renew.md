@@ -2,7 +2,7 @@ Short help:
 
 ```console
 $ seaplane locks renew -h
-seaplane-locks-renew v0.1.0 (0c07762)
+seaplane-locks-renew v0.1.0 (ef6a53e)
 Attempt to renew the lock for TTL seconds
 
 USAGE:
@@ -12,18 +12,18 @@ ARGS:
     <LOCK_NAME>    The name of the lock
 
 OPTIONS:
-    -A, --api-key <STRING>     The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-    -B, --base64               The lockname is already encoded in URL safe Base64
-        --color <COLOR>        Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --format <FORMAT>      Change the output format [default: table] [possible values: table, json]
-    -h, --help                 Print help information
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -B, --base64              The lockname is already encoded in URL safe Base64
+        --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
+    -h, --help                Print help information
     -L, --lock-id <LOCK_ID>    A valid lock-id can be obtained from a successful acquisition, or listing of the locks
-        --no-color             Do not color output (alias for --color=never)
-    -q, --quiet                Suppress output at a specific level and below
-    -S, --stateless            Ignore local state files, do not read from or write to them
-    -T, --ttl <TTL>            The TTL (Time To Live) in seconds, i.e. a positive integer
-    -v, --verbose              Display more verbose output
-    -V, --version              Print version information
+        --no-color            Do not color output (alias for --color=never)
+    -q, --quiet               Suppress output at a specific level and below
+    -S, --stateless           Ignore local state files, do not read from or write to them
+    -T, --ttl <TTL>           The TTL (Time To Live) in seconds, i.e. a positive integer
+    -v, --verbose             Display more verbose output
+    -V, --version             Print version information
 
 ```
 
@@ -31,7 +31,7 @@ Long Help:
 
 ```console
 $ seaplane locks renew --help
-seaplane-locks-renew v0.1.0 (0c07762)
+seaplane-locks-renew v0.1.0 (ef6a53e)
 Attempt to renew the lock for TTL seconds
 
 USAGE:
@@ -56,11 +56,13 @@ OPTIONS:
 
         --color <COLOR>
             Should the output include color?
+
             [default: auto]
             [possible values: always, ansi, auto, never]
 
         --format <FORMAT>
             Change the output format
+
             [default: table]
             [possible values: table, json]
 
@@ -75,6 +77,7 @@ OPTIONS:
 
     -q, --quiet
             Suppress output at a specific level and below
+
             More uses suppresses higher levels of output
                 -q:   Only display WARN messages and above
                 -qq:  Only display ERROR messages
