@@ -347,7 +347,7 @@ macro_rules! values_t_or_exit {
 ///
 /// ```rust
 /// # use clap::Arg;
-/// # use seaplane_cli::macros::arg;
+/// # use seaplane_cli::arg;
 /// # let _ =
 /// arg!(--foo|foos =["NUM"=>"2"]... global !allow_hyphen_values);
 ///
@@ -365,6 +365,7 @@ macro_rules! values_t_or_exit {
 ///   .global(true)                // global
 ///   .allow_hyphen_values(false); // !allow_hyphen_values
 /// ```
+#[macro_export]
 macro_rules! arg {
     (@arg ($arg:expr) ) => { $arg };
     (@arg ($arg:expr) --$long:ident $($tail:tt)*) => {

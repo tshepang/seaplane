@@ -33,7 +33,7 @@ The short help:
 
 ```console
 $ seaplane locks -h
-seaplane-locks v0.1.0 (ef6a53e)
+seaplane-locks [..]
 Operate on the Locks API
 
 USAGE:

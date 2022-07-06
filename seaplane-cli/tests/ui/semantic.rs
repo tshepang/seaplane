@@ -353,7 +353,7 @@ fn seaplane_formation_common() {
         cli!("formation plan -I foo --providers=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok()
     );
 
-    // exlucde provider
+    // exclude provider
     // valid
     assert!(cli!(
         "formation plan -I foo --exclude-provider=Aws,Azure,DigitalOcean,Equinix,Gcp,All"
@@ -603,7 +603,7 @@ fn seaplane_md_delete() {
     // aliases
     assert!(cli!("metadata del foo").is_ok());
     assert!(cli!("metadata remove foo").is_ok());
-    assert!(cli!("metadata rm  foo").is_ok());
+    assert!(cli!("metadata rm foo").is_ok());
 }
 
 #[test]
@@ -615,7 +615,8 @@ fn seaplane_md_get() {
     // can not have multiples
     assert!(cli!("metadata get foo bar").is_err());
     assert!(cli!("metadata get foo bar baz").is_err());
-    assert!(cli!("metadata get foo,bar,baz").is_err());
+    // comma is not a value delimiter
+    assert!(cli!("metadata get foo,bar,baz").is_ok());
     assert!(cli!("metadata get foo bar,baz").is_err());
     assert!(cli!("metadata get foo,bar baz").is_err());
 
@@ -631,13 +632,14 @@ fn seaplane_md_set() {
     // provide a valid KEY VALUE
     assert!(cli!("metadata set foo bar").is_ok());
     // multiples are not allowed
-    assert!(cli!("metadata set foo bar baz").is_err());
-    assert!(cli!("metadata set foo,bar,baz").is_err());
-    assert!(cli!("metadata set foo bar,baz").is_err());
-    assert!(cli!("metadata set foo,bar baz").is_err());
+    assert!(cli!("metadata set foo bar baz qux").is_err());
+    // comma is not a value delimiter
+    assert!(cli!("metadata set foo,bar").is_err());
+    assert!(cli!("metadata set foo bar,baz").is_ok());
+    assert!(cli!("metadata set foo,bar baz").is_ok());
 
     // aliases
-    assert!(cli!("metadata put foo bar")).is_ok();
+    assert!(cli!("metadata put foo bar").is_ok());
 }
 
 #[test]
@@ -646,10 +648,11 @@ fn seaplane_md_list() {
     assert!(cli!("metadata list").is_ok());
     // can provide a dir
     assert!(cli!("metadata list foo").is_ok());
-    // Multiples not supported
+    // multiples not supported
     assert!(cli!("metadata list foo bar").is_err());
     assert!(cli!("metadata list foo bar baz").is_err());
-    assert!(cli!("metadata list foo,bar,baz").is_err());
+    // comma is not a value delimiter
+    assert!(cli!("metadata list foo,bar,baz").is_ok());
     assert!(cli!("metadata list foo bar,baz").is_err());
     assert!(cli!("metadata list foo,bar baz").is_err());
 
@@ -694,7 +697,8 @@ fn seaplane_locks_list() {
     // can not have multiples
     assert!(cli!("locks list foo bar").is_err());
     assert!(cli!("locks list foo bar baz").is_err());
-    assert!(cli!("locks list foo,bar,baz").is_err());
+    // comma is not a value delimiter
+    assert!(cli!("locks list foo,bar,baz").is_ok());
     assert!(cli!("locks list foo bar,baz").is_err());
     assert!(cli!("locks list foo,bar baz").is_err());
 

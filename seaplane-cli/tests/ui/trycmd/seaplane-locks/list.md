@@ -2,7 +2,7 @@ Short help:
 
 ```console
 $ seaplane locks list -h
-seaplane-locks-list v0.1.0 (ef6a53e)
+seaplane-locks-list [..]
 Get information around a currently held lock
 
 USAGE:
@@ -33,7 +33,7 @@ Long help:
 
 ```console
 $ seaplane locks list --help
-seaplane-locks-list v0.1.0 (ef6a53e)
+seaplane-locks-list [..]
 Get information around a currently held lock.
 
 Locknames will be displayed in base64 encoded format by default because they may contain
