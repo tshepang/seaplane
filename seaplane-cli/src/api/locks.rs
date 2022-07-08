@@ -2,9 +2,9 @@ use reqwest::Url;
 use seaplane::{
     api::{
         v1::locks::{
-            HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName, LocksErrorKind,
-            LocksRequest, AcquireResponse,
-        } ,
+            AcquireResponse, HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel,
+            LockName, LocksErrorKind, LocksRequest,
+        },
         AccessToken,
     },
     error::SeaplaneError,

@@ -230,7 +230,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest};
+    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest, LockName, LockId, HeldLock};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -239,11 +239,12 @@ impl LocksRequest {
     ///     .unwrap();
     ///
     /// let resp = req.acquire(15, "test-client").unwrap();
+    /// let acquired_lock = HeldLock::new(LockName::from_encoded("bW9ieQo"), LockId::from_encoded(resp.id), resp.sequencer);
     ///
     /// // Now it can be released
     /// let release_req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
-    ///     .held_lock(resp)
+    ///     .held_lock(acquired_lock)
     ///     .build()
     ///     .unwrap();
     ///
@@ -267,7 +268,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest};
+    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest, LockName, LockId, HeldLock};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -276,11 +277,11 @@ impl LocksRequest {
     ///     .unwrap();
     ///
     /// let resp = req.acquire(15, "test-client").unwrap();
-    ///
+    /// let acquired_lock = HeldLock::new(LockName::from_encoded("bW9ieQo"), LockId::from_encoded(resp.id), resp.sequencer);
     /// // Now it can be renewed with a new TTL of 20
     /// let renew_req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
-    ///     .held_lock(resp)
+    ///     .held_lock(acquired_lock)
     ///     .build()
     ///     .unwrap();
     ///

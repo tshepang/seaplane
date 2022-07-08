@@ -69,8 +69,11 @@ audit: (_cargo-install 'cargo-audit')
 	cargo audit
 
 # Ensure documentation builds
-test-docs CRATE='seaplane' $RUSTDOCFLAGS="-D warnings":
+test-doc-builds CRATE='seaplane' $RUSTDOCFLAGS="-D warnings":
     cargo doc --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --no-deps --all-features --document-private-items
+
+test-doc CRATE='seaplane':
+	cargo test  --doc --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
 
 # Run UI tests
 test-ui $RUSTFLAGS='-D warnings':
@@ -113,10 +116,10 @@ spell-check: (_cargo-install 'typos-cli')
     typos {{justfile_directory()}}
 
 # Run the CI suite for the SDK (only runs for your native os/arch!)
-sdk-ci: _test test-api test-docs rustfmt-check (clippy 'seaplane') (clippy 'seaplane' '--features unstable')
+sdk-ci: _test test-api test-doc-builds rustfmt-check (clippy 'seaplane') (clippy 'seaplane' '--features unstable')
 
 # Run the CI suite for the CLI (only runs for your native os/arch!)
-cli-ci: (_test 'seaplane-cli') (test-docs 'seaplane-cli') test-ui (test-api 'seaplane-cli') (rustfmt-check 'seaplane-cli') (clippy 'seaplane-cli') (clippy 'seaplane-cli' '--features unstable')
+cli-ci: (_test 'seaplane-cli') (test-doc-builds 'seaplane-cli') test-ui (test-api 'seaplane-cli') (rustfmt-check 'seaplane-cli') (clippy 'seaplane-cli') (clippy 'seaplane-cli' '--features unstable')
 
 # Run the full CI suite (only runs for your native os/arch!)
-ci: audit cli-ci sdk-ci spell-check
+ci: audit cli-ci sdk-ci spell-check test-doc
