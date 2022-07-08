@@ -6,6 +6,7 @@ use reqwest::{
     header::{self, CONTENT_TYPE},
     Url,
 };
+use serde::Deserialize;
 
 use crate::{
     api::METADATA_API_URL,
@@ -196,6 +197,16 @@ impl LocksRequest {
         }
     }
 
+    // Internal method for getting the lock name
+    fn lock_name(&self) -> Result<LockName> {
+        match &self.target {
+            RequestTarget::HeldLock(_) | RequestTarget::Range(_) => {
+                Err(SeaplaneError::IncorrectLocksRequestTarget)
+            }
+            RequestTarget::SingleLock(l) => Ok(l.clone()),
+        }
+    }
+
     /// Attempts to acquire the lock with the given lock name with the given TTL.
     /// Client-ID should identify the client making the request for debugging purposes.
     ///
@@ -214,13 +225,25 @@ impl LocksRequest {
     /// let resp = req.acquire(15, "test-client").unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn acquire(&self, ttl: u32, client_id: &str) -> Result<AcquireResponse> {
+    pub fn acquire(&self, ttl: u32, client_id: &str) -> Result<HeldLock> {
         let mut url = self.single_lock_url()?;
         url.set_query(Some(&format!("ttl={ttl}&client-id={client_id}")));
         let resp = self.client.put(url).bearer_auth(&self.token).send()?;
 
+        #[derive(Deserialize)]
+        struct AcquireResponse {
+            id: LockId,
+            sequencer: u32,
+        }
+
+        let name = self.lock_name()?;
         map_error(resp)?
             .json::<AcquireResponse>()
+            .map(|AcquireResponse { id, sequencer }| HeldLock {
+                name,
+                id,
+                sequencer,
+            })
             .map_err(Into::into)
     }
 
@@ -230,7 +253,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest, LockName, LockId, HeldLock};
+    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest, LockName, LockId};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -238,8 +261,7 @@ impl LocksRequest {
     ///     .build()
     ///     .unwrap();
     ///
-    /// let resp = req.acquire(15, "test-client").unwrap();
-    /// let acquired_lock = HeldLock::new(LockName::from_encoded("bW9ieQo"), LockId::from_encoded(resp.id), resp.sequencer);
+    /// let acquired_lock = req.acquire(15, "test-client").unwrap();
     ///
     /// // Now it can be released
     /// let release_req = LocksRequestBuilder::new()
@@ -268,7 +290,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest, LockName, LockId, HeldLock};
+    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest, LockName, LockId};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -276,8 +298,7 @@ impl LocksRequest {
     ///     .build()
     ///     .unwrap();
     ///
-    /// let resp = req.acquire(15, "test-client").unwrap();
-    /// let acquired_lock = HeldLock::new(LockName::from_encoded("bW9ieQo"), LockId::from_encoded(resp.id), resp.sequencer);
+    /// let acquired_lock = req.acquire(15, "test-client").unwrap();
     /// // Now it can be renewed with a new TTL of 20
     /// let renew_req = LocksRequestBuilder::new()
     ///     .token("abc123_token")

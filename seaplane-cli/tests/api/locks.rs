@@ -41,8 +41,8 @@ fn locks_acquire() {
 #[test]
 fn locks_list() {
     let resp = json!({
-        "name": {"inner": "foo"},
-        "id": {"inner": "D4lbVpdBE_U"},
+        "name": "foo",
+        "id": "D4lbVpdBE_U",
         "info": {
             "ttl": 5,
             "client-id": "test-client",

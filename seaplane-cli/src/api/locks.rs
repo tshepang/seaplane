@@ -2,8 +2,8 @@ use reqwest::Url;
 use seaplane::{
     api::{
         v1::locks::{
-            AcquireResponse, HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel,
-            LockName, LocksErrorKind, LocksRequest,
+            HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName, LocksErrorKind,
+            LocksRequest,
         },
         AccessToken,
     },
@@ -133,7 +133,7 @@ macro_rules! maybe_retry {
 // Wrapped LocksRequest methods to handle expired token retries
 //
 impl LocksReq {
-    pub fn acquire(&mut self, ttl: u32, client_id: &str) -> Result<AcquireResponse> {
+    pub fn acquire(&mut self, ttl: u32, client_id: &str) -> Result<HeldLockModel> {
         maybe_retry!(self.acquire(ttl, client_id))
     }
     pub fn release(&mut self) -> Result<()> {

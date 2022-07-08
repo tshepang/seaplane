@@ -4,14 +4,15 @@ use crate::{api::v1::RangeQueryContext, base64::Base64Encoded, impl_base64};
 
 /// A single lock name, encoded in url-safe base64, may not contain `\0` bytes
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[serde(transparent)]
 pub struct LockName {
     inner: Base64Encoded,
 }
-
 impl_base64!(LockName);
 
 /// An ID to a held lock instance
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[serde(transparent)]
 pub struct LockId {
     inner: Base64Encoded,
 }
@@ -84,10 +85,4 @@ pub struct LockInfoRange {
     pub next: Option<LockName>,
     /// The range of held lock information
     pub infos: Vec<LockInfo>,
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct AcquireResponse {
-    pub id: String,
-    pub sequencer: u32,
 }

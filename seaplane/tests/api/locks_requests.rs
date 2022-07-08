@@ -55,7 +55,12 @@ fn acquire_lock() {
     // Ensure the endpoint was hit
     mock.assert();
 
-    assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
+    let lock = HeldLock::new(
+        LockName::from_encoded("Zm9v"),
+        LockId::from_encoded("D4lbVpdBE_U"),
+        2,
+    );
+    assert_eq!(lock, resp);
 }
 
 // PATCH /locks/base64:{key}?id={id}&ttl={ttl}
