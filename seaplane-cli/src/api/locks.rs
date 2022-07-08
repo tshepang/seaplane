@@ -3,8 +3,8 @@ use seaplane::{
     api::{
         v1::locks::{
             HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName, LocksErrorKind,
-            LocksRequest,
-        },
+            LocksRequest, AcquireResponse,
+        } ,
         AccessToken,
     },
     error::SeaplaneError,
@@ -133,7 +133,7 @@ macro_rules! maybe_retry {
 // Wrapped LocksRequest methods to handle expired token retries
 //
 impl LocksReq {
-    pub fn acquire(&mut self, ttl: u32, client_id: &str) -> Result<HeldLockModel> {
+    pub fn acquire(&mut self, ttl: u32, client_id: &str) -> Result<AcquireResponse> {
         maybe_retry!(self.acquire(ttl, client_id))
     }
     pub fn release(&mut self) -> Result<()> {

@@ -6,7 +6,6 @@ use reqwest::{
     header::{self, CONTENT_TYPE},
     Url,
 };
-use serde::Deserialize;
 
 use crate::{
     api::METADATA_API_URL,
@@ -21,7 +20,6 @@ mod error;
 pub use error::*;
 
 use super::RangeQueryContext;
-
 /// A builder struct for creating a [`LocksRequest`] which will then be used for making a
 /// request against the `/locks` APIs
 #[derive(Debug, Default)]
@@ -198,16 +196,6 @@ impl LocksRequest {
         }
     }
 
-    // Internal method for getting the lock name
-    fn lock_name(&self) -> Result<LockName> {
-        match &self.target {
-            RequestTarget::HeldLock(_) | RequestTarget::Range(_) => {
-                Err(SeaplaneError::IncorrectLocksRequestTarget)
-            }
-            RequestTarget::SingleLock(l) => Ok(l.clone()),
-        }
-    }
-
     /// Attempts to acquire the lock with the given lock name with the given TTL.
     /// Client-ID should identify the client making the request for debugging purposes.
     ///
@@ -226,25 +214,13 @@ impl LocksRequest {
     /// let resp = req.acquire(15, "test-client").unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn acquire(&self, ttl: u32, client_id: &str) -> Result<HeldLock> {
+    pub fn acquire(&self, ttl: u32, client_id: &str) -> Result<AcquireResponse> {
         let mut url = self.single_lock_url()?;
         url.set_query(Some(&format!("ttl={ttl}&client-id={client_id}")));
         let resp = self.client.put(url).bearer_auth(&self.token).send()?;
 
-        #[derive(Deserialize)]
-        struct AcquireResponse {
-            id: LockId,
-            sequencer: u32,
-        }
-
-        let name = self.lock_name()?;
-        map_error(dbg!(resp))?
+        map_error(resp)?
             .json::<AcquireResponse>()
-            .map(|AcquireResponse { id, sequencer }| HeldLock {
-                name,
-                id,
-                sequencer,
-            })
             .map_err(Into::into)
     }
 

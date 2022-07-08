@@ -7,8 +7,7 @@ use super::{test_main, then, when_json, MOCK_SERVER};
 #[test]
 fn locks_acquire() {
     let resp_json = json!({
-        "name": {"inner": "foo"},
-        "id": {"inner": "D4lbVpdBE_U"},
+        "id": "D4lbVpdBE_U",
         "sequencer": 3,
     });
 
@@ -21,7 +20,6 @@ fn locks_acquire() {
         &cli!("locks acquire foo --client-id bar --ttl 30"),
         MOCK_SERVER.base_url(),
     );
-
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "LOCK-NAME: Zm9v");

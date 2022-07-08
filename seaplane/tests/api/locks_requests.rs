@@ -37,26 +37,25 @@ fn partial_build() -> LocksRequestBuilder {
 // PUT /locks/base64:{key}?id={id}&ttl={ttl}&client-id={client_id}
 #[test]
 fn acquire_lock() {
-    let resp = HeldLock::new(
-        LockName::from_encoded("Zm9v"),
-        LockId::from_encoded("D4lbVpdBE_U"),
-        2,
-    );
+    let resp_json = json!({
+       "id": "D4lbVpdBE_U",
+       "sequencer": 2
+    });
 
     let mock = MOCK_SERVER.mock(|w, t| {
         when(w, PUT, "/v1/locks/base64:Zm9v")
             .query_param("ttl", "10")
             .query_param("client-id", "test-client");
-        then(t, json!(resp));
+        then(t, json!(resp_json));
     });
 
     let req = partial_build().encoded_lock_name("Zm9v").build().unwrap();
-    let resp_val = req.acquire(10, "test-client").unwrap();
+    let resp = req.acquire(10, "test-client").unwrap();
 
     // Ensure the endpoint was hit
     mock.assert();
 
-    assert_eq!(resp_val, resp);
+    assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
 }
 
 // PATCH /locks/base64:{key}?id={id}&ttl={ttl}

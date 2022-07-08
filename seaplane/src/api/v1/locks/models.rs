@@ -85,3 +85,9 @@ pub struct LockInfoRange {
     /// The range of held lock information
     pub infos: Vec<LockInfo>,
 }
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AcquireResponse {
+    pub id: String,
+    pub sequencer: u32,
+}
