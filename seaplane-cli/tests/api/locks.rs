@@ -26,7 +26,7 @@ fn locks_acquire() {
     printer().clear();
 
     let res = test_main(
-        &cli!("locks acquire Zm9v --client-id YmFy --ttl 60 --base64"),
+        &cli!("locks acquire Zm9v --client-id bar --ttl 60 --base64"),
         MOCK_SERVER.base_url(),
     );
 

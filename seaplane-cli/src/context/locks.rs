@@ -14,7 +14,7 @@ pub struct LocksCtx {
     pub ttl: Option<u32>,
     pub client_id: Option<String>,
     pub lock_id: Option<LockId>,
-    /// Is the key or value already URL safe base64 encoded
+    /// Is the lock-name already URL safe base64 encoded
     pub base64: bool,
     /// Print with decoding
     pub decode: bool,

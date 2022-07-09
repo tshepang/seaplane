@@ -76,7 +76,7 @@ impl CliCommand for SeaplaneLocksAcquire {
         let raw_ttl = matches.value_of("ttl").unwrap();
         locksctx.ttl = Some(raw_ttl.parse().unwrap());
         locksctx.base64 = matches.is_present("base64");
-        locksctx.client_id = maybe_base64_arg!(matches, "client-id", matches.is_present("base64"));
+        locksctx.client_id = Some(matches.value_of("client-id").unwrap().to_string());
 
         Ok(())
     }

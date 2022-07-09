@@ -8,6 +8,7 @@ use crate::{api::v1::RangeQueryContext, base64::Base64Encoded, impl_base64};
 pub struct LockName {
     inner: Base64Encoded,
 }
+
 impl_base64!(LockName);
 
 /// An ID to a held lock instance
