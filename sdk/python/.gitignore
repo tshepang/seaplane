@@ -1,0 +1,13 @@
+/dist
+__pycache__
+*.pyc
+*.pyd
+.venv
+/.env
+.vagrant
+.coverage
+.DS_Store
+.pytest_cache
+.mypy_cache
+.nox
+poetry.lock
