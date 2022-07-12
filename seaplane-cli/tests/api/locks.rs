@@ -12,7 +12,7 @@ fn locks_acquire() {
     });
 
     let mut mock = MOCK_SERVER.mock(|w, t| {
-        when_json(w, PUT, "/v1/locks/base64:Zm9v");
+        when_json(w, POST, "/v1/locks/base64:Zm9v");
         then(t, &resp_json);
     });
 

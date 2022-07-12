@@ -228,7 +228,7 @@ impl LocksRequest {
     pub fn acquire(&self, ttl: u32, client_id: &str) -> Result<HeldLock> {
         let mut url = self.single_lock_url()?;
         url.set_query(Some(&format!("ttl={ttl}&client-id={client_id}")));
-        let resp = self.client.put(url).bearer_auth(&self.token).send()?;
+        let resp = self.client.post(url).bearer_auth(&self.token).send()?;
 
         #[derive(Deserialize)]
         struct AcquireResponse {

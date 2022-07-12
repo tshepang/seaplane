@@ -43,7 +43,7 @@ fn acquire_lock() {
     });
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, PUT, "/v1/locks/base64:Zm9v")
+        when(w, POST, "/v1/locks/base64:Zm9v")
             .query_param("ttl", "10")
             .query_param("client-id", "test-client");
         then(t, json!(resp_json));
