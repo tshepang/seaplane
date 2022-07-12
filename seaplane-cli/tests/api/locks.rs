@@ -90,7 +90,7 @@ fn locks_renew() {
     });
 
     let res = test_main(
-        &cli!("locks renew foo --lock-id bar --ttl 20"),
+        &cli!("locks renew foo --lock-id ATlcuG7mmF4 --ttl 20"),
         MOCK_SERVER.base_url(),
     );
 
@@ -103,7 +103,7 @@ fn locks_renew() {
     printer().clear();
 
     let res = test_main(
-        &cli!("locks renew Zm9v --lock-id YmFy --ttl 20 --base64"),
+        &cli!("locks renew Zm9v --lock-id ATlcuG7mmF4 --ttl 20 --base64"),
         MOCK_SERVER.base_url(),
     );
 
