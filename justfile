@@ -17,7 +17,7 @@ _install-gon:
 
 # Install all needed components and tools
 setup: (_cargo-install 'httpmock --features standalone') (_cargo-install 'cargo-lichking' 'cargo-audit' 'typos-cli' 'cargo-nextest')
-    @if {{ os() }} == 'macos'; then just _install-gon; fi
+    {{ if os() == 'macos' { 'just _install-gon' } else { '' } }}
 
 todos-in-branch:
     git diff --name-only {{ CURRENT_BRANCH }}  $(git merge-base {{ CURRENT_BRANCH }} main) | xargs rg -o 'TODO:.*$'
