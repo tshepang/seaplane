@@ -2,9 +2,7 @@
 
 use thiserror::Error;
 
-use crate::api::token::TokenError;
-#[cfg(feature = "api_v1")]
-use crate::api::v1::{config::ConfigError, formations::FormationsError, locks::LocksError};
+use crate::api::ApiError;
 
 pub type Result<T> = std::result::Result<T, SeaplaneError>;
 
@@ -42,17 +40,8 @@ pub enum SeaplaneError {
     MissingConfigKey,
     #[error("request must target either key or range")]
     IncorrectConfigRequestTarget,
-    #[cfg(feature = "api_v1")]
-    #[error("the Formations Compute API returned an error status")]
-    FormationsResponse(#[from] FormationsError),
-    #[cfg(feature = "api_v1")]
-    #[error("the Locks API returned an error status")]
-    LocksResponse(#[from] LocksError),
-    #[error("the Config Consensus API returned an error status")]
-    #[cfg(feature = "api_v1")]
-    ConfigResponse(#[from] ConfigError),
-    #[error("the Token API returned an error status")]
-    TokenResponse(#[from] TokenError),
+    #[error("the API returned an error status")]
+    ApiResponse(#[from] ApiError),
     #[error("locks requests must target either a lock by name or a held lock")]
     IncorrectLocksRequestTarget,
 }
@@ -89,23 +78,8 @@ impl PartialEq for SeaplaneError {
             MissingConfigKey => matches!(rhs, MissingConfigKey),
             IncorrectConfigRequestTarget => matches!(rhs, IncorrectConfigRequestTarget),
             IncorrectLocksRequestTarget => matches!(rhs, IncorrectLocksRequestTarget),
-            #[cfg(feature = "api_v1")]
-            FormationsResponse(fe) => match rhs {
-                FormationsResponse(ofe) => fe == ofe,
-                _ => false,
-            },
-            #[cfg(feature = "api_v1")]
-            ConfigResponse(ce) => match rhs {
-                ConfigResponse(oce) => ce == oce,
-                _ => false,
-            },
-            #[cfg(feature = "api_v1")]
-            LocksResponse(le) => match rhs {
-                LocksResponse(ole) => le == ole,
-                _ => false,
-            },
-            TokenResponse(te) => match rhs {
-                TokenResponse(ote) => te == ote,
+            ApiResponse(ae) => match rhs {
+                ApiResponse(oae) => ae == oae,
                 _ => false,
             },
         }

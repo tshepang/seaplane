@@ -3,12 +3,12 @@ use seaplane::{
     api::{
         v1::{
             config::{
-                ConfigErrorKind, ConfigRequest, KeyValue as KeyValueModel,
-                KeyValueRange as KeyValueRangeModel, Value as ValueModel,
+                ConfigRequest, KeyValue as KeyValueModel, KeyValueRange as KeyValueRangeModel,
+                Value as ValueModel,
             },
             Key, RangeQueryContext,
         },
-        AccessToken,
+        AccessToken, ApiErrorKind,
     },
     error::SeaplaneError,
 };
@@ -106,8 +106,8 @@ macro_rules! maybe_retry {
 
         let res = match req.$fn($( $arg.clone() ),*) {
             Ok(ret) => Ok(ret),
-            Err(SeaplaneError::ConfigResponse(fr))
-                if fr.kind == ConfigErrorKind::NotLoggedIn =>
+            Err(SeaplaneError::ApiResponse(ae))
+                if ae.kind == ApiErrorKind::Unauthorized =>
             {
                 $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref())?);
                 Ok(req.$fn($( $arg ,)*)?)

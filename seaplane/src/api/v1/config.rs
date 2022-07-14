@@ -1,10 +1,9 @@
 //! The `/config` endpoint APIs which allows working with [`KeyValue`]s
 
-mod error;
 mod models;
 
 use crate::{
-    api::METADATA_API_URL,
+    api::{map_api_error, METADATA_API_URL},
     base64::add_base64_path_segment,
     error::{Result, SeaplaneError},
 };
@@ -15,7 +14,6 @@ use reqwest::{
     Url,
 };
 
-pub use error::*;
 pub use models::*;
 
 use super::range_query::RangeQueryContext;
@@ -186,7 +184,7 @@ impl ConfigRequest {
     pub fn get_value(&self) -> Result<Value> {
         let url = self.single_key_url()?;
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
-        map_error(resp)?
+        map_api_error(resp)?
             .json::<KeyValue>()
             .map(|kv| kv.value)
             .map_err(Into::into)
@@ -243,7 +241,7 @@ impl ConfigRequest {
             )
             .body(value.to_string())
             .send()?;
-        map_error(resp)?
+        map_api_error(resp)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
@@ -269,7 +267,7 @@ impl ConfigRequest {
     pub fn delete_value(&self) -> Result<()> {
         let url = self.single_key_url()?;
         let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
-        map_error(resp)?
+        map_api_error(resp)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
@@ -319,7 +317,9 @@ impl ConfigRequest {
                 let url = self.range_url()?;
 
                 let resp = self.client.get(url).bearer_auth(&self.token).send()?;
-                map_error(resp)?.json::<KeyValueRange>().map_err(Into::into)
+                map_api_error(resp)?
+                    .json::<KeyValueRange>()
+                    .map_err(Into::into)
             }
         }
     }

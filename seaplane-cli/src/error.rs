@@ -5,10 +5,7 @@ use std::{
     result::Result as StdResult,
 };
 
-use seaplane::{
-    api::v1::{FormationsErrorKind, ImageReferenceError},
-    error::SeaplaneError,
-};
+use seaplane::{api::v1::ImageReferenceError, api::ApiErrorKind, error::SeaplaneError};
 
 use crate::{
     log::{log_level, LogLevel},
@@ -409,25 +406,15 @@ impl CliErrorKind {
                 cli_println!("' values were provided and only one is allowed");
             }
             Seaplane(e) => match e {
-                SeaplaneError::FormationsResponse(fr) => {
-                    cli_eprintln!("{fr}");
-                    if let Some(ctx) = &fr.context {
-                        if let FormationsErrorKind::InvalidRequest = fr.kind {
-                            if ctx.contains("force=true") {
-                                cli_eprint!("(hint: set the force parameter with '");
-                                cli_eprint!(@Yellow, "--force");
-                                cli_eprintln!("')");
-                                return;
-                            }
-                        }
-                        cli_eprintln!("(hint: {ctx})");
+                SeaplaneError::ApiResponse(ae) => {
+                    cli_eprintln!("{ae}");
+                    if ae.kind == ApiErrorKind::BadRequest
+                        && ae.message.contains("`force` flag was not set")
+                    {
+                        cli_eprint!("(hint: set the force parameter with '");
+                        cli_eprint!(@Yellow, "--force");
+                        cli_eprintln!("')");
                     }
-                }
-                SeaplaneError::ConfigResponse(cr) => {
-                    cli_eprintln!("{cr}")
-                }
-                SeaplaneError::LocksResponse(lr) => {
-                    cli_eprintln!("{lr}")
                 }
                 _ => {
                     cli_eprintln!("seaplane API: {e}")

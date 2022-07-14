@@ -1,6 +1,8 @@
 use clap::{ArgMatches, Command};
+
 use seaplane::{
-    api::v1::{ActiveConfiguration, ActiveConfigurations, FormationsErrorKind},
+    api::v1::{ActiveConfiguration, ActiveConfigurations},
+    api::ApiErrorKind,
     error::SeaplaneError,
 };
 
@@ -176,8 +178,8 @@ impl CliCommand for SeaplaneFormationLaunch {
                     pb.set_message("Searching for existing Formations...");
                     if let Err(e) = req.add_configuration(&cfg.model, false) {
                         match e.kind() {
-                            CliErrorKind::Seaplane(SeaplaneError::FormationsResponse(fr))
-                                if fr.kind == FormationsErrorKind::FormationNotFound =>
+                            CliErrorKind::Seaplane(SeaplaneError::ApiResponse(ae))
+                                if ae.kind == ApiErrorKind::NotFound =>
                             {
                                 // If the formation didn't exist, create it
                                 pb.set_message("Creating new Formation Instance...");

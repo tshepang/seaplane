@@ -1,24 +1,16 @@
-//! Errors that come from the Locks endpoints
+//! Errors that come from the API endpoints
 
 use std::{error::Error, fmt};
 
 use reqwest::{blocking::Response, StatusCode};
-use serde::Deserialize;
 
 use crate::error::Result;
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct ErrorResponse {
-    pub status: u16,
-    pub title: String,
-    pub detail: Option<String>,
-}
-
-pub fn map_error(resp: Response) -> Result<Response> {
+pub fn map_api_error(resp: Response) -> Result<Response> {
     if let Err(source) = resp.error_for_status_ref() {
         let kind = source.status().into();
-        return Err(LocksError {
-            body: resp.json()?,
+        return Err(ApiError {
+            message: resp.text()?,
             source,
             kind,
         }
@@ -29,34 +21,25 @@ pub fn map_error(resp: Response) -> Result<Response> {
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct LocksError {
-    pub body: ErrorResponse,
+pub struct ApiError {
+    pub message: String,
     pub source: reqwest::Error,
-    pub kind: LocksErrorKind,
+    pub kind: ApiErrorKind,
 }
 
-impl fmt::Display for LocksError {
+impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}{}",
-            self.body.title,
-            if let Some(msg) = &self.body.detail {
-                format!(" - {}", msg)
-            } else {
-                String::new()
-            }
-        )
+        write!(f, "{}", self.message)
     }
 }
 
-impl Error for LocksError {
+impl Error for ApiError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         Some(&self.source)
     }
 }
 
-impl PartialEq for LocksError {
+impl PartialEq for ApiError {
     fn eq(&self, other: &Self) -> bool {
         self.kind == other.kind
     }
@@ -64,34 +47,37 @@ impl PartialEq for LocksError {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[non_exhaustive]
-pub enum LocksErrorKind {
+pub enum ApiErrorKind {
     /// HTTP Status Code that isn't implemented yet
     UnimplementedHttpStatus(StatusCode),
     /// HTTP 400 - Bad Request
-    InvalidRequest,
+    BadRequest,
     /// HTTP 401 - I don't know you
-    NotLoggedIn,
+    Unauthorized,
+    /// HTTP 403 - I know you, but I don't like you
+    Forbidden,
     /// HTTP 404 - Not Found
-    LockNotFound,
+    NotFound,
     /// HTTP 409 - Conflict
-    LockAlreadyHeld,
+    Conflict,
     /// HTTP 500 - Internal
-    InternalError,
+    InternalServerError,
     /// HTTP 503 - Service Unavailable
     ServiceUnavailable,
     /// Not an HTTP status error
     Unknown,
 }
 
-impl From<Option<StatusCode>> for LocksErrorKind {
+impl From<Option<StatusCode>> for ApiErrorKind {
     fn from(code: Option<StatusCode>) -> Self {
-        use LocksErrorKind::*;
+        use ApiErrorKind::*;
         match code {
-            Some(StatusCode::BAD_REQUEST) => InvalidRequest,
-            Some(StatusCode::UNAUTHORIZED) => NotLoggedIn,
-            Some(StatusCode::NOT_FOUND) => LockNotFound,
-            Some(StatusCode::CONFLICT) => LockAlreadyHeld,
-            Some(StatusCode::INTERNAL_SERVER_ERROR) => InternalError,
+            Some(StatusCode::BAD_REQUEST) => BadRequest,
+            Some(StatusCode::UNAUTHORIZED) => Unauthorized,
+            Some(StatusCode::FORBIDDEN) => Forbidden,
+            Some(StatusCode::NOT_FOUND) => NotFound,
+            Some(StatusCode::CONFLICT) => Conflict,
+            Some(StatusCode::INTERNAL_SERVER_ERROR) => InternalServerError,
             Some(StatusCode::SERVICE_UNAVAILABLE) => ServiceUnavailable,
             Some(code) => UnimplementedHttpStatus(code),
             None => Unknown,

@@ -2,10 +2,9 @@ use reqwest::Url;
 use seaplane::{
     api::{
         v1::locks::{
-            HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName, LocksErrorKind,
-            LocksRequest,
+            HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName, LocksRequest,
         },
-        AccessToken,
+        AccessToken, ApiErrorKind,
     },
     error::SeaplaneError,
 };
@@ -118,8 +117,8 @@ macro_rules! maybe_retry {
 
         let res = match req.$fn($( $arg.clone() ),*) {
             Ok(ret) => Ok(ret),
-            Err(SeaplaneError::LocksResponse(fr))
-                if fr.kind == LocksErrorKind::NotLoggedIn =>
+            Err(SeaplaneError::ApiResponse(ae))
+                if ae.kind == ApiErrorKind::Unauthorized =>
             {
                 $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref())?);
                 Ok(req.$fn($( $arg ,)*)?)

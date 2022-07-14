@@ -1,10 +1,7 @@
 //! The `/formations` endpoint APIs which allows working with [`FormationConfiguration`]s,
 //! [`Flight`]s, and the underlying containers
 
-mod error;
 mod models;
-
-pub use error::{map_error, FormationsError, FormationsErrorKind};
 
 use reqwest::{
     blocking,
@@ -14,7 +11,7 @@ use reqwest::{
 use uuid::Uuid;
 
 use crate::{
-    api::COMPUTE_API_URL,
+    api::{map_api_error, COMPUTE_API_URL},
     error::{Result, SeaplaneError},
 };
 pub use models::*;
@@ -159,7 +156,7 @@ impl FormationsRequest {
             .bearer_auth(&self.token)
             .send()?;
 
-        map_error(resp, None)?
+        map_api_error(resp)?
             .json::<FormationNames>()
             .map_err(Into::into)
     }
@@ -186,7 +183,7 @@ impl FormationsRequest {
             .join(&format!("formations/{}", self.name()))?;
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
 
-        map_error(resp, None)?
+        map_api_error(resp)?
             .json::<FormationMetadata>()
             .map_err(Into::into)
     }
@@ -270,9 +267,7 @@ impl FormationsRequest {
             self.client.post(url).bearer_auth(&self.token)
         };
         let resp = req.send()?;
-        map_error(resp, None)?
-            .json::<Vec<Uuid>>()
-            .map_err(Into::into)
+        map_api_error(resp)?.json::<Vec<Uuid>>().map_err(Into::into)
     }
 
     /// Deletes a formation
@@ -303,15 +298,7 @@ impl FormationsRequest {
             .join(&format!("formations/{}?force={force}", self.name()))?;
         let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
 
-        map_error(
-            resp,
-            Some((
-                FormationsErrorKind::InvalidRequest,
-                "use force=true to override".into(),
-            )),
-        )?
-        .json::<Vec<Uuid>>()
-        .map_err(Into::into)
+        map_api_error(resp)?.json::<Vec<Uuid>>().map_err(Into::into)
     }
 
     /// Returns the IDs of all active configurations of a formation, along with their traffic
@@ -340,7 +327,7 @@ impl FormationsRequest {
             .endpoint_url
             .join(&format!("formations/{}/activeConfiguration", self.name()))?;
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
-        map_error(resp, None)?
+        map_api_error(resp)?
             .json::<ActiveConfigurations>()
             .map_err(Into::into)
     }
@@ -371,7 +358,7 @@ impl FormationsRequest {
             .endpoint_url
             .join(&format!("formations/{}/activeConfiguration", self.name()))?;
         let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
-        map_error(resp, None)?
+        map_api_error(resp)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
@@ -429,16 +416,10 @@ impl FormationsRequest {
             .bearer_auth(&self.token)
             .body(serde_json::to_string(&configs)?)
             .send()?;
-        map_error(
-            resp,
-            Some((
-                FormationsErrorKind::InvalidRequest,
-                "use force=true to override".into(),
-            )),
-        )?
-        .text()
-        .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
-        .map_err(Into::into)
+        map_api_error(resp)?
+            .text()
+            .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
+            .map_err(Into::into)
     }
 
     /// List all containers (both actively running and recently stopped) within a Formation
@@ -466,7 +447,7 @@ impl FormationsRequest {
             .endpoint_url
             .join(&format!("formations/{}/containers", self.name()))?;
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
-        map_error(resp, None)?
+        map_api_error(resp)?
             .json::<Containers>()
             .map_err(Into::into)
     }
@@ -500,9 +481,7 @@ impl FormationsRequest {
             self.name()
         ))?;
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
-        map_error(resp, None)?
-            .json::<Container>()
-            .map_err(Into::into)
+        map_api_error(resp)?.json::<Container>().map_err(Into::into)
     }
 
     /// Returns the configuration details for a given configuration UUID within Formation
@@ -534,7 +513,7 @@ impl FormationsRequest {
             .endpoint_url
             .join(&format!("formations/{}/configurations/{uuid}", self.name()))?;
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
-        map_error(resp, None)?
+        map_api_error(resp)?
             .json::<FormationConfiguration>()
             .map_err(Into::into)
     }
@@ -564,9 +543,7 @@ impl FormationsRequest {
             .endpoint_url
             .join(&format!("formations/{}/configurations", self.name()))?;
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
-        map_error(resp, None)?
-            .json::<Vec<Uuid>>()
-            .map_err(Into::into)
+        map_api_error(resp)?.json::<Vec<Uuid>>().map_err(Into::into)
     }
 
     /// Removes a Configuration from a Formation and returns the UUID of the configuration
@@ -605,15 +582,7 @@ impl FormationsRequest {
             self.name()
         ))?;
         let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
-        map_error(
-            resp,
-            Some((
-                FormationsErrorKind::InvalidRequest,
-                "use force=true to override".into(),
-            )),
-        )?
-        .json::<Uuid>()
-        .map_err(Into::into)
+        map_api_error(resp)?.json::<Uuid>().map_err(Into::into)
     }
 
     /// Create a new configuration for this Formation and optionally set it as active. This differs
@@ -660,7 +629,7 @@ impl FormationsRequest {
             .bearer_auth(&self.token)
             .body(serde_json::to_string(&configuration)?)
             .send()?;
-        map_error(resp, None)?.json::<Uuid>().map_err(Into::into)
+        map_api_error(resp)?.json::<Uuid>().map_err(Into::into)
     }
 
     // Internal, only used when can only be a valid name.

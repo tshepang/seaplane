@@ -9,16 +9,13 @@ use reqwest::{
 use serde::Deserialize;
 
 use crate::{
-    api::METADATA_API_URL,
+    api::{map_api_error, METADATA_API_URL},
     base64::add_base64_path_segment,
     error::{Result, SeaplaneError},
 };
 
 mod models;
 pub use models::*;
-
-mod error;
-pub use error::*;
 
 use super::RangeQueryContext;
 /// A builder struct for creating a [`LocksRequest`] which will then be used for making a
@@ -237,7 +234,7 @@ impl LocksRequest {
         }
 
         let name = self.lock_name()?;
-        map_error(resp)?
+        map_api_error(resp)?
             .json::<AcquireResponse>()
             .map(|AcquireResponse { id, sequencer }| HeldLock {
                 name,
@@ -278,7 +275,7 @@ impl LocksRequest {
 
         let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
 
-        map_error(resp)?
+        map_api_error(resp)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
@@ -316,7 +313,7 @@ impl LocksRequest {
 
         let resp = self.client.patch(url).bearer_auth(&self.token).send()?;
 
-        map_error(resp)?
+        map_api_error(resp)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
@@ -344,7 +341,7 @@ impl LocksRequest {
 
         let resp = self.client.get(url).bearer_auth(&self.token).send()?;
 
-        map_error(resp)?.json::<LockInfo>().map_err(Into::into)
+        map_api_error(resp)?.json::<LockInfo>().map_err(Into::into)
     }
 
     /// Returns a single page of lock information for the given directory, beginning with the `from` key.
@@ -393,7 +390,9 @@ impl LocksRequest {
                 let url = self.range_url()?;
 
                 let resp = self.client.get(url).bearer_auth(&self.token).send()?;
-                map_error(resp)?.json::<LockInfoRange>().map_err(Into::into)
+                map_api_error(resp)?
+                    .json::<LockInfoRange>()
+                    .map_err(Into::into)
             }
         }
     }

@@ -5,9 +5,9 @@ use seaplane::{
             ActiveConfigurations as ActiveConfigurationsModel, Container as ContainerModel,
             Containers as ContainersModel, FormationConfiguration as FormationConfigurationModel,
             FormationMetadata as FormationMetadataModel, FormationNames as FormationNamesModel,
-            FormationsErrorKind, FormationsRequest,
+            FormationsRequest,
         },
-        AccessToken,
+        AccessToken, ApiErrorKind,
     },
     error::SeaplaneError,
 };
@@ -177,8 +177,8 @@ macro_rules! maybe_retry {
 
         let res = match req.$fn($( $arg ),*) {
             Ok(ret) => Ok(ret),
-            Err(SeaplaneError::FormationsResponse(fr))
-                if fr.kind == FormationsErrorKind::NotLoggedIn =>
+            Err(SeaplaneError::ApiResponse(ae))
+                if ae.kind == ApiErrorKind::Unauthorized =>
             {
                 $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref())?);
                 Ok(req.$fn($( $arg ,)*)?)
