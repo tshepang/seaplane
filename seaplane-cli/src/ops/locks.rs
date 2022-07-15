@@ -128,6 +128,33 @@ impl Output for LockName {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct HeldLock {
+    pub lock_id: String,
+    pub sequencer: u32,
+}
+
+impl Output for HeldLock {
+    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
+        cli_println!("{}", serde_json::to_string(self)?);
+        Ok(())
+    }
+
+    fn print_table(&self, ctx: &Ctx) -> Result<()> {
+        let show_headers = !ctx.locks_ctx.get_or_init().no_header;
+        let mut ptr = printer();
+
+        let id_prefix = if show_headers { "LOCK-ID: " } else { "" };
+        let seq_prefix = if show_headers { "SEQUENCER: " } else { "" };
+        writeln!(ptr, "{id_prefix}{}", self.lock_id)?;
+        writeln!(ptr, "{seq_prefix}{}", self.sequencer)?;
+
+        ptr.flush()?;
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

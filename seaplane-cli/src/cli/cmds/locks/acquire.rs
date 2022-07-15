@@ -3,6 +3,7 @@ use crate::{
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
     context::{Ctx, LocksCtx},
     error::Result,
+    ops::locks::HeldLock,
     printer::{Output, OutputFormat},
 };
 use clap::{ArgMatches, Command};
@@ -44,23 +45,16 @@ impl CliCommand for SeaplaneLocksAcquire {
 
         let ttl = locksctx.ttl.as_ref().unwrap();
         let client_id: &str = locksctx.client_id.as_ref().unwrap();
-        req.acquire(*ttl, client_id)?;
+        let held_lock_model = req.acquire(*ttl, client_id)?;
+
+        let held_lock = HeldLock {
+            lock_id: held_lock_model.id().encoded().to_owned(),
+            sequencer: held_lock_model.sequencer(),
+        };
 
         match ctx.args.out_format {
-            OutputFormat::Json => ctx
-                .locks_ctx
-                .get_or_init()
-                .lock_name
-                .as_ref()
-                .unwrap()
-                .print_json(ctx)?,
-            OutputFormat::Table => ctx
-                .locks_ctx
-                .get_or_init()
-                .lock_name
-                .as_ref()
-                .unwrap()
-                .print_table(ctx)?,
+            OutputFormat::Json => held_lock.print_json(ctx)?,
+            OutputFormat::Table => held_lock.print_table(ctx)?,
         }
 
         Ok(())

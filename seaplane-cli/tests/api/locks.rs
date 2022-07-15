@@ -22,7 +22,10 @@ fn locks_acquire() {
     );
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(printer().as_string().trim(), "LOCK-NAME: Zm9v");
+    assert_eq!(
+        printer().as_string().trim(),
+        "LOCK-ID: D4lbVpdBE_U\nSEQUENCER: 3"
+    );
     printer().clear();
 
     let res = test_main(
@@ -32,7 +35,10 @@ fn locks_acquire() {
 
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(printer().as_string().trim(), "LOCK-NAME: Zm9v");
+    assert_eq!(
+        printer().as_string().trim(),
+        "LOCK-ID: D4lbVpdBE_U\nSEQUENCER: 3"
+    );
     printer().clear();
 
     mock.delete();
