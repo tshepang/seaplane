@@ -1,1 +1,1 @@
-from seaplane.configuration import Configuration, config
+from .configuration import Configuration, config

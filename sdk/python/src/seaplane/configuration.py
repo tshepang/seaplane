@@ -1,8 +1,7 @@
 import os
-from sre_constants import SRE_FLAG_TEMPLATE
 from typing import Text
 
-SEAPLANE_ENV_VAR_API_KEY_NAME = "SEAPLANE_API_KEY"
+_SEAPLANE_API_ENDPOINT = "https://compute.cplane.cloud/v1"
 
 
 class Configuration:
@@ -11,14 +10,17 @@ class Configuration:
     """
 
     def __init__(self) -> None:
-        self.seaplane_api_key = None
-        env_api_key = os.getenv(SEAPLANE_ENV_VAR_API_KEY_NAME)
-
-        if env_api_key is not None:
-            self.seaplane_api_key = env_api_key
+        self.seaplane_api_key: Text | None = None
+        self.endpoint = _SEAPLANE_API_ENDPOINT        
 
     def set_api_key(self, api_key: Text) -> None:
         self.seaplane_api_key = api_key
+
+    def set_endpoint(self, endpoint: str) -> None:
+        if endpoint[-1] == "/":
+            self.endpoint = endpoint.rstrip(endpoint[-1])
+        else:
+            self.endpoint = endpoint
 
 
 config = Configuration()
