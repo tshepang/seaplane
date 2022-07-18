@@ -11,3 +11,7 @@ pub use locks::*;
 
 pub mod range_query;
 pub use range_query::*;
+
+// Request builder base structs that handle token reuse
+pub mod request;
+pub(crate) use request::*;

@@ -110,10 +110,10 @@ spell-check: (_cargo-install 'typos-cli')
     typos {{justfile_directory()}}
 
 # Run the CI suite for the SDK (only runs for your native os/arch!)
-sdk-ci: _test test-api test-doc-builds rustfmt-check (clippy 'seaplane') (clippy 'seaplane' '--features unstable')
+sdk-ci: _test test-api test-doc-builds rustfmt-check (clippy 'seaplane') (clippy 'seaplane' '--features unstable') (clippy 'seaplane' '--no-default-features')
 
 # Run the CI suite for the CLI (only runs for your native os/arch!)
-cli-ci: (_test 'seaplane-cli') (test-doc-builds 'seaplane-cli') test-ui (test-api 'seaplane-cli') (rustfmt-check 'seaplane-cli') (clippy 'seaplane-cli') (clippy 'seaplane-cli' '--features unstable')
+cli-ci: (_test 'seaplane-cli') (test-doc-builds 'seaplane-cli') test-ui (test-api 'seaplane-cli') (rustfmt-check 'seaplane-cli') (clippy 'seaplane-cli') (clippy 'seaplane-cli' '--features unstable') (clippy 'seaplane-cli' '--no-default-features')
 
 # Run the full CI suite (only runs for your native os/arch!)
 ci: audit cli-ci sdk-ci spell-check test-doc

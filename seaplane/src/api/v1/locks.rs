@@ -1,60 +1,67 @@
 //! The `/locks` endpoint APIs which allows working with [`HeldLock`]s
+mod models;
+pub use models::*;
 
-use models::RequestTarget;
-use reqwest::{
-    blocking,
-    header::{self, CONTENT_TYPE},
-    Url,
-};
+use reqwest::Url;
 use serde::Deserialize;
 
 use crate::{
-    api::{map_api_error, METADATA_API_URL},
+    api::{
+        map_api_error,
+        v1::{ApiRequest, RangeQueryContext, RequestBuilder},
+        METADATA_API_URL,
+    },
     base64::add_base64_path_segment,
     error::{Result, SeaplaneError},
 };
 
-mod models;
-pub use models::*;
-
-use super::RangeQueryContext;
 /// A builder struct for creating a [`LocksRequest`] which will then be used for making a
 /// request against the `/locks` APIs
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct LocksRequestBuilder {
-    // The target lock of this request
-    target: Option<RequestTarget>,
-    // Required for Bearer Auth
-    token: Option<String>,
-    // Used for testing
-    #[doc(hidden)]
-    base_url: Option<Url>,
+    builder: RequestBuilder<RequestTarget>,
 }
 
 /// For making requests against the `/locks` APIs.
 #[derive(Debug)]
 pub struct LocksRequest {
-    target: RequestTarget,
-    token: String, // TODO: probably not a string
-    #[doc(hidden)]
-    client: reqwest::blocking::Client,
-    #[doc(hidden)]
-    endpoint_url: Url,
+    request: ApiRequest<RequestTarget>,
 }
 
+impl From<RequestBuilder<RequestTarget>> for LocksRequestBuilder {
+    fn from(builder: RequestBuilder<RequestTarget>) -> Self {
+        Self { builder }
+    }
+}
+
+impl Default for LocksRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl LocksRequestBuilder {
-    /// Create a new `Default` builder
+    /// Create a new LocksRequestBuilder
     pub fn new() -> Self {
-        Self::default()
+        RequestBuilder::new(METADATA_API_URL, "v1/locks/").into()
+    }
+
+    /// Build a LocksRequest from the given parameters
+    pub fn build(self) -> Result<LocksRequest> {
+        Ok(self.builder.build()?.into())
     }
 
     /// Set the token used in Bearer Authorization
     ///
     /// **NOTE:** This is required for all endpoints
     #[must_use]
-    pub fn token<S: Into<String>>(mut self, token: S) -> Self {
-        self.token = Some(token.into());
-        self
+    pub fn token<U: Into<String>>(self, token: U) -> Self {
+        self.builder.token(token).into()
+    }
+
+    // Used in testing and development to manually set the URL
+    #[doc(hidden)]
+    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self {
+        self.builder.base_url(url).into()
     }
 
     /// The lock name with which to perform operations where you may not be holding the lock.
@@ -63,7 +70,7 @@ impl LocksRequestBuilder {
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
     pub fn encoded_lock_name<S: Into<String>>(mut self, lock: S) -> Self {
-        self.target = Some(RequestTarget::SingleLock(LockName::from_encoded(
+        self.builder.target = Some(RequestTarget::SingleLock(LockName::from_encoded(
             lock.into(),
         )));
         self
@@ -74,7 +81,7 @@ impl LocksRequestBuilder {
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
     pub fn held_lock(mut self, lock: HeldLock) -> Self {
-        self.target = Some(RequestTarget::HeldLock(lock));
+        self.builder.target = Some(RequestTarget::HeldLock(lock));
         self
     }
 
@@ -83,56 +90,14 @@ impl LocksRequestBuilder {
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
     pub fn range(mut self, context: RangeQueryContext<LockName>) -> Self {
-        self.target = Some(RequestTarget::Range(context));
+        self.builder.target = Some(RequestTarget::Range(context));
         self
     }
+}
 
-    /// Build a LocksRequest from the given parameters
-    pub fn build(self) -> Result<LocksRequest> {
-        if self.token.is_none() {
-            return Err(SeaplaneError::MissingRequestAuthToken);
-        }
-
-        let mut headers = header::HeaderMap::new();
-        headers.insert(
-            CONTENT_TYPE,
-            header::HeaderValue::from_static("application/json"),
-        );
-
-        let target = self
-            .target
-            .ok_or(SeaplaneError::IncorrectLocksRequestTarget)?;
-
-        #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
-        let mut builder = blocking::Client::builder()
-            .default_headers(headers)
-            .https_only(true);
-
-        #[cfg(feature = "api_tests")]
-        {
-            builder = builder.https_only(false);
-        }
-
-        let url = if let Some(url) = self.base_url {
-            url.join("v1/locks/")?
-        } else {
-            let mut url: Url = METADATA_API_URL.parse()?;
-            url.set_path("v1/locks/");
-            url
-        };
-        Ok(LocksRequest {
-            target,
-            token: self.token.unwrap(),
-            client: builder.build()?,
-            endpoint_url: url,
-        })
-    }
-
-    // Used in testing and development to manually set the URL
-    #[doc(hidden)]
-    pub fn base_url<S: AsRef<str>>(mut self, url: S) -> Self {
-        self.base_url = Some(url.as_ref().parse().unwrap());
-        self
+impl From<ApiRequest<RequestTarget>> for LocksRequest {
+    fn from(request: ApiRequest<RequestTarget>) -> Self {
+        Self { request }
     }
 }
 
@@ -144,12 +109,12 @@ impl LocksRequest {
 
     // Internal method creating the URL for all single lock endpoints
     fn single_lock_url(&self) -> Result<Url> {
-        match &self.target {
-            RequestTarget::HeldLock(_) | RequestTarget::Range(_) => {
+        match &self.request.target {
+            None | Some(RequestTarget::HeldLock(_) | RequestTarget::Range(_)) => {
                 Err(SeaplaneError::IncorrectLocksRequestTarget)
             }
-            RequestTarget::SingleLock(l) => Ok(add_base64_path_segment(
-                self.endpoint_url.clone(),
+            Some(RequestTarget::SingleLock(l)) => Ok(add_base64_path_segment(
+                self.request.endpoint_url.clone(),
                 l.encoded(),
             )),
         }
@@ -157,13 +122,14 @@ impl LocksRequest {
 
     // Internal method for creating the URL for held lock endpoints
     fn held_lock_url(&self) -> Result<Url> {
-        match &self.target {
-            RequestTarget::SingleLock(_) | RequestTarget::Range(_) => {
+        match &self.request.target {
+            None | Some(RequestTarget::SingleLock(_) | RequestTarget::Range(_)) => {
                 Err(SeaplaneError::IncorrectLocksRequestTarget)
             }
 
-            RequestTarget::HeldLock(HeldLock { name, id, .. }) => {
-                let mut url = add_base64_path_segment(self.endpoint_url.clone(), name.encoded());
+            Some(RequestTarget::HeldLock(HeldLock { name, id, .. })) => {
+                let mut url =
+                    add_base64_path_segment(self.request.endpoint_url.clone(), name.encoded());
                 url.set_query(Some(&format!("id=base64:{}", id.encoded())));
                 Ok(url)
             }
@@ -172,12 +138,12 @@ impl LocksRequest {
 
     // Internal method for creating the URL for range endpoints
     fn range_url(&self) -> Result<Url> {
-        match &self.target {
-            RequestTarget::SingleLock(_) | RequestTarget::HeldLock(_) => {
+        match &self.request.target {
+            None | Some(RequestTarget::SingleLock(_) | RequestTarget::HeldLock(_)) => {
                 Err(SeaplaneError::IncorrectLocksRequestTarget)
             }
-            RequestTarget::Range(context) => {
-                let mut url = self.endpoint_url.clone();
+            Some(RequestTarget::Range(context)) => {
+                let mut url = self.request.endpoint_url.clone();
 
                 if let Some(encoded_dir) = context.directory() {
                     url = add_base64_path_segment(url, encoded_dir.encoded());
@@ -196,11 +162,11 @@ impl LocksRequest {
 
     // Internal method for getting the lock name
     fn lock_name(&self) -> Result<LockName> {
-        match &self.target {
-            RequestTarget::HeldLock(_) | RequestTarget::Range(_) => {
+        match &self.request.target {
+            None | Some(RequestTarget::HeldLock(_) | RequestTarget::Range(_)) => {
                 Err(SeaplaneError::IncorrectLocksRequestTarget)
             }
-            RequestTarget::SingleLock(l) => Ok(l.clone()),
+            Some(RequestTarget::SingleLock(l)) => Ok(l.clone()),
         }
     }
 
@@ -225,7 +191,12 @@ impl LocksRequest {
     pub fn acquire(&self, ttl: u32, client_id: &str) -> Result<HeldLock> {
         let mut url = self.single_lock_url()?;
         url.set_query(Some(&format!("ttl={ttl}&client-id={client_id}")));
-        let resp = self.client.post(url).bearer_auth(&self.token).send()?;
+        let resp = self
+            .request
+            .client
+            .post(url)
+            .bearer_auth(&self.request.token)
+            .send()?;
 
         #[derive(Deserialize)]
         struct AcquireResponse {
@@ -273,7 +244,12 @@ impl LocksRequest {
     pub fn release(&self) -> Result<()> {
         let url = self.held_lock_url()?;
 
-        let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
+        let resp = self
+            .request
+            .client
+            .delete(url)
+            .bearer_auth(&self.request.token)
+            .send()?;
 
         map_api_error(resp)?
             .text()
@@ -311,7 +287,12 @@ impl LocksRequest {
 
         url.query_pairs_mut().append_pair("ttl", &ttl.to_string());
 
-        let resp = self.client.patch(url).bearer_auth(&self.token).send()?;
+        let resp = self
+            .request
+            .client
+            .patch(url)
+            .bearer_auth(&self.request.token)
+            .send()?;
 
         map_api_error(resp)?
             .text()
@@ -339,7 +320,12 @@ impl LocksRequest {
     pub fn get_lock_info(&self) -> Result<LockInfo> {
         let url = self.single_lock_url()?;
 
-        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+        let resp = self
+            .request
+            .client
+            .get(url)
+            .bearer_auth(&self.request.token)
+            .send()?;
 
         map_api_error(resp)?.json::<LockInfo>().map_err(Into::into)
     }
@@ -382,14 +368,19 @@ impl LocksRequest {
     /// }
     /// ```
     pub fn get_page(&self) -> Result<LockInfoRange> {
-        match &self.target {
-            RequestTarget::SingleLock(_) | RequestTarget::HeldLock(_) => {
+        match &self.request.target {
+            None | Some(RequestTarget::SingleLock(_) | RequestTarget::HeldLock(_)) => {
                 Err(SeaplaneError::IncorrectLocksRequestTarget)
             }
-            RequestTarget::Range(_) => {
+            Some(RequestTarget::Range(_)) => {
                 let url = self.range_url()?;
 
-                let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+                let resp = self
+                    .request
+                    .client
+                    .get(url)
+                    .bearer_auth(&self.request.token)
+                    .send()?;
                 map_api_error(resp)?
                     .json::<LockInfoRange>()
                     .map_err(Into::into)
@@ -426,7 +417,7 @@ impl LocksRequest {
             pages.append(&mut lir.infos);
             if let Some(next_key) = lir.next {
                 // TODO: Regrettable duplication here suggests that there should be a ConfigKeyRequest and a ConfigRangeRequest
-                if let RequestTarget::Range(ref mut context) = self.target {
+                if let Some(RequestTarget::Range(ref mut context)) = self.request.target {
                     context.set_from(next_key);
                 } else {
                     return Err(SeaplaneError::IncorrectLocksRequestTarget);

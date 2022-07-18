@@ -1,60 +1,64 @@
 //! The `/config` endpoint APIs which allows working with [`KeyValue`]s
-
 mod models;
-
-use crate::{
-    api::{map_api_error, METADATA_API_URL},
-    base64::add_base64_path_segment,
-    error::{Result, SeaplaneError},
-};
+pub use models::*;
 
 use reqwest::{
-    blocking,
     header::{self, CONTENT_TYPE},
     Url,
 };
 
-pub use models::*;
-
-use super::range_query::RangeQueryContext;
+use crate::{
+    api::{
+        map_api_error,
+        v1::{ApiRequest, RangeQueryContext, RequestBuilder},
+        METADATA_API_URL,
+    },
+    base64::add_base64_path_segment,
+    error::{Result, SeaplaneError},
+};
 
 /// A builder struct for creating a [`ConfigRequest`] which will then be used for making a
 /// request against the `/config` APIs
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ConfigRequestBuilder {
-    // The target key or range of the request
-    target: Option<RequestTarget>,
-    // Required for Bearer Auth
-    token: Option<String>,
-    // Used for testing
-    #[doc(hidden)]
-    base_url: Option<Url>,
+    builder: RequestBuilder<RequestTarget>,
 }
 
-/// For making requests against the `/config` APIs.
-#[derive(Debug)]
-pub struct ConfigRequest {
-    target: RequestTarget,
-    token: String, // TODO: probably not a string
-    #[doc(hidden)]
-    client: reqwest::blocking::Client,
-    #[doc(hidden)]
-    endpoint_url: Url,
+impl From<RequestBuilder<RequestTarget>> for ConfigRequestBuilder {
+    fn from(builder: RequestBuilder<RequestTarget>) -> Self {
+        Self { builder }
+    }
+}
+
+impl Default for ConfigRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ConfigRequestBuilder {
-    /// Create a new `Default` builder
+    /// Create a new ConfigRequestBuilder
     pub fn new() -> Self {
-        Self::default()
+        RequestBuilder::new(METADATA_API_URL, "v1/config/").into()
+    }
+
+    /// Build an ConfigRequest from the given parameters
+    pub fn build(self) -> Result<ConfigRequest> {
+        Ok(self.builder.build()?.into())
     }
 
     /// Set the token used in Bearer Authorization
     ///
     /// **NOTE:** This is required for all endpoints
     #[must_use]
-    pub fn token<S: Into<String>>(mut self, token: S) -> Self {
-        self.token = Some(token.into());
-        self
+    pub fn token<U: Into<String>>(self, token: U) -> Self {
+        self.builder.token(token).into()
+    }
+
+    // Used in testing and development to manually set the URL
+    #[doc(hidden)]
+    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self {
+        self.builder.base_url(url).into()
     }
 
     /// The key with which to query the store, encoded in url-safe base64.
@@ -62,7 +66,7 @@ impl ConfigRequestBuilder {
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
     pub fn encoded_key<S: Into<String>>(mut self, key: S) -> Self {
-        self.target = Some(RequestTarget::Key(Key::from_encoded(key.into())));
+        self.builder.target = Some(RequestTarget::Key(Key::from_encoded(key.into())));
         self
     }
 
@@ -71,56 +75,20 @@ impl ConfigRequestBuilder {
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
     pub fn range(mut self, context: RangeQueryContext<Key>) -> Self {
-        self.target = Some(RequestTarget::Range(context));
+        self.builder.target = Some(RequestTarget::Range(context));
         self
     }
+}
 
-    /// Build a ConfigRequest from the given parameters
-    pub fn build(self) -> Result<ConfigRequest> {
-        if self.token.is_none() {
-            return Err(SeaplaneError::MissingRequestAuthToken);
-        }
+/// For making requests against the `/config` APIs.
+#[derive(Debug)]
+pub struct ConfigRequest {
+    request: ApiRequest<RequestTarget>,
+}
 
-        let mut headers = header::HeaderMap::new();
-        headers.insert(
-            CONTENT_TYPE,
-            header::HeaderValue::from_static("application/json"),
-        );
-
-        let target = self
-            .target
-            .ok_or(SeaplaneError::IncorrectConfigRequestTarget)?;
-
-        #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
-        let mut builder = blocking::Client::builder()
-            .default_headers(headers)
-            .https_only(true);
-
-        #[cfg(feature = "api_tests")]
-        {
-            builder = builder.https_only(false);
-        }
-
-        let url = if let Some(url) = self.base_url {
-            url.join("v1/config/")?
-        } else {
-            let mut url: Url = METADATA_API_URL.parse()?;
-            url.set_path("v1/config/");
-            url
-        };
-        Ok(ConfigRequest {
-            target,
-            token: self.token.unwrap(),
-            client: builder.build()?,
-            endpoint_url: url,
-        })
-    }
-
-    // Used in testing and development to manually set the URL
-    #[doc(hidden)]
-    pub fn base_url<S: AsRef<str>>(mut self, url: S) -> Self {
-        self.base_url = Some(url.as_ref().parse().unwrap());
-        self
+impl From<ApiRequest<RequestTarget>> for ConfigRequest {
+    fn from(request: ApiRequest<RequestTarget>) -> Self {
+        Self { request }
     }
 }
 
@@ -132,10 +100,12 @@ impl ConfigRequest {
 
     // Internal method creating the URL for all single key endpoints
     fn single_key_url(&self) -> Result<Url> {
-        match &self.target {
-            RequestTarget::Range(_) => Err(SeaplaneError::IncorrectConfigRequestTarget),
-            RequestTarget::Key(k) => Ok(add_base64_path_segment(
-                self.endpoint_url.clone(),
+        match &self.request.target {
+            None | Some(RequestTarget::Range(_)) => {
+                Err(SeaplaneError::IncorrectConfigRequestTarget)
+            }
+            Some(RequestTarget::Key(k)) => Ok(add_base64_path_segment(
+                self.request.endpoint_url.clone(),
                 k.encoded(),
             )),
         }
@@ -143,10 +113,10 @@ impl ConfigRequest {
 
     // Internal method creating the URL for range endpoints
     fn range_url(&self) -> Result<Url> {
-        match &self.target {
-            RequestTarget::Key(_) => Err(SeaplaneError::IncorrectConfigRequestTarget),
-            RequestTarget::Range(context) => {
-                let mut url = self.endpoint_url.clone();
+        match &self.request.target {
+            None | Some(RequestTarget::Key(_)) => Err(SeaplaneError::IncorrectConfigRequestTarget),
+            Some(RequestTarget::Range(context)) => {
+                let mut url = self.request.endpoint_url.clone();
 
                 if let Some(encoded_dir) = context.directory() {
                     url = add_base64_path_segment(url, encoded_dir.encoded());
@@ -183,7 +153,12 @@ impl ConfigRequest {
     /// ```
     pub fn get_value(&self) -> Result<Value> {
         let url = self.single_key_url()?;
-        let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+        let resp = self
+            .request
+            .client
+            .get(url)
+            .bearer_auth(&self.request.token)
+            .send()?;
         map_api_error(resp)?
             .json::<KeyValue>()
             .map(|kv| kv.value)
@@ -232,9 +207,10 @@ impl ConfigRequest {
     pub fn put_value(&self, value: Value) -> Result<()> {
         let url = self.single_key_url()?;
         let resp = self
+            .request
             .client
             .put(url)
-            .bearer_auth(&self.token)
+            .bearer_auth(&self.request.token)
             .header(
                 CONTENT_TYPE,
                 header::HeaderValue::from_static("application/octet-stream"),
@@ -266,7 +242,12 @@ impl ConfigRequest {
     /// ```
     pub fn delete_value(&self) -> Result<()> {
         let url = self.single_key_url()?;
-        let resp = self.client.delete(url).bearer_auth(&self.token).send()?;
+        let resp = self
+            .request
+            .client
+            .delete(url)
+            .bearer_auth(&self.request.token)
+            .send()?;
         map_api_error(resp)?
             .text()
             .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
@@ -311,12 +292,17 @@ impl ConfigRequest {
     /// }
     /// ```
     pub fn get_page(&self) -> Result<KeyValueRange> {
-        match &self.target {
-            RequestTarget::Key(_) => Err(SeaplaneError::IncorrectConfigRequestTarget),
-            RequestTarget::Range(_) => {
+        match &self.request.target {
+            None | Some(RequestTarget::Key(_)) => Err(SeaplaneError::IncorrectConfigRequestTarget),
+            Some(RequestTarget::Range(_)) => {
                 let url = self.range_url()?;
 
-                let resp = self.client.get(url).bearer_auth(&self.token).send()?;
+                let resp = self
+                    .request
+                    .client
+                    .get(url)
+                    .bearer_auth(&self.request.token)
+                    .send()?;
                 map_api_error(resp)?
                     .json::<KeyValueRange>()
                     .map_err(Into::into)
@@ -353,7 +339,7 @@ impl ConfigRequest {
             pages.append(&mut kvr.kvs);
             if let Some(next_key) = kvr.next_key {
                 // TODO: Regrettable duplication here suggests that there should be a ConfigKeyRequest and a ConfigRangeRequest
-                if let RequestTarget::Range(ref mut context) = self.target {
+                if let Some(RequestTarget::Range(ref mut context)) = self.request.target {
                     context.set_from(next_key);
                 } else {
                     return Err(SeaplaneError::IncorrectConfigRequestTarget);
