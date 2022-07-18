@@ -3,6 +3,7 @@ export TARGET := arch()
 GON_CONFIG := justfile_directory() + '/target/sign_' + TARGET + '/config.hcl'
 CURRENT_BRANCH := `git rev-parse --abbrev-ref HEAD`
 TEST_RUNNER := 'cargo nextest run'
+ARG_SEP := if "cargo nextest run" == TEST_RUNNER { '' } else { '--' }
 
 @_default:
     just --list
@@ -97,16 +98,9 @@ clippy CRATE='' FEATURES='':
 # Run API tests using a mock HTTP server
 test-api CRATE='seaplane' $RUSTFLAGS='-D warnings':
 	cargo test --no-run  --features api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
-	{{ TEST_RUNNER }}  --features api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --test-threads=1
+	{{ TEST_RUNNER }}  --features api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
 	cargo test --no-run  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
-	{{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --test-threads=1
-
-# Run cli-API tests using a mock HTTP server
-test-cli-api:
-	{{ TEST_RUNNER }} --features api_tests --test-threads=1
-
-test-cli-locks:
-	{{ TEST_RUNNER }} locks_list --features api_tests --no-capture -- --exact --test-threads=1
+	{{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
 
 # Update all third party licenses
 update-licenses: (_cargo-install 'cargo-lichking')
