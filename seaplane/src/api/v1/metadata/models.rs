@@ -73,7 +73,7 @@ pub struct KeyValueRange {
 }
 
 #[cfg(test)]
-mod config_models_test {
+mod metadata_models_test {
     use super::*;
 
     #[test]

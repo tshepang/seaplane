@@ -37,9 +37,9 @@ pub enum SeaplaneError {
     #[error("the requirements specified in the builder are in conflict and invalid")]
     ConflictingRequirements,
     #[error("request did not include the required key")]
-    MissingConfigKey,
+    MissingMetadataKey,
     #[error("request must target either key or range")]
-    IncorrectConfigRequestTarget,
+    IncorrectMetadataRequestTarget,
     #[error("the API returned an error status")]
     ApiResponse(#[from] ApiError),
     #[error("locks requests must target either a lock by name or a held lock")]
@@ -75,8 +75,8 @@ impl PartialEq for SeaplaneError {
             MissingFlightName => matches!(rhs, MissingFlightName),
             MissingFlightImageReference => matches!(rhs, MissingFlightImageReference),
             ConflictingRequirements => matches!(rhs, ConflictingRequirements),
-            MissingConfigKey => matches!(rhs, MissingConfigKey),
-            IncorrectConfigRequestTarget => matches!(rhs, IncorrectConfigRequestTarget),
+            MissingMetadataKey => matches!(rhs, MissingMetadataKey),
+            IncorrectMetadataRequestTarget => matches!(rhs, IncorrectMetadataRequestTarget),
             IncorrectLocksRequestTarget => matches!(rhs, IncorrectLocksRequestTarget),
             ApiResponse(ae) => match rhs {
                 ApiResponse(oae) => ae == oae,

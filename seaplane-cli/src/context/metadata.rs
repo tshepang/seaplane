@@ -3,7 +3,7 @@ use std::{
     io::{self, Read},
 };
 
-use seaplane::api::v1::config::Key;
+use seaplane::api::v1::metadata::Key;
 use seaplane::api::v1::Directory;
 
 use crate::{

@@ -2,7 +2,7 @@ use clap::{ArgMatches, Command};
 use serde_json::json;
 
 use crate::{
-    api::ConfigReq,
+    api::MetadataReq,
     cli::cmds::metadata::{common, common::SeaplaneMetadataCommonArgMatches, CliCommand},
     context::{Ctx, MetadataCtx},
     error::Result,
@@ -25,7 +25,7 @@ impl SeaplaneMetadataDelete {
 impl CliCommand for SeaplaneMetadataDelete {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mut len = 0;
-        let mut req = ConfigReq::new(ctx)?;
+        let mut req = MetadataReq::new(ctx)?;
         for kv in ctx.md_ctx.get_mut().unwrap().kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();
             req.set_key(key.clone())?;

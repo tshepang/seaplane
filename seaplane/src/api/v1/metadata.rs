@@ -17,33 +17,33 @@ use crate::{
     error::{Result, SeaplaneError},
 };
 
-/// A builder struct for creating a [`ConfigRequest`] which will then be used for making a
+/// A builder struct for creating a [`MetadataRequest`] which will then be used for making a
 /// request against the `/config` APIs
 #[derive(Debug)]
-pub struct ConfigRequestBuilder {
+pub struct MetadataRequestBuilder {
     builder: RequestBuilder<RequestTarget>,
 }
 
-impl From<RequestBuilder<RequestTarget>> for ConfigRequestBuilder {
+impl From<RequestBuilder<RequestTarget>> for MetadataRequestBuilder {
     fn from(builder: RequestBuilder<RequestTarget>) -> Self {
         Self { builder }
     }
 }
 
-impl Default for ConfigRequestBuilder {
+impl Default for MetadataRequestBuilder {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl ConfigRequestBuilder {
-    /// Create a new ConfigRequestBuilder
+impl MetadataRequestBuilder {
+    /// Create a new MetadataRequestBuilder
     pub fn new() -> Self {
         RequestBuilder::new(METADATA_API_URL, "v1/config/").into()
     }
 
-    /// Build an ConfigRequest from the given parameters
-    pub fn build(self) -> Result<ConfigRequest> {
+    /// Build an MetadataRequest from the given parameters
+    pub fn build(self) -> Result<MetadataRequest> {
         Ok(self.builder.build()?.into())
     }
 
@@ -82,27 +82,27 @@ impl ConfigRequestBuilder {
 
 /// For making requests against the `/config` APIs.
 #[derive(Debug)]
-pub struct ConfigRequest {
+pub struct MetadataRequest {
     request: ApiRequest<RequestTarget>,
 }
 
-impl From<ApiRequest<RequestTarget>> for ConfigRequest {
+impl From<ApiRequest<RequestTarget>> for MetadataRequest {
     fn from(request: ApiRequest<RequestTarget>) -> Self {
         Self { request }
     }
 }
 
-impl ConfigRequest {
+impl MetadataRequest {
     /// Create a new request builder
-    pub fn builder() -> ConfigRequestBuilder {
-        ConfigRequestBuilder::new()
+    pub fn builder() -> MetadataRequestBuilder {
+        MetadataRequestBuilder::new()
     }
 
     // Internal method creating the URL for all single key endpoints
     fn single_key_url(&self) -> Result<Url> {
         match &self.request.target {
             None | Some(RequestTarget::Range(_)) => {
-                Err(SeaplaneError::IncorrectConfigRequestTarget)
+                Err(SeaplaneError::IncorrectMetadataRequestTarget)
             }
             Some(RequestTarget::Key(k)) => Ok(add_base64_path_segment(
                 self.request.endpoint_url.clone(),
@@ -114,7 +114,9 @@ impl ConfigRequest {
     // Internal method creating the URL for range endpoints
     fn range_url(&self) -> Result<Url> {
         match &self.request.target {
-            None | Some(RequestTarget::Key(_)) => Err(SeaplaneError::IncorrectConfigRequestTarget),
+            None | Some(RequestTarget::Key(_)) => {
+                Err(SeaplaneError::IncorrectMetadataRequestTarget)
+            }
             Some(RequestTarget::Range(context)) => {
                 let mut url = self.request.endpoint_url.clone();
 
@@ -140,9 +142,9 @@ impl ConfigRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{ConfigRequestBuilder,ConfigRequest};
+    /// use seaplane::api::v1::{MetadataRequestBuilder,MetadataRequest};
     ///
-    /// let req = ConfigRequestBuilder::new()
+    /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
     ///     .encoded_key("bW9ieQo")
     ///     .build()
@@ -172,9 +174,9 @@ impl ConfigRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{ConfigRequestBuilder,ConfigRequest,Value};
+    /// use seaplane::api::v1::{MetadataRequestBuilder,MetadataRequest,Value};
     ///
-    /// let req = ConfigRequestBuilder::new()
+    /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
     ///     .encoded_key("bW9ieQo")
     ///     .build()
@@ -193,9 +195,9 @@ impl ConfigRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{ConfigRequestBuilder,ConfigRequest,Value};
+    /// use seaplane::api::v1::{MetadataRequestBuilder,MetadataRequest,Value};
     ///
-    /// let req = ConfigRequestBuilder::new()
+    /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
     ///     .encoded_key("bW9ieQo")
     ///     .build()
@@ -229,9 +231,9 @@ impl ConfigRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{ConfigRequestBuilder,ConfigRequest};
+    /// use seaplane::api::v1::{MetadataRequestBuilder,MetadataRequest};
     ///
-    /// let req = ConfigRequestBuilder::new()
+    /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
     ///     .encoded_key("bW9ieQo")
     ///     .build()
@@ -265,11 +267,11 @@ impl ConfigRequest {
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{ConfigRequestBuilder, ConfigRequest, RangeQueryContext};
+    /// use seaplane::api::v1::{MetadataRequestBuilder, MetadataRequest, RangeQueryContext};
     ///
     /// let root_dir_range = RangeQueryContext::new();
     ///
-    /// let req = ConfigRequestBuilder::new()
+    /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
     ///     .range(root_dir_range)
     ///     .build()
@@ -281,7 +283,7 @@ impl ConfigRequest {
     ///     let mut next_page_range = RangeQueryContext::new();
     ///     next_page_range.set_from(next_key);
     ///     
-    ///     let req = ConfigRequestBuilder::new()
+    ///     let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
     ///     .range(next_page_range)
     ///     .build()
@@ -293,7 +295,9 @@ impl ConfigRequest {
     /// ```
     pub fn get_page(&self) -> Result<KeyValueRange> {
         match &self.request.target {
-            None | Some(RequestTarget::Key(_)) => Err(SeaplaneError::IncorrectConfigRequestTarget),
+            None | Some(RequestTarget::Key(_)) => {
+                Err(SeaplaneError::IncorrectMetadataRequestTarget)
+            }
             Some(RequestTarget::Range(_)) => {
                 let url = self.range_url()?;
 
@@ -318,11 +322,11 @@ impl ConfigRequest {
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{ConfigRequestBuilder, ConfigRequest, RangeQueryContext};
+    /// use seaplane::api::v1::{MetadataRequestBuilder, MetadataRequest, RangeQueryContext};
     ///
     /// let root_dir_range = RangeQueryContext::new();
     ///
-    /// let mut req = ConfigRequestBuilder::new()
+    /// let mut req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
     ///     .range(root_dir_range)
     ///     .build()
@@ -338,11 +342,12 @@ impl ConfigRequest {
             let mut kvr = self.get_page()?;
             pages.append(&mut kvr.kvs);
             if let Some(next_key) = kvr.next_key {
-                // TODO: Regrettable duplication here suggests that there should be a ConfigKeyRequest and a ConfigRangeRequest
+                // TODO: Regrettable duplication here suggests that there should
+                // be a MetadataKeyRequest and a MetadataRangeRequest
                 if let Some(RequestTarget::Range(ref mut context)) = self.request.target {
                     context.set_from(next_key);
                 } else {
-                    return Err(SeaplaneError::IncorrectConfigRequestTarget);
+                    return Err(SeaplaneError::IncorrectMetadataRequestTarget);
                 }
             } else {
                 break;

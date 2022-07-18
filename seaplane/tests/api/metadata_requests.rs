@@ -1,6 +1,8 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::{ConfigRequestBuilder, Directory, Key, KeyValue, RangeQueryContext, Value};
+use seaplane::api::v1::{
+    Directory, Key, KeyValue, MetadataRequestBuilder, RangeQueryContext, Value,
+};
 use serde_json::json;
 
 // To be used with httpmock standalone server for dev testing
@@ -25,8 +27,8 @@ fn then(then: Then, resp_body: serde_json::Value) -> Then {
         .json_body(resp_body)
 }
 
-fn partial_build() -> ConfigRequestBuilder {
-    ConfigRequestBuilder::new()
+fn partial_build() -> MetadataRequestBuilder {
+    MetadataRequestBuilder::new()
         .token("abc123")
         .base_url(MOCK_SERVER.base_url())
 }

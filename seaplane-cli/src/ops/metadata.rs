@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use seaplane::api::v1::config::{Key as KeyModel, KeyValue as KeyValueModel};
+use seaplane::api::v1::metadata::{Key as KeyModel, KeyValue as KeyValueModel};
 use serde::Serialize;
 
 use crate::{

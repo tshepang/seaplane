@@ -1,8 +1,8 @@
 use clap::{ArgMatches, Command};
-use seaplane::api::v1::{config::Key, Directory, RangeQueryContext};
+use seaplane::api::v1::{metadata::Key, Directory, RangeQueryContext};
 
 use crate::{
-    api::ConfigReq,
+    api::MetadataReq,
     cli::{cmds::metadata::common, CliCommand},
     context::{Ctx, MetadataCtx},
     error::Result,
@@ -52,7 +52,7 @@ impl CliCommand for SeaplaneMetadataList {
                 range.set_from(from.clone());
             }
             // Using the KeyValues container makes displaying easy
-            let mut req = ConfigReq::new(ctx)?;
+            let mut req = MetadataReq::new(ctx)?;
             req.set_dir(range)?;
             KeyValues::from_model(req.get_all_pages()?)
         };

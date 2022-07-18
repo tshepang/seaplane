@@ -6,7 +6,7 @@ mod metadata;
 
 pub use formations::FormationsReq;
 pub use locks::LocksReq;
-pub use metadata::ConfigReq;
+pub use metadata::MetadataReq;
 
 use reqwest::Url;
 use seaplane::api::{AccessToken, TokenRequest};

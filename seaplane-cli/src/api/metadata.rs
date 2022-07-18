@@ -2,8 +2,8 @@ use reqwest::Url;
 use seaplane::{
     api::{
         v1::{
-            config::{
-                ConfigRequest, KeyValue as KeyValueModel, KeyValueRange as KeyValueRangeModel,
+            metadata::{
+                KeyValue as KeyValueModel, KeyValueRange as KeyValueRangeModel, MetadataRequest,
                 Value as ValueModel,
             },
             Key, RangeQueryContext,
@@ -19,20 +19,20 @@ use crate::{
     error::{CliError, Result},
 };
 
-/// Wraps an SDK `ConfigRequest` where we do additional things like re-use request access
+/// Wraps an SDK `MetadataRequest` where we do additional things like re-use request access
 /// tokens, allow changing the Formation this request is pointed to, and map errors appropriately.
 #[derive(Debug)]
-pub struct ConfigReq {
+pub struct MetadataReq {
     api_key: String,
     key: Option<String>,
     range: Option<RangeQueryContext<Key>>,
     token: Option<AccessToken>,
-    inner: Option<ConfigRequest>,
+    inner: Option<MetadataRequest>,
     identity_url: Option<Url>,
     metadata_url: Option<Url>,
 }
 
-impl ConfigReq {
+impl MetadataReq {
     pub fn new(ctx: &Ctx) -> Result<Self> {
         Ok(Self {
             api_key: ctx.args.api_key()?.into(),
@@ -63,11 +63,11 @@ impl ConfigReq {
         Ok(())
     }
 
-    /// Re-build the inner `ConfigRequest`. This is mostly useful when one wants to point at
+    /// Re-build the inner `MetadataRequest`. This is mostly useful when one wants to point at
     /// different Metadata than the original request was pointed at. This method will also refresh
     /// the access token, only if required.
     fn refresh_inner(&mut self) -> Result<()> {
-        let mut builder = ConfigRequest::builder().token(self.token_or_refresh()?);
+        let mut builder = MetadataRequest::builder().token(self.token_or_refresh()?);
 
         if let Some(url) = &self.metadata_url {
             builder = builder.base_url(url);
@@ -118,9 +118,9 @@ macro_rules! maybe_retry {
     }};
 }
 //
-// Wrapped ConfigRequest methods to handle expired token retries
+// Wrapped MetadataRequest methods to handle expired token retries
 //
-impl ConfigReq {
+impl MetadataReq {
     pub fn get_value(&mut self) -> Result<ValueModel> {
         maybe_retry!(self.get_value())
     }

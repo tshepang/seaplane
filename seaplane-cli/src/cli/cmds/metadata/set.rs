@@ -1,9 +1,9 @@
 use clap::{ArgMatches, Command};
 
-use seaplane::api::v1::config::Value;
+use seaplane::api::v1::metadata::Value;
 
 use crate::{
-    api::ConfigReq,
+    api::MetadataReq,
     cli::{cmds::metadata::common, CliCommand},
     context::{Ctx, MetadataCtx},
     error::Result,
@@ -33,7 +33,7 @@ impl SeaplaneMetadataSet {
 
 impl CliCommand for SeaplaneMetadataSet {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        let mut req = ConfigReq::new(ctx)?;
+        let mut req = MetadataReq::new(ctx)?;
         let mdctx = ctx.md_ctx.get_mut_or_init();
         for kv in mdctx.kvs.iter_mut() {
             let key = kv.key.as_ref().unwrap().to_string();

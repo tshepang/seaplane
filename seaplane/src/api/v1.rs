@@ -3,8 +3,8 @@
 pub mod formations;
 pub use formations::*;
 
-pub mod config;
-pub use config::*;
+pub mod metadata;
+pub use metadata::*;
 
 pub mod locks;
 pub use locks::*;
