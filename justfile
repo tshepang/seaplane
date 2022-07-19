@@ -8,6 +8,89 @@ ARG_SEP := if "cargo nextest run" == TEST_RUNNER { '' } else { '--' }
 @_default:
     just --list
 
+# Install all needed components and tools
+setup: (_cargo-install 'httpmock --features standalone') (_cargo-install 'cargo-lichking' 'cargo-audit' 'typos-cli' 'cargo-nextest')
+    {{ if os() == 'macos' { 'just _install-gon' } else { '' } }}
+
+# Run cargo-audit to scan for vulnerable crates
+audit: (_cargo-install 'cargo-audit')
+    cargo audit
+
+# Run the CI suite for the SDK (only runs for your native os/arch!)
+ci-sdk: test test-api (doc 'seaplane-sdk/rust') fmt-check (lint 'seaplane-sdk/rust') (lint 'seaplane-sdk/rust' '--features unstable') (lint 'seaplane-sdk/rust' '--no-default-features')
+
+# Run the CI suite for the CLI (only runs for your native os/arch!)
+ci-cli: (test 'seaplane-cli') (doc 'seaplane-cli') test-ui (test-api 'seaplane-cli') fmt-check (lint 'seaplane-cli') (lint 'seaplane-cli' '--features unstable') (lint 'seaplane-cli' '--no-default-features')
+
+# Run the full CI suite (only runs for your native os/arch!)
+ci: audit ci-cli ci-sdk spell-check test-doc
+
+# Build documentation
+doc RUST_CRATE='' $RUSTDOCFLAGS="-D warnings":
+    cargo doc --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml --no-deps --all-features --document-private-items
+
+# Check if code formatter would make changes
+fmt-check:
+    cargo fmt --all -- --check
+
+# Format code
+fmt:
+    cargo fmt --all
+
+# Run code linting with warnings denied
+lint RUST_CRATE='' RUST_FEATURES='':
+    cargo clippy {{ RUST_FEATURES }} --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml --all-targets -- -D warnings
+
+# Run basic integration and unit tests
+test RUST_CRATE='seaplane-sdk/rust' FEATURES='' $RUSTFLAGS='-D warnings':
+    cargo test {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml --no-run
+    {{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
+
+# Run API tests using a mock HTTP server
+test-api RUST_CRATE='seaplane-sdk/rust' $RUSTFLAGS='-D warnings':
+    cargo test --no-run  --features api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
+    {{ TEST_RUNNER }}  --features api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
+    cargo test --no-run  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
+    {{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
+
+# Run documentation tests
+test-doc RUST_CRATE='seaplane-sdk/rust':
+    cargo test --doc --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
+
+# Run UI tests
+test-ui $RUSTFLAGS='-D warnings':
+    cargo test  --features ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml --no-run
+    {{ TEST_RUNNER }}  --features ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml
+    cargo test  --features unstable,semantic_ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml --no-run
+    {{ TEST_RUNNER }}  --features unstable,semantic_ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml
+
+# Update all third party licenses
+update-licenses: (_cargo-install 'cargo-lichking')
+    cargo lichking bundle --variant name-only > {{justfile_directory()}}/share/third_party_licenses.md
+
+spell-check: (_cargo-install 'typos-cli')
+    typos {{justfile_directory()}}
+
+#
+# Small Helpers
+#
+
+# List TODO items in current branch only
+todos-in-branch:
+    git diff --name-only {{ CURRENT_BRANCH }}  $(git merge-base {{ CURRENT_BRANCH }} main) | xargs rg -o 'TODO:.*$'
+
+# List 'TODO:' items
+todos:
+    rg -o 'TODO:.*$' -g '!justfile'
+
+# Get the short SHA commit for HEAD
+git-shortsha:
+    @echo {{ SHORTSHA }}
+
+#
+# Private/Internal Items
+#
+
 _cargo-install +TOOLS:
     cargo install {{ TOOLS }}
 
@@ -15,17 +98,6 @@ _install-gon:
     #!/usr/bin/env bash
     echo {{ if os() != 'macos' { error('only macOS') } else { '' } }}
     if ! which gon; then brew install mitchellh/gon/gon; fi
-
-# Install all needed components and tools
-setup: (_cargo-install 'httpmock --features standalone') (_cargo-install 'cargo-lichking' 'cargo-audit' 'typos-cli' 'cargo-nextest')
-    {{ if os() == 'macos' { 'just _install-gon' } else { '' } }}
-
-todos-in-branch:
-    git diff --name-only {{ CURRENT_BRANCH }}  $(git merge-base {{ CURRENT_BRANCH }} main) | xargs rg -o 'TODO:.*$'
-
-# Get the short SHA commit for HEAD
-git-shortsha:
-    @echo {{ SHORTSHA }}
 
 # Sign and notarize a release for macOS
 _sign $AC_PASSWORD SIGNER='${USER}': _install-gon
@@ -61,59 +133,3 @@ _sign $AC_PASSWORD SIGNER='${USER}': _install-gon
     echo Saving Artifacts to ${CARGOTGTDIR}
     cp ${SIGNDIR}/seaplane-{{SHORTSHA}}-${TARGET}-apple-darwin.zip ${CARGOTGTDIR}
 
-_test CRATE='seaplane' FEATURES='' $RUSTFLAGS='-D warnings':
-	cargo test {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml  --no-run
-	{{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
-
-# Run cargo-audit to scan for vulnerable crates
-audit: (_cargo-install 'cargo-audit')
-	cargo audit
-
-# Ensure documentation builds
-test-doc-builds CRATE='seaplane' $RUSTDOCFLAGS="-D warnings":
-    cargo doc --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --no-deps --all-features --document-private-items
-
-test-doc CRATE='seaplane':
-	cargo test  --doc --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
-
-# Run UI tests
-test-ui $RUSTFLAGS='-D warnings':
-	cargo test  --features ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml --no-run
-	{{ TEST_RUNNER }}  --features ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml
-	cargo test  --features unstable,semantic_ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml --no-run
-	{{ TEST_RUNNER }}  --features unstable,semantic_ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml
-
-# Check if rustfmt would make changes
-rustfmt-check CRATE='seaplane':
-	cargo fmt  --all --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml -- --check
-
-# Format code using rustfmt
-rustfmt CRATE='seaplane':
-	cargo fmt  --all --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
-
-# Run clippy and with warnings denied
-clippy CRATE='' FEATURES='':
-	cargo clippy  {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml --all-targets -- -D warnings
-
-# Run API tests using a mock HTTP server
-test-api CRATE='seaplane' $RUSTFLAGS='-D warnings':
-	cargo test --no-run  --features api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
-	{{ TEST_RUNNER }}  --features api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
-	cargo test --no-run  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml
-	{{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
-
-# Update all third party licenses
-update-licenses: (_cargo-install 'cargo-lichking')
-    cargo lichking bundle --variant name-only > {{justfile_directory()}}/share/third_party_licenses.md
-
-spell-check: (_cargo-install 'typos-cli')
-    typos {{justfile_directory()}}
-
-# Run the CI suite for the SDK (only runs for your native os/arch!)
-sdk-ci: _test test-api test-doc-builds rustfmt-check (clippy 'seaplane') (clippy 'seaplane' '--features unstable') (clippy 'seaplane' '--no-default-features')
-
-# Run the CI suite for the CLI (only runs for your native os/arch!)
-cli-ci: (_test 'seaplane-cli') (test-doc-builds 'seaplane-cli') test-ui (test-api 'seaplane-cli') (rustfmt-check 'seaplane-cli') (clippy 'seaplane-cli') (clippy 'seaplane-cli' '--features unstable') (clippy 'seaplane-cli' '--no-default-features')
-
-# Run the full CI suite (only runs for your native os/arch!)
-ci: audit cli-ci sdk-ci spell-check test-doc
