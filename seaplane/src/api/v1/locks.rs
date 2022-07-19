@@ -130,7 +130,7 @@ impl LocksRequest {
             Some(RequestTarget::HeldLock(HeldLock { name, id, .. })) => {
                 let mut url =
                     add_base64_path_segment(self.request.endpoint_url.clone(), name.encoded());
-                url.set_query(Some(&format!("id=base64:{}", id.encoded())));
+                url.set_query(Some(&format!("id={}", id.encoded())));
                 Ok(url)
             }
         }

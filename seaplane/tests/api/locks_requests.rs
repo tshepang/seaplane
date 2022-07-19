@@ -63,14 +63,14 @@ fn acquire_lock() {
     assert_eq!(lock, resp);
 }
 
-// PATCH /locks/base64:{key}?id=base64:{id}&ttl={ttl}
+// PATCH /locks/base64:{key}?id={id}&ttl={ttl}
 #[test]
 fn renew_lock() {
     let resp_json = json!({"status": 200, "title": "Ok"});
 
     let mock = MOCK_SERVER.mock(|w, t| {
         when(w, Method::PATCH, "/v1/locks/base64:Zm9j")
-            .query_param("id", "base64:D4lbVpdBE_U")
+            .query_param("id", "D4lbVpdBE_U")
             .query_param("ttl", "10");
         then(t, resp_json);
     });
@@ -96,7 +96,7 @@ fn release_lock() {
     let resp_json = json!({"status": 200, "title": "Ok"});
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, Method::DELETE, "/v1/locks/base64:Zm9k").query_param("id", "base64:D4lbVpdBE_U");
+        when(w, Method::DELETE, "/v1/locks/base64:Zm9k").query_param("id", "D4lbVpdBE_U");
         then(t, resp_json);
     });
 
