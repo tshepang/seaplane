@@ -19,7 +19,7 @@ jobs:
   call-pr-workflow-lib:
     uses: ./.github/workflows/workflow-pr.yml
     with:
-      manifest_path: ./seaplane/Cargo.toml
+      manifest_path: ./seaplane-sdk/rust/Cargo.toml
 
   call-pr-workflow-cli:
     uses: ./.github/workflows/workflow-pr.yml
@@ -34,4 +34,4 @@ jobs:
   call-api-test-workflow:
     uses: ./.github/workflows/workflow-api-test.yml
     with:
-      manifest_path: ./seaplane/Cargo.toml
+      manifest_path: ./seaplane-sdk/rust/Cargo.toml
