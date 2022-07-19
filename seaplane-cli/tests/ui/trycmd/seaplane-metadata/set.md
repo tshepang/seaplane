@@ -6,7 +6,7 @@ seaplane-metadata-set [..]
 Set a metadata key-value pair
 
 USAGE:
-    seaplane metadata set <KEY:VALUE> [OPTIONS]
+    seaplane metadata set <KEY> <VALUE> [OPTIONS]
 
 ARGS:
     <KEY>      The key to set
@@ -34,7 +34,7 @@ seaplane-metadata-set [..]
 Set a metadata key-value pair
 
 USAGE:
-    seaplane metadata set <KEY:VALUE> [OPTIONS]
+    seaplane metadata set <KEY> <VALUE> [OPTIONS]
 
 ARGS:
     <KEY>
