@@ -15,11 +15,7 @@ pub struct SeaplaneLocksRenew;
 impl SeaplaneLocksRenew {
     pub fn command() -> Command<'static> {
         Command::new("renew")
-            .visible_aliases(&["ren", "r"])
-            .override_usage(
-                "seaplane locks renew <LOCK_NAME> --lock-id LOCK_ID --ttl TTL [OPTIONS]",
-            )
-            .about("Attempt to renew the lock for TTL seconds")
+            .about("Attempt to renew the lock for N seconds")
             .arg(common::lock_name())
             .arg(common::lock_id())
             .arg(common::ttl())

@@ -3,12 +3,12 @@ use crate::{
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
     context::{Ctx, LocksCtx},
     error::Result,
-    // ops::locks::LockName,
+    ops::locks::LockName,
     printer::{Output, OutputFormat},
 };
 use clap::{ArgMatches, Command};
 
-static LONG_ABOUT: &str = "Get information around a currently held lock.
+static LONG_ABOUT: &str = "Get information around currently held locks.
 
 Locknames will be displayed in base64 encoded format by default because they may contain
 arbitrary binary data. Using --decode allows one to decode them and display the unencoded
@@ -21,43 +21,80 @@ pub struct SeaplaneLocksList;
 impl SeaplaneLocksList {
     pub fn command() -> Command<'static> {
         Command::new("list")
-            .visible_aliases(&["ls", "l"])
-            .override_usage("seaplane locks list <LOCK_NAME> [OPTIONS]")
-            .about("Get information around a currently held lock")
+            .visible_alias("ls")
+            .about("Get information around currently held locks")
             .long_about(LONG_ABOUT)
-            .arg(common::lock_name())
-            .arg(common::base64())
+            .arg(
+                arg!(lock_name = ["LOCK_NAME"] !required)
+                    .help("The name of a lock. If omitted, all locks are shown"),
+            )
+            .arg(common::base64().requires("lock_name"))
             .args(common::display_args())
     }
+}
+
+fn run_one_info(ctx: &mut Ctx) -> Result<()> {
+    let locksctx = ctx.locks_ctx.get_or_init();
+    let lock_name = locksctx.lock_name.as_ref().unwrap();
+
+    let mut req = LocksReq::new(ctx)?;
+    req.set_name(lock_name.name.to_string())?;
+    req.get_lock_info()?;
+
+    match ctx.args.out_format {
+        OutputFormat::Json => ctx
+            .locks_ctx
+            .get_or_init()
+            .lock_name
+            .as_ref()
+            .unwrap()
+            .print_json(ctx)?,
+        OutputFormat::Table => ctx
+            .locks_ctx
+            .get_or_init()
+            .lock_name
+            .as_ref()
+            .unwrap()
+            .print_table(ctx)?,
+    }
+    Ok(())
+}
+
+fn run_all_info(ctx: &mut Ctx) -> Result<()> {
+    let mut last_key = None;
+    loop {
+        let mut req = LocksReq::new(ctx)?;
+        let page = req.get_page(last_key)?;
+
+        // We use the regular paging interface rather than
+        // get_all_pages so that we don't have to store
+        // all of the locks in memory at once.
+        for info in page.infos {
+            let nm = LockName::from_name(info.name.encoded());
+            match ctx.args.out_format {
+                OutputFormat::Json => nm.print_json(ctx)?,
+                OutputFormat::Table => nm.print_table(ctx)?,
+            }
+        }
+
+        if let Some(next_key) = page.next {
+            last_key = Some(next_key);
+        } else {
+            break;
+        }
+    }
+
+    Ok(())
 }
 
 impl CliCommand for SeaplaneLocksList {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let locksctx = ctx.locks_ctx.get_or_init();
-        let mut req = LocksReq::new(ctx)?;
-
-        if let Some(lock_name) = &locksctx.lock_name {
-            req.set_name(lock_name.name.to_string())?;
+        if locksctx.lock_name.is_some() {
+            run_one_info(ctx)
+        } else {
+            run_all_info(ctx)
         }
-        req.get_lock_info()?;
-
-        match ctx.args.out_format {
-            OutputFormat::Json => ctx
-                .locks_ctx
-                .get_or_init()
-                .lock_name
-                .as_ref()
-                .unwrap()
-                .print_json(ctx)?,
-            OutputFormat::Table => ctx
-                .locks_ctx
-                .get_or_init()
-                .lock_name
-                .as_ref()
-                .unwrap()
-                .print_table(ctx)?,
-        }
-        Ok(())
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {

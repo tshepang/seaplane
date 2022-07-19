@@ -684,14 +684,13 @@ fn seaplane_locks_release() {
     assert!(cli!("locks release foo --lock-id bar baz").is_err());
 
     // aliases
-    assert!(cli!("locks rel foo --lock-id bar").is_ok());
     assert!(cli!("locks rl foo --lock-id bar").is_ok());
 }
 
 #[test]
 fn seaplane_locks_list() {
-    // requires a LOCK_NAME
-    assert!(cli!("locks list").is_err());
+    // list all locks if LOCK_NAME is omitted
+    assert!(cli!("locks list").is_ok());
     // provide a LOCK_NAME
     assert!(cli!("locks list foo").is_ok());
     // can not have multiples
@@ -703,7 +702,6 @@ fn seaplane_locks_list() {
     assert!(cli!("locks list foo,bar baz").is_err());
 
     // aliases
-    assert!(cli!("locks l foo").is_ok());
     assert!(cli!("locks ls foo").is_ok());
 }
 
@@ -727,10 +725,6 @@ fn seaplane_locks_renew() {
     assert!(cli!("locks renew foo --lock-id bar, baz --ttl 30").is_err());
     assert!(cli!("locks renew foo --lock-id bar --ttl 30 60").is_err());
     assert!(cli!("locks renew foo --lock-id bar --ttl 30, 60").is_err());
-
-    // aliases
-    assert!(cli!("locks ren foo --lock-id bar --ttl 30").is_ok());
-    assert!(cli!("locks r foo --lock-id bar --ttl 30").is_ok());
 }
 
 #[test]

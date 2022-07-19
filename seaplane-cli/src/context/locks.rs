@@ -29,15 +29,18 @@ impl LocksCtx {
     pub fn from_locks_common(matches: &SeaplaneLocksCommonArgMatches) -> Result<LocksCtx> {
         let matches = matches.0;
         let base64 = matches.is_present("base64");
-        let raw_lock_name: &str = matches.value_of("lock_name").unwrap();
+        let raw_lock_name = matches.value_of("lock_name");
 
-        let mut lock_name = Some(LockName::new(raw_lock_name));
-        if base64 {
-            // Check that what the user passed really is valid base64
-            let _ = base64::decode_config(raw_lock_name, base64::URL_SAFE_NO_PAD)?;
+        let lock_name: Option<LockName> = if base64 {
+            let res: Option<Result<LockName>> = raw_lock_name.map(|name| {
+                // Check that what the user passed really is valid base64
+                let _ = base64::decode_config(name, base64::URL_SAFE_NO_PAD)?;
+                Ok::<LockName, _>(LockName::new(name))
+            });
+            res.transpose()?
         } else {
-            lock_name = Some(LockName::from_name_unencoded(raw_lock_name));
-        }
+            raw_lock_name.map(LockName::from_name_unencoded)
+        };
 
         Ok(LocksCtx {
             lock_name,

@@ -45,6 +45,77 @@ fn locks_acquire() {
 }
 
 #[test]
+fn locks_list_all() {
+    let p1 = json!({
+        "next": "page2",
+        "infos": [
+            {
+                "name": "foo",
+                "id": "D4lbVpdBE_U",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            }
+        ]
+    });
+
+    let p2 = json!({
+        "next": "page3",
+        "infos": []
+    });
+
+    let p3 = json!({
+        "next": null,
+        "infos": [
+            {
+                "name": "bar",
+                "id": "D4lbVpdBD_U",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client2",
+                    "ip": "192.0.2.137"
+                }
+            }
+        ]
+    });
+
+    let mut mock3 = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/locks/").query_param("from", "base64:page3");
+        then(t, &p3);
+    });
+
+    let mut mock2 = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/locks/").query_param("from", "base64:page2");
+        then(t, &p2);
+    });
+
+    // order matters here. If mock1 is defined before the others,
+    // it will match every request regardless of params.
+    let mut mock1 = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/locks/");
+        then(t, &p1);
+    });
+
+    let res = test_main(&cli!("locks list"), MOCK_SERVER.base_url());
+    assert!(res.is_ok());
+    mock1.assert_hits(1);
+    mock2.assert_hits(1);
+    mock3.assert_hits(1);
+
+    assert_eq!(
+        printer().as_string().trim(),
+        "LOCK-NAME: foo\nLOCK-NAME: bar"
+    );
+
+    mock1.delete();
+    mock2.delete();
+    mock3.delete();
+    printer().clear();
+}
+
+#[test]
 fn locks_list() {
     let resp = json!({
         "name": "foo",

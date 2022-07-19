@@ -3,27 +3,27 @@ Short help
 ```console
 $ seaplane locks acquire -h
 seaplane-locks-acquire [..]
-Attempt to acquire the lock
+Attempt to acquire the lock for N seconds
 
 USAGE:
-    seaplane locks acquire <LOCK_NAME> --client-id CLIENT_ID --ttl TTL [OPTIONS]
+    seaplane locks acquire [OPTIONS] --ttl <SECS> --client-id <STRING> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>    The name of the lock
 
 OPTIONS:
-    -A, --api-key <STRING>         The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-    -B, --base64                   The lockname is already encoded in URL safe Base64
-        --color <COLOR>            Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --format <FORMAT>          Change the output format [default: table] [possible values: table, json]
-    -h, --help                     Print help information
-    -L, --client-id <CLIENT_ID>    Client-chosen identifier stored with the lock for informational purposes
-        --no-color                 Do not color output (alias for --color=never)
-    -q, --quiet                    Suppress output at a specific level and below
-    -S, --stateless                Ignore local state files, do not read from or write to them
-    -T, --ttl <TTL>                The TTL (Time To Live) in seconds, i.e. a positive integer
-    -v, --verbose                  Display more verbose output
-    -V, --version                  Print version information
+    -A, --api-key <STRING>      The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -B, --base64                The lockname is already encoded in URL safe Base64
+        --color <COLOR>         Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --format <FORMAT>       Change the output format [default: table] [possible values: table, json]
+    -h, --help                  Print help information
+    -L, --client-id <STRING>    Client-chosen identifier stored with the lock for informational purposes
+        --no-color              Do not color output (alias for --color=never)
+    -q, --quiet                 Suppress output at a specific level and below
+    -S, --stateless             Ignore local state files, do not read from or write to them
+    -T, --ttl <SECS>            The TTL (Time To Live) in seconds, i.e. a positive integer
+    -v, --verbose               Display more verbose output
+    -V, --version               Print version information
 
 ```
 
@@ -32,10 +32,10 @@ Long help:
 ```console
 $ seaplane locks acquire --help
 seaplane-locks-acquire [..]
-Attempt to acquire the lock
+Attempt to acquire the lock for N seconds
 
 USAGE:
-    seaplane locks acquire <LOCK_NAME> --client-id CLIENT_ID --ttl TTL [OPTIONS]
+    seaplane locks acquire [OPTIONS] --ttl <SECS> --client-id <STRING> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>
@@ -69,7 +69,7 @@ OPTIONS:
     -h, --help
             Print help information
 
-    -L, --client-id <CLIENT_ID>
+    -L, --client-id <STRING>
             Client-chosen identifier stored with the lock for informational purposes
 
         --no-color
@@ -86,7 +86,7 @@ OPTIONS:
     -S, --stateless
             Ignore local state files, do not read from or write to them
 
-    -T, --ttl <TTL>
+    -T, --ttl <SECS>
             The TTL (Time To Live) in seconds, i.e. a positive integer
 
     -v, --verbose

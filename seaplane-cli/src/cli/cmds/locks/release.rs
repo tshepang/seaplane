@@ -15,8 +15,7 @@ pub struct SeaplaneLocksRelease;
 impl SeaplaneLocksRelease {
     pub fn command() -> Command<'static> {
         Command::new("release")
-            .visible_aliases(&["rel", "rl"])
-            .override_usage("seaplane locks release <LOCK_NAME> --lock-id LOCK_ID [OPTIONS]")
+            .visible_alias("rl")
             .about("Attempt to release a lock")
             .arg(common::lock_name())
             .arg(common::lock_id())

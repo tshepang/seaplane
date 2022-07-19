@@ -57,12 +57,12 @@ pub fn base64() -> Arg<'static> {
 }
 
 pub fn ttl() -> Arg<'static> {
-    arg!(--ttl - ('T') =["TTL"] required)
+    arg!(--ttl - ('T') =["SECS"] required)
         .help("The TTL (Time To Live) in seconds, i.e. a positive integer")
 }
 
 pub fn lock_id() -> Arg<'static> {
-    arg!(--("lock-id") - ('L') =["LOCK_ID"] required).help(
+    arg!(--("lock-id") - ('L') =["STRING"] required).help(
         "A valid lock-id can be obtained from a successful acquisition, or listing of the locks",
     )
 }

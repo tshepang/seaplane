@@ -19,15 +19,12 @@ impl SeaplaneLocksAcquire {
     pub fn command() -> Command<'static> {
         Command::new("acquire")
             .visible_alias("acq")
-            .override_usage(
-                "seaplane locks acquire <LOCK_NAME> --client-id CLIENT_ID --ttl TTL [OPTIONS]",
-            )
-            .about("Attempt to acquire the lock")
+            .about("Attempt to acquire the lock for N seconds")
             .arg(common::lock_name())
             .arg(common::ttl())
             .arg(common::base64())
             .arg(
-                arg!(--("client-id") - ('L') =["CLIENT_ID"] required).help(
+                arg!(--("client-id") - ('L') =["STRING"] required).help(
                     "Client-chosen identifier stored with the lock for informational purposes",
                 ),
             )

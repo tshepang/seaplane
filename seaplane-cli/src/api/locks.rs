@@ -1,8 +1,12 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        v1::locks::{
-            HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName, LocksRequest,
+        v1::{
+            locks::{
+                HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName,
+                LocksRequest, LocksRequestBuilder,
+            },
+            LockInfoRange, RangeQueryContext,
         },
         AccessToken, ApiErrorKind,
     },
@@ -100,6 +104,39 @@ impl LocksReq {
             self.refresh_token()?;
         }
         Ok(&self.token.as_ref().unwrap().token)
+    }
+
+    pub fn get_page(&mut self, next_key: Option<LockName>) -> Result<LockInfoRange> {
+        // get_page doesn't use `inner` here, since it doesn't refer to any lock name
+        // (Specifically, get_page() doesn't refer to any individual lock)
+        let mut range = RangeQueryContext::new();
+        if let Some(k) = next_key {
+            range.set_from(k);
+        }
+
+        let mut builder = LocksRequestBuilder::new()
+            .token(self.token_or_refresh()?)
+            .range(range.clone());
+
+        if let Some(url) = &self.locks_url {
+            builder = builder.base_url(url);
+        }
+
+        let req = builder.build().unwrap();
+
+        match req.get_page() {
+            Err(SeaplaneError::ApiResponse(ae)) if ae.kind == ApiErrorKind::Unauthorized => {
+                self.token = Some(request_token(&self.api_key, self.identity_url.as_ref())?);
+                let next_req = LocksRequestBuilder::new()
+                    .token(self.token_or_refresh()?)
+                    .range(range)
+                    .build()
+                    .unwrap();
+
+                Ok(next_req.get_page()?)
+            }
+            result => result.map_err(CliError::from),
+        }
     }
 }
 

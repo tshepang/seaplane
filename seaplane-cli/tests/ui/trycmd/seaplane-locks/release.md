@@ -6,23 +6,23 @@ seaplane-locks-release [..]
 Attempt to release a lock
 
 USAGE:
-    seaplane locks release <LOCK_NAME> --lock-id LOCK_ID [OPTIONS]
+    seaplane locks release [OPTIONS] --lock-id <STRING> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>    The name of the lock
 
 OPTIONS:
-    -A, --api-key <STRING>     The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-    -B, --base64               The lockname is already encoded in URL safe Base64
-        --color <COLOR>        Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-        --format <FORMAT>      Change the output format [default: table] [possible values: table, json]
-    -h, --help                 Print help information
-    -L, --lock-id <LOCK_ID>    A valid lock-id can be obtained from a successful acquisition, or listing of the locks
-        --no-color             Do not color output (alias for --color=never)
-    -q, --quiet                Suppress output at a specific level and below
-    -S, --stateless            Ignore local state files, do not read from or write to them
-    -v, --verbose              Display more verbose output
-    -V, --version              Print version information
+    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -B, --base64              The lockname is already encoded in URL safe Base64
+        --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+        --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
+    -h, --help                Print help information
+    -L, --lock-id <STRING>    A valid lock-id can be obtained from a successful acquisition, or listing of the locks
+        --no-color            Do not color output (alias for --color=never)
+    -q, --quiet               Suppress output at a specific level and below
+    -S, --stateless           Ignore local state files, do not read from or write to them
+    -v, --verbose             Display more verbose output
+    -V, --version             Print version information
 
 ```
 
@@ -34,7 +34,7 @@ seaplane-locks-release [..]
 Attempt to release a lock
 
 USAGE:
-    seaplane locks release <LOCK_NAME> --lock-id LOCK_ID [OPTIONS]
+    seaplane locks release [OPTIONS] --lock-id <STRING> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>
@@ -68,7 +68,7 @@ OPTIONS:
     -h, --help
             Print help information
 
-    -L, --lock-id <LOCK_ID>
+    -L, --lock-id <STRING>
             A valid lock-id can be obtained from a successful acquisition, or listing of the locks
 
         --no-color

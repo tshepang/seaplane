@@ -3,13 +3,13 @@ Short help:
 ```console
 $ seaplane locks list -h
 seaplane-locks-list [..]
-Get information around a currently held lock
+Get information around currently held locks
 
 USAGE:
-    seaplane locks list <LOCK_NAME> [OPTIONS]
+    seaplane locks list [OPTIONS] [LOCK_NAME]
 
 ARGS:
-    <LOCK_NAME>    The name of the lock
+    <LOCK_NAME>    The name of a lock. If omitted, all locks are shown
 
 OPTIONS:
     -A, --api-key <STRING>           The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -34,7 +34,7 @@ Long help:
 ```console
 $ seaplane locks list --help
 seaplane-locks-list [..]
-Get information around a currently held lock.
+Get information around currently held locks.
 
 Locknames will be displayed in base64 encoded format by default because they may contain
 arbitrary binary data. Using --decode allows one to decode them and display the unencoded
@@ -42,11 +42,11 @@ values. However since they may contain arbitrary data, it's possible to re-encod
 different format for display purposes using --display-encoding
 
 USAGE:
-    seaplane locks list <LOCK_NAME> [OPTIONS]
+    seaplane locks list [OPTIONS] [LOCK_NAME]
 
 ARGS:
     <LOCK_NAME>
-            The name of the lock
+            The name of a lock. If omitted, all locks are shown
 
 OPTIONS:
     -A, --api-key <STRING>

@@ -21,11 +21,11 @@ OPTIONS:
     -V, --version             Print version information
 
 SUBCOMMANDS:
-    acquire    Attempt to acquire the lock [aliases: acq]
+    acquire    Attempt to acquire the lock for N seconds [aliases: acq]
     help       Print this message or the help of the given subcommand(s)
-    list       Get information around a currently held lock [aliases: ls, l]
-    release    Attempt to release a lock [aliases: rel, rl]
-    renew      Attempt to renew the lock for TTL seconds [aliases: ren, r]
+    list       Get information around currently held locks [aliases: ls]
+    release    Attempt to release a lock [aliases: rl]
+    renew      Attempt to renew the lock for N seconds
 
 ```
 
@@ -51,11 +51,11 @@ OPTIONS:
     -V, --version             Print version information
 
 SUBCOMMANDS:
-    acquire    Attempt to acquire the lock [aliases: acq]
+    acquire    Attempt to acquire the lock for N seconds [aliases: acq]
     help       Print this message or the help of the given subcommand(s)
-    list       Get information around a currently held lock [aliases: ls, l]
-    release    Attempt to release a lock [aliases: rel, rl]
-    renew      Attempt to renew the lock for TTL seconds [aliases: ren, r]
+    list       Get information around currently held locks [aliases: ls]
+    release    Attempt to release a lock [aliases: rl]
+    renew      Attempt to renew the lock for N seconds
 
 ```
 
