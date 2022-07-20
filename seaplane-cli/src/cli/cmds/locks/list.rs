@@ -3,7 +3,7 @@ use crate::{
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
     context::{Ctx, LocksCtx},
     error::Result,
-    ops::locks::LockName,
+    ops::locks::ListedLock,
     printer::{Output, OutputFormat},
 };
 use clap::{ArgMatches, Command};
@@ -39,24 +39,15 @@ fn run_one_info(ctx: &mut Ctx) -> Result<()> {
 
     let mut req = LocksReq::new(ctx)?;
     req.set_name(lock_name.name.to_string())?;
-    req.get_lock_info()?;
+
+    let resp = req.get_lock_info()?;
+    let out = ListedLock::from(resp);
 
     match ctx.args.out_format {
-        OutputFormat::Json => ctx
-            .locks_ctx
-            .get_or_init()
-            .lock_name
-            .as_ref()
-            .unwrap()
-            .print_json(ctx)?,
-        OutputFormat::Table => ctx
-            .locks_ctx
-            .get_or_init()
-            .lock_name
-            .as_ref()
-            .unwrap()
-            .print_table(ctx)?,
-    }
+        OutputFormat::Json => out.print_json(ctx)?,
+        OutputFormat::Table => out.print_table(ctx)?,
+    };
+
     Ok(())
 }
 
@@ -70,10 +61,10 @@ fn run_all_info(ctx: &mut Ctx) -> Result<()> {
         // get_all_pages so that we don't have to store
         // all of the locks in memory at once.
         for info in page.infos {
-            let nm = LockName::from_name(info.name.encoded());
+            let out = ListedLock::from(info);
             match ctx.args.out_format {
-                OutputFormat::Json => nm.print_json(ctx)?,
-                OutputFormat::Table => nm.print_table(ctx)?,
+                OutputFormat::Json => out.print_json(ctx)?,
+                OutputFormat::Table => out.print_table(ctx)?,
             }
         }
 

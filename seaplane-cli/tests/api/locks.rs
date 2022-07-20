@@ -106,7 +106,16 @@ fn locks_list_all() {
 
     assert_eq!(
         printer().as_string().trim(),
-        "LOCK-NAME: foo\nLOCK-NAME: bar"
+        "LOCK-NAME: foo\n\
+         LOCK-ID: D4lbVpdBE_U\n\
+         CLIENT-ID: test-client\n\
+         CLIENT-IP: 192.0.2.137\n\
+         TTL: 5\n\
+         LOCK-NAME: bar\n\
+         LOCK-ID: D4lbVpdBD_U\n\
+         CLIENT-ID: test-client2\n\
+         CLIENT-IP: 192.0.2.137\n\
+         TTL: 5"
     );
 
     mock1.delete();
@@ -118,7 +127,7 @@ fn locks_list_all() {
 #[test]
 fn locks_list() {
     let resp = json!({
-        "name": "foo",
+        "name": "Zm9v",
         "id": "D4lbVpdBE_U",
         "info": {
             "ttl": 5,
@@ -136,13 +145,15 @@ fn locks_list() {
     assert!(res.is_ok());
     mock.assert_hits(1);
 
-    assert_eq!(printer().as_string().trim(), "LOCK-NAME: Zm9v");
+    assert_eq!(printer().as_string().trim(),
+        "LOCK-NAME: Zm9v\nLOCK-ID: D4lbVpdBE_U\nCLIENT-ID: test-client\nCLIENT-IP: 192.0.2.137\nTTL: 5");
     printer().clear();
 
     let res = test_main(&cli!("locks list foo --decode"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(printer().as_string().trim(), "LOCK-NAME: foo");
+    assert_eq!(printer().as_string().trim(),
+        "LOCK-NAME: foo\nLOCK-ID: D4lbVpdBE_U\nCLIENT-ID: test-client\nCLIENT-IP: 192.0.2.137\nTTL: 5");
     printer().clear();
 
     let res = test_main(
@@ -151,7 +162,18 @@ fn locks_list() {
     );
     assert!(res.is_ok());
     mock.assert_hits(3);
-    assert_eq!(printer().as_string().trim(), "LOCK-NAME: 666f6f");
+    assert_eq!(printer().as_string().trim(),
+        "LOCK-NAME: 666f6f\nLOCK-ID: D4lbVpdBE_U\nCLIENT-ID: test-client\nCLIENT-IP: 192.0.2.137\nTTL: 5");
+    printer().clear();
+
+    let res = test_main(
+        &cli!("locks list foo --format json"),
+        MOCK_SERVER.base_url(),
+    );
+    assert!(res.is_ok());
+    mock.assert_hits(4);
+    assert_eq!(printer().as_string().trim(),
+        "{\"name\":\"Zm9v\",\"id\":\"D4lbVpdBE_U\",\"info\":{\"ttl\":5,\"client-id\":\"test-client\",\"ip\":\"192.0.2.137\"}}");
     printer().clear();
 
     mock.delete();

@@ -1,12 +1,12 @@
 use std::io::Write;
 
-use seaplane::api::v1::locks::LockName as LockNameModel;
+use seaplane::api::v1::{locks::LockName as LockNameModel, LockInfo, LockInfoInner};
 use serde::Serialize;
 
 use crate::{
     context::Ctx,
     error::Result,
-    ops::{DisplayEncodingFormat, EncodedString},
+    ops::EncodedString,
     printer::{printer, Output},
 };
 
@@ -28,27 +28,11 @@ impl LockName {
         }
     }
 
-    /// Creates a new LockName from an un-encoded name, encoding it along the way
-    pub fn new_unencoded<S: AsRef<str>>(name: S) -> Self {
-        Self::new(base64::encode_config(
-            name.as_ref(),
-            base64::URL_SAFE_NO_PAD,
-        ))
-    }
-
     /// Creates a new LockName from an un-encoded string ref, encoding it along the way
     pub fn from_name_unencoded<S: AsRef<str>>(name: S) -> Self {
-        Self::from_name(base64::encode_config(
-            name.as_ref(),
-            base64::URL_SAFE_NO_PAD,
-        ))
-    }
-
-    /// Creates a new LockName from an already encoded string ref. You must pinky promise the name
-    /// is URL safe base64 encoded or Bad Things may happen.
-    pub fn from_name<S: Into<String>>(name: S) -> Self {
+        let name = base64::encode_config(name.as_ref(), base64::URL_SAFE_NO_PAD);
         Self {
-            name: EncodedString::Base64(name.into()),
+            name: EncodedString::Base64(name),
         }
     }
 
@@ -63,68 +47,6 @@ impl LockName {
             EncodedString::Hex(s) => LockNameModel::from_unencoded(hex::decode(s)?),
             EncodedString::Simple(s) => LockNameModel::from_unencoded(s),
         })
-    }
-
-    /// Decodes the name if needed
-    pub fn decode(mut self, encoding: DisplayEncodingFormat) -> Result<Self> {
-        self.name = self.name.decode(encoding)?;
-
-        Ok(self)
-    }
-
-    // print JSON in whatever state we happen to be in (encoded/unencoded)
-    fn impl_print_json(&self) -> Result<()> {
-        cli_println!("{}", serde_json::to_string(self)?);
-        Ok(())
-    }
-
-    // print a table in whatever state we happen to be in (encoded/unencoded)
-    fn impl_print_table(&self, headers: bool) -> Result<()> {
-        use EncodedString::*;
-
-        let mut ptr = printer();
-
-        match &self.name {
-            Hex(s) | Utf8(s) | Base64(s) => {
-                if headers {
-                    write!(ptr, "LOCK-NAME: ")?;
-                }
-                writeln!(ptr, "{s}")?;
-            }
-            Simple(v) => {
-                if headers {
-                    write!(ptr, "LOCK-NAME: ")?;
-                }
-                ptr.write_all(v)?;
-                writeln!(ptr)?;
-            }
-        }
-
-        ptr.flush()?;
-
-        Ok(())
-    }
-}
-
-impl Output for LockName {
-    fn print_json(&self, ctx: &Ctx) -> Result<()> {
-        let this = self.clone();
-        let locksctx = ctx.locks_ctx.get_or_init();
-        if locksctx.decode {
-            return this.decode(locksctx.disp_encoding)?.impl_print_json();
-        }
-        self.impl_print_json()
-    }
-
-    fn print_table(&self, ctx: &Ctx) -> Result<()> {
-        let this = self.clone();
-        let locksctx = ctx.locks_ctx.get_or_init();
-        if locksctx.decode {
-            return this
-                .decode(locksctx.disp_encoding)?
-                .impl_print_table(!locksctx.no_header);
-        }
-        self.impl_print_table(!locksctx.no_header)
     }
 }
 
@@ -155,9 +77,83 @@ impl Output for HeldLock {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct ListedLockInfoInner {
+    pub ttl: u32,
+    #[serde(rename = "client-id")]
+    pub client_id: String,
+    pub ip: String,
+}
+
+impl From<LockInfoInner> for ListedLockInfoInner {
+    fn from(other: LockInfoInner) -> Self {
+        Self {
+            ttl: other.ttl,
+            client_id: other.client_id,
+            ip: other.ip,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ListedLock {
+    name: EncodedString,
+    id: String,
+    info: ListedLockInfoInner,
+}
+
+impl From<LockInfo> for ListedLock {
+    fn from(other: LockInfo) -> Self {
+        let info = other.info.into();
+        Self {
+            name: EncodedString::Base64(other.name.encoded().to_owned()),
+            id: other.id.encoded().to_owned(),
+            info,
+        }
+    }
+}
+
+impl Output for ListedLock {
+    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
+        cli_println!("{}", serde_json::to_string(self)?);
+        Ok(())
+    }
+
+    fn print_table(&self, ctx: &Ctx) -> Result<()> {
+        let locksctx = ctx.locks_ctx.get_or_init();
+        let show_headers = !locksctx.no_header;
+
+        let show_name = if locksctx.decode {
+            self.name.clone().decode(locksctx.disp_encoding)?
+        } else {
+            self.name.clone()
+        };
+
+        let mut ptr = printer();
+
+        let lock_name_prefix = if show_headers { "LOCK-NAME: " } else { "" };
+        let lock_id_prefix = if show_headers { "LOCK-ID: " } else { "" };
+        let client_id_prefix = if show_headers { "CLIENT-ID: " } else { "" };
+        let ip_prefix = if show_headers { "CLIENT-IP: " } else { "" };
+        let ttl_prefix = if show_headers { "TTL: " } else { "" };
+
+        writeln!(ptr, "{lock_name_prefix}{}", show_name)?;
+        writeln!(ptr, "{lock_id_prefix}{}", self.id)?;
+        writeln!(ptr, "{client_id_prefix}{}", self.info.client_id)?;
+        writeln!(ptr, "{ip_prefix}{}", self.info.ip)?;
+        writeln!(ptr, "{ttl_prefix}{}", self.info.ttl)?;
+
+        ptr.flush()?;
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
+
     use super::*;
+    use crate::ops::DisplayEncodingFormat;
     use serde_json::json;
 
     fn valid_base64() -> EncodedString {
