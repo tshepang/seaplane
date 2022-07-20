@@ -108,12 +108,15 @@ impl CliCommand for SeaplaneLocksList {
             &SeaplaneLocksCommonArgMatches(matches),
         )?);
 
-        ctx.args.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();
-        locksctx.base64 = matches.is_present("base64");
-        locksctx.decode = matches.is_present("decode");
-        locksctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");
-        locksctx.no_header = matches.is_present("no-header");
+        locksctx.base64 = matches.contains_id("base64");
+        locksctx.decode = matches.contains_id("decode");
+        locksctx.disp_encoding = matches
+            .get_one("display-encoding")
+            .copied()
+            .unwrap_or_default();
+        locksctx.no_header = matches.contains_id("no-header");
 
         Ok(())
     }

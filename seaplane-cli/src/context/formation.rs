@@ -73,7 +73,7 @@ impl FormationCtx {
 
         // Translate the flight NAME|ID into a NAME
         for flight in matches
-            .values_of("include-flight-plan")
+            .get_many::<String>("include-flight-plan")
             .unwrap_or_default()
             // Filter out @ strings and inline definitions
             .filter(|f| !(f.starts_with('@') || f.contains('=')))
@@ -89,39 +89,62 @@ impl FormationCtx {
         }
 
         self.name_id = matches
-            .value_of("name_id")
+            .get_one::<String>("name_id")
             .map(ToOwned::to_owned)
             .unwrap_or_else(generate_formation_name);
 
-        self.grounded = matches.is_present("grounded");
-        self.launch = matches.is_present("launch");
+        self.grounded = matches.contains_id("grounded");
+        self.launch = matches.contains_id("launch");
         self.cfg_ctx
             .flights
             .extend(flight_names.iter().map(|s| s.to_string()));
         self.cfg_ctx.affinities.extend(
             matches
-                .values_of("affinity")
+                .get_many::<String>("affinity")
                 .unwrap_or_default()
                 .map(ToOwned::to_owned),
         );
         self.cfg_ctx.connections.extend(
             matches
-                .values_of("connection")
+                .get_many::<String>("connection")
                 .unwrap_or_default()
                 .map(ToOwned::to_owned),
         );
-        self.cfg_ctx.providers_allowed =
-            values_t_or_exit!(@into_model matches, "provider", Provider);
-
-        self.cfg_ctx.providers_denied =
-            values_t_or_exit!(@into_model matches, "exclude-provider", Provider);
-        self.cfg_ctx.regions_allowed = values_t_or_exit!(@into_model matches, "region", Region);
-        self.cfg_ctx.regions_denied =
-            values_t_or_exit!(@into_model matches, "exclude-region", Region);
-        self.cfg_ctx.public_endpoints = values_t_or_exit!(matches, "public-endpoint", Endpoint);
-        self.cfg_ctx.formation_endpoints =
-            values_t_or_exit!(matches, "formation-endpoint", Endpoint);
-        self.cfg_ctx.flight_endpoints = values_t_or_exit!(matches, "flight-endpoint", Endpoint);
+        self.cfg_ctx.providers_allowed = matches
+            .get_many::<Provider>("provider")
+            .unwrap_or_default()
+            .filter_map(Provider::into_model)
+            .collect();
+        self.cfg_ctx.providers_denied = matches
+            .get_many::<Provider>("exclude-provider")
+            .unwrap_or_default()
+            .filter_map(Provider::into_model)
+            .collect();
+        self.cfg_ctx.regions_allowed = matches
+            .get_many::<Region>("region")
+            .unwrap_or_default()
+            .filter_map(Region::into_model)
+            .collect();
+        self.cfg_ctx.regions_denied = matches
+            .get_many::<Region>("exclude-region")
+            .unwrap_or_default()
+            .filter_map(Region::into_model)
+            .collect();
+        self.cfg_ctx.public_endpoints = matches
+            .get_many::<String>("public-endpoint")
+            .unwrap_or_default()
+            .filter_map(|val| val.parse::<Endpoint>().ok())
+            .collect();
+        self.cfg_ctx.formation_endpoints = matches
+            .get_many::<String>("formation-endpoint")
+            .unwrap_or_default()
+            .filter_map(|val| val.parse::<Endpoint>().ok())
+            .collect();
+        self.cfg_ctx.flight_endpoints = matches
+            .get_many::<String>("flight-endpoint")
+            .unwrap_or_default()
+            .filter_map(|val| val.parse::<Endpoint>().ok())
+            .collect();
         Ok(())
     }
 

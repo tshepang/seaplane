@@ -44,8 +44,8 @@ impl MetadataCtx {
     /// Builds a MetadataCtx from ArgMatches
     pub fn from_md_common(matches: &SeaplaneMetadataCommonArgMatches) -> Result<MetadataCtx> {
         let matches = matches.0;
-        let base64 = matches.is_present("base64");
-        let raw_keys: Vec<&str> = matches.values_of("key").unwrap().collect();
+        let base64 = matches.contains_id("base64");
+        let raw_keys: Vec<_> = matches.get_many::<String>("key").unwrap().collect();
 
         let mut kvs = KeyValues::default();
         for key in raw_keys {
@@ -68,9 +68,9 @@ impl MetadataCtx {
     /// Builds a MetadataCtx from ArgMatches
     pub fn from_md_set(matches: &SeaplaneMetadataSetArgMatches) -> Result<MetadataCtx> {
         let matches = matches.0;
-        let base64 = matches.is_present("base64");
-        let raw_key = matches.value_of("key").unwrap();
-        let raw_value = matches.value_of("value").unwrap();
+        let base64 = matches.contains_id("base64");
+        let raw_key = matches.get_one::<String>("key").unwrap();
+        let raw_value = matches.get_one::<String>("value").unwrap();
         let value = if let Some(val) = raw_value.strip_prefix('@') {
             if val == "-" {
                 let mut buf: Vec<u8> = Vec::new();

@@ -4,10 +4,9 @@
 //! The only additional information is the formation name, which is not part of the configuration,
 //! but many commands need as well.
 
-use clap::Arg;
+use clap::{builder::PossibleValue, value_parser, Arg};
 
 use seaplane::api::v1::{Provider as ProviderModel, Region as RegionModel};
-use strum::{EnumString, EnumVariantNames, VariantNames};
 
 use crate::cli::validator::{
     validate_endpoint, validate_formation_name, validate_name_id, validate_name_id_path_inline,
@@ -165,8 +164,10 @@ $ seaplane formation plan \\
     --include-flight-plan name=flight2,image=hello:latest
 
 Which would create, and include, two Flight Plans (flight1, and flight2).";
+// NOTE: we can't use `derive(clap::ValueEnum)` because it of how it derives the to_possible_value
+// which appears to unconditionally use shish-ka-bob case which we don't want.
 /// We provide a shim between the Seaplane Provider so we can do some additional UX work like 'all'
-#[derive(Debug, Copy, Clone, PartialEq, EnumString, EnumVariantNames)]
+#[derive(Debug, Copy, Clone, PartialEq, strum::EnumString)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum Provider {
     Aws,
@@ -175,6 +176,31 @@ pub enum Provider {
     Equinix,
     Gcp,
     All,
+}
+
+impl clap::ValueEnum for Provider {
+    fn value_variants<'a>() -> &'a [Self] {
+        use Provider::*;
+        &[Aws, Azure, DigitalOcean, Equinix, Gcp, All]
+    }
+
+    fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
+        use Provider::*;
+        match self {
+            Aws => Some(PossibleValue::new("aws")),
+            Azure => Some(PossibleValue::new("azure")),
+            DigitalOcean => Some(PossibleValue::new("digitalocean")),
+            Equinix => Some(PossibleValue::new("equinix")),
+            Gcp => Some(PossibleValue::new("gcp")),
+            All => Some(PossibleValue::new("all")),
+        }
+    }
+
+    fn from_str(input: &str, _ignore_case: bool) -> Result<Self, String> {
+        // Because we use strum(ascii_ignore_case) for our FromStr impl we unconditionally ignore
+        // case and can ignore clap's hint
+        input.parse().map_err(|e| format!("{e}"))
+    }
 }
 
 impl Provider {
@@ -208,14 +234,14 @@ impl<'a> Into<ProviderModel> for &'a Provider {
 // The Compute API only uses the XA, XC, XE values, but those are the least user friendly.
 /// We provide a shim between the Seaplane Region so we can do some additional UX work
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, Copy, Clone, PartialEq, EnumString, EnumVariantNames)]
+#[derive(Debug, Copy, Clone, PartialEq, strum::EnumString)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum Region {
     XA,
     Asia,
     XC,
     PRC,
-    PeoplesRepublicofChina,
+    PeoplesRepublicOfChina,
     XE,
     Europe,
     EU,
@@ -237,6 +263,85 @@ pub enum Region {
     All,
 }
 
+impl clap::ValueEnum for Region {
+    fn value_variants<'a>() -> &'a [Self] {
+        use Region::*;
+        &[
+            XA, // Asia,
+            XC, // PRC, PeoplesRepublicOfChina,
+            XE, // Europe, EU,
+            XF, // Africa,
+            XN, // NorthAmerica, NAmerica,
+            XO, // Oceania,
+            XQ, // Antarctica,
+            XS, // SAmerica, SouthAmerica,
+            XU, // UK, UnitedKingdom,
+            All,
+        ]
+    }
+
+    fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
+        use Region::*;
+        match self {
+            XA => Some(PossibleValue::new("xa").alias("asia")),
+            Asia => None,
+            XC => Some(PossibleValue::new("xc").aliases([
+                "prc",
+                "china",
+                "peoples-republic-of-china",
+                "peoples_republic_of_china",
+                "peoplesrepublicofchina",
+            ])),
+            PRC => None,
+            PeoplesRepublicOfChina => None,
+            XE => Some(PossibleValue::new("xe").aliases(["europe", "eu"])),
+            Europe => None,
+            EU => None,
+            XF => Some(PossibleValue::new("xf").alias("africa")),
+            Africa => None,
+            XN => Some(PossibleValue::new("xn").aliases([
+                "namerica",
+                "northamerica",
+                "n-america",
+                "north-america",
+                "n_america",
+                "north_america",
+            ])),
+            NorthAmerica => None,
+            NAmerica => None,
+            XO => Some(PossibleValue::new("xo").alias("oceania")),
+            Oceania => None,
+            XQ => Some(PossibleValue::new("xq").alias("antarctica")),
+            Antarctica => None,
+            XS => Some(PossibleValue::new("xs").aliases([
+                "samerica",
+                "southamerica",
+                "s-america",
+                "south-america",
+                "s_america",
+                "south_america",
+            ])),
+            SAmerica => None,
+            SouthAmerica => None,
+            XU => Some(PossibleValue::new("xu").aliases([
+                "uk",
+                "unitedkingdom",
+                "united-kingdom",
+                "united_kingdom",
+            ])),
+            UK => None,
+            UnitedKingdom => None,
+            All => Some(PossibleValue::new("all")),
+        }
+    }
+
+    fn from_str(input: &str, _ignore_case: bool) -> Result<Self, String> {
+        // Because we use strum(ascii_ignore_case) for our FromStr impl we unconditionally ignore
+        // case and can ignore clap's hint
+        input.parse().map_err(|e| format!("{e}"))
+    }
+}
+
 impl Region {
     pub fn into_model(&self) -> Option<RegionModel> {
         if self == &Region::All {
@@ -253,7 +358,7 @@ impl<'a> Into<RegionModel> for &'a Region {
         use Region::*;
         match self {
             XA | Asia => RegionModel::XA,
-            XC | PRC | PeoplesRepublicofChina => RegionModel::XC,
+            XC | PRC | PeoplesRepublicOfChina => RegionModel::XC,
             XE | Europe | EU => RegionModel::XE,
             XF | Africa => RegionModel::XF,
             XN | NorthAmerica | NAmerica => RegionModel::XN,
@@ -296,19 +401,19 @@ pub fn args() -> Vec<Arg<'static>> {
         arg!(--provider|providers =["PROVIDER"=>"all"]... ignore_case)
             .help("A provider that this Formation's Flights are permitted to run on (supports comma separated list, or multiple uses)")
             .long_help(LONG_PROVIDER)
-            .possible_values(Provider::VARIANTS),
+            .value_parser(value_parser!(Provider)),
         arg!(--("exclude-provider")|("exclude-providers") =["PROVIDER"]... ignore_case)
             .help("A provider that this Formation's Flights are *NOT* permitted to run on (supports comma separated list, or multiple uses)")
             .long_help(LONG_EXCLUDE_PROVIDER)
-            .possible_values(Provider::VARIANTS),
+            .value_parser(value_parser!(Provider)),
         arg!(--region|regions =["REGION"=>"all"]... ignore_case)
             .help("A region in which this Formation's Flights are allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below)")
             .long_help(LONG_REGION)
-            .possible_values(Region::VARIANTS),
+            .value_parser(value_parser!(Region)),
         arg!(--("exclude-region")|("exclude-regions") =["REGION"]... ignore_case)
             .help("A region in which this Formation's Flights are *NOT* allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below)")
             .long_help(LONG_EXCLUDE_REGION)
-            .possible_values(Region::VARIANTS),
+            .value_parser(value_parser!(Region)),
         // TODO: maybe allow omitting http:
         arg!(--("public-endpoint")|("public-endpoints") =["SPEC"]...)
             .help("An endpoint that will be publicly exposed by instances of this Formation Plan in the form of 'ROUTE=FLIGHT:PORT' (supports comma separated list, or multiple uses)")

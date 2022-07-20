@@ -1,11 +1,10 @@
 use std::{fmt, result::Result as StdResult};
 
 use serde::{ser::Serializer, Serialize};
-use strum::{EnumString, EnumVariantNames};
 
 use crate::error::Result;
 
-#[derive(EnumString, strum::Display, EnumVariantNames, Copy, Clone, Debug, PartialEq)]
+#[derive(strum::EnumString, strum::Display, Copy, Clone, Debug, PartialEq, clap::ValueEnum)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum DisplayEncodingFormat {
     Simple,

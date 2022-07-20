@@ -140,7 +140,9 @@ impl CliCommand for SeaplaneFormationFetch {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.name_id = matches.value_of("formation").map(ToOwned::to_owned);
+        ctx.args.name_id = matches
+            .get_one::<String>("formation")
+            .map(ToOwned::to_owned);
         Ok(())
     }
 }

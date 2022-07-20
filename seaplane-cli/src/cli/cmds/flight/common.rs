@@ -1,5 +1,5 @@
-use clap::{Arg, ArgMatches};
-use seaplane::{api::v1::Architecture, rexports::strum::VariantNames};
+use clap::{value_parser, Arg, ArgMatches};
+use seaplane::api::v1::Architecture as ArchitectureModel;
 
 use crate::cli::validator::validate_flight_name;
 
@@ -30,6 +30,34 @@ static LONG_ARCHITECTURE: &str = "The architectures this flight is capable of ru
 
 Multiple items can be passed as a comma separated list, or by using the argument
 multiple times.";
+
+// We have to go through this routine of re-implementing to get around Rust's rule about not being
+// allowed to implement traits on types not defined in the local crate.
+/// Supported Architectures
+#[derive(Debug, Copy, Clone, PartialEq, strum::EnumString, clap::ValueEnum)]
+#[strum(ascii_case_insensitive, serialize_all = "lowercase")]
+pub enum Architecture {
+    Amd64,
+    Arm64,
+}
+
+impl Architecture {
+    pub fn into_model(&self) -> ArchitectureModel {
+        self.into()
+    }
+}
+
+#[allow(clippy::from_over_into)]
+impl<'a> Into<ArchitectureModel> for &'a Architecture {
+    fn into(self) -> ArchitectureModel {
+        use Architecture::*;
+        match self {
+            Arm64 => ArchitectureModel::ARM64,
+            Amd64 => ArchitectureModel::AMD64,
+        }
+    }
+}
+
 /// A newtype wrapper to enforce where the ArgMatches came from which reduces errors in checking if
 /// values of arguments were used or not. i.e. `seaplane formation plan` may not have the same
 /// arguments as `seaplane account token` even though both produce an `ArgMatches`.
@@ -61,7 +89,7 @@ pub fn args(image_required: bool) -> Vec<Arg<'static>> {
             .overrides_with("no-maximum")
             .help("The maximum number of container instances that should ever be running (default: autoscale as needed)"),
         arg!(--architecture|arch|arches|architectures ignore_case =["ARCH"]...)
-            .possible_values(Architecture::VARIANTS)
+            .value_parser(value_parser!(Architecture))
             .help("The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses)")
             .long_help(LONG_ARCHITECTURE),
         arg!(--("no-maximum")|("no-max"))

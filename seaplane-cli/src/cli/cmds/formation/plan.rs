@@ -127,12 +127,12 @@ impl CliCommand for SeaplaneFormationPlan {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.fetch = matches.is_present("fetch");
-        ctx.args.force = matches.is_present("force");
+        ctx.args.fetch = matches.contains_id("fetch");
+        ctx.args.force = matches.contains_id("force");
 
         // Create any flights required
         let mut flights: Vec<_> = matches
-            .values_of("include-flight-plan")
+            .get_many::<String>("include-flight-plan")
             .unwrap_or_default()
             .collect();
 
@@ -172,7 +172,7 @@ impl CliCommand for SeaplaneFormationPlan {
         for name in ctx
             .db
             .flights
-            .add_from_at_strs(&vec_remove_if!(flights, |f: &str| f.starts_with('@')))?
+            .add_from_at_strs(vec_remove_if!(flights, |f: &str| f.starts_with('@')))?
         {
             ctx.formation_ctx
                 .get_mut_or_init()

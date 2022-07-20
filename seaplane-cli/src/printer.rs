@@ -12,7 +12,6 @@ use serde::{
     de::{self, Deserializer},
     Deserialize, Serialize,
 };
-use strum::{EnumString, EnumVariantNames};
 
 use crate::{error::Result, Ctx};
 
@@ -59,7 +58,7 @@ impl Drop for Pb {
 }
 
 #[derive(
-    EnumString, strum::Display, EnumVariantNames, Deserialize, Copy, Clone, Debug, PartialEq,
+    strum::EnumString, strum::Display, Deserialize, Copy, Clone, Debug, PartialEq, clap::ValueEnum,
 )]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum OutputFormat {
@@ -74,7 +73,7 @@ impl Default for OutputFormat {
 }
 
 #[derive(
-    strum::Display, EnumVariantNames, EnumString, Copy, Clone, Debug, PartialEq, Serialize,
+    strum::Display, strum::EnumString, Copy, Clone, Debug, PartialEq, Serialize, clap::ValueEnum,
 )]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum ColorChoice {

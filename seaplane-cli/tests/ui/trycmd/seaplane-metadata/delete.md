@@ -9,7 +9,7 @@ USAGE:
     seaplane metadata delete <KEY>... [OPTIONS]
 
 ARGS:
-    <KEY>    The key(s) of the metadata key-value pair
+    <KEY>...    The key(s) of the metadata key-value pair
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -36,7 +36,7 @@ USAGE:
     seaplane metadata delete <KEY>... [OPTIONS]
 
 ARGS:
-    <KEY>
+    <KEY>...
             The key(s) of the metadata key-value pair
 
 OPTIONS:

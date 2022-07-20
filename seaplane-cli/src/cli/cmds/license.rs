@@ -37,7 +37,7 @@ impl CliCommand for SeaplaneLicense {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.third_party = matches.is_present("third-party");
+        ctx.args.third_party = matches.contains_id("third-party");
         Ok(())
     }
 }

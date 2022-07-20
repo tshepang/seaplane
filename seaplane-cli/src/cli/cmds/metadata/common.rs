@@ -1,5 +1,4 @@
-use clap::{Arg, ArgMatches};
-use strum::VariantNames;
+use clap::{value_parser, Arg, ArgMatches};
 
 use crate::ops::DisplayEncodingFormat;
 
@@ -46,7 +45,7 @@ pub fn display_args() -> Vec<Arg<'static>> {
             .overrides_with("no-decode"),
         arg!(--("display-encoding") -('E') =["KIND"=>"simple"])
             .ignore_case(true)
-            .possible_values(DisplayEncodingFormat::VARIANTS)
+            .value_parser(value_parser!(DisplayEncodingFormat))
             .long_help(LONG_DISP_ENCODE_FMT)
             .help(
                 "What format to display the decoded (--decode) keys/values (WARNING! See --help)",

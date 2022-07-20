@@ -12,7 +12,6 @@ use seaplane::api::v1::formations::{
     FormationConfiguration as FormationConfigurationModel,
 };
 use serde::{Deserialize, Serialize};
-use strum::{EnumString, EnumVariantNames};
 use tabwriter::TabWriter;
 use uuid::Uuid;
 
@@ -484,7 +483,7 @@ pub struct FlightStatus {
     maximum: Option<u64>,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, EnumString, EnumVariantNames, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, strum::EnumString, Serialize)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum OpStatus {
     Up,

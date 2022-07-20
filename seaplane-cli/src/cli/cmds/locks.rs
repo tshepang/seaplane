@@ -4,8 +4,7 @@ mod list;
 mod release;
 mod renew;
 
-use clap::{ArgMatches, Command};
-use strum::VariantNames;
+use clap::{value_parser, ArgMatches, Command};
 
 pub use self::{
     acquire::SeaplaneLocksAcquire, common::SeaplaneLocksCommonArgMatches, list::SeaplaneLocksList,
@@ -26,7 +25,7 @@ impl SeaplaneLocks {
             .arg(
                 arg!(--format =["FORMAT"=>"table"] global)
                     .help("Change the output format")
-                    .possible_values(OutputFormat::VARIANTS),
+                    .value_parser(value_parser!(OutputFormat)),
             )
             .subcommand(SeaplaneLocksList::command())
             .subcommand(SeaplaneLocksAcquire::command())

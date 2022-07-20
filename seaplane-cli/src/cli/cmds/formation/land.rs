@@ -89,9 +89,9 @@ impl CliCommand for SeaplaneFormationLand {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.all = matches.is_present("all");
-        ctx.args.name_id = matches.value_of("name_id").map(ToOwned::to_owned);
-        ctx.args.fetch = matches.is_present("fetch");
+        ctx.args.all = matches.contains_id("all");
+        ctx.args.name_id = matches.get_one::<String>("name_id").map(ToOwned::to_owned);
+        ctx.args.fetch = matches.contains_id("fetch");
         Ok(())
     }
 }

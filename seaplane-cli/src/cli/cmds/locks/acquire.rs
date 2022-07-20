@@ -62,12 +62,11 @@ impl CliCommand for SeaplaneLocksAcquire {
             &SeaplaneLocksCommonArgMatches(matches),
         )?);
 
-        ctx.args.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();
-        let raw_ttl = matches.value_of("ttl").unwrap();
-        locksctx.ttl = Some(raw_ttl.parse().unwrap());
-        locksctx.base64 = matches.is_present("base64");
-        locksctx.client_id = Some(matches.value_of("client-id").unwrap().to_string());
+        locksctx.ttl = matches.get_one::<u32>("ttl").copied();
+        locksctx.base64 = matches.contains_id("base64");
+        locksctx.client_id = Some(matches.get_one::<String>("client-id").unwrap().to_string());
 
         Ok(())
     }

@@ -71,7 +71,7 @@ impl CliCommand for SeaplaneAccountToken {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        if matches.is_present("json") {
+        if matches.contains_id("json") {
             ctx.args.out_format = OutputFormat::Json;
         }
         Ok(())
@@ -137,7 +137,7 @@ impl CliCommand for SeaplaneAccountLogin {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.force = matches.is_present("force");
+        ctx.args.force = matches.contains_id("force");
         Ok(())
     }
 }

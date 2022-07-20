@@ -15,18 +15,18 @@ fn try_main() -> Result<()> {
     let matches = Seaplane::command().get_matches();
     // Normally, this would be in the Seapalne::run method, however setting up logging has to
     // happen super early in the process lifetime
-    match matches.occurrences_of("verbose") {
-        0 => match matches.occurrences_of("quiet") {
-            0 => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Info).unwrap(),
-            1 => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Warn).unwrap(),
-            2 => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Error).unwrap(),
+    match matches.get_one::<u8>("verbose").copied() {
+        Some(0) => match matches.get_one::<u8>("quiet").copied() {
+            Some(0) => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Info).unwrap(),
+            Some(1) => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Warn).unwrap(),
+            Some(2) => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Error).unwrap(),
             _ => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Off).unwrap(),
         },
-        1 => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Debug).unwrap(),
+        Some(1) => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Debug).unwrap(),
         _ => seaplane_cli::log::LOG_LEVEL.set(LogLevel::Trace).unwrap(),
     }
 
-    let mut ctx = if !matches.is_present("stateless") {
+    let mut ctx = if !matches.contains_id("stateless") {
         RawConfig::load_all()?.into()
     } else {
         Ctx::default()

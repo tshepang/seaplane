@@ -8,9 +8,8 @@ use std::{
     io::{self, BufRead},
 };
 
-use clap::{crate_authors, ArgMatches, Command};
+use clap::{crate_authors, value_parser, ArgAction, ArgMatches, Command};
 use const_format::concatcp;
-use strum::VariantNames;
 
 pub use crate::cli::cmds::*;
 use crate::{
@@ -89,14 +88,16 @@ impl Seaplane {
             .propagate_version(true)
             .subcommand_required(true)
             .arg_required_else_help(true)
-            .arg(arg!(--verbose -('v') global multiple_occurrences)
+            .arg(arg!(--verbose -('v') global)
                 .help("Display more verbose output")
+                .action(ArgAction::Count)
                 .long_help(LONG_VERBOSE))
-            .arg(arg!(--quiet -('q') multiple_occurrences global)
+            .arg(arg!(--quiet -('q') global)
                 .help("Suppress output at a specific level and below")
+                .action(ArgAction::Count)
                 .long_help(LONG_QUIET))
             .arg(arg!(--color global ignore_case =["COLOR"=>"auto"])
-                .possible_values(ColorChoice::VARIANTS)
+                .value_parser(value_parser!(ColorChoice))
                 .overrides_with_all(&["color", "no-color"])
                 .help("Should the output include color?"))
             .arg(arg!(--("no-color") global)
@@ -150,20 +151,21 @@ impl CliCommand for Seaplane {
         //
         // So we err on the side of not providing color since that is the safer option
         ctx.args.color = match (
-            value_t!(matches, "color", ColorChoice)?,
-            matches.is_present("no-color"),
+            matches.get_one("color").copied(),
+            matches.contains_id("no-color"),
         ) {
             (_, true) => ColorChoice::Never,
-            (choice, _) => {
+            (Some(choice), _) => {
                 if choice != ColorChoice::Auto {
                     choice
                 } else {
                     ctx.args.color
                 }
             }
+            _ => unreachable!("neither --color nor --no-color were used somehow"),
         };
 
-        ctx.args.stateless = matches.is_present("stateless");
+        ctx.args.stateless = matches.contains_id("stateless");
 
         // API tests sometimes write their own DB to test, so we don't want to overwrite that
         #[cfg(not(feature = "api_tests"))]
@@ -175,7 +177,7 @@ impl CliCommand for Seaplane {
             )?;
         }
 
-        if let Some(key) = &matches.value_of("api-key") {
+        if let Some(key) = &matches.get_one::<String>("api-key") {
             if key == &"-" {
                 let stdin = io::stdin();
                 let mut lines = stdin.lock().lines();

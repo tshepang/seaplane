@@ -26,7 +26,7 @@ USAGE:
 
 OPTIONS:
     -A, --api-key <STRING>       The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: AMD64, ARM64]
+        --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: amd64, arm64]
         --color <COLOR>          Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -f, --force                  Override any existing Flights Plans with the same NAME
     -F, --fetch                  Fetch and synchronize remote Formation Instances (which reference Flight Plans) prior to creating this plan to check for conflicts (by default only local plans are checked) [aliases: sync, synchronize]
@@ -103,7 +103,7 @@ OPTIONS:
             multiple times.
             
             [aliases: arch, arches, architectures]
-            [possible values: AMD64, ARM64]
+            [possible values: amd64, arm64]
 
         --color <COLOR>
             Should the output include color?

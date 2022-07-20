@@ -144,13 +144,16 @@ impl Flights {
     /// may be used or an Error is returned.
     ///
     /// Returns a list of any created IDs
-    pub fn add_from_at_strs(&mut self, flights: &[&str]) -> Result<Vec<String>> {
-        if flights.iter().filter(|&&f| f == "@-").count() > 1 {
+    pub fn add_from_at_strs<S>(&mut self, flights: Vec<S>) -> Result<Vec<String>>
+    where
+        S: AsRef<str>,
+    {
+        if flights.iter().filter(|f| f.as_ref() == "@-").count() > 1 {
             return Err(CliErrorKind::MultipleAtStdin.into_err());
         }
         let mut ret = Vec::new();
         for flight in flights {
-            let new_flight = Flight::from_at_str(flight)?;
+            let new_flight = Flight::from_at_str(flight.as_ref())?;
             ret.push(new_flight.model.name().to_owned());
             self.inner.push(new_flight);
         }

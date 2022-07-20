@@ -55,7 +55,7 @@ impl CliCommand for SeaplaneMetadataDelete {
         ctx.md_ctx.init(MetadataCtx::from_md_common(
             &SeaplaneMetadataCommonArgMatches(matches),
         )?);
-        ctx.args.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         Ok(())
     }
 }

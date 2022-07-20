@@ -51,13 +51,12 @@ impl CliCommand for SeaplaneLocksRenew {
             &SeaplaneLocksCommonArgMatches(matches),
         )?);
 
-        ctx.args.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();
-        locksctx.base64 = matches.is_present("base64");
-        let raw_lock_id = matches.value_of("lock-id").unwrap();
+        locksctx.base64 = matches.contains_id("base64");
+        let raw_lock_id = matches.get_one::<String>("lock-id").unwrap();
         locksctx.lock_id = Some(LockId::from_encoded(raw_lock_id));
-        let raw_ttl = matches.value_of("ttl").unwrap();
-        locksctx.ttl = Some(raw_ttl.parse().unwrap());
+        locksctx.ttl = matches.get_one::<u32>("ttl").copied();
 
         Ok(())
     }

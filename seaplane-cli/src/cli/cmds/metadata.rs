@@ -4,8 +4,7 @@ mod get;
 mod list;
 mod set;
 
-use clap::{ArgMatches, Command};
-use strum::VariantNames;
+use clap::{value_parser, ArgMatches, Command};
 
 pub use self::{
     common::SeaplaneMetadataCommonArgMatches,
@@ -29,7 +28,7 @@ impl SeaplaneMetadata {
             .arg(
                 arg!(--format =["FORMAT"=>"table"] global)
                     .help("Change the output format")
-                    .possible_values(OutputFormat::VARIANTS),
+                    .value_parser(value_parser!(OutputFormat)),
             )
             .subcommand(SeaplaneMetadataGet::command())
             .subcommand(SeaplaneMetadataSet::command())

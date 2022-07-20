@@ -263,10 +263,12 @@ impl CliCommand for SeaplaneFormationLaunch {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.name_id = matches.value_of("formation").map(ToOwned::to_owned);
-        ctx.args.fetch = matches.is_present("fetch");
+        ctx.args.name_id = matches
+            .get_one::<String>("formation")
+            .map(ToOwned::to_owned);
+        ctx.args.fetch = matches.contains_id("fetch");
         let fctx = ctx.formation_ctx.get_mut_or_init();
-        fctx.grounded = matches.is_present("grounded");
+        fctx.grounded = matches.contains_id("grounded");
         Ok(())
     }
 }

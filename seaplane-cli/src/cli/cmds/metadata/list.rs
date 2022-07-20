@@ -67,17 +67,20 @@ impl CliCommand for SeaplaneMetadataList {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.md_ctx.init(MetadataCtx::default());
-        ctx.args.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut mdctx = ctx.md_ctx.get_mut().unwrap();
-        mdctx.base64 = matches.is_present("base64");
-        mdctx.decode = matches.is_present("decode");
-        mdctx.no_keys = matches.is_present("only-values");
-        mdctx.no_values = matches.is_present("only-keys");
-        mdctx.no_header = matches.is_present("no-header");
-        mdctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");
-        mdctx.from =
-            maybe_base64_arg!(matches, "from", matches.is_present("base64")).map(Key::from_encoded);
-        mdctx.directory = maybe_base64_arg!(matches, "dir", matches.is_present("base64"))
+        mdctx.base64 = matches.contains_id("base64");
+        mdctx.decode = matches.contains_id("decode");
+        mdctx.no_keys = matches.contains_id("only-values");
+        mdctx.no_values = matches.contains_id("only-keys");
+        mdctx.no_header = matches.contains_id("no-header");
+        mdctx.disp_encoding = matches
+            .get_one("display-encoding")
+            .copied()
+            .unwrap_or_default();
+        mdctx.from = maybe_base64_arg!(matches, "from", matches.contains_id("base64"))
+            .map(Key::from_encoded);
+        mdctx.directory = maybe_base64_arg!(matches, "dir", matches.contains_id("base64"))
             .map(Directory::from_encoded);
         Ok(())
     }

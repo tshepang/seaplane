@@ -1,5 +1,4 @@
-use clap::{ArgMatches, Command};
-use strum::VariantNames;
+use clap::{value_parser, ArgMatches, Command};
 
 use crate::{
     cli::{cmds::formation::SeaplaneFormationFetch, CliCommand},
@@ -35,7 +34,7 @@ impl SeaplaneFormationList {
             .arg(arg!(--fetch|sync|synchronize - ('F')).help("Fetch remote Formation Instances and create/synchronize with local Plan Definitions prior to listing (by default only local Plans are displayed)"))
             .arg(
                 arg!(--format =["FORMAT"=>"table"])
-                    .possible_values(OutputFormat::VARIANTS)
+                    .value_parser(value_parser!(OutputFormat))
                     .help("Change the output format"),
             )
     }
@@ -74,8 +73,8 @@ impl CliCommand for SeaplaneFormationList {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.out_format = matches.value_of_t("format").unwrap_or_default();
-        ctx.args.fetch = matches.is_present("fetch");
+        ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
+        ctx.args.fetch = matches.contains_id("fetch");
         Ok(())
     }
 }

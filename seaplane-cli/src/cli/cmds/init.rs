@@ -29,7 +29,7 @@ impl SeaplaneInit {
             .arg(arg!(--overwrite =["ITEM"]...)
                 .help("Overwrite select files or directories (DANGER: will overwrite existing data) (supports comma separated list, or multiple uses)")
                 .long_help(LONG_OVERWRITE)
-                .possible_values(&["all", "formations", "flights", "config"]))
+                .value_parser(["all", "formations", "flights", "config"]))
     }
 }
 
@@ -94,9 +94,9 @@ impl CliCommand for SeaplaneInit {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.force = matches.is_present("force");
+        ctx.args.force = matches.contains_id("force");
         ctx.args.overwrite = matches
-            .values_of("overwrite")
+            .get_many::<String>("overwrite")
             .unwrap_or_default()
             .map(ToOwned::to_owned)
             .collect();

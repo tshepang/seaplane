@@ -119,9 +119,9 @@ impl CliCommand for SeaplaneFlightDelete {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.force = matches.is_present("force");
-        ctx.args.all = matches.is_present("all");
-        ctx.args.name_id = matches.value_of("flight").map(ToOwned::to_owned);
+        ctx.args.force = matches.contains_id("force");
+        ctx.args.all = matches.contains_id("all");
+        ctx.args.name_id = matches.get_one::<String>("flight").map(ToOwned::to_owned);
         Ok(())
     }
 }

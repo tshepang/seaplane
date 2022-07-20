@@ -1,5 +1,4 @@
-use clap::{ArgMatches, Command};
-use strum::VariantNames;
+use clap::{value_parser, ArgMatches, Command};
 
 use crate::{
     api::FormationsReq,
@@ -36,7 +35,7 @@ impl SeaplaneFormationStatus {
             )
             .arg(
                 arg!(--format =["FORMAT"=>"table"])
-                    .possible_values(OutputFormat::VARIANTS)
+                    .value_parser(value_parser!(OutputFormat))
                     .help("Change the output format"),
             )
             .arg(arg!(--("no-fetch")).help("Skip fetching and synchronizing of remote instances"))
@@ -102,9 +101,11 @@ impl CliCommand for SeaplaneFormationStatus {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.out_format = matches.value_of_t("format").unwrap_or_default();
-        ctx.args.name_id = matches.value_of("formation").map(ToOwned::to_owned);
-        ctx.args.fetch = !matches.is_present("no-fetch");
+        ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
+        ctx.args.name_id = matches
+            .get_one::<String>("formation")
+            .map(ToOwned::to_owned);
+        ctx.args.fetch = !matches.contains_id("no-fetch");
         Ok(())
     }
 }

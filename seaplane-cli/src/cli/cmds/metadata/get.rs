@@ -62,10 +62,13 @@ impl CliCommand for SeaplaneMetadataGet {
         ctx.md_ctx.init(MetadataCtx::from_md_common(
             &common::SeaplaneMetadataCommonArgMatches(matches),
         )?);
-        ctx.args.out_format = matches.value_of_t_or_exit("format");
+        ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut mdctx = ctx.md_ctx.get_mut_or_init();
-        mdctx.decode = matches.is_present("decode");
-        mdctx.disp_encoding = matches.value_of_t_or_exit("display-encoding");
+        mdctx.decode = matches.contains_id("decode");
+        mdctx.disp_encoding = matches
+            .get_one("display-encoding")
+            .copied()
+            .unwrap_or_default();
         mdctx.no_header = true;
         mdctx.no_keys = true;
         mdctx.no_values = false;

@@ -12,7 +12,7 @@ OPTIONS:
     -A, --api-key <STRING>               The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
         --color <COLOR>                  Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
         --exclude-provider <PROVIDER>    A provider that this Formation's Flights are *NOT* permitted to run on (supports comma separated list, or multiple uses) [aliases: exclude-providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
-        --exclude-region <REGION>        A region in which this Formation's Flights are *NOT* allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below) [aliases: exclude-regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+        --exclude-region <REGION>        A region in which this Formation's Flights are *NOT* allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below) [aliases: exclude-regions] [possible values: xa, xc, xe, xf, xn, xo, xq, xs, xu, all]
     -F, --fetch                          Fetch remote instances prior to creating this plan to check for conflicts (by default only local references are considered) [aliases: sync, synchronize]
         --flight-endpoint <SPEC>         An endpoint that will only be privately exposed on Instances of this Formation Plan to Flights within the same Formation Instance. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses) [aliases: flight-endpoints]
         --force                          Override any existing Formation with the same NAME
@@ -25,7 +25,7 @@ OPTIONS:
         --provider <PROVIDER>            A provider that this Formation's Flights are permitted to run on (supports comma separated list, or multiple uses) [default: all] [aliases: providers] [possible values: aws, azure, digitalocean, equinix, gcp, all]
         --public-endpoint <SPEC>         An endpoint that will be publicly exposed by instances of this Formation Plan in the form of 'ROUTE=FLIGHT:PORT' (supports comma separated list, or multiple uses) [aliases: public-endpoints]
     -q, --quiet                          Suppress output at a specific level and below
-        --region <REGION>                A region in which this Formation's Flights are allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below) [default: all] [aliases: regions] [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+        --region <REGION>                A region in which this Formation's Flights are allowed to run in (supports comma separated list, or multiple uses) (See REGION SPEC below) [default: all] [aliases: regions] [possible values: xa, xc, xe, xf, xn, xo, xq, xs, xu, all]
     -S, --stateless                      Ignore local state files, do not read from or write to them
     -v, --verbose                        Display more verbose output
     -V, --version                        Print version information
@@ -119,7 +119,7 @@ OPTIONS:
             multiple times.
             
             [aliases: exclude-regions]
-            [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+            [possible values: xa, xc, xe, xf, xn, xo, xq, xs, xu, all]
 
     -F, --fetch
             Fetch remote instances prior to creating this plan to check for conflicts (by default only local references are considered)
@@ -257,7 +257,7 @@ OPTIONS:
             
             [default: all]
             [aliases: regions]
-            [possible values: xa, asia, xc, prc, peoplesrepublicofchina, xe, europe, eu, xf, africa, xn, northamerica, namerica, xo, oceania, xq, antarctica, xs, samerica, southamerica, xu, uk, unitedkingdom, all]
+            [possible values: xa, xc, xe, xf, xn, xo, xq, xs, xu, all]
 
     -S, --stateless
             Ignore local state files, do not read from or write to them

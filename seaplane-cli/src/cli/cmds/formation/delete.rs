@@ -195,14 +195,14 @@ impl CliCommand for SeaplaneFormationDelete {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.force = matches.is_present("force");
-        ctx.args.all = matches.is_present("all");
-        ctx.args.fetch = matches.is_present("fetch");
+        ctx.args.force = matches.contains_id("force");
+        ctx.args.all = matches.contains_id("all");
+        ctx.args.fetch = matches.contains_id("fetch");
         let mut fctx = ctx.formation_ctx.get_mut_or_init();
-        fctx.name_id = matches.value_of("formation").unwrap().to_string();
-        fctx.remote = !matches.is_present("no-remote");
-        fctx.local = !matches.is_present("no-local");
-        fctx.recursive = matches.is_present("recursive");
+        fctx.name_id = matches.get_one::<String>("formation").unwrap().to_string();
+        fctx.remote = !matches.contains_id("no-remote");
+        fctx.local = !matches.contains_id("no-local");
+        fctx.recursive = matches.contains_id("recursive");
 
         Ok(())
     }

@@ -265,67 +265,6 @@ macro_rules! cli_traceln {
 
 // Helper macros to make some CLI aspects a little less verbose
 
-/// Converts a value from a clap::ArgMatches into some Result<T, CliError>
-///
-/// This macro uses clap's [`clap::ArgMatches::value_of_t`] but matches the error if any and
-/// converts to our own [`crate::error::CliError`]
-macro_rules! value_t {
-    ($m:ident, $v:expr, $ty:ty) => {{
-        match $m.value_of_t::<$ty>($v) {
-            Ok(val) => Ok(val),
-            Err(e) => match e.kind() {
-                ::clap::ErrorKind::ValueValidation => {
-                    if let ::clap::error::ContextValue::String(s) = e.context().nth(0).unwrap().1 {
-                        Err(
-                            $crate::error::CliErrorKind::InvalidCliValue(Some($v), s.to_string())
-                                .into_err(),
-                        )
-                    } else {
-                        // clap only returns a single string context value for ErrorKind::ValueValidation
-                        // the pattern is actually irrefutable
-                        unreachable!()
-                    }
-                }
-                ::clap::ErrorKind::ArgumentNotFound => {
-                    Err($crate::error::CliErrorKind::CliArgNotUsed($v).into_err())
-                }
-                // `clap::ArgMatches::value_of_t` does not return any other type of error but the
-                // above two
-                _ => unreachable!(),
-            },
-        }
-    }};
-}
-
-/// Collects the values out of an ArgMatches parsing them into some T or exiting if any value fails
-/// to parse. Unlike ArgMatches::values_of_t_or_exit this macro does not require the argument to
-/// have been used.
-macro_rules! values_t_or_exit {
-    (@into_model $m:ident, $v:expr, $ty:ty) => {{
-        $m.values_of($v)
-            .map(|vals| {
-                vals.filter_map(|s| {
-                    // clap already validates that these values are valid
-                    let p = &s.parse::<$ty>().unwrap();
-                    <$ty>::into_model(p)
-                })
-                .collect()
-            })
-            .unwrap_or_default()
-    }};
-    ($m:ident, $v:expr, $ty:ty) => {{
-        $m.values_of($v)
-            .map(|vals| {
-                vals.map(|s| {
-                    // clap already validates that these values are valid
-                    s.parse::<$ty>().unwrap()
-                })
-                .collect()
-            })
-            .unwrap_or_default()
-    }};
-}
-
 /// Makes declaring *consistent* arguments less verbose and less tedious.
 ///
 /// The available syntax is:
@@ -340,13 +279,13 @@ macro_rules! values_t_or_exit {
 /// - Setting multiple values can be done with `...` Note that this sets multiple
 /// values/occurrences in a consistent manner for this application. If you need arguments with
 /// different semantics you'll have to set those manually. `...` is equivalent to setting
-/// `Arg::new("foo").multiple_values(true).multiple_occurrences(true).number_of_values(1).value_delimiter(',')`
+/// `Arg::new("foo").action(ArgAction::Append).multiple_values(true).number_of_values(1).value_delimiter(',')`
 /// - Setting any boolean value to `true` can be done by just the function name i.e. `required`
 /// - Setting any boolean value to `false` can be done by prefixing the function with `!` i.e.
 /// `!required`
 ///
 /// ```rust
-/// # use clap::Arg;
+/// # use clap::{ArgAction, Arg};
 /// # use seaplane_cli::arg;
 /// # let _ =
 /// arg!(--foo|foos =["NUM"=>"2"]... global !allow_hyphen_values);
@@ -358,8 +297,8 @@ macro_rules! values_t_or_exit {
 ///   .visible_alias("foos")       // |foos
 ///   .value_name("NUM")           // =["NUM"]
 ///   .default_value("2")          // =[..=>"2"]
+///   .action(ArgAction::Append)   // ...
 ///   .multiple_values(true)       // ...
-///   .multiple_occurrences(true)  // ...
 ///   .value_delimiter(',')        // ...
 ///   .number_of_values(1)         // ...
 ///   .global(true)                // global
@@ -381,7 +320,14 @@ macro_rules! arg {
         arg!(@arg ($arg.visible_alias(stringify!($alias))) $($tail)* )
     };
     (@arg ($arg:expr) ... $($tail:tt)*) => {
-        arg!(@arg ($arg.number_of_values(1).value_delimiter(',')) multiple_values multiple_occurrences $($tail)* )
+        arg!(@arg ({
+            let arg = $arg.value_delimiter(',').action(::clap::ArgAction::Append);
+            if arg.get_long().is_some() || arg.get_short().is_some() {
+                arg.number_of_values(1)
+            } else {
+                arg
+            }
+        }) multiple_values $($tail)* )
     };
     (@arg ($arg:expr) =[$var:expr$(=>$default:expr)?] $($tail:tt)*) => {
         arg!(@arg ({
@@ -416,10 +362,10 @@ macro_rules! arg {
 /// the conversion if necessary
 macro_rules! maybe_base64_arg {
     ($m:expr, $arg:expr, $is_base64:expr) => {
-        if let Some(raw_key) = $m.value_of($arg) {
+        if let Some(raw_key) = $m.get_one::<String>($arg) {
             if $is_base64 {
                 let _ = ::base64::decode_config(raw_key, ::base64::URL_SAFE_NO_PAD)?;
-                Some(raw_key.to_owned())
+                Some(raw_key.to_string())
             } else {
                 Some(::base64::encode_config(raw_key, ::base64::URL_SAFE_NO_PAD))
             }

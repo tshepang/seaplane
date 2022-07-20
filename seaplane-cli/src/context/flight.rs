@@ -146,7 +146,7 @@ impl FlightCtx {
         let mut generated_name = false;
         // We generate a random name if one is not provided
         let name = matches
-            .value_of(&format!("{prefix}name"))
+            .get_one::<String>(&format!("{prefix}name"))
             .map(ToOwned::to_owned)
             .unwrap_or_else(|| {
                 generated_name = true;
@@ -154,7 +154,7 @@ impl FlightCtx {
             });
 
         // We have to use if let in order to use the ? operator
-        let image = if let Some(s) = matches.value_of(&format!("{prefix}image")) {
+        let image = if let Some(s) = matches.get_one::<String>(&format!("{prefix}image")) {
             Some(str_to_image_ref(s)?)
         } else {
             None
@@ -164,17 +164,18 @@ impl FlightCtx {
             image,
             name_id: name,
             minimum: matches
-                .value_of_t(&format!("{prefix}minimum"))
+                .get_one(&format!("{prefix}minimum"))
+                .copied()
                 .unwrap_or(FLIGHT_MINIMUM_DEFAULT),
-            maximum: matches.value_of_t(&format!("{prefix}maximum")).ok(),
-            architecture: values_t_or_exit!(
-                matches,
-                &format!("{prefix}architecture"),
-                Architecture
-            ),
+            maximum: matches.get_one(&format!("{prefix}maximum")).copied(),
+            architecture: matches
+                .get_many::<Architecture>(&format!("{prefix}architecture"))
+                .unwrap_or_default()
+                .copied()
+                .collect(),
             // because of clap overrides we only have to check api_permissions
-            api_permission: matches.is_present(&format!("{prefix}api-permission")),
-            reset_maximum: matches.is_present(&format!("{prefix}no-maximum")),
+            api_permission: matches.contains_id(&format!("{prefix}api-permission")),
+            reset_maximum: matches.contains_id(&format!("{prefix}no-maximum")),
             generated_name,
         })
     }

@@ -28,8 +28,8 @@ impl LocksCtx {
     /// Builds a LocksCtx from ArgMatches
     pub fn from_locks_common(matches: &SeaplaneLocksCommonArgMatches) -> Result<LocksCtx> {
         let matches = matches.0;
-        let base64 = matches.is_present("base64");
-        let raw_lock_name = matches.value_of("lock_name");
+        let base64 = matches.contains_id("base64");
+        let raw_lock_name = matches.get_one::<String>("lock_name");
 
         let lock_name: Option<LockName> = if base64 {
             let res: Option<Result<LockName>> = raw_lock_name.map(|name| {

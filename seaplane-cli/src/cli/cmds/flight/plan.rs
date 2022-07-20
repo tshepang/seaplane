@@ -106,8 +106,8 @@ impl CliCommand for SeaplaneFlightPlan {
             &SeaplaneFlightCommonArgMatches(matches),
             "",
         )?);
-        ctx.args.force = matches.is_present("force");
-        ctx.args.fetch = matches.is_present("fetch");
+        ctx.args.force = matches.contains_id("force");
+        ctx.args.fetch = matches.contains_id("fetch");
         Ok(())
     }
 }
