@@ -2,6 +2,23 @@
 
 Contributions are welcome!
 
+## Requirements
+
+seaplane is built with `cargo`, but we use
+[just](https://github.com/casey/just) as a command runner. You can install it
+with
+
+```console
+$ cargo install just
+```
+
+Once just is installed, you can install the other tooling we use to build
+and test the system with
+
+```console
+$ just setup
+```
+
 ## Workflow
 
 Our workflow is:

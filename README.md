@@ -24,6 +24,9 @@ SDK and an APIs can be utilized.
 Not sure where to go to quickly run a workload on Seaplane? See our [Getting
 Started] guide.
 
+To build and test this software yourself, see the [CONTRIBUTING.md](CONTRIBUTING.md)
+document that is a peer to this one.
+
 ## License
 
 Licensed under the Apache License, Version 2.0, [LICENSE](LICENSE). Copyright 2022 Seaplane IO, Inc.
