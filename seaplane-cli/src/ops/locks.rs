@@ -2,10 +2,11 @@ use std::io::Write;
 
 use seaplane::api::v1::{locks::LockName as LockNameModel, LockInfo, LockInfoInner};
 use serde::Serialize;
+use tabwriter::TabWriter;
 
 use crate::{
     context::Ctx,
-    error::Result,
+    error::{CliError, Result},
     ops::EncodedString,
     printer::{printer, Output},
 };
@@ -113,40 +114,40 @@ impl From<LockInfo> for ListedLock {
     }
 }
 
-impl Output for ListedLock {
-    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
-        cli_println!("{}", serde_json::to_string(self)?);
-        Ok(())
+pub fn print_lock_table<I>(headers: bool, chunk: I, ctx: &Ctx) -> Result<()>
+where
+    I: IntoIterator<Item = ListedLock>,
+{
+    let buffer = Vec::new();
+    let mut tw = TabWriter::new(buffer);
+    if headers {
+        writeln!(tw, "LOCK-NAME\tLOCK-ID\tCLIENT-ID\tCLIENT-IP\tTTL")?;
     }
 
-    fn print_table(&self, ctx: &Ctx) -> Result<()> {
-        let locksctx = ctx.locks_ctx.get_or_init();
-        let show_headers = !locksctx.no_header;
-
+    let locksctx = ctx.locks_ctx.get_or_init();
+    for l in chunk {
         let show_name = if locksctx.decode {
-            self.name.clone().decode(locksctx.disp_encoding)?
+            l.name.clone().decode(locksctx.disp_encoding)?
         } else {
-            self.name.clone()
+            l.name.clone()
         };
 
-        let mut ptr = printer();
-
-        let lock_name_prefix = if show_headers { "LOCK-NAME: " } else { "" };
-        let lock_id_prefix = if show_headers { "LOCK-ID: " } else { "" };
-        let client_id_prefix = if show_headers { "CLIENT-ID: " } else { "" };
-        let ip_prefix = if show_headers { "CLIENT-IP: " } else { "" };
-        let ttl_prefix = if show_headers { "TTL: " } else { "" };
-
-        writeln!(ptr, "{lock_name_prefix}{}", show_name)?;
-        writeln!(ptr, "{lock_id_prefix}{}", self.id)?;
-        writeln!(ptr, "{client_id_prefix}{}", self.info.client_id)?;
-        writeln!(ptr, "{ip_prefix}{}", self.info.ip)?;
-        writeln!(ptr, "{ttl_prefix}{}", self.info.ttl)?;
-
-        ptr.flush()?;
-
-        Ok(())
+        writeln!(
+            tw,
+            "{}\t{}\t{}\t{}\t{}",
+            show_name, l.id, l.info.client_id, l.info.ip, l.info.ttl
+        )?;
     }
+    tw.flush()?;
+
+    let mut ptr = printer();
+    let page = tw
+        .into_inner()
+        .map_err(|_| CliError::bail("IO flush error writing locks"))?;
+    ptr.write_all(&page)?;
+    ptr.flush()?;
+
+    Ok(())
 }
 
 #[cfg(test)]

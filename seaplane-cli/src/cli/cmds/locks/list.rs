@@ -3,10 +3,12 @@ use crate::{
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
     context::{Ctx, LocksCtx},
     error::Result,
-    ops::locks::ListedLock,
-    printer::{Output, OutputFormat},
+    ops::locks::{self, ListedLock},
+    printer::OutputFormat,
 };
 use clap::{ArgMatches, Command};
+
+static OUTPUT_PAGE_SIZE: usize = 10;
 
 static LONG_ABOUT: &str = "Get information around currently held locks.
 
@@ -44,8 +46,8 @@ fn run_one_info(ctx: &mut Ctx) -> Result<()> {
     let out = ListedLock::from(resp);
 
     match ctx.args.out_format {
-        OutputFormat::Json => out.print_json(ctx)?,
-        OutputFormat::Table => out.print_table(ctx)?,
+        OutputFormat::Json => cli_println!("{}", serde_json::to_string(&out)?),
+        OutputFormat::Table => locks::print_lock_table(!locksctx.no_header, vec![out], ctx)?,
     };
 
     Ok(())
@@ -53,6 +55,9 @@ fn run_one_info(ctx: &mut Ctx) -> Result<()> {
 
 fn run_all_info(ctx: &mut Ctx) -> Result<()> {
     let mut last_key = None;
+    let mut headers = !ctx.locks_ctx.get_or_init().no_header;
+    let mut table_page = Vec::with_capacity(OUTPUT_PAGE_SIZE);
+
     loop {
         let mut req = LocksReq::new(ctx)?;
         let page = req.get_page(last_key)?;
@@ -63,14 +68,24 @@ fn run_all_info(ctx: &mut Ctx) -> Result<()> {
         for info in page.infos {
             let out = ListedLock::from(info);
             match ctx.args.out_format {
-                OutputFormat::Json => out.print_json(ctx)?,
-                OutputFormat::Table => out.print_table(ctx)?,
+                OutputFormat::Json => cli_println!("{}", serde_json::to_string(&out)?),
+                OutputFormat::Table => {
+                    table_page.push(out);
+                    if table_page.len() >= OUTPUT_PAGE_SIZE {
+                        locks::print_lock_table(headers, table_page.drain(..), ctx)?;
+                        headers = false;
+                    }
+                }
             }
         }
 
         if let Some(next_key) = page.next {
             last_key = Some(next_key);
         } else {
+            if !table_page.is_empty() {
+                locks::print_lock_table(headers, table_page, ctx)?;
+            }
+
             break;
         }
     }

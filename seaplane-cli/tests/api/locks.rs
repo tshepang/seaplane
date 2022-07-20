@@ -45,7 +45,166 @@ fn locks_acquire() {
 }
 
 #[test]
-fn locks_list_all() {
+fn locks_list_output_pages() {
+    let server_page = json!({
+        "next": null,
+        "infos": [
+            {
+                "name": "long name davis, home of the long names",
+                "id": "MQo",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "1",
+                "id": "Mgo",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "2",
+                "id": "Mwo",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "3",
+                "id": "NAo",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "4",
+                "id": "NQo",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "5",
+                "id": "OTEK",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "6",
+                "id": "OAo",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "7",
+                "id": "MTAK",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "8",
+                "id": "MTEK",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "9",
+                "id": "MTIK",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "10",
+                "id": "MTMK",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "11",
+                "id": "MTQK",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+            {
+                "name": "12",
+                "id": "MTYK",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            },
+        ]
+    });
+
+    // The point of the test is to see us page during output
+    // so make sure that OUTPUT_PAGE_SIZE < server_page.infos.len
+
+    let mut mock = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/locks/");
+        then(t, &server_page);
+    });
+
+    let res = test_main(&cli!("locks list"), MOCK_SERVER.base_url());
+    assert!(res.is_ok());
+    mock.assert_hits(1);
+
+    assert_eq!(
+        printer().as_string().trim(),
+        "LOCK-NAME                                LOCK-ID  CLIENT-ID    CLIENT-IP    TTL\n\
+         long name davis, home of the long names  MQo      test-client  192.0.2.137  5\n\
+         1                                        Mgo      test-client  192.0.2.137  5\n\
+         2                                        Mwo      test-client  192.0.2.137  5\n\
+         3                                        NAo      test-client  192.0.2.137  5\n\
+         4                                        NQo      test-client  192.0.2.137  5\n\
+         5                                        OTEK     test-client  192.0.2.137  5\n\
+         6                                        OAo      test-client  192.0.2.137  5\n\
+         7                                        MTAK     test-client  192.0.2.137  5\n\
+         8                                        MTEK     test-client  192.0.2.137  5\n\
+         9                                        MTIK     test-client  192.0.2.137  5\n\
+         10  MTMK  test-client  192.0.2.137  5\n\
+         11  MTQK  test-client  192.0.2.137  5\n\
+         12  MTYK  test-client  192.0.2.137  5"
+    );
+    printer().clear();
+
+    mock.delete();
+}
+
+#[test]
+fn locks_list_server_pages() {
     let p1 = json!({
         "next": "page2",
         "infos": [
@@ -106,16 +265,9 @@ fn locks_list_all() {
 
     assert_eq!(
         printer().as_string().trim(),
-        "LOCK-NAME: foo\n\
-         LOCK-ID: D4lbVpdBE_U\n\
-         CLIENT-ID: test-client\n\
-         CLIENT-IP: 192.0.2.137\n\
-         TTL: 5\n\
-         LOCK-NAME: bar\n\
-         LOCK-ID: D4lbVpdBD_U\n\
-         CLIENT-ID: test-client2\n\
-         CLIENT-IP: 192.0.2.137\n\
-         TTL: 5"
+        "LOCK-NAME  LOCK-ID      CLIENT-ID     CLIENT-IP    TTL\n\
+         foo        D4lbVpdBE_U  test-client   192.0.2.137  5\n\
+         bar        D4lbVpdBD_U  test-client2  192.0.2.137  5"
     );
 
     mock1.delete();
@@ -145,25 +297,35 @@ fn locks_list() {
     assert!(res.is_ok());
     mock.assert_hits(1);
 
-    assert_eq!(printer().as_string().trim(),
-        "LOCK-NAME: Zm9v\nLOCK-ID: D4lbVpdBE_U\nCLIENT-ID: test-client\nCLIENT-IP: 192.0.2.137\nTTL: 5");
-    printer().clear();
-
-    let res = test_main(&cli!("locks list foo --decode"), MOCK_SERVER.base_url());
-    assert!(res.is_ok());
-    mock.assert_hits(2);
-    assert_eq!(printer().as_string().trim(),
-        "LOCK-NAME: foo\nLOCK-ID: D4lbVpdBE_U\nCLIENT-ID: test-client\nCLIENT-IP: 192.0.2.137\nTTL: 5");
+    assert_eq!(
+        printer().as_string().trim(),
+        "LOCK-NAME  LOCK-ID      CLIENT-ID    CLIENT-IP    TTL\n\
+         Zm9v       D4lbVpdBE_U  test-client  192.0.2.137  5"
+    );
     printer().clear();
 
     let res = test_main(
-        &cli!("locks list foo -D --display-encoding hex"),
+        &cli!("locks list foo --decode --no-header"),
+        MOCK_SERVER.base_url(),
+    );
+    assert!(res.is_ok());
+    mock.assert_hits(2);
+    assert_eq!(
+        printer().as_string().trim(),
+        "foo  D4lbVpdBE_U  test-client  192.0.2.137  5"
+    );
+    printer().clear();
+
+    let res = test_main(
+        &cli!("locks list foo -D --no-header --display-encoding hex"),
         MOCK_SERVER.base_url(),
     );
     assert!(res.is_ok());
     mock.assert_hits(3);
-    assert_eq!(printer().as_string().trim(),
-        "LOCK-NAME: 666f6f\nLOCK-ID: D4lbVpdBE_U\nCLIENT-ID: test-client\nCLIENT-IP: 192.0.2.137\nTTL: 5");
+    assert_eq!(
+        printer().as_string().trim(),
+        "666f6f  D4lbVpdBE_U  test-client  192.0.2.137  5"
+    );
     printer().clear();
 
     let res = test_main(
