@@ -25,7 +25,7 @@ use crate::{
 pub struct LocksReq {
     api_key: String,
     lock_id: Option<String>,
-    name: Option<String>,
+    name: Option<LockName>,
     token: Option<AccessToken>,
     inner: Option<LocksRequest>,
     identity_url: Option<Url>,
@@ -45,18 +45,18 @@ impl LocksReq {
         })
     }
 
-    pub fn set_identifiers<S1: Into<String>, S2: Into<String>>(
+    pub fn set_identifiers<S: Into<String>>(
         &mut self,
-        name: Option<S1>,
-        lock_id: Option<S2>,
+        name: Option<LockName>,
+        lock_id: Option<S>,
     ) -> Result<()> {
-        self.name = name.map(|s| s.into());
+        self.name = name;
         self.lock_id = lock_id.map(|s| s.into());
         self.refresh_inner()
     }
 
-    pub fn set_name<S: Into<String>>(&mut self, name: S) -> Result<()> {
-        self.name = Some(name.into());
+    pub fn set_name(&mut self, name: LockName) -> Result<()> {
+        self.name = Some(name);
         self.refresh_inner()
     }
 
@@ -72,22 +72,20 @@ impl LocksReq {
     fn refresh_inner(&mut self) -> Result<()> {
         let mut builder = LocksRequest::builder().token(self.token_or_refresh()?);
 
-        if self.name.is_none() && self.lock_id.is_none() {
-            panic!("This violates an invariant that all LocksRequests will have either a name or an id,
-            however this should not be possible as field are set to 'required' using Clap");
+        if self.name.is_none() {
+            panic!("all LocksRequests must have a name")
         }
 
-        if let Some(lock_id) = &self.lock_id {
-            let default_sequencer_value = 0u32;
-            builder = builder.held_lock(HeldLockModel::new(
-                LockName::from_encoded(self.name.as_ref().unwrap()),
-                LockId::from_encoded(lock_id),
-                default_sequencer_value,
-            ));
-        }
-
-        if self.lock_id.is_none() && self.name.is_some() {
-            builder = builder.encoded_lock_name(self.name.as_ref().unwrap());
+        match &self.lock_id {
+            Some(lock_id) => {
+                let default_sequencer_value = 0u32;
+                builder = builder.held_lock(HeldLockModel::new(
+                    self.name.clone().unwrap(),
+                    LockId::from_encoded(lock_id),
+                    default_sequencer_value,
+                ));
+            }
+            None => builder = builder.lock_name(self.name.clone().unwrap()),
         }
 
         if let Some(url) = &self.locks_url {

@@ -296,7 +296,6 @@ fn locks_list() {
     let res = test_main(&cli!("locks list Zm9v --base64"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
-
     assert_eq!(
         printer().as_string().trim(),
         "LOCK-NAME  LOCK-ID      CLIENT-ID    CLIENT-IP    TTL\n\
@@ -332,7 +331,7 @@ fn locks_list() {
 #[test]
 fn locks_list_json() {
     let resp = json!({
-        "name": "foo",
+        "name": "Zm9vCg",
         "id": "D4lbVpdBE_U",
         "info": {
             "ttl": 5,
@@ -354,7 +353,7 @@ fn locks_list_json() {
     mock.assert_hits(1);
     assert_eq!(
         printer().as_string().trim(),
-        r#"{"name":"foo","id":"D4lbVpdBE_U","info":{"ttl":5,"client-id":"test-client","ip":"192.0.2.137"}}"#
+        r#"{"name":"Zm9vCg","id":"D4lbVpdBE_U","info":{"ttl":5,"client-id":"test-client","ip":"192.0.2.137"}}"#
     );
     printer().clear();
 

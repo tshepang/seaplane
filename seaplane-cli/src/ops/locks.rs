@@ -25,7 +25,7 @@ impl LockName {
     /// is URL safe base64 encoded or Bad Things may happen.
     pub fn new<S: Into<String>>(name: S) -> Self {
         Self {
-            name: EncodedString::Base64(name.into()),
+            name: EncodedString::new(name.into()),
         }
     }
 
@@ -33,16 +33,13 @@ impl LockName {
     pub fn from_name_unencoded<S: AsRef<str>>(name: S) -> Self {
         let name = base64::encode_config(name.as_ref(), base64::URL_SAFE_NO_PAD);
         Self {
-            name: EncodedString::Base64(name),
+            name: EncodedString::new(name),
         }
     }
 
     /// Creates a new LockName from self's data.
-    pub fn to_model(&self) -> Result<LockNameModel> {
-        Ok(match &self.name {
-            EncodedString::Base64(s) => LockNameModel::from_encoded(s.to_string()),
-            EncodedString::Simple(s) => LockNameModel::from_unencoded(s),
-        })
+    pub fn to_model(&self) -> LockNameModel {
+        LockNameModel::from_encoded(self.name.to_string())
     }
 }
 
@@ -102,7 +99,7 @@ impl From<LockInfo> for ListedLock {
     fn from(other: LockInfo) -> Self {
         let info = other.info.into();
         Self {
-            name: EncodedString::Base64(other.name.encoded().to_owned()),
+            name: EncodedString::new(other.name.encoded().to_owned()),
             id: other.id.encoded().to_owned(),
             info,
         }
@@ -121,16 +118,14 @@ where
 
     let locksctx = ctx.locks_ctx.get_or_init();
     for l in chunk {
-        let show_name = if locksctx.decode {
-            l.name.clone().decode()?
+        if locksctx.decode {
+            // decoded names with tabs in them are going to act funny
+            // (workaround is to not decode them)
+            tw.write_all(&l.name.decoded()?)?;
         } else {
-            l.name.clone()
+            write!(tw, "{}", l.name)?;
         };
 
-        match show_name {
-            EncodedString::Base64(s) => write!(tw, "{}", s)?,
-            EncodedString::Simple(v) => tw.write_all(&v)?,
-        }
         writeln!(
             tw,
             "\t{}\t{}\t{}\t{}",
@@ -147,39 +142,4 @@ where
     ptr.flush()?;
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use serde_json::json;
-
-    fn valid_base64() -> EncodedString {
-        EncodedString::Base64("a2V5MQ".into())
-    }
-
-    fn invalid_utf8() -> EncodedString {
-        EncodedString::Simple(vec![107, 101, 121, 0xFF, 49])
-    }
-
-    #[test]
-    fn serialize_locknameinner_base64() {
-        let name = valid_base64();
-
-        assert_eq!(
-            serde_json::to_string(&name).unwrap(),
-            json!("a2V5MQ").to_string()
-        );
-    }
-
-    #[test]
-    fn serialize_lockname_simple() {
-        let lock_name = invalid_utf8();
-
-        assert_eq!(
-            serde_json::to_string(&lock_name).unwrap(),
-            json!("a2V5_zE").to_string()
-        );
-    }
 }

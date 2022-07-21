@@ -36,9 +36,10 @@ impl SeaplaneLocksList {
 fn run_one_info(ctx: &mut Ctx) -> Result<()> {
     let locksctx = ctx.locks_ctx.get_or_init();
     let lock_name = locksctx.lock_name.as_ref().unwrap();
+    let model_name = lock_name.to_model();
 
     let mut req = LocksReq::new(ctx)?;
-    req.set_name(lock_name.name.to_string())?;
+    req.set_name(model_name)?;
 
     let resp = req.get_lock_info()?;
     let out = ListedLock::from(resp);

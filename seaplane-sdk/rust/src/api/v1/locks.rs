@@ -69,10 +69,17 @@ impl LocksRequestBuilder {
     ///
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
-    pub fn encoded_lock_name<S: Into<String>>(mut self, lock: S) -> Self {
-        self.builder.target = Some(RequestTarget::SingleLock(LockName::from_encoded(
-            lock.into(),
-        )));
+    pub fn encoded_lock_name<S: Into<String>>(self, lock: S) -> Self {
+        let name = LockName::from_encoded(lock.into());
+        self.lock_name(name)
+    }
+
+    /// The lock name with which to perform operations where you may not be holding the lock.
+    ///
+    /// **NOTE:** This is not required for all endpoints
+    #[must_use]
+    pub fn lock_name(mut self, name: LockName) -> Self {
+        self.builder.target = Some(RequestTarget::SingleLock(name));
         self
     }
 

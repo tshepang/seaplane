@@ -27,12 +27,14 @@ impl CliCommand for SeaplaneLocksRenew {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mut req = LocksReq::new(ctx)?;
         let locksctx = ctx.locks_ctx.get_mut_or_init();
-        let ttl = locksctx.ttl.unwrap();
+        let model_name = locksctx.lock_name.as_ref().map(|s| s.to_model());
+
         req.set_identifiers(
-            locksctx.lock_name.as_ref().map(|s| s.name.to_string()),
+            model_name,
             locksctx.lock_id.as_ref().map(|s| s.encoded().to_owned()),
         )?;
 
+        let ttl = locksctx.ttl.unwrap();
         req.renew(ttl)?;
 
         if ctx.args.out_format == OutputFormat::Table {

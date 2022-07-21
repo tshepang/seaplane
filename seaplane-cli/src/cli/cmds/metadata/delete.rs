@@ -44,7 +44,7 @@ impl CliCommand for SeaplaneMetadataDelete {
         } else {
             cli_println!(
                 "{}",
-                json!({"removed": ctx.md_ctx.get_or_init().kvs.keys().collect::<Vec<_>>() })
+                json!({"removed": ctx.md_ctx.get_or_init().kvs.keys().map(|k| k.to_string()).collect::<Vec<_>>() })
             )
         }
 
