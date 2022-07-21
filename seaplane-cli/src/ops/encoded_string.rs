@@ -4,32 +4,10 @@ use serde::{ser::Serializer, Serialize};
 
 use crate::error::Result;
 
-#[derive(strum::EnumString, strum::Display, Copy, Clone, Debug, PartialEq, clap::ValueEnum)]
-#[strum(ascii_case_insensitive, serialize_all = "lowercase")]
-pub enum DisplayEncodingFormat {
-    Simple,
-    Utf8,
-    Hex,
-}
-
-impl Default for DisplayEncodingFormat {
-    fn default() -> Self {
-        Self::Simple
-    }
-}
-
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EncodedString {
     Base64(String),
-    Utf8(String),
-    Hex(String),
     Simple(Vec<u8>),
-}
-
-impl Default for EncodedString {
-    fn default() -> Self {
-        EncodedString::Utf8(String::new())
-    }
 }
 
 impl Serialize for EncodedString {
@@ -39,102 +17,34 @@ impl Serialize for EncodedString {
 }
 
 impl EncodedString {
-    /// Either decodes the base64 into the specified encoding, or converts the already decoded into
-    /// a different encoding
-    pub fn decode(self, encoding: DisplayEncodingFormat) -> Result<Self> {
+    /// Decodes into binary format
+    pub fn decode(self) -> Result<Self> {
         use EncodedString::*;
-        if !self.is_base64() {
-            return self.convert(encoding);
-        }
 
-        let base64_str = match self {
-            Base64(s) => s,
-            // We already checked that we are in fact currently Base64
-            _ => unreachable!(),
+        let ret = match self {
+            Base64(s) => Simple(base64::decode_config(&s, base64::URL_SAFE_NO_PAD)?),
+            Simple(b) => Simple(b),
         };
 
-        Ok(match encoding {
-            DisplayEncodingFormat::Simple => {
-                Simple(base64::decode_config(&base64_str, base64::URL_SAFE_NO_PAD)?)
-            }
-            DisplayEncodingFormat::Utf8 => Utf8(
-                String::from_utf8_lossy(&base64::decode_config(
-                    &base64_str,
-                    base64::URL_SAFE_NO_PAD,
-                )?)
-                .to_string(),
-            ),
-            DisplayEncodingFormat::Hex => Hex(hex::encode(base64::decode_config(
-                &base64_str,
-                base64::URL_SAFE_NO_PAD,
-            )?)),
-        })
+        Ok(ret)
     }
+}
 
-    /// Converts from one already encoded format to another. Will recursively call (a single time)
-    /// `decode` if the value is not yet decoded from Base64
-    ///
-    /// **Note**: Converting *from* `Utf8` does not restore the lost bytes that were replaced with
-    /// U+FFFD.
-    pub fn convert(mut self, encoding: DisplayEncodingFormat) -> Result<Self> {
-        use EncodedString::*;
-        if self.is_base64() {
-            return self.decode(encoding);
-        }
-
-        self = match encoding {
-            DisplayEncodingFormat::Simple => match self {
-                Simple(_) => self,
-                Hex(s) => Simple(hex::decode(s)?),
-                Utf8(s) => Simple(s.into_bytes()),
-                Base64(_) => unreachable!(),
-            },
-            DisplayEncodingFormat::Utf8 => match self {
-                Simple(v) => Utf8(String::from_utf8_lossy(&v).to_string()),
-                Hex(s) => Utf8(String::from_utf8_lossy(&hex::decode(s)?).to_string()),
-                Utf8(_) => self,
-                Base64(_) => unreachable!(),
-            },
-            DisplayEncodingFormat::Hex => match self {
-                Simple(v) => Hex(hex::encode(v)),
-                Hex(_) => self,
-                Utf8(s) => Hex(hex::encode(s.into_bytes())),
-                Base64(_) => unreachable!(),
-            },
-        };
-
-        Ok(self)
-    }
-
-    /// Returns true if the data is currently Base64 encoded
-    pub fn is_base64(&self) -> bool {
-        matches!(self, EncodedString::Base64(_))
-    }
-
-    /// Returns true if the data is currently hex encoded
-    pub fn is_hex(&self) -> bool {
-        matches!(self, EncodedString::Hex(_))
-    }
-
-    /// Returns true if the data is currently decoded raw bytes
-    pub fn is_simple(&self) -> bool {
-        matches!(self, EncodedString::Simple(_))
-    }
-
-    /// Returns true if the data is currently decoded to a UTF-8 Lossy String
-    pub fn is_utf8(&self) -> bool {
-        matches!(self, EncodedString::Utf8(_))
+impl Default for EncodedString {
+    fn default() -> Self {
+        EncodedString::Simple(vec![])
     }
 }
 
 impl fmt::Display for EncodedString {
-    /// NOTE: Displaying a Simple value will first convert it to Utf8
+    // Bit of a footgun here, we "display" as Base64 regardless of encoding.
+    // Use direct writes for binary data.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             EncodedString::Base64(s) => write!(f, "{}", s),
-            EncodedString::Utf8(s) => write!(f, "{}", s),
-            EncodedString::Hex(s) => write!(f, "{}", s),
-            EncodedString::Simple(v) => write!(f, "{}", String::from_utf8_lossy(v)),
+            EncodedString::Simple(v) => {
+                write!(f, "{}", base64::encode_config(v, base64::URL_SAFE_NO_PAD))
+            }
         }
     }
 }
@@ -143,44 +53,18 @@ impl fmt::Display for EncodedString {
 mod tests {
     use super::*;
 
-    fn valid_base64() -> EncodedString {
-        EncodedString::Base64("a2V5MQ".into())
+    fn bin() -> Vec<u8> {
+        b"Hey\x01There".to_vec()
     }
 
-    fn invalid_utf8() -> EncodedString {
-        EncodedString::Simple(vec![107, 101, 121, 0xFF, 49])
-    }
-
-    #[test]
-    fn decode_hex() {
-        assert_eq!(
-            &valid_base64()
-                .decode(DisplayEncodingFormat::Hex)
-                .unwrap()
-                .to_string(),
-            "6b657931"
-        );
+    fn base64() -> String {
+        "SGV5AVRoZXJl".to_owned()
     }
 
     #[test]
-    fn transcode_invalid_utf8_to_hex() {
-        assert_eq!(
-            &invalid_utf8()
-                .decode(DisplayEncodingFormat::Hex)
-                .unwrap()
-                .to_string(),
-            "6b6579ff31"
-        );
-    }
-
-    #[test]
-    fn transcode_invalid_utf8_to_utf8() {
-        assert_eq!(
-            &invalid_utf8()
-                .decode(DisplayEncodingFormat::Utf8)
-                .unwrap()
-                .to_string(),
-            "key\u{FFFD}1"
-        );
+    fn test_decode() -> Result<()> {
+        let decoded = EncodedString::Base64(base64()).decode()?;
+        assert_eq!(decoded, EncodedString::Simple(bin()));
+        Ok(())
     }
 }

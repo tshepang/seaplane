@@ -12,7 +12,7 @@ use std::fmt;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
-pub use self::encoded_string::{DisplayEncodingFormat, EncodedString};
+pub use self::encoded_string::EncodedString;
 use crate::cli::validator::{validate_flight_name, validate_formation_name};
 
 pub fn generate_flight_name() -> String {

@@ -41,14 +41,6 @@ fn metadata_get() {
     assert_eq!(printer().as_string().trim(), "bar");
     printer().clear();
 
-    let res = test_main(
-        &cli!("metadata get foo -D --display-encoding hex"),
-        MOCK_SERVER.base_url(),
-    );
-    assert!(res.is_ok());
-    mock.assert_hits(4);
-    assert_eq!(printer().as_string().trim(), "626172");
-    printer().clear();
     mock.delete();
 }
 
@@ -133,6 +125,35 @@ fn metadata_list_dir() {
         printer().as_string().trim(),
         "KEY: foo\nVALUE:\nbar\n---\nKEY: baz\nVALUE:\nbuz"
     );
+    printer().clear();
+    mock.delete();
+}
+
+#[test]
+fn metadata_list_dir_json() {
+    let mut mock = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/config/base64:UGVxdW9kIQ/");
+        then(t, &multi_kv_resp());
+    });
+
+    let res = test_main(
+        &cli!("metadata list --format json Pequod!"),
+        MOCK_SERVER.base_url(),
+    );
+    assert!(res.is_ok());
+    mock.assert_hits(1);
+    assert_eq!(
+        printer().as_string().trim(),
+        json!([{"key":"Zm9v","value":"YmFy"},{"key":"YmF6", "value":"YnV6"}]).to_string()
+    );
+
+    printer().clear();
+
+    let res = test_main(
+        &cli!("metadata list -D --format json Pequod!"),
+        MOCK_SERVER.base_url(),
+    );
+    assert!(!res.is_ok());
     printer().clear();
     mock.delete();
 }

@@ -1,8 +1,4 @@
-use crate::{
-    cli::cmds::locks::SeaplaneLocksCommonArgMatches,
-    error::Result,
-    ops::{locks::LockName, DisplayEncodingFormat},
-};
+use crate::{cli::cmds::locks::SeaplaneLocksCommonArgMatches, error::Result, ops::locks::LockName};
 use seaplane::api::v1::LockId;
 
 /// Represents the "Source of Truth" i.e. it combines all the CLI options, ENV vars, and config
@@ -18,8 +14,6 @@ pub struct LocksCtx {
     pub base64: bool,
     /// Print with decoding
     pub decode: bool,
-    /// What format to display decoded values in
-    pub disp_encoding: DisplayEncodingFormat,
     /// Skip the KEY or VALUE header in --format=table
     pub no_header: bool,
 }

@@ -6,7 +6,7 @@ use serde::Serialize;
 use crate::{
     context::Ctx,
     error::Result,
-    ops::{DisplayEncodingFormat, EncodedString},
+    ops::EncodedString,
     printer::{printer, Output},
 };
 
@@ -68,26 +68,21 @@ impl KeyValue {
     }
 
     /// Creates a new Key from self's data.
-    ///
-    /// NOTE: If self is currently Utf8, the encoded Base64 value may not match the original if
-    /// invalid UTF-8 bytes were lost and replaced with U+FFFD
     pub fn to_key_model(&self) -> Result<KeyModel> {
         Ok(match &self.key {
             Some(EncodedString::Base64(s)) => KeyModel::from_encoded(s.to_string()),
-            Some(EncodedString::Utf8(s)) => KeyModel::from_unencoded(s),
-            Some(EncodedString::Hex(s)) => KeyModel::from_unencoded(hex::decode(s)?),
             Some(EncodedString::Simple(s)) => KeyModel::from_unencoded(s),
             None => unimplemented!("TODO error for no key"),
         })
     }
 
     /// Decodes the key and value if needed
-    pub fn decode(&mut self, encoding: DisplayEncodingFormat) -> Result<()> {
+    pub fn decode(&mut self) -> Result<()> {
         if let Some(key) = self.key.take() {
-            self.key = Some(key.decode(encoding)?);
+            self.key = Some(key.decode()?);
         }
         if let Some(value) = self.value.take() {
-            self.value = Some(value.decode(encoding)?);
+            self.value = Some(value.decode()?);
         }
 
         Ok(())
@@ -127,10 +122,8 @@ impl KeyValues {
         self.inner.push(kv)
     }
 
-    pub fn to_decoded(mut self, encoding: DisplayEncodingFormat) -> Result<Self> {
-        self.inner
-            .iter_mut()
-            .try_for_each(|kv| kv.decode(encoding))?;
+    pub fn to_decoded(mut self) -> Result<Self> {
+        self.inner.iter_mut().try_for_each(|kv| kv.decode())?;
         Ok(self)
     }
 
@@ -138,12 +131,6 @@ impl KeyValues {
         self.inner
             .iter()
             .filter_map(|kv| kv.key.as_ref().map(|k| k.to_string()))
-    }
-
-    // print JSON in whatever state we happen to be in (encoded/unencoded)
-    fn impl_print_json(&self) -> Result<()> {
-        cli_println!("{}", serde_json::to_string(self)?);
-        Ok(())
     }
 
     // print a table in whatever state we happen to be in (encoded/unencoded)
@@ -155,7 +142,7 @@ impl KeyValues {
         let mut iter = self.iter().peekable();
         while let Some(kv) = iter.next() {
             match &kv.key {
-                Some(Hex(s)) | Some(Utf8(s)) | Some(Base64(s)) => {
+                Some(Base64(s)) => {
                     if headers {
                         write!(ptr, "KEY: ")?;
                     }
@@ -171,7 +158,7 @@ impl KeyValues {
                 None => (),
             }
             match &kv.value {
-                Some(Hex(s)) | Some(Utf8(s)) | Some(Base64(s)) => {
+                Some(Base64(s)) => {
                     if headers {
                         writeln!(ptr, "VALUE:")?;
                     }
@@ -210,11 +197,8 @@ impl Output for KeyValues {
                 kv.value.take();
             });
         }
-        if mdctx.decode {
-            // TODO: for lots of keys or lots of big keys this may need improved performance?
-            return this.to_decoded(mdctx.disp_encoding)?.impl_print_json();
-        }
-        this.impl_print_json()
+        cli_println!("{}", serde_json::to_string(self)?);
+        Ok(())
     }
 
     fn print_table(&self, ctx: &Ctx) -> Result<()> {
@@ -232,9 +216,7 @@ impl Output for KeyValues {
         }
         if mdctx.decode {
             // TODO: for lots of keys or lots of big keys this may need improved performance?
-            return this
-                .to_decoded(mdctx.disp_encoding)?
-                .impl_print_table(!mdctx.no_header);
+            return this.to_decoded()?.impl_print_table(!mdctx.no_header);
         }
         this.impl_print_table(!mdctx.no_header)
     }
@@ -312,46 +294,12 @@ mod tests {
     }
 
     #[test]
-    fn serialize_keyvalues_hex() {
-        let kvs = build_kvs().to_decoded(DisplayEncodingFormat::Hex).unwrap();
-
-        assert_eq!(
-            serde_json::to_string(&kvs).unwrap(),
-            json!([{"key": "6b657931", "value": "76616c756531"}, {"key": "6b657932", "value": "76616c756532"}, {"key": "6b657933", "value": "76616c756533"}]).to_string()
-        );
-    }
-
-    #[test]
-    fn serialize_keyvalues_hex_invalid_utf8() {
-        let kvs = build_kvs_invalid_utf8()
-            .to_decoded(DisplayEncodingFormat::Hex)
-            .unwrap();
-
-        assert_eq!(
-            serde_json::to_string(&kvs).unwrap(),
-            json!([{"key": "6b6579ff31", "value": "76616c7565ff31"}]).to_string()
-        );
-    }
-
-    #[test]
-    fn serialize_keyvalues_utf8() {
-        let kvs = build_kvs_invalid_utf8()
-            .to_decoded(DisplayEncodingFormat::Utf8)
-            .unwrap();
-
-        assert_eq!(
-            serde_json::to_string(&kvs).unwrap(),
-            json!([{"key": "key\u{FFFD}1", "value": "value\u{FFFD}1"}]).to_string()
-        );
-    }
-
-    #[test]
     fn serialize_keyvalues_simple() {
         let kvs = build_kvs_invalid_utf8();
 
         assert_eq!(
             serde_json::to_string(&kvs).unwrap(),
-            json!([{"key": "key\u{FFFD}1", "value": "value\u{FFFD}1"}]).to_string()
+            json!([{"key":"a2V5_zE","value":"dmFsdWX_MQ"}]).to_string()
         );
     }
 }

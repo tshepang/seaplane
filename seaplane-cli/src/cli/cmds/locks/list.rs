@@ -2,7 +2,7 @@ use crate::{
     api::LocksReq,
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
     context::{Ctx, LocksCtx},
-    error::Result,
+    error::{CliError, CliErrorKind, Result},
     ops::locks::{self, ListedLock},
     printer::OutputFormat,
 };
@@ -13,9 +13,7 @@ static OUTPUT_PAGE_SIZE: usize = 10;
 static LONG_ABOUT: &str = "Get information around currently held locks.
 
 Locknames will be displayed in base64 encoded format by default because they may contain
-arbitrary binary data. Using --decode allows one to decode them and display the unencoded
-values. However since they may contain arbitrary data, it's possible to re-encode them into a
-different format for display purposes using --display-encoding";
+arbitrary binary data. Using --decode to output the decoded values instead.";
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneLocksList;
@@ -112,11 +110,15 @@ impl CliCommand for SeaplaneLocksList {
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();
         locksctx.base64 = matches.contains_id("base64");
         locksctx.decode = matches.contains_id("decode");
-        locksctx.disp_encoding = matches
-            .get_one("display-encoding")
-            .copied()
-            .unwrap_or_default();
         locksctx.no_header = matches.contains_id("no-header");
+
+        if locksctx.decode && ctx.args.out_format != OutputFormat::Table {
+            let format_arg = format!("--format {}", ctx.args.out_format);
+            return Err(CliError::from(CliErrorKind::ConflictingArguments(
+                "--decode".to_owned(),
+                format_arg,
+            )));
+        }
 
         Ok(())
     }

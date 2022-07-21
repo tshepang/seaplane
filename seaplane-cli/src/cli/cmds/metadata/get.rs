@@ -11,9 +11,7 @@ use crate::{
 static LONG_ABOUT: &str = "Retrieve a metadata key-value pair
 
 Keys and values will be displayed in base64 encoded format by default because they may contain
-arbitrary binary data. Using --decode allows one to decode them and display the unencoded
-values. However since they may contain arbitrary data, it's possible to re-encode them into a
-different format for display purposes using --display-encoding";
+arbitrary binary data. Use --decode to output the decoded values instead.";
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneMetadataGet;
@@ -65,10 +63,6 @@ impl CliCommand for SeaplaneMetadataGet {
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut mdctx = ctx.md_ctx.get_mut_or_init();
         mdctx.decode = matches.contains_id("decode");
-        mdctx.disp_encoding = matches
-            .get_one("display-encoding")
-            .copied()
-            .unwrap_or_default();
         mdctx.no_header = true;
         mdctx.no_keys = true;
         mdctx.no_values = false;

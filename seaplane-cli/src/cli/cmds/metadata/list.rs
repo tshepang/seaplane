@@ -5,7 +5,7 @@ use crate::{
     api::MetadataReq,
     cli::{cmds::metadata::common, CliCommand},
     context::{Ctx, MetadataCtx},
-    error::Result,
+    error::{CliError, CliErrorKind, Result},
     ops::metadata::KeyValues,
     printer::{Output, OutputFormat},
 };
@@ -14,8 +14,7 @@ static LONG_ABOUT: &str = "List one or more metadata key-value pairs
 
 Keys and values will be displayed in base64 encoded format by default because they may contain
 arbitrary binary data. Using --decode allows one to decode them and display the unencoded
-values. However since they may contain arbitrary data, it's possible to re-encode them into a
-different format for display purposes using --display-encoding";
+values.";
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneMetadataList;
@@ -74,14 +73,19 @@ impl CliCommand for SeaplaneMetadataList {
         mdctx.no_keys = matches.contains_id("only-values");
         mdctx.no_values = matches.contains_id("only-keys");
         mdctx.no_header = matches.contains_id("no-header");
-        mdctx.disp_encoding = matches
-            .get_one("display-encoding")
-            .copied()
-            .unwrap_or_default();
         mdctx.from = maybe_base64_arg!(matches, "from", matches.contains_id("base64"))
             .map(Key::from_encoded);
         mdctx.directory = maybe_base64_arg!(matches, "dir", matches.contains_id("base64"))
             .map(Directory::from_encoded);
+
+        if mdctx.decode && ctx.args.out_format != OutputFormat::Table {
+            let format_arg = format!("--format {}", ctx.args.out_format);
+            return Err(CliError::from(CliErrorKind::ConflictingArguments(
+                "--decode".to_owned(),
+                format_arg,
+            )));
+        }
+
         Ok(())
     }
 }

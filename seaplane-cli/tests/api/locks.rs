@@ -269,11 +269,11 @@ fn locks_list_server_pages() {
          foo        D4lbVpdBE_U  test-client   192.0.2.137  5\n\
          bar        D4lbVpdBD_U  test-client2  192.0.2.137  5"
     );
+    printer().clear();
 
     mock1.delete();
     mock2.delete();
     mock3.delete();
-    printer().clear();
 }
 
 #[test]
@@ -317,25 +317,52 @@ fn locks_list() {
     printer().clear();
 
     let res = test_main(
-        &cli!("locks list foo -D --no-header --display-encoding hex"),
+        &cli!("locks list foo --format json"),
         MOCK_SERVER.base_url(),
     );
     assert!(res.is_ok());
     mock.assert_hits(3);
-    assert_eq!(
-        printer().as_string().trim(),
-        "666f6f  D4lbVpdBE_U  test-client  192.0.2.137  5"
-    );
+    assert_eq!(printer().as_string().trim(),
+        "{\"name\":\"Zm9v\",\"id\":\"D4lbVpdBE_U\",\"info\":{\"ttl\":5,\"client-id\":\"test-client\",\"ip\":\"192.0.2.137\"}}");
     printer().clear();
+
+    mock.delete();
+}
+
+#[test]
+fn locks_list_json() {
+    let resp = json!({
+        "name": "foo",
+        "id": "D4lbVpdBE_U",
+        "info": {
+            "ttl": 5,
+            "client-id": "test-client",
+            "ip": "192.0.2.137"
+        },
+    });
+
+    let mut mock = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/locks/base64:Zm9v");
+        then(t, &resp);
+    });
 
     let res = test_main(
         &cli!("locks list foo --format json"),
         MOCK_SERVER.base_url(),
     );
     assert!(res.is_ok());
-    mock.assert_hits(4);
-    assert_eq!(printer().as_string().trim(),
-        "{\"name\":\"Zm9v\",\"id\":\"D4lbVpdBE_U\",\"info\":{\"ttl\":5,\"client-id\":\"test-client\",\"ip\":\"192.0.2.137\"}}");
+    mock.assert_hits(1);
+    assert_eq!(
+        printer().as_string().trim(),
+        r#"{"name":"foo","id":"D4lbVpdBE_U","info":{"ttl":5,"client-id":"test-client","ip":"192.0.2.137"}}"#
+    );
+    printer().clear();
+
+    let res = test_main(
+        &cli!("locks list foo -D --format json"),
+        MOCK_SERVER.base_url(),
+    );
+    assert!(!res.is_ok());
     printer().clear();
 
     mock.delete();

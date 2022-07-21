@@ -9,10 +9,7 @@ use seaplane::api::v1::Directory;
 use crate::{
     cli::cmds::metadata::{SeaplaneMetadataCommonArgMatches, SeaplaneMetadataSetArgMatches},
     error::{CliError, Context, Result},
-    ops::{
-        metadata::{KeyValue, KeyValues},
-        DisplayEncodingFormat,
-    },
+    ops::metadata::{KeyValue, KeyValues},
     printer::Color,
 };
 
@@ -28,8 +25,6 @@ pub struct MetadataCtx {
     pub base64: bool,
     /// Print with decoding
     pub decode: bool,
-    /// What format to display decoded values in
-    pub disp_encoding: DisplayEncodingFormat,
     /// A base64 encoded key
     pub from: Option<Key>,
     /// Skip the KEY or VALUE header in --format=table

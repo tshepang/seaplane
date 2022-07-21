@@ -38,14 +38,9 @@ impl LockName {
     }
 
     /// Creates a new LockName from self's data.
-    ///
-    /// NOTE: If self is currently Utf8, the encoded Base64 value may not match the original if
-    /// invalid UTF-8 bytes were lost and replaced with U+FFFD
     pub fn to_model(&self) -> Result<LockNameModel> {
         Ok(match &self.name {
             EncodedString::Base64(s) => LockNameModel::from_encoded(s.to_string()),
-            EncodedString::Utf8(s) => LockNameModel::from_unencoded(s),
-            EncodedString::Hex(s) => LockNameModel::from_unencoded(hex::decode(s)?),
             EncodedString::Simple(s) => LockNameModel::from_unencoded(s),
         })
     }
@@ -127,15 +122,19 @@ where
     let locksctx = ctx.locks_ctx.get_or_init();
     for l in chunk {
         let show_name = if locksctx.decode {
-            l.name.clone().decode(locksctx.disp_encoding)?
+            l.name.clone().decode()?
         } else {
             l.name.clone()
         };
 
+        match show_name {
+            EncodedString::Base64(s) => write!(tw, "{}", s)?,
+            EncodedString::Simple(v) => tw.write_all(&v)?,
+        }
         writeln!(
             tw,
-            "{}\t{}\t{}\t{}\t{}",
-            show_name, l.id, l.info.client_id, l.info.ip, l.info.ttl
+            "\t{}\t{}\t{}\t{}",
+            l.id, l.info.client_id, l.info.ip, l.info.ttl
         )?;
     }
     tw.flush()?;
@@ -154,7 +153,6 @@ where
 mod tests {
 
     use super::*;
-    use crate::ops::DisplayEncodingFormat;
     use serde_json::json;
 
     fn valid_base64() -> EncodedString {
@@ -176,42 +174,12 @@ mod tests {
     }
 
     #[test]
-    fn serialize_lockname_hex() {
-        let lock_name = valid_base64().decode(DisplayEncodingFormat::Hex).unwrap();
-
-        assert_eq!(
-            serde_json::to_string(&lock_name).unwrap(),
-            json!("6b657931").to_string()
-        );
-    }
-
-    #[test]
-    fn serialize_lockname_hex_invalid_utf8() {
-        let lock_name = invalid_utf8().decode(DisplayEncodingFormat::Hex).unwrap();
-
-        assert_eq!(
-            serde_json::to_string(&lock_name).unwrap(),
-            json!("6b6579ff31").to_string()
-        );
-    }
-
-    #[test]
-    fn serialize_lockname_utf8() {
-        let lock_name = invalid_utf8().decode(DisplayEncodingFormat::Utf8).unwrap();
-
-        assert_eq!(
-            serde_json::to_string(&lock_name).unwrap(),
-            json!("key\u{FFFD}1").to_string()
-        );
-    }
-
-    #[test]
     fn serialize_lockname_simple() {
         let lock_name = invalid_utf8();
 
         assert_eq!(
             serde_json::to_string(&lock_name).unwrap(),
-            json!("key\u{FFFD}1").to_string()
+            json!("a2V5_zE").to_string()
         );
     }
 }

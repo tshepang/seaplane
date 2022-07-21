@@ -267,7 +267,7 @@ pub enum CliErrorKind {
     InvalidUtf8(std::string::FromUtf8Error),
     CliArgNotUsed(&'static str),
     InvalidCliValue(Option<&'static str>, String),
-    ConflictingArguments(&'static str, &'static str),
+    ConflictingArguments(String, String),
     MissingPath,
     Unknown,
     PermissionDenied,
