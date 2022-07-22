@@ -1,6 +1,6 @@
 use clap::{value_parser, Arg, ArgMatches};
 
-const LONG_DECODE: &str = "Decode the lock-id before printing it
+const LONG_DECODE: &str = "Decode the lock name before printing it
 
 Binary values will be written directly to standard output (which may do strange
 things to your terminal)";

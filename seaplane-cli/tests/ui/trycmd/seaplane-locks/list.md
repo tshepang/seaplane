@@ -65,7 +65,7 @@ OPTIONS:
             [possible values: always, ansi, auto, never]
 
     -D, --decode
-            Decode the lock-id before printing it
+            Decode the lock name before printing it
             
             Binary values will be written directly to standard output (which may do strange
             things to your terminal)
