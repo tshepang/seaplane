@@ -67,7 +67,7 @@ have the ability to test in those environments as well that's wonderful! However
 that's no problem; ensuring the tests pass on your local machine is a great starting place where we
 can let the CI servers test across the matrix of Operating Systems and Architectures.
 
-The full support matrix can be found in the [doc/ARCHITECTURE.md][architecture] file of this
+The full support matrix can be found in the [docs/ARCHITECTURE.md][architecture] file of this
 repository.
 
 There are two ways to run our tests, either using `just` (recommended) or manually.

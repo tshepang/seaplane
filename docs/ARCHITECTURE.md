@@ -26,7 +26,7 @@ This section covers the top level code structure. Further details can be found
 in each of the dedicated sections about their internal structure.
 
 - `.github/`: CI rules and Github specific metadata
-- `doc/`: Documentation relating to the entire project
+- `docs/`: Documentation relating to the entire project
 - `share/`: Additional information, such as third party licenses.
 
 ### Seaplane Library

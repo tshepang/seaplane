@@ -8,7 +8,7 @@ on:
       - 'LICENSE'
       - '!**.md'
       - '!**.yml'
-      - '!doc/**'
+      - '!docs/**'
   workflow_dispatch:
 
 name: Nightly Release

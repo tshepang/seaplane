@@ -44,4 +44,4 @@ Licensed under the Apache License, Version 2.0, [LICENSE](LICENSE). Copyright 20
 [Seaplane]: https://seaplane.io/
 [CLI]: https://github.com/seaplane-io/seaplane/tree/main/seaplane-cli
 [SDK]: https://github.com/seaplane-io/seaplane/tree/main/seaplane
-[Getting Started]: https://github.com/seaplane-io/seaplane/blob/main/doc/GETTING_STARTED.md
+[Getting Started]: https://github.com/seaplane-io/seaplane/blob/main/docs/GETTING_STARTED.md

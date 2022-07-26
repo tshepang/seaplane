@@ -61,7 +61,7 @@ jobs:
       - name: Copy extra artifacts into dir
         run: |
           cp LICENSE artifacts/share/doc/seaplane/
-          cp share/third_party_licenses.md artifacts/share/doc/seaplane/
+          cp share/third_party_licenses.md artifacts/share/docs/seaplane/
 
       - name: Get the version
         id: get_version

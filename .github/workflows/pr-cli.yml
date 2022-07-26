@@ -7,7 +7,7 @@ on:
     paths:
       - 'seaplane-cli/**'
       - '!**.md'
-      - '!doc/**'
+      - '!docs/**'
       - '!share/**'
       - "!LICENSE"
 

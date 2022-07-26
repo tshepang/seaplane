@@ -243,7 +243,7 @@ Support/io.Seaplane.seaplane/seaplane.toml`
 If we add `color = "never"` under the `[seaplane]` table, our output will no
 longer contain any color.
 
-**NOTE:** For more options see the [doc/CONFIGURATION_SPEC.md] in this repository
+**NOTE:** For more options see the [docs/CONFIGURATION_SPEC.md] in this repository
 
 ### Configure Your API Key
 
@@ -605,6 +605,6 @@ Yay!
 [Flightdeck]: https://cplane.cloud/
 [Github Releases]: https://github.com/seaplane-io/seaplane/releases
 [TOML]: https://toml.io
-[doc/CONFIGURATION_SPEC.md]: https://github.com/seaplane-io/seaplane/blob/main/doc/CONFIGURATION_SPEC.md
+[docs/CONFIGURATION_SPEC.md]: https://github.com/seaplane-io/seaplane/blob/main/docs/CONFIGURATION_SPEC.md
 [SDK]: https://github.com/seaplane-io/seaplane/tree/main/seaplane
 [`nginxdemos/hello`]: https://hub.docker.com/r/nginxdemos/hello/

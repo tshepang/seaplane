@@ -1,0 +1,20 @@
+name: Sync public documentation to ReadMe
+
+on:
+  push:
+    branches:
+      - main
+    paths:            
+      - '**/docs/**'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v3
+
+      - name: Sync Readme documentation        
+        uses: readmeio/rdme@7.3.0
+        with:
+          rdme: docs ./seaplane-sdk/python/docs --key=README_API_KEY --version=1.0
