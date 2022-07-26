@@ -1,14 +1,13 @@
-from os import access
 from typing import Any, Text
 
 import requests
-from returns.result import Failure, Result, Success
+from returns.result import Result
 
 from ..configuration import Configuration, config
 from ..model import ActiveConfiguration, FormationConfiguration
 from ..model.formation_configuration import to_formation_config
 from .api_http import HTTPError, headers, to_json
-from .api_request import provisionReq
+from .api_request import provision_req
 from .token_api import TokenAPI
 
 
@@ -22,7 +21,7 @@ class FormationConfigurationAPI:
 
     def __init__(self, configuration: Configuration = config) -> None:
         self.url = f"{configuration.endpoint}/formations"
-        self.req = provisionReq(TokenAPI(configuration))
+        self.req = provision_req(TokenAPI(configuration))
 
     def create(
         self, formation_name: str, formation: FormationConfiguration, active: bool = False

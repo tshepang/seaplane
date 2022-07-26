@@ -1,12 +1,12 @@
 from typing import Any, Text
 
 import requests
-from returns.result import Failure, Result, Success
+from returns.result import Result
 
 from ..configuration import Configuration, config
 from ..model import FormationMetadata
 from .api_http import HTTPError, headers
-from .api_request import provisionReq
+from .api_request import provision_req
 from .token_api import TokenAPI
 
 
@@ -18,7 +18,7 @@ class FormationAPI:
 
     def __init__(self, configuration: Configuration = config) -> None:
         self.url = f"{configuration.endpoint}/formations"
-        self.req = provisionReq(TokenAPI(configuration))
+        self.req = provision_req(TokenAPI(configuration))
 
     def create(
         self, formation_name: str, active: bool = False, source: str | None = None
@@ -28,8 +28,14 @@ class FormationAPI:
 
         Arguments:
             formation_name: a unique formation name.
-            active: If this formation should be immediately deployed. Note that this will only work if either the request body is a configuration or the source parameter is set.
-            source: The name of a formation this formation should be cloned from. A copy of the source formation's configurations will be made under this new formation and, if the active parameter is set, its active configuration will be copied over and immediately deployed
+            active: If this formation should be immediately deployed.
+                    Note that this will only work if either the request body is
+                    a configuration or the source parameter is set.
+            source: The name of a formation this formation should be cloned from.
+                    A copy of the source formation's configurations will be made under
+                    this new formation.
+                    If the active parameter is set, its active configuration will be copied over
+                    and immediately deployed.
         """
 
         params = {"active": active}

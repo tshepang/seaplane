@@ -1,4 +1,4 @@
-from typing import Any, Callable, TypeVar
+from typing import Callable, TypeVar
 
 import requests
 from requests import Response
@@ -11,7 +11,7 @@ from .token_api import TokenAPI
 T = TypeVar("T")
 
 
-def provisionReq(
+def provision_req(
     token_api: TokenAPI,
 ) -> Callable[[Callable[[str], Response]], Result[T, HTTPError]]:
     def req(request: Callable[[str], Response]) -> Result[T, HTTPError]:

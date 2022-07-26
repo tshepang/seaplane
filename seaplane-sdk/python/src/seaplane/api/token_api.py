@@ -15,9 +15,11 @@ class TokenAPI:
     Manage access token from seaplane api.
     There isn't documentation for token management, as it may change soon.
 
-    In order to get the Access Token, we have to do this call everytime we want to perform an API call.
+    In order to get the Access Token,
+    we have to do this call everytime we want to perform an API call.
     The access token will expire in 60 seconds.
-    If you have a couple api calls to make in succession you can reuse the token. Otherwise get a new one each time.
+    If you have a couple api calls to make in succession you can reuse the token.
+    Otherwise get a new one each time.
 
     `curl -H "Authorization: Bearer $api_key" -X POST https://identity.cplane.cloud/token`
     """

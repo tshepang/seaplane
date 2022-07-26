@@ -1,12 +1,11 @@
 from typing import Any, Text
 
 import requests
-from returns.result import Failure, Result, Success
+from returns.result import Result
 
 from ..configuration import Configuration, config
-from ..model import Container
-from .api_http import HTTPError, headers, to_json
-from .api_request import provisionReq
+from .api_http import HTTPError, headers
+from .api_request import provision_req
 from .token_api import TokenAPI
 
 
@@ -18,7 +17,7 @@ class ContainerAPI:
 
     def __init__(self, configuration: Configuration = config) -> None:
         self.url = f"{configuration.endpoint}/formations"
-        self.req = provisionReq(TokenAPI(configuration))
+        self.req = provision_req(TokenAPI(configuration))
 
     def get_all(self, formation_name: Text) -> Result[Any, HTTPError]:
         url = f"{self.url}/{formation_name}/containers"

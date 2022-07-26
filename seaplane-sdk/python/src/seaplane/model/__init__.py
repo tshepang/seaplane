@@ -1,3 +1,5 @@
+# flake8: noqa
+
 from .active_configuration import ActiveConfiguration
 from .architecture import Architecture
 from .container import Container

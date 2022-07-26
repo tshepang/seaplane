@@ -1,4 +1,3 @@
-import os
 from typing import Text
 
 _SEAPLANE_API_ENDPOINT = "https://compute.cplane.cloud/v1"
@@ -11,7 +10,7 @@ class Configuration:
 
     def __init__(self) -> None:
         self.seaplane_api_key: Text | None = None
-        self.endpoint = _SEAPLANE_API_ENDPOINT        
+        self.endpoint = _SEAPLANE_API_ENDPOINT
 
     def set_api_key(self, api_key: Text) -> None:
         self.seaplane_api_key = api_key

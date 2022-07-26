@@ -1,5 +1,4 @@
 import pytest
-import requests
 import requests_mock
 from returns.result import Failure, Success
 
@@ -7,7 +6,7 @@ from seaplane import Configuration
 from seaplane.api import FormationConfigurationAPI, HTTPError
 from seaplane.model import Flight, FormationConfiguration
 
-from ..conftest import add_token_request, fails_any_get
+from ..conftest import add_token_request
 
 
 @pytest.fixture
@@ -62,7 +61,7 @@ def get_configuration_by_id():
             return request.headers["Authorization"] == "Bearer This is a token"
 
         requests_mocker.get(
-            "https://compute.cplane.cloud/v1/formations/test-formation/configurations/22d72648-0e67-402c-9b8e-f56e2d6e2222",
+            "https://compute.cplane.cloud/v1/formations/test-formation/configurations/22d72648-0e67-402c-9b8e-f56e2d6e2222",  # noqa: E501
             additional_matcher=match_authorization,
             status_code=200,
             json={

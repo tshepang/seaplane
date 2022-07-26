@@ -1,5 +1,4 @@
 import pytest
-import requests
 import requests_mock
 from returns.result import Failure, Success
 
@@ -7,7 +6,7 @@ from seaplane import Configuration
 from seaplane.api import FormationAPI, HTTPError
 from seaplane.model import FormationMetadata
 
-from ..conftest import add_token_request, fails_any_get
+from ..conftest import add_token_request, fails_any_get  # noqa: F401
 
 
 @pytest.fixture
@@ -138,7 +137,9 @@ def test_given_get_all_api_call_returns_two_formations(formation_api, get_all_fo
     assert formation_api.get_all() == Success(["formation-example", "test-formation"])
 
 
-def test_given_get_all_api_call_returns_400_http_error(formation_api, fails_any_get) -> None:
+def test_given_get_all_api_call_returns_400_http_error(
+    formation_api, fails_any_get  # noqa: F811
+) -> None:
     assert formation_api.get_all() == Failure(HTTPError(400, "Some error"))
 
 

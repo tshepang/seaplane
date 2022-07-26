@@ -16,5 +16,5 @@ class Flight(NamedTuple):
     api_permission: bool | None = None
 
 
-def toFlights(flights: List[dict]) -> List[Flight]:
-    return list(map(lambda flight: Flight(**flight), flights))
+def to_flights(flights: List[dict]) -> List[Flight]:
+    return [Flight(**flight) for flight in flights]

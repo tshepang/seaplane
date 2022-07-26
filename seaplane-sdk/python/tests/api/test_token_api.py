@@ -1,6 +1,4 @@
 import pytest
-import requests
-import requests_mock
 from returns.result import Failure, Success
 
 from seaplane import Configuration

@@ -1,11 +1,11 @@
-from typing import List, NamedTuple
+from typing import NamedTuple
 
 from .provider import Provider
 from .region import Region
 from .status import ContainerStatus
 
 
-class Container:
+class Container(NamedTuple):
     """
     Container class.
     """

@@ -1,6 +1,6 @@
 from typing import List, NamedTuple
 
-from .flight import Flight, toFlights
+from .flight import Flight, to_flights
 from .provider import Provider
 from .region import Region
 
@@ -25,4 +25,4 @@ class FormationConfiguration(NamedTuple):
 def to_formation_config(dict: dict) -> FormationConfiguration:
     formation_config = dict.copy()
     del formation_config["flights"]
-    return FormationConfiguration(**formation_config, flights=toFlights(dict["flights"]))
+    return FormationConfiguration(**formation_config, flights=to_flights(dict["flights"]))
