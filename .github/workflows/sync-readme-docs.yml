@@ -17,4 +17,4 @@ jobs:
       - name: Sync Readme documentation        
         uses: readmeio/rdme@7.3.0
         with:
-          rdme: docs ./seaplane-sdk/python/docs --key=README_API_KEY --version=1.0
+          rdme: docs ./seaplane-sdk/python/docs --key=${{ secrets.README_API_KEY }} --version=1.0
