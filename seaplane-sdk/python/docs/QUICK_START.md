@@ -7,31 +7,33 @@ slug: python-sdk-quickstart
 
 # Introduction
 
-Get started quickly using Seaplane SDK for Python. It makes it easy to integrate your Python application, library, or script with Seaplane features and services.
+Get started quickly using the Seaplane SDK for Python. This SDK makes it easy to integrate your Python application, library, or script with Seaplane features and services.
 
-This guide details the steps needed to install, update and use the Seaplane SDK for Python.
+This guide details the steps needed to install, update, and use the Seaplane SDK for Python.
 
 # Installation
 
-## Install or update Python
+## Install or Update Python
 
-Before install Seaplane Python SDK, install Python 3.7 or later.
+Before you install Seaplane Python SDK, install Python 3.7 or later.
 
-## Install Python SDK
+## Install Seaplane Python SDK
+
+⚠️ Install the Seaplane Python SDK. While this is not available yet, this is how it may look like.
 
 ```shell
 pip install seaplane-python-sdk
 ```
 
-# Configuration
+## Configuration
 
 Before using the Python SDK, you need to set up authentication credentials for your Seaplane account using the Flightdeck WebUI.
 
-You have to retrieve the API Key from Flightdeck WebUI and pass it to the Python SDK, using `Configuration.set_api_key` method.
+You can retrieve the API Key from Flightdeck WebUI and pass it to the Python SDK, using the `Configuration.set_api_key` method.
 
-It is needed to set the API key before start using the Seaplane Python SDK services and features.
+This is needed to set the API key before you start using the Seaplane Python SDK services and features.
 
-## Python configuration
+## Python configuration
 
 Seaplane Python SDK has the class `Configuration` which is used to configure the SDK.
 
@@ -44,6 +46,8 @@ config.set_api_key("your-api-key-here")
 ```
 
 # Usage
+
+⚠️ This is not the final usage of the Python SDK, so please don't take this section too seriously.
 
 To use the Seaplane Python SDK, you must first import it.
 
@@ -71,3 +75,5 @@ formation = Formation(
 
 formation_api.create(formation)
 ```
+
+And that's it! You've got your Seaplane Python SDK ready to go.
