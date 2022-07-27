@@ -14,6 +14,10 @@ T = TypeVar("T")
 def provision_req(
     token_api: TokenAPI,
 ) -> Callable[[Callable[[str], Response]], Result[T, HTTPError]]:
+    """
+    Before every request, we make sure we use a valid access token.
+    """
+
     def req(request: Callable[[str], Response]) -> Result[T, HTTPError]:
         access_token = token_api.access_token()
 

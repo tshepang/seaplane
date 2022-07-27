@@ -5,7 +5,7 @@ _SEAPLANE_API_ENDPOINT = "https://compute.cplane.cloud/v1"
 
 class Configuration:
     """
-    Access all configuration SDK
+    Access all configuration SDK.
     """
 
     def __init__(self) -> None:
