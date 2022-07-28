@@ -7,8 +7,11 @@ from returns.result import Failure, Success
 from seaplane.api.api_http import HTTPError
 from seaplane.api.formation_configuration_api import FormationConfigurationAPI
 from seaplane.configuration import Configuration
+from seaplane.model.architecture import Architecture
 from seaplane.model.flight import Flight
 from seaplane.model.formation_configuration import FormationConfiguration
+from seaplane.model.provider import Provider
+from seaplane.model.region import Region
 
 from ..conftest import add_token_request
 
@@ -153,12 +156,12 @@ def test_given_get_configuration_by_id_returns_it_correctly(  # type: ignore
                     image="https://registry.io",
                     minimum=1,
                     maximum=2,
-                    architecture=["amd64"],
+                    architecture=[Architecture.amd64],
                     api_permission=False,
                 )
             ],
-            providers_denied=["DigitalOcean"],
-            regions_allowed=["XE"],
-            regions_denied=["XF"],
+            providers_denied=[Provider.digital_ocean],
+            regions_allowed=[Region.europe],
+            regions_denied=[Region.africa],
         )
     )

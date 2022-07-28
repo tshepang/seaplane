@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List, Optional
 
 
 class Region(Enum):
@@ -11,3 +12,10 @@ class Region(Enum):
     antartica = "XQ"
     south_america = "XS"
     uk = "XU"
+
+
+def to_regions(regions: Optional[List[str]]) -> Optional[List[Region]]:
+    if not regions:
+        return None
+
+    return [Region(region) for region in regions]
