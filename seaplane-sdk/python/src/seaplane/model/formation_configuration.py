@@ -1,4 +1,4 @@
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Optional
 
 from .flight import Flight, to_flights
 from .provider import Provider
@@ -11,15 +11,15 @@ class FormationConfiguration(NamedTuple):
     """
 
     flights: List[Flight]
-    affinity: List[str] | None = None
-    connections: List[str] | None = None
-    public_endpoints: object | None = None
-    formation_endpoints: object | None = None
-    flight_endpoints: object | None = None
-    providers_allowed: List[Provider] | None = None
-    providers_denied: List[Provider] | None = None
-    regions_allowed: List[Region] | None = None
-    regions_denied: List[Region] | None = None
+    affinity: Optional[List[str]] = None
+    connections: Optional[List[str]] = None
+    public_endpoints: Optional[object] = None
+    formation_endpoints: Optional[object] = None
+    flight_endpoints: Optional[object] = None
+    providers_allowed: Optional[List[Provider]] = None
+    providers_denied: Optional[List[Provider]] = None
+    regions_allowed: Optional[List[Region]] = None
+    regions_denied: Optional[List[Region]] = None
 
 
 def to_formation_config(dict: dict) -> FormationConfiguration:

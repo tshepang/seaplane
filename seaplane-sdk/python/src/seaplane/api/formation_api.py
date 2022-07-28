@@ -1,4 +1,4 @@
-from typing import Any, Text
+from typing import Any, List, Optional, Text
 
 import requests
 from returns.result import Result
@@ -21,7 +21,7 @@ class FormationAPI:
         self.req = provision_req(TokenAPI(configuration))
 
     def create(
-        self, formation_name: str, active: bool = False, source: str | None = None
+        self, formation_name: str, active: bool = False, source: Optional[str] = None
     ) -> Result[Any, HTTPError]:
         """
         Create a new formation
@@ -48,7 +48,7 @@ class FormationAPI:
             )
         )
 
-    def get_all(self) -> Result[[str], HTTPError]:
+    def get_all(self) -> Result[List[int], HTTPError]:
         return self.req(lambda access_token: requests.get(self.url, headers=headers(access_token)))
 
     def get_metadata(self, formation_name: Text) -> Result[FormationMetadata, HTTPError]:

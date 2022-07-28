@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 class ActiveConfiguration(NamedTuple):
@@ -7,4 +7,4 @@ class ActiveConfiguration(NamedTuple):
     """
 
     configuration_id: str
-    traffic_weight: int | None = None
+    traffic_weight: Optional[int] = None

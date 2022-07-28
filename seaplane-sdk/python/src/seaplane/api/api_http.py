@@ -10,7 +10,7 @@ class HTTPError(NamedTuple):
     message: str = ""
 
 
-def headers(api_key: str) -> dict[str, str]:
+def headers(api_key: str) -> dict:
     return {
         "Accept": "application/json",
         "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 from .provider import Provider
 from .region import Region
@@ -14,19 +14,19 @@ class Container(NamedTuple):
     configuration_id: str
     flight_name: str
     status: ContainerStatus
-    exit_status: int | None = None
-    start_time: str | None = None
-    stop_time: str | None = None
-    host_latitude: float | None = None
-    host_longitude: float | None = None
-    host_iata: str | None = None
-    host_country: str | None = None
-    host_region: Region | None = None
-    host_provider: Provider | None = None
-    public_ingress_usage: int | None = None
-    public_egress_usage: int | None = None
-    private_ingress_usage: int | None = None
-    private_egress_usage: int | None = None
-    disk_usage: int | None = None
-    ram_usage: int | None = None
-    cpu_usage: int | None = None
+    exit_status: Optional[int] = None
+    start_time: Optional[str] = None
+    stop_time: Optional[str] = None
+    host_latitude: Optional[float] = None
+    host_longitude: Optional[float] = None
+    host_iata: Optional[str] = None
+    host_country: Optional[str] = None
+    host_region: Optional[Region] = None
+    host_provider: Optional[Provider] = None
+    public_ingress_usage: Optional[int] = None
+    public_egress_usage: Optional[int] = None
+    private_ingress_usage: Optional[int] = None
+    private_egress_usage: Optional[int] = None
+    disk_usage: Optional[int] = None
+    ram_usage: Optional[int] = None
+    cpu_usage: Optional[int] = None

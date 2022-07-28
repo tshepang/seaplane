@@ -1,4 +1,4 @@
-from typing import Any, Text
+from typing import Any, List, Text
 
 import requests
 from returns.result import Result
@@ -36,7 +36,7 @@ class FormationConfigurationAPI:
             )
         )
 
-    def get_all(self, formation_name: Text) -> Result[[str], HTTPError]:
+    def get_all(self, formation_name: Text) -> Result[List[str], HTTPError]:
         url = f"{self.url}/{formation_name}/configurations"
         return self.req(lambda access_token: requests.get(url, headers=headers(access_token)))
 

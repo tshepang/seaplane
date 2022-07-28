@@ -1,4 +1,4 @@
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Optional
 
 from .architecture import Architecture
 
@@ -10,10 +10,10 @@ class Flight(NamedTuple):
 
     name: str
     image: str
-    minimum: int | None = None
-    maximum: int | None = None
-    architecture: List[Architecture] | None = None
-    api_permission: bool | None = None
+    minimum: Optional[int] = None
+    maximum: Optional[int] = None
+    architecture: Optional[List[Architecture]] = None
+    api_permission: Optional[bool] = None
 
 
 def to_flights(flights: List[dict]) -> List[Flight]:
