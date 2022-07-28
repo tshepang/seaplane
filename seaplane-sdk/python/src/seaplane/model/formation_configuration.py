@@ -1,8 +1,6 @@
-from typing import List, NamedTuple, Optional
+from typing import Any, Dict, List, NamedTuple, Optional
 
 from .flight import Flight, to_flights
-from .provider import Provider
-from .region import Region
 
 
 class FormationConfiguration(NamedTuple):
@@ -16,13 +14,13 @@ class FormationConfiguration(NamedTuple):
     public_endpoints: Optional[object] = None
     formation_endpoints: Optional[object] = None
     flight_endpoints: Optional[object] = None
-    providers_allowed: Optional[List[Provider]] = None
-    providers_denied: Optional[List[Provider]] = None
-    regions_allowed: Optional[List[Region]] = None
-    regions_denied: Optional[List[Region]] = None
+    providers_allowed: Optional[List[str]] = None
+    providers_denied: Optional[List[str]] = None
+    regions_allowed: Optional[List[str]] = None
+    regions_denied: Optional[List[str]] = None
 
 
-def to_formation_config(dict: dict) -> FormationConfiguration:
-    formation_config = dict.copy()
+def to_formation_config(fconfig: Dict[str, Any]) -> FormationConfiguration:
+    formation_config = fconfig.copy()
     del formation_config["flights"]
-    return FormationConfiguration(**formation_config, flights=to_flights(dict["flights"]))
+    return FormationConfiguration(**formation_config, flights=to_flights(fconfig["flights"]))

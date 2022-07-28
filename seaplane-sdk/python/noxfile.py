@@ -5,7 +5,7 @@ from nox_poetry import Session, session
 
 nox.options.error_on_external_run = True
 nox.options.reuse_existing_virtualenvs = True
-nox.options.sessions = ["fmt_check", "lint", "test"]
+nox.options.sessions = ["fmt_check", "lint", "type_check", "test"]
 
 
 @session(python=["3.8", "3.9", "3.10"])
@@ -43,9 +43,9 @@ def lint(s: Session) -> None:
     s.run("pflake8")
 
 
-# @session(venv_backend="none")
-# def type_check(s: Session) -> None:
-#    s.run("mypy", "src", "tests", "noxfile.py")
+@session(venv_backend="none")
+def type_check(s: Session) -> None:
+    s.run("mypy", "src", "tests", "noxfile.py")
 
 
 # Note: This reuse_venv does not yet have affect due to:

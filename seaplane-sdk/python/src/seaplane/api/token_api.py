@@ -28,7 +28,7 @@ class TokenAPI:
         self.url = f"{_SEAPLANE_IDENTIFY_API_ENDPOINT}/token"
         self.api_key = configuration.seaplane_api_key
 
-    def set_identify_url(self, url: Text) -> Text:
+    def set_identify_url(self, url: Text) -> None:
         self.url = url
 
     def access_token(self) -> Result[Text, HTTPError]:

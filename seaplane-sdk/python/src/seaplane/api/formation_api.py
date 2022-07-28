@@ -1,10 +1,10 @@
-from typing import Any, List, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 import requests
 from returns.result import Result
 
 from ..configuration import Configuration, config
-from ..model import FormationMetadata
+from ..model.formation_metadata import FormationMetadata
 from .api_http import HTTPError, headers
 from .api_request import provision_req
 from .token_api import TokenAPI
@@ -38,7 +38,7 @@ class FormationAPI:
                     and immediately deployed.
         """
 
-        params = {"active": active}
+        params: Dict[str, Any] = {"active": active}
         if source is not None:
             params["source"] = source
 

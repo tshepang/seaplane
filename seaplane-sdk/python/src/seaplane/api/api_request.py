@@ -1,4 +1,4 @@
-from typing import Callable, TypeVar
+from typing import Any, Callable
 
 import requests
 from requests import Response
@@ -8,17 +8,15 @@ from returns.result import Failure, Result, Success
 from .api_http import SDK_HTTP_ERROR_CODE, HTTPError
 from .token_api import TokenAPI
 
-T = TypeVar("T")
-
 
 def provision_req(
     token_api: TokenAPI,
-) -> Callable[[Callable[[str], Response]], Result[T, HTTPError]]:
+) -> Callable[[Callable[[str], Response]], Result[Any, HTTPError]]:
     """
     Before every request, we make sure we use a valid access token.
     """
 
-    def req(request: Callable[[str], Response]) -> Result[T, HTTPError]:
+    def req(request: Callable[[str], Response]) -> Result[Any, HTTPError]:
         access_token = token_api.access_token()
 
         if is_successful(access_token):

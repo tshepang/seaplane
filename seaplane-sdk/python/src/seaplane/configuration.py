@@ -9,7 +9,7 @@ class Configuration:
     """
 
     def __init__(self) -> None:
-        self.seaplane_api_key: Text | None = None
+        self.seaplane_api_key: Text = ""
         self.endpoint = _SEAPLANE_API_ENDPOINT
 
     def set_api_key(self, api_key: Text) -> None:

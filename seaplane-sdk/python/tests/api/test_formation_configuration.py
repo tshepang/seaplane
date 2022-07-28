@@ -1,20 +1,24 @@
+from typing import Any, Generator
+
 import pytest
 import requests_mock
 from returns.result import Failure, Success
 
-from seaplane import Configuration
-from seaplane.api import FormationConfigurationAPI, HTTPError
-from seaplane.model import Flight, FormationConfiguration
+from seaplane.api.api_http import HTTPError
+from seaplane.api.formation_configuration_api import FormationConfigurationAPI
+from seaplane.configuration import Configuration
+from seaplane.model.flight import Flight
+from seaplane.model.formation_configuration import FormationConfiguration
 
 from ..conftest import add_token_request
 
 
 @pytest.fixture
-def create_formation_config_minimum_setup():
+def create_formation_config_minimum_setup() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         add_token_request(requests_mocker)
 
-        def match_authorization(request):
+        def match_authorization(request: Any) -> Any:
             return (
                 request.headers["Authorization"] == "Bearer This is a token"
                 and request.query == "active=false"
@@ -35,11 +39,11 @@ def create_formation_config_minimum_setup():
 
 
 @pytest.fixture
-def get_all_configurations_ids():
+def get_all_configurations_ids() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         add_token_request(requests_mocker)
 
-        def match_authorization(request):
+        def match_authorization(request: Any) -> Any:
             return request.headers["Authorization"] == "Bearer This is a token"
 
         requests_mocker.get(
@@ -53,11 +57,11 @@ def get_all_configurations_ids():
 
 
 @pytest.fixture
-def get_configuration_by_id():
+def get_configuration_by_id() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         add_token_request(requests_mocker)
 
-        def match_authorization(request):
+        def match_authorization(request: Any) -> Any:
             return request.headers["Authorization"] == "Bearer This is a token"
 
         requests_mocker.get(
@@ -85,7 +89,7 @@ def get_configuration_by_id():
 
 
 @pytest.fixture
-def fails_create_formation_config():
+def fails_create_formation_config() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         add_token_request(requests_mocker)
 
@@ -99,7 +103,7 @@ def fails_create_formation_config():
 
 
 @pytest.fixture
-def formation_configuration():
+def formation_configuration() -> Generator[FormationConfigurationAPI, None, None]:
     config = Configuration()
     config.set_api_key("api_key")
     formation_configuration = FormationConfigurationAPI(config)
@@ -112,7 +116,7 @@ def any_formation_config() -> FormationConfiguration:
     return FormationConfiguration(flights=[flight])
 
 
-def test_given_create_formation_configuration_call_creates_configuration_with_minimum_setup(
+def test_given_create_configuration_call_creates_it_with_minimum_setup(  # type: ignore
     formation_configuration, create_formation_config_minimum_setup
 ) -> None:
     assert formation_configuration.create("test-formation", any_formation_config()) == Success(
@@ -120,7 +124,7 @@ def test_given_create_formation_configuration_call_creates_configuration_with_mi
     )
 
 
-def test_given_create_formation_configuration_returns_400_error(
+def test_given_create_formation_configuration_returns_400_error(  # type: ignore
     formation_configuration, fails_create_formation_config
 ) -> None:
     assert formation_configuration.create("test-formation", any_formation_config()) == Failure(
@@ -128,7 +132,7 @@ def test_given_create_formation_configuration_returns_400_error(
     )
 
 
-def test_given_get_all_configurations_returns_them_correctly(
+def test_given_get_all_configurations_returns_them_correctly(  # type: ignore
     formation_configuration, get_all_configurations_ids
 ) -> None:
     assert formation_configuration.get_all("test-formation") == Success(
@@ -136,7 +140,7 @@ def test_given_get_all_configurations_returns_them_correctly(
     )
 
 
-def test_given_get_configuration_by_id_returns_it_correctly(
+def test_given_get_configuration_by_id_returns_it_correctly(  # type: ignore
     formation_configuration, get_configuration_by_id
 ) -> None:
     assert formation_configuration.get(

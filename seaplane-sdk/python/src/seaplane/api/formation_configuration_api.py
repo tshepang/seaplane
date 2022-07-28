@@ -4,8 +4,8 @@ import requests
 from returns.result import Result
 
 from ..configuration import Configuration, config
-from ..model import ActiveConfiguration, FormationConfiguration
-from ..model.formation_configuration import to_formation_config
+from ..model.active_configuration import ActiveConfiguration
+from ..model.formation_configuration import FormationConfiguration, to_formation_config
 from .api_http import HTTPError, headers, to_json
 from .api_request import provision_req
 from .token_api import TokenAPI

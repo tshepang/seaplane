@@ -1,9 +1,11 @@
+from typing import Any, Generator
+
 import pytest
 import requests_mock
 
 
-def add_token_request(requests_mocker):
-    def match_authorization_and_body(request):
+def add_token_request(requests_mocker: Any) -> None:
+    def match_authorization_and_body(request: Any) -> Any:
         """
         This will check if the request contains the expected values.
         """
@@ -19,7 +21,7 @@ def add_token_request(requests_mocker):
 
 
 @pytest.fixture
-def success_token_post():
+def success_token_post() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         add_token_request(requests_mocker)
 
@@ -27,7 +29,7 @@ def success_token_post():
 
 
 @pytest.fixture
-def fail_token_post():
+def fail_token_post() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         requests_mocker.post("https://identity.cplane.cloud/token", status_code=400, json="")
 
@@ -35,7 +37,7 @@ def fail_token_post():
 
 
 @pytest.fixture
-def fails_any_get():
+def fails_any_get() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         add_token_request(requests_mocker)
 
