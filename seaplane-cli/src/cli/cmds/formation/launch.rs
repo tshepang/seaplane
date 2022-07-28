@@ -245,7 +245,7 @@ impl CliCommand for SeaplaneFormationLaunch {
             }
 
             cli_print!("The remote Formation Instance URL is ");
-            cli_println!(@Green, "https://{domain}");
+            cli_println!(@Green, "{domain}");
             cli_println!(
                 "(hint: it may take up to a minute for the Formation to become fully online)"
             );

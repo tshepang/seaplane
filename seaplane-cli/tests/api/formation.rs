@@ -374,7 +374,7 @@ macro_rules! mock_launch {
         });
 
         // Step 3: Request subdomain from metadata
-        let step_3_resp_body = json!({"url":"stubb--bar.on.cplane.cloud/"});
+        let step_3_resp_body = json!({"url":"https://stubb--bar.on.cplane.cloud/"});
         let mut get_subdomain = MOCK_SERVER.mock(|w, t| {
             when_json(w, GET, "/v1/formations/stubb");
             then(t, &step_3_resp_body);
