@@ -3,7 +3,7 @@ use crate::{
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
     context::{Ctx, LocksCtx},
     error::{CliError, CliErrorKind, Result},
-    ops::locks::{self, ListedLock},
+    ops::locks::{self, ListedLock, LockName},
     printer::OutputFormat,
 };
 use clap::{ArgMatches, Command};
@@ -11,6 +11,11 @@ use clap::{ArgMatches, Command};
 static OUTPUT_PAGE_SIZE: usize = 10;
 
 static LONG_ABOUT: &str = "Get information around currently held locks.
+
+There are 3 ways to list locks with this command:
+- Omit the LOCK_NAME argument to list all locks
+- Use a single lock name as the argument, without a trailing slash, this will list only that single lock
+- Use a lock name followed by a trailing slash to list all locks under that directory
 
 Locknames will be displayed in base64 encoded format by default because they may contain
 arbitrary binary data. Using --decode to output the decoded values instead.";
@@ -26,7 +31,7 @@ impl SeaplaneLocksList {
             .long_about(LONG_ABOUT)
             .arg(
                 arg!(lock_name = ["LOCK_NAME"] !required)
-                    .help("The name of a lock. If omitted, all locks are shown"),
+                    .help("The name of a lock. If omitted, all locks are shown. Append a trailing slash to list directory contents"),
             )
             .arg(common::base64().requires("lock_name"))
             .args(common::display_args())
@@ -52,14 +57,16 @@ fn run_one_info(ctx: &mut Ctx) -> Result<()> {
     Ok(())
 }
 
-fn run_all_info(ctx: &mut Ctx) -> Result<()> {
+/// Looks up all held locks within this directory, using the root directory if `dir_name` is None.
+fn run_dir_info(ctx: &mut Ctx, dir_name: Option<LockName>) -> Result<()> {
     let mut last_key = None;
+    let dir = dir_name.map(|d| d.to_model());
     let mut headers = !ctx.locks_ctx.get_or_init().no_header;
     let mut table_page = Vec::with_capacity(OUTPUT_PAGE_SIZE);
 
     loop {
         let mut req = LocksReq::new(ctx)?;
-        let page = req.get_page(last_key)?;
+        let page = req.get_page(last_key, dir.clone())?;
 
         // We use the regular paging interface rather than
         // get_all_pages so that we don't have to store
@@ -95,10 +102,30 @@ fn run_all_info(ctx: &mut Ctx) -> Result<()> {
 impl CliCommand for SeaplaneLocksList {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let locksctx = ctx.locks_ctx.get_or_init();
-        if locksctx.lock_name.is_some() {
-            run_one_info(ctx)
-        } else {
-            run_all_info(ctx)
+
+        // Check if the lock argument is root, directory or single lock
+        match &locksctx.lock_name {
+            // If there's no lock name given it's an "all locks" query
+            None => run_dir_info(ctx, None),
+            Some(name) => {
+                // We need to at least peek at the final character of the decoded lock name to determine if its a directory query or not.
+                let mut decoded_lock_name = name
+                    .name
+                    .decoded()
+                    .expect("decoding of a string we encoded shouldn't ever fail");
+
+                if *decoded_lock_name
+                    .last()
+                    .expect("Lock name should hold something else it'd be None")
+                    == b'/'
+                {
+                    // The SDK expects a lock name without the trailing slash for getting a directory, so we remove the `/`
+                    decoded_lock_name.pop();
+                    run_dir_info(ctx, Some(LockName::from_name_unencoded(decoded_lock_name)))
+                } else {
+                    run_one_info(ctx)
+                }
+            }
         }
     }
 

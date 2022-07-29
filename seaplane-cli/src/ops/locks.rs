@@ -29,8 +29,8 @@ impl LockName {
         }
     }
 
-    /// Creates a new LockName from an un-encoded string ref, encoding it along the way
-    pub fn from_name_unencoded<S: AsRef<str>>(name: S) -> Self {
+    /// Creates a new LockName from an un-encoded byte slice ref, encoding it along the way
+    pub fn from_name_unencoded<S: AsRef<[u8]>>(name: S) -> Self {
         let name = base64::encode_config(name.as_ref(), base64::URL_SAFE_NO_PAD);
         Self {
             name: EncodedString::new(name),

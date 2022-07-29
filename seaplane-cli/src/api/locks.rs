@@ -6,7 +6,7 @@ use seaplane::{
                 HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName,
                 LocksRequest, LocksRequestBuilder,
             },
-            LockInfoRange, RangeQueryContext,
+            Directory, LockInfoRange, RangeQueryContext,
         },
         AccessToken, ApiErrorKind,
     },
@@ -104,12 +104,21 @@ impl LocksReq {
         Ok(&self.token.as_ref().unwrap().token)
     }
 
-    pub fn get_page(&mut self, next_key: Option<LockName>) -> Result<LockInfoRange> {
+    /// Gets a page of held locks from `dir` if present (or the root) if not, optionally starting from `next_key`
+    pub fn get_page(
+        &mut self,
+        next_key: Option<LockName>,
+        dir: Option<LockName>,
+    ) -> Result<LockInfoRange> {
         // get_page doesn't use `inner` here, since it doesn't refer to any lock name
         // (Specifically, get_page() doesn't refer to any individual lock)
         let mut range = RangeQueryContext::new();
         if let Some(k) = next_key {
             range.set_from(k);
+        }
+
+        if let Some(d) = dir {
+            range.set_directory(Directory::from_encoded(d.encoded()));
         }
 
         let mut builder = LocksRequestBuilder::new()

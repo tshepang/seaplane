@@ -9,7 +9,7 @@ USAGE:
     seaplane locks list [OPTIONS] [LOCK_NAME]
 
 ARGS:
-    <LOCK_NAME>    The name of a lock. If omitted, all locks are shown
+    <LOCK_NAME>    The name of a lock. If omitted, all locks are shown. Append a trailing slash to list directory contents
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -35,6 +35,11 @@ $ seaplane locks list --help
 seaplane-locks-list [..]
 Get information around currently held locks.
 
+There are 3 ways to list locks with this command:
+- Omit the LOCK_NAME argument to list all locks
+- Use a single lock name as the argument, without a trailing slash, this will list only that single lock
+- Use a lock name followed by a trailing slash to list all locks under that directory
+
 Locknames will be displayed in base64 encoded format by default because they may contain
 arbitrary binary data. Using --decode to output the decoded values instead.
 
@@ -43,7 +48,7 @@ USAGE:
 
 ARGS:
     <LOCK_NAME>
-            The name of a lock. If omitted, all locks are shown
+            The name of a lock. If omitted, all locks are shown. Append a trailing slash to list directory contents
 
 OPTIONS:
     -A, --api-key <STRING>

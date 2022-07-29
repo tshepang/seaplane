@@ -277,6 +277,79 @@ fn locks_list_server_pages() {
 }
 
 #[test]
+fn locks_list_dir() {
+    let p1 = json!({
+        "next": "ZGlyL3BhZ2Uy",
+        "infos": [
+            {
+                "name": "ZGlyL3BhZ2Ux",
+                "id": "D4lbVpdBE_U",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client",
+                    "ip": "192.0.2.137"
+                }
+            }
+        ]
+    });
+
+    let p2 = json!({
+        "next": "ZGlyL3BhZ2Uz",
+        "infos": []
+    });
+
+    let p3 = json!({
+        "next": null,
+        "infos": [
+            {
+                "name": "ZGlyL3BhZ2Uz",
+                "id": "D4lbVpdBD_U",
+                "info": {
+                    "ttl": 5,
+                    "client-id": "test-client2",
+                    "ip": "192.0.2.137"
+                }
+            }
+        ]
+    });
+
+    let mut mock3 = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/locks/base64:ZGly/").query_param("from", "base64:ZGlyL3BhZ2Uz");
+        then(t, &p3);
+    });
+
+    let mut mock2 = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/locks/base64:ZGly/").query_param("from", "base64:ZGlyL3BhZ2Uy");
+        then(t, &p2);
+    });
+
+    // order matters here. If mock1 is defined before the others,
+    // it will match every request regardless of params.
+    let mut mock1 = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/locks/base64:ZGly/");
+        then(t, &p1);
+    });
+
+    let res = dbg!(test_main(&cli!("locks list dir/"), MOCK_SERVER.base_url()));
+    assert!(res.is_ok());
+    mock1.assert_hits(1);
+    mock2.assert_hits(1);
+    mock3.assert_hits(1);
+
+    assert_eq!(
+        printer().as_string().trim(),
+        "LOCK-NAME     LOCK-ID      CLIENT-ID     CLIENT-IP    TTL\n\
+         ZGlyL3BhZ2Ux  D4lbVpdBE_U  test-client   192.0.2.137  5\n\
+         ZGlyL3BhZ2Uz  D4lbVpdBD_U  test-client2  192.0.2.137  5"
+    );
+    printer().clear();
+
+    mock1.delete();
+    mock2.delete();
+    mock3.delete();
+}
+
+#[test]
 fn locks_list() {
     let resp = json!({
         "name": "Zm9v",
