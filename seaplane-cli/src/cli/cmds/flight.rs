@@ -8,10 +8,7 @@ mod plan;
 mod template;
 
 use clap::{ArgMatches, Command};
-use seaplane::api::{
-    v1::{ImageReference, ImageReferenceError},
-    IMAGE_REGISTRY_URL,
-};
+use seaplane::api::v1::{ImageReference, ImageReferenceError};
 
 #[cfg(feature = "unstable")]
 pub use self::template::SeaplaneFlightTemplate;
@@ -22,16 +19,17 @@ pub use self::{
 use crate::{
     cli::{specs::IMAGE_SPEC, CliCommand},
     error::{CliError, Result},
+    ops::flight::DEFAULT_IMAGE_REGISTRY_URL,
 };
 
 pub const FLIGHT_MINIMUM_DEFAULT: u64 = 1;
 
-/// Allows eliding `registry.cplane.cloud` but otherwise just proxies parsing to ImageReference
+/// Allows eliding `registry.hub.docker.com` but otherwise just proxies parsing to ImageReference
 pub fn str_to_image_ref(image_str: &str) -> Result<ImageReference> {
     match image_str.parse::<ImageReference>() {
         Ok(ir) => Ok(ir),
         Err(ImageReferenceError::ErrDomainInvalidFormat(_)) => {
-            let ir: ImageReference = format!("{IMAGE_REGISTRY_URL}{image_str}").parse()?;
+            let ir: ImageReference = format!("{DEFAULT_IMAGE_REGISTRY_URL}{image_str}").parse()?;
             Ok(ir)
         }
         Err(e) => Err(CliError::from(e)),

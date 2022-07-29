@@ -22,9 +22,5 @@ pub static COMPUTE_API_URL: &str = "https://compute.cplane.cloud/";
 /// Identity contains endpoints for things such as Authentication
 pub static IDENTITY_API_URL: &str = "https://identity.cplane.cloud/";
 
-/// The OCI registry URL. The `https://` is omitted because that is not part of an OCI registry
-/// reference.
-pub static IMAGE_REGISTRY_URL: &str = "registry.cplane.cloud/";
-
 /// The base URL for our Metadata endpoints
 pub static METADATA_API_URL: &str = "https://metadata.cplane.cloud/";

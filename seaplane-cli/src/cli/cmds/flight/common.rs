@@ -6,13 +6,9 @@ use crate::cli::validator::validate_flight_name;
 static LONG_IMAGE: &str =
     "The container image registry reference that this Flight will use (See IMAGE SPEC below)
 
-All image references using the 'registry.cplane.cloud' registry may omit the domain portions of the
-image reference as it is implied. For example, 'registry.cplane.cloud/USER/myimage:latest' can be
-supplied simply as 'USER/myimage:latest'
-
-NOTE at this time the only registry supported is registry.cplane.cloud. In the future when other
-registries are supported, you must specify the full registry domain and path if using those
-alternate registries in order to properly reference your image.";
+NOTE at this time the if the registry is omitted, such as `nginxdemos/hello:latest` a default
+registry of `registry.hub.docker.com` will be used. This may change in the future, so it is
+recommended to always specify a full image reference path.";
 
 static LONG_NAME: &str =
     "A human readable name for the Flight (must be unique within any Formation it

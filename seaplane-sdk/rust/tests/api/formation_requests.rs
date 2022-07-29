@@ -128,11 +128,11 @@ fn build_configuration() -> FormationConfiguration {
     FormationConfiguration::builder()
         .add_flight(Flight::new(
             "pequod",
-            "registry.cplane.cloud/stubb/alpine:latest",
+            "registry.hub.docker.com/stubb/alpine:latest",
         ))
         .add_flight(Flight::new(
             "flask",
-            "registry.cplane.cloud/stubb/alpine:latest",
+            "registry.hub.docker.com/stubb/alpine:latest",
         ))
         .build()
         .unwrap()

@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use seaplane::api::{v1::formations::Flight as FlightModel, IMAGE_REGISTRY_URL};
+use seaplane::api::v1::formations::Flight as FlightModel;
 use serde::{Deserialize, Serialize};
 use tabwriter::TabWriter;
 
@@ -15,6 +15,9 @@ use crate::{
     ops::Id,
     printer::{Color, Output},
 };
+
+/// The registry to use for image references when the registry is omitted by the user
+pub const DEFAULT_IMAGE_REGISTRY_URL: &str = "registry.hub.docker.com/";
 
 /// A wrapper round a Flight model
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -323,7 +326,7 @@ impl Output for Flights {
                 flight
                     .model
                     .image_str()
-                    .trim_start_matches(IMAGE_REGISTRY_URL), // TODO: provide opt-in/out way to collapse long names
+                    .trim_start_matches(DEFAULT_IMAGE_REGISTRY_URL), // TODO: provide opt-in/out way to collapse long names
                 flight.model.minimum(),
                 flight
                     .model
