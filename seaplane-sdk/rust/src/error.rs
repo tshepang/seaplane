@@ -8,7 +8,7 @@ pub type Result<T> = std::result::Result<T, SeaplaneError>;
 
 #[derive(Error, Debug)]
 pub enum SeaplaneError {
-    #[error("http error")]
+    #[error("http error: {0}")]
     UnknownHttp(reqwest::Error),
     #[error("{0}")]
     Decode(String),
