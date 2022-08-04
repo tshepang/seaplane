@@ -9,8 +9,14 @@ pub use metadata::*;
 pub mod locks;
 pub use locks::*;
 
+pub mod restrict;
+pub use restrict::*;
+
 pub mod range_query;
 pub use range_query::*;
+
+pub mod models;
+pub use models::*;
 
 // Request builder base structs that handle token reuse
 pub mod request;

@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use seaplane::api::v1::formations::{
+use seaplane::api::v1::{
     FormationConfiguration as FormationConfigurationModel, Provider as ProviderModel,
     Region as RegionModel,
 };

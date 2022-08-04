@@ -3,10 +3,10 @@ use seaplane::{
     api::{
         v1::{
             metadata::{
-                KeyValue as KeyValueModel, KeyValueRange as KeyValueRangeModel, MetadataRequest,
-                Value as ValueModel,
+                Key, KeyValue as KeyValueModel, KeyValueRange as KeyValueRangeModel,
+                MetadataRequest, Value as ValueModel,
             },
-            Key, RangeQueryContext,
+            RangeQueryContext,
         },
         AccessToken, ApiErrorKind,
     },

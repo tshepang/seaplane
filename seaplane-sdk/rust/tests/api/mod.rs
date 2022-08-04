@@ -4,4 +4,5 @@
 mod formation_requests;
 mod locks_requests;
 mod metadata_requests;
+mod restrict_requests;
 mod token_requests;

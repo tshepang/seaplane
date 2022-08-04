@@ -40,10 +40,12 @@ pub enum SeaplaneError {
     MissingMetadataKey,
     #[error("request must target either key or range")]
     IncorrectMetadataRequestTarget,
-    #[error("the API returned an error status")]
-    ApiResponse(#[from] ApiError),
     #[error("locks requests must target either a lock by name or a held lock")]
     IncorrectLocksRequestTarget,
+    #[error("restrict requests must target all restrictions, an api, or an api and a key")]
+    IncorrectRestrictRequestTarget,
+    #[error("the API returned an error status")]
+    ApiResponse(#[from] ApiError),
 }
 
 impl From<reqwest::Error> for SeaplaneError {
@@ -78,6 +80,7 @@ impl PartialEq for SeaplaneError {
             MissingMetadataKey => matches!(rhs, MissingMetadataKey),
             IncorrectMetadataRequestTarget => matches!(rhs, IncorrectMetadataRequestTarget),
             IncorrectLocksRequestTarget => matches!(rhs, IncorrectLocksRequestTarget),
+            IncorrectRestrictRequestTarget => matches!(rhs, IncorrectRestrictRequestTarget),
             ApiResponse(ae) => match rhs {
                 ApiResponse(oae) => ae == oae,
                 _ => false,

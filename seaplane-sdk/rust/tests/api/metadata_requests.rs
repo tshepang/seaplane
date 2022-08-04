@@ -1,7 +1,8 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
 use seaplane::api::v1::{
-    Directory, Key, KeyValue, MetadataRequestBuilder, RangeQueryContext, Value,
+    metadata::{Key, KeyValue, MetadataRequestBuilder, Value},
+    Directory, RangeQueryContext,
 };
 use serde_json::json;
 
