@@ -138,8 +138,7 @@ impl CliCommand for SeaplaneShellCompletion {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // unwrap is safe because clap won't let this value be empty
-        let shell_str = matches.get_one::<String>("shell").unwrap();
-        ctx.args.shell = Some(shell_str.parse().unwrap());
+        ctx.args.shell = matches.get_one::<Shell>("shell").copied();
         Ok(())
     }
 }
