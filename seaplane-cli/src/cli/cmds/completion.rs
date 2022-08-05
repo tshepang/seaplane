@@ -1,4 +1,4 @@
-use clap::{ArgMatches, Command};
+use clap::{value_parser, ArgMatches, Command};
 use clap_complete::Shell;
 
 use crate::{
@@ -116,7 +116,8 @@ impl SeaplaneShellCompletion {
             .after_help(COMPLETION_HELP)
             .arg(
                 arg!(shell ignore_case required)
-                    .help("The shell to generate completion scripts for"),
+                    .help("The shell to generate completion scripts for")
+                    .value_parser(value_parser!(Shell)),
             )
     }
 }
@@ -137,7 +138,8 @@ impl CliCommand for SeaplaneShellCompletion {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // unwrap is safe because clap won't let this value be empty
-        ctx.args.shell = matches.get_one::<Shell>("shell").copied();
+        let shell_str = matches.get_one::<String>("shell").unwrap();
+        ctx.args.shell = Some(shell_str.parse().unwrap());
         Ok(())
     }
 }
