@@ -3,10 +3,12 @@
 mod formations;
 mod locks;
 mod metadata;
+mod restrict;
 
 pub use formations::FormationsReq;
 pub use locks::LocksReq;
 pub use metadata::MetadataReq;
+pub use restrict::RestrictReq;
 
 use reqwest::Url;
 use seaplane::api::{AccessToken, TokenRequest};

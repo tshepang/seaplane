@@ -751,3 +751,25 @@ fn seaplane_locks_acquire() {
     // aliases
     assert!(cli!("locks acq foo --client-id bar --ttl 60").is_ok());
 }
+
+#[test]
+fn seaplane_restrict() {
+    // requires a subcmd
+    assert!(cli!("restrict").is_err());
+    // provide subcmd
+    assert!(cli!("restrict get config foo/bar").is_ok());
+}
+
+#[test]
+fn seaplane_restrict_get() {
+    // requires API and directory
+    assert!(cli!("restrict get").is_err());
+    assert!(cli!("restrict get config").is_err());
+    assert!(cli!("restrict get foo/bar").is_err());
+
+    // provide API and directory
+    assert!(cli!("restrict get config foo").is_ok());
+
+    // three is a crowd
+    assert!(cli!("restrict get foo bar baz").is_err());
+}

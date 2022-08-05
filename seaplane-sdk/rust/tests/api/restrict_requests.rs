@@ -36,7 +36,7 @@ fn partial_build() -> RestrictRequestBuilder {
 fn get_value() {
     let resp_json = json!({
         "api": "config",
-        "directory": "Zm9vL2Jhcgo",
+        "directory": "Zm9vL2Jhcg",
         "details": {
             "regions_allowed": ["XE"],
             "regions_denied": [],
@@ -47,12 +47,12 @@ fn get_value() {
     });
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v1/restrict/config/base64:Zm9vL2Jhcgo/");
+        when(w, GET, "/v1/restrict/config/base64:Zm9vL2Jhcg/");
         then(t, json!(resp_json));
     });
 
     let req = partial_build()
-        .single_restriction("config", "Zm9vL2Jhcgo")
+        .single_restriction("config", "Zm9vL2Jhcg")
         .build()
         .unwrap();
     let resp = req.get_restriction().unwrap();

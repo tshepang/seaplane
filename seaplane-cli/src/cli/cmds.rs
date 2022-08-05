@@ -10,6 +10,7 @@ mod init;
 mod license;
 pub mod locks;
 pub mod metadata;
+pub mod restrict;
 
 pub use self::{
     account::SeaplaneAccount,
@@ -20,6 +21,7 @@ pub use self::{
     license::SeaplaneLicense,
     locks::SeaplaneLocks,
     metadata::SeaplaneMetadata,
+    restrict::SeaplaneRestrict,
 };
 #[cfg(feature = "unstable")]
 pub use self::{config::SeaplaneConfig, image::SeaplaneImage};

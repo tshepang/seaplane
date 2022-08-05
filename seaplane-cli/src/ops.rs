@@ -6,6 +6,7 @@ pub mod flight;
 pub mod formation;
 pub mod locks;
 pub mod metadata;
+pub mod restrict;
 
 use std::fmt;
 

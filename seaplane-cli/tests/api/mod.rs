@@ -25,6 +25,7 @@ mod account;
 mod formation;
 mod locks;
 mod metadata;
+mod restrict;
 
 fn test_main(matches: &ArgMatches, url: String) -> Result<(), CliError> {
     let mut ctx = Ctx::default();

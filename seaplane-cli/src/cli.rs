@@ -116,6 +116,7 @@ impl Seaplane {
             .subcommand(SeaplaneLicense::command())
             .subcommand(SeaplaneMetadata::command())
             .subcommand(SeaplaneLocks::command())
+            .subcommand(SeaplaneRestrict::command())
             .subcommand(SeaplaneShellCompletion::command());
 
         #[cfg(feature = "unstable")]
@@ -203,6 +204,7 @@ impl CliCommand for Seaplane {
             Some(("init", m)) => Some((Box::new(SeaplaneInit), m)),
             Some(("metadata", m)) => Some((Box::new(SeaplaneMetadata), m)),
             Some(("locks", m)) => Some((Box::new(SeaplaneLocks), m)),
+            Some(("restrict", m)) => Some((Box::new(SeaplaneRestrict), m)),
             Some(("shell-completion", m)) => Some((Box::new(SeaplaneShellCompletion), m)),
             Some(("license", m)) => Some((Box::new(SeaplaneLicense), m)),
             #[cfg(feature = "unstable")]

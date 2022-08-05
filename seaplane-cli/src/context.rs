@@ -30,6 +30,8 @@ pub mod metadata;
 pub use metadata::MetadataCtx;
 pub mod locks;
 pub use locks::LocksCtx;
+pub mod restrict;
+pub use restrict::RestrictCtx;
 
 use std::path::{Path, PathBuf};
 
@@ -120,6 +122,9 @@ pub struct Ctx {
     /// Context relate to exclusively to Locks operations and commands
     pub locks_ctx: LateInit<LocksCtx>,
 
+    /// Context relate to exclusively to Restrict operations and commands
+    pub restrict_ctx: LateInit<RestrictCtx>,
+
     /// Where the configuration files were loaded from
     pub conf_files: Vec<PathBuf>,
 
@@ -174,6 +179,13 @@ impl Clone for Ctx {
             } else {
                 LateInit::default()
             },
+            restrict_ctx: if self.restrict_ctx.get().is_some() {
+                let li = LateInit::default();
+                li.init(self.restrict_ctx.get().cloned().unwrap());
+                li
+            } else {
+                LateInit::default()
+            },
             conf_files: self.conf_files.clone(),
             args: self.args.clone(),
             db: self.db.clone(),
@@ -195,6 +207,7 @@ impl Default for Ctx {
             formation_ctx: LateInit::default(),
             md_ctx: LateInit::default(),
             locks_ctx: LateInit::default(),
+            restrict_ctx: LateInit::default(),
             conf_files: Vec::new(),
             args: Args::default(),
             db: Db::default(),
