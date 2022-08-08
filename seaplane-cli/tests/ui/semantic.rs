@@ -116,9 +116,7 @@ fn seaplane_shell_completion() {
     assert!(cli!("shell-completion FISH").is_ok());
     assert!(cli!("shell-completion fIsH").is_ok());
     // Invalid SHELL
-    // FIXME: seaplane/seaplane-cli/src/cli/cmds/completion.rs line 120 needs solving to make this test work again.
-    // https://linear.app/seaplane/issue/ENG-703/cli-claps-possible-values-deprecated-replace-by-enumvalueparser
-    // assert!(cli!("shell-completion jibberish").is_err());
+    assert!(cli!("shell-completion jibberish").is_err());
 }
 
 #[test]
