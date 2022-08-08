@@ -70,7 +70,10 @@ impl<T> RequestBuilder<T> {
             .default_headers(headers)
             .https_only(true);
 
-        #[cfg(feature = "api_tests")]
+        // We allow HTTP traffic when testing or debugging
+        // TODO: We should consider replacing debug_assertions with a scary
+        // sounding feature flag like "insecure_urls" when making this public
+        #[cfg(any(feature = "api_tests", debug_assertions))]
         {
             builder = builder.https_only(false);
         }
