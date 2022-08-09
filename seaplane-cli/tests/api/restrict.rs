@@ -18,6 +18,14 @@ fn restrict_get() {
         "state": "enforced"
     });
 
+    static ENCODED: &str = "\
+API     DIRECTORY   STATE     REGIONS ALLOWED  REGIONS DENIED  PROVIDERS ALLOWED  PROVIDERS DENIED
+Config  Zm9vL2Jhcg  Enforced  XE";
+
+    static DECODED: &str = "\
+API     DIRECTORY  STATE     REGIONS ALLOWED  REGIONS DENIED  PROVIDERS ALLOWED  PROVIDERS DENIED
+Config  foo/bar    Enforced  XE";
+
     let mut mock = MOCK_SERVER.mock(|w, t| {
         when_json(w, GET, "/v1/restrict/config/base64:Zm9vL2Jhcg/");
         then(t, &resp);
@@ -29,13 +37,14 @@ fn restrict_get() {
     );
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(printer().as_string().trim(), "");
+    assert_eq!(printer().as_string().trim(), ENCODED);
+
     printer().clear();
 
     let res = test_main(&cli!("restrict get config foo/bar"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(printer().as_string().trim(), "");
+    assert_eq!(printer().as_string().trim(), ENCODED);
     printer().clear();
 
     let res = test_main(
@@ -44,7 +53,7 @@ fn restrict_get() {
     );
     assert!(res.is_ok());
     mock.assert_hits(3);
-    assert_eq!(printer().as_string().trim(), "");
+    assert_eq!(printer().as_string().trim(), DECODED);
     printer().clear();
 
     mock.delete();

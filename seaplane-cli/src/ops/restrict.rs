@@ -1,9 +1,41 @@
 use std::{fmt::Display, io::Write};
 
-use seaplane::api::v1::restrict::Restriction;
+use seaplane::api::v1::restrict::{RestrictedDirectory as RestrictedDirectoryModel, Restriction};
+use serde::Serialize;
 use tabwriter::TabWriter;
 
-use crate::{context::Ctx, error::Result, printer::Output};
+use crate::{
+    context::Ctx,
+    error::{CliError, Result},
+    printer::{printer, Output},
+};
+
+use super::EncodedString;
+
+/// We use our own RestrictedDirectory instead of the models because we need to
+/// *not* enforce base64 encoding, and implement a bunch of additional methods
+/// and traits that wouldn't make sense for the models
+///
+/// We also need to keep track if the values are encoded or not
+#[derive(Debug, Clone, Serialize)]
+pub struct RestrictedDirectory {
+    pub directory: EncodedString,
+}
+
+impl RestrictedDirectory {
+    /// Creates a new RestrictedDirectory from an encoded directory.
+    /// The directory must be URL safe base64 encoded or Bad Things may happen.
+    pub fn new<S: Into<String>>(directory: S) -> Self {
+        Self {
+            directory: EncodedString::new(directory.into()),
+        }
+    }
+
+    /// Creates a new RestrictedDirectoryModel from self's data.
+    pub fn to_model(&self) -> RestrictedDirectoryModel {
+        RestrictedDirectoryModel::from_encoded(self.directory.to_string())
+    }
+}
 
 impl Output for Restriction {
     fn print_json(&self, _ctx: &Ctx) -> Result<()> {
@@ -12,12 +44,9 @@ impl Output for Restriction {
     }
 
     fn print_table(&self, ctx: &Ctx) -> Result<()> {
-        let show_headers = !ctx.locks_ctx.get_or_init().no_header;
+        let restrict_ctx = ctx.restrict_ctx.get_or_init();
+        let rd = RestrictedDirectory::new(self.directory.encoded());
         let mut tw = TabWriter::new(Vec::new());
-
-        if show_headers {
-            writeln!(tw, "API\tDIRECTORY\tSTATE\tREGIONS ALLOWED\tREGIONS DENIED\tPROVIDERS ALLOWED\tPROVIDERS DENIED")?;
-        }
 
         // Helper function for displaying region and provider vectors
         fn join_vector<S: Display>(vector: Vec<S>) -> String {
@@ -28,11 +57,21 @@ impl Output for Restriction {
                 .join(", ")
         }
 
+        if !restrict_ctx.no_header {
+            writeln!(tw, "API\tDIRECTORY\tSTATE\tREGIONS ALLOWED\tREGIONS DENIED\tPROVIDERS ALLOWED\tPROVIDERS DENIED")?;
+        }
+
+        write!(tw, "{}\t", self.api)?;
+
+        if restrict_ctx.decode {
+            tw.write_all(&rd.directory.decoded()?)?;
+        } else {
+            write!(tw, "{}", rd.directory)?;
+        }
+
         writeln!(
             tw,
-            "{}\t{}\t{}\t{}\t{}\t{}\t{}",
-            self.api,
-            self.directory,
+            "\t{}\t{}\t{}\t{}\t{}",
             self.state,
             join_vector(self.details.regions_allowed.clone()),
             join_vector(self.details.regions_denied.clone()),
@@ -40,6 +79,13 @@ impl Output for Restriction {
             join_vector(self.details.providers_denied.clone())
         )?;
         tw.flush()?;
+
+        let mut ptr = printer();
+        let page = tw
+            .into_inner()
+            .map_err(|_| CliError::bail("IO flush error writing restrictions"))?;
+        ptr.write_all(&page)?;
+        ptr.flush()?;
 
         Ok(())
     }

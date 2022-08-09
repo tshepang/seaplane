@@ -56,7 +56,7 @@ impl CliCommand for SeaplaneRestrictGet {
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut restrict_ctx = ctx.restrict_ctx.get_mut_or_init();
         restrict_ctx.decode = matches.contains_id("decode");
-        restrict_ctx.no_header = true;
+        restrict_ctx.no_header = matches.contains_id("no-header");
         Ok(())
     }
 
