@@ -1,6 +1,6 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::restrict::RestrictRequestBuilder;
+use seaplane::api::v1::{RestrictRequestBuilder, RestrictionDetails};
 use serde_json::json;
 
 // To be used with httpmock standalone server for dev testing
@@ -33,7 +33,7 @@ fn partial_build() -> RestrictRequestBuilder {
 
 // GET /restrict/{api}/base64:{key}/
 #[test]
-fn get_value() {
+fn get_restriction() {
     let resp_json = json!({
         "api": "config",
         "directory": "Zm9vL2Jhcg",
@@ -61,4 +61,52 @@ fn get_value() {
     mock.assert();
 
     assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
+}
+
+// PUT /restrict/{api}/base64:{key}/
+#[test]
+fn set_restriction() {
+    let resp_json = json!({"status": 200, "title": "Ok"});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, PUT, "/v1/restrict/config/base64:Zm9vL2Jhcg/")
+            .header("content-type", "application/json");
+        then(t, resp_json);
+    });
+
+    let req = partial_build()
+        .single_restriction("config", "Zm9vL2Jhcg")
+        .build()
+        .unwrap();
+    let details: RestrictionDetails =
+        serde_json::from_str("{\"regions_allowed\": [\"xe\"]}").unwrap();
+
+    let resp = req.set_restriction(details);
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert!(resp.is_ok())
+}
+
+// DELETE /restrict/{api}/base64:{key}/
+#[test]
+fn delete_restriction() {
+    let resp_json = json!({"status": 200, "title": "Ok"});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, DELETE, "/v1/restrict/config/base64:Zm9vL2Jhcg/");
+        then(t, resp_json);
+    });
+
+    let req = partial_build()
+        .single_restriction("config", "Zm9vL2Jhcg")
+        .build()
+        .unwrap();
+    let resp = req.delete_restriction();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert!(resp.is_ok())
 }

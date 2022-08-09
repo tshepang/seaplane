@@ -1,4 +1,4 @@
-use std::{fmt::Display, io::Write};
+use std::{collections::HashSet, fmt::Display, io::Write};
 
 use seaplane::api::v1::restrict::{RestrictedDirectory as RestrictedDirectoryModel, Restriction};
 use serde::Serialize;
@@ -48,9 +48,9 @@ impl Output for Restriction {
         let rd = RestrictedDirectory::new(self.directory.encoded());
         let mut tw = TabWriter::new(Vec::new());
 
-        // Helper function for displaying region and provider vectors
-        fn join_vector<S: Display>(vector: Vec<S>) -> String {
-            vector
+        // Helper function for displaying region and provider HashSets
+        fn join_hashset<S: Display>(hashset: HashSet<S>) -> String {
+            hashset
                 .iter()
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>()
@@ -73,10 +73,10 @@ impl Output for Restriction {
             tw,
             "\t{}\t{}\t{}\t{}\t{}",
             self.state,
-            join_vector(self.details.regions_allowed.clone()),
-            join_vector(self.details.regions_denied.clone()),
-            join_vector(self.details.providers_allowed.clone()),
-            join_vector(self.details.providers_denied.clone())
+            join_hashset(self.details.regions_allowed.clone()),
+            join_hashset(self.details.regions_denied.clone()),
+            join_hashset(self.details.providers_allowed.clone()),
+            join_hashset(self.details.providers_denied.clone())
         )?;
         tw.flush()?;
 

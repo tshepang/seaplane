@@ -4,7 +4,10 @@ use std::str::FromStr;
 
 pub use models::*;
 
-use reqwest::Url;
+use reqwest::{
+    header::{self, CONTENT_TYPE},
+    Url,
+};
 
 use crate::{
     api::{
@@ -200,6 +203,83 @@ impl RestrictRequest {
             .send()?;
         map_api_error(resp)?
             .json::<Restriction>()
+            .map_err(Into::into)
+    }
+
+    /// Sets a restriction for an API-directory combination
+    ///
+    /// **NOTE:** This endpoint requires the `RequestTarget` be a `Single`.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use std::str::FromStr;
+    /// use seaplane::api::v1::{
+    ///     RestrictRequestBuilder, RestrictRequest, RestrictionDetails, Region
+    /// };
+    ///
+    /// let req = RestrictRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .single_restriction("config", "bW9ieQo")
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let details = RestrictionDetails::builder()
+    ///     .add_allowed_region(Region::from_str("xe").unwrap())
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.set_restriction(details).unwrap();
+    /// dbg!(resp);
+    /// ```
+    pub fn set_restriction(&self, details: RestrictionDetails) -> Result<()> {
+        let url = self.single_url()?;
+        let resp = self
+            .request
+            .client
+            .put(url)
+            .bearer_auth(&self.request.token)
+            .header(
+                CONTENT_TYPE,
+                header::HeaderValue::from_static("application/json"),
+            )
+            .body(serde_json::to_string(&details)?)
+            .send()?;
+        map_api_error(resp)?
+            .text()
+            .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
+            .map_err(Into::into)
+    }
+
+    /// Removes a restriction for an API-directory combination
+    ///
+    /// **NOTE:** This endpoint requires the `RequestTarget` be a `Single`.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use seaplane::api::v1::{RestrictRequestBuilder,RestrictRequest};
+    ///
+    /// let req = RestrictRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .single_restriction("config", "bW9ieQo")
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.delete_restriction().unwrap();
+    /// dbg!(resp);
+    /// ```
+    pub fn delete_restriction(&self) -> Result<()> {
+        let url = self.single_url()?;
+        let resp = self
+            .request
+            .client
+            .delete(url)
+            .bearer_auth(&self.request.token)
+            .send()?;
+        map_api_error(resp)?
+            .text()
+            .map(|_| ()) // TODO: for now we drop the "success" message to control it ourselves
             .map_err(Into::into)
     }
 }

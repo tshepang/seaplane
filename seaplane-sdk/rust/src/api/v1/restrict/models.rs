@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{collections::HashSet, fmt};
 
 use serde::{
     de::{self, Deserializer},
@@ -9,6 +9,7 @@ use strum::{AsRefStr, EnumString, EnumVariantNames};
 use crate::{
     api::v1::{impl_deser_from_str, Provider, RangeQueryContext, Region},
     base64::Base64Encoded,
+    error::SeaplaneError,
     impl_base64,
 };
 
@@ -107,17 +108,115 @@ pub enum RestrictionState {
 
 impl_deser_from_str!(RestrictionState);
 
+/// A builder for creating a [`RestrictionDetails`] struct
+#[derive(Debug, Default)]
+pub struct RestrictionDetailsBuilder {
+    providers_allowed: HashSet<Provider>,
+    providers_denied: HashSet<Provider>,
+    regions_allowed: HashSet<Region>,
+    regions_denied: HashSet<Region>,
+}
+
+impl RestrictionDetailsBuilder {
+    /// Add a [`Provider`] which is allowed for use when placing data.
+    ///
+    /// If this conflicts with `providers_denied`
+    /// ([`RestrictionDetailsBuilder::add_denied_provider`]) (e.g. [`Provider::GCP`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    ///
+    /// **NOTE:** This method can be called multiple times. All values will be utilized.
+    #[must_use]
+    pub fn add_allowed_provider<P: Into<Provider>>(mut self, provider: P) -> Self {
+        self.providers_allowed.insert(provider.into());
+        self
+    }
+
+    /// The inverse of [`RestrictionDetailsBuilder::add_allowed_provider`] which specifies
+    /// [`Provider`] which is not allowed for use when placing data.
+    ///
+    /// By default no [`Provider`]s are denied.
+    ///
+    /// If this conflicts with `providers_allowed`
+    /// ([`RestrictionDetailsBuilder::add_allowed_provider`]) (e.g. [`Provider::GCP`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    ///
+    /// **NOTE:** This method can be called multiple times. All values will be utilized.
+    #[must_use]
+    pub fn add_denied_provider<P: Into<Provider>>(mut self, provider: P) -> Self {
+        self.providers_denied.insert(provider.into());
+        self
+    }
+
+    /// Add a [`Region`] which is allowed for use when placing data.
+    ///
+    /// If this conflicts with `regions_denied`
+    /// ([`RestrictionDetailsBuilder::add_denied_region`]) (e.g. [`Region::XN`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    ///
+    /// **NOTE:** This method can be called multiple times. All values will be utilized.
+    #[must_use]
+    pub fn add_allowed_region<R: Into<Region>>(mut self, region: R) -> Self {
+        self.regions_allowed.insert(region.into());
+        self
+    }
+
+    /// The inverse of [`RestrictionDetailsBuilder::add_allowed_region`] which specifies
+    /// [`Region`] which is not allowed for use when placing data.
+    ///
+    /// By default no [`Region`]s are denied.
+    ///
+    /// If this conflicts with `regions_allowed`
+    /// ([`RestrictionDetailsBuilder::add_allowed_region`]) (e.g. [`Region::XN`] is both
+    /// allowed and denied) the configuration is invalid and will be rejected.
+    ///
+    /// **NOTE:** This method can be called multiple times. All values will be utilized.
+    #[must_use]
+    pub fn add_denied_region<R: Into<Region>>(mut self, region: R) -> Self {
+        self.regions_denied.insert(region.into());
+        self
+    }
+
+    /// Performs validation checks, and builds the instance of [`RestrictionDetails`]
+    pub fn build(self) -> Result<RestrictionDetails, SeaplaneError> {
+        if (self
+            .providers_allowed
+            .intersection(&self.providers_denied)
+            .count()
+            + self
+                .regions_allowed
+                .intersection(&self.regions_denied)
+                .count())
+            > 0
+        {
+            return Err(SeaplaneError::ConflictingRequirements);
+        }
+
+        Ok(RestrictionDetails {
+            providers_allowed: self.providers_allowed,
+            providers_denied: self.providers_denied,
+            regions_allowed: self.regions_allowed,
+            regions_denied: self.regions_denied,
+        })
+    }
+}
 /// Defines limits on where data can be stored.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct RestrictionDetails {
     #[serde(default)]
-    pub regions_allowed: Vec<Region>,
+    pub regions_allowed: HashSet<Region>,
     #[serde(default)]
-    pub regions_denied: Vec<Region>,
+    pub regions_denied: HashSet<Region>,
     #[serde(default)]
-    pub providers_allowed: Vec<Provider>,
+    pub providers_allowed: HashSet<Provider>,
     #[serde(default)]
-    pub providers_denied: Vec<Provider>,
+    pub providers_denied: HashSet<Provider>,
+}
+
+impl RestrictionDetails {
+    /// Create a [`RestrictionDetailsBuilder`] to build a new `RestrcitionDetails`
+    pub fn builder() -> RestrictionDetailsBuilder {
+        RestrictionDetailsBuilder::default()
+    }
 }
 
 /// The response given from a range query
