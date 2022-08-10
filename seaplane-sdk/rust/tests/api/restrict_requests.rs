@@ -1,6 +1,6 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::{RestrictRequestBuilder, RestrictionDetails};
+use seaplane::api::v1::{RangeQueryContext, RestrictRequestBuilder, RestrictionDetails};
 use serde_json::json;
 
 // To be used with httpmock standalone server for dev testing
@@ -35,7 +35,7 @@ fn partial_build() -> RestrictRequestBuilder {
 #[test]
 fn get_restriction() {
     let resp_json = json!({
-        "api": "config",
+        "api": "Config",
         "directory": "Zm9vL2Jhcg",
         "details": {
             "regions_allowed": ["XE"],
@@ -43,12 +43,12 @@ fn get_restriction() {
             "providers_allowed": [],
             "providers_denied": []
         },
-        "state": "enforced"
+        "state": "Enforced"
     });
 
     let mock = MOCK_SERVER.mock(|w, t| {
         when(w, GET, "/v1/restrict/config/base64:Zm9vL2Jhcg/");
-        then(t, json!(resp_json));
+        then(t, resp_json.clone());
     });
 
     let req = partial_build()
@@ -109,4 +109,98 @@ fn delete_restriction() {
     mock.assert();
 
     assert!(resp.is_ok())
+}
+
+// GET /restrict/config/?from=base64:{from_key}
+#[test]
+fn get_api_page() {
+    let resp_json = json!({
+        "restrictions": [
+            {
+            "api": "Config",
+            "directory": "Zm9vL2Jhcg",
+            "details": {
+                "regions_allowed": ["XE"],
+                "regions_denied": [],
+                "providers_allowed": [],
+                "providers_denied": []
+            },
+            "state": "Enforced"
+        },
+        {
+            "api": "Config",
+            "directory": "Zm9vL2Jheg",
+            "details": {
+                "regions_allowed": ["XN"],
+                "regions_denied": [],
+                "providers_allowed": [],
+                "providers_denied": []
+            },
+            "state": "Enforced"
+        }
+    ]});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/restrict/config/");
+        then(t, resp_json.clone());
+    });
+
+    let context = RangeQueryContext::new();
+    let req = partial_build()
+        .api_range("config", context)
+        .build()
+        .unwrap();
+    let resp = req.get_page().unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+
+    assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
+}
+
+// GET /restrict/config/?from=base64:{from_key}
+#[test]
+fn get_all_page() {
+    let resp_json = json!({
+        "restrictions": [
+        {
+            "api": "Config",
+            "directory": "Zm9vL2Jhcg",
+            "details": {
+                "regions_allowed": ["XE"],
+                "regions_denied": [],
+                "providers_allowed": [],
+                "providers_denied": []
+            },
+            "state": "Enforced"
+        },
+        {
+            "api": "Locks",
+            "directory": "Zm9vL2Jheg",
+            "details": {
+                "regions_allowed": ["XN"],
+                "regions_denied": [],
+                "providers_allowed": [],
+                "providers_denied": []
+            },
+            "state": "Enforced"
+        }
+    ]});
+
+    let mock = MOCK_SERVER.mock(|w, t| {
+        when(w, GET, "/v1/restrict/");
+        then(t, resp_json.clone());
+    });
+
+    let context = RangeQueryContext::new();
+    let req = partial_build()
+        .all_range::<String>(None, context)
+        .build()
+        .unwrap();
+
+    let resp = req.get_page().unwrap();
+
+    // Ensure the endpoint was hit
+    mock.assert();
+    assert_eq!(resp, serde_json::from_value(resp_json).unwrap());
 }

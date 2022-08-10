@@ -136,7 +136,6 @@ impl RestrictRequest {
         }
     }
 
-    #[allow(dead_code)]
     // Internal method creating the URL for all range endpoints
     fn range_url(&self) -> Result<Url> {
         match &self.request.target {
@@ -204,6 +203,193 @@ impl RestrictRequest {
         map_api_error(resp)?
             .json::<Restriction>()
             .map_err(Into::into)
+    }
+
+    /// Returns a single page of restrictions, starting from `from_api` and
+    /// `from_key` combination.
+    ///
+    /// If more pages are desired, perform another range request using the
+    /// `next_api` and `next_key` values from the first request as the
+    /// `from_api` and `from_key` values of the following request, or use
+    /// `get_all_pages`.
+    ///
+    /// **NOTE:** This endpoint requires the `RequestTarget` be an `ApiRange` or
+    /// `AllRange`.
+    ///
+    /// # Examples
+    ///
+    /// ## Paging through single API restrictions
+    ///
+    /// ```no_run
+    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequestBuilder,RestrictRequest};
+    ///
+    /// let context = RangeQueryContext::new();
+    /// let req = RestrictRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .api_range("config", context)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.get_page().unwrap();
+    /// dbg!(&resp);
+    ///
+    /// // To get next page:
+    ///
+    /// if let Some(next_key) = resp.next_key {
+    ///     let mut context = RangeQueryContext::new();
+    ///     context.set_from(next_key);
+    ///
+    ///     let req = RestrictRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .api_range("config", context)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    ///     let next_page_resp = req.get_page().unwrap();
+    ///     dbg!(next_page_resp);
+    /// }
+    /// ```
+    ///
+    /// ## Paging through all restrictions
+    ///
+    /// ```no_run
+    /// use seaplane::api::v1::{Api, RangeQueryContext, RestrictRequestBuilder,RestrictRequest};
+    ///
+    /// let context = RangeQueryContext::new();
+    /// let req = RestrictRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .all_range::<String>(None, context)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.get_page().unwrap();
+    /// dbg!(&resp);
+    ///
+    /// // To get next page:
+    ///
+    /// if let Some(next_key) = resp.next_key {
+    ///     let api = resp.next_api.map(|a| a.to_string());
+    ///     let mut context = RangeQueryContext::new();
+    ///     context.set_from(next_key);
+    ///
+    ///     let req = RestrictRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .all_range::<String>(api, context)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    ///     let next_page_resp = req.get_page().unwrap();
+    ///     dbg!(next_page_resp);
+    /// }
+
+    /// ```
+    pub fn get_page(&self) -> Result<RestrictionRange> {
+        match &self.request.target {
+            None | Some(RequestTarget::Single { .. }) => {
+                Err(SeaplaneError::IncorrectRestrictRequestTarget)
+            }
+            Some(RequestTarget::ApiRange { .. }) => {
+                let url = self.range_url()?;
+
+                let resp = self
+                    .request
+                    .client
+                    .get(url)
+                    .bearer_auth(&self.request.token)
+                    .send()?;
+                map_api_error(resp)?
+                    .json::<RestrictionRange>()
+                    .map_err(Into::into)
+            }
+            Some(RequestTarget::AllRange { .. }) => {
+                let url = self.range_url()?;
+
+                let resp = self
+                    .request
+                    .client
+                    .get(url)
+                    .bearer_auth(&self.request.token)
+                    .send()?;
+                map_api_error(resp)?
+                    .json::<RestrictionRange>()
+                    .map_err(Into::into)
+            }
+        }
+    }
+
+    /// Returns all restrictions within for a tenant or API.
+    /// May perform multiple requests.
+    ///
+    /// If no directory is given, the root directory is used.
+    /// If no `from` is given, the range begins from the start.
+    ///
+    /// **NOTE:** This endpoint requires the `RequestTarget` be a `ApiRange` or
+    /// `AllRange`.
+    ///
+    /// # Examples
+    ///
+    /// ## Getting all restrictions for an API
+    ///
+    /// ```no_run
+    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequestBuilder,RestrictRequest};
+    ///
+    /// let context = RangeQueryContext::new();
+    /// let mut req = RestrictRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .api_range("config", context)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.get_all_pages().unwrap();
+    /// dbg!(resp);
+    /// ```
+    ///
+    /// ## Getting all restrictions across all APIs
+    ///
+    /// ```no_run
+    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequestBuilder,RestrictRequest};
+    ///
+    /// let context = RangeQueryContext::new();
+    /// let mut req = RestrictRequestBuilder::new()
+    ///     .token("abc123_token")
+    ///     .all_range::<String>(None, context)
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let resp = req.get_all_pages().unwrap();
+    /// dbg!(resp);
+    /// ```
+
+    //TODO: Replace this with a collect on a Pages/Entries iterator
+    pub fn get_all_pages(&mut self) -> Result<Vec<Restriction>> {
+        let mut pages = Vec::new();
+        loop {
+            let mut rr = self.get_page()?;
+            pages.append(&mut rr.restrictions);
+            if let Some(next_key) = rr.next_key {
+                match &mut self.request.target {
+                    None | Some(RequestTarget::Single { .. }) => {
+                        return Err(SeaplaneError::IncorrectRestrictRequestTarget);
+                    }
+                    Some(RequestTarget::ApiRange { api: _, context }) => {
+                        context.set_from(next_key);
+                    }
+                    Some(RequestTarget::AllRange {
+                        from_api: _,
+                        context,
+                    }) => {
+                        context.set_from(next_key);
+                        self.request.target = Some(RequestTarget::AllRange {
+                            from_api: rr.next_api.map(|a| a.to_string()),
+                            context: context.to_owned(),
+                        });
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        Ok(pages)
     }
 
     /// Sets a restriction for an API-directory combination

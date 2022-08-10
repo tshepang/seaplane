@@ -32,6 +32,16 @@ pub(crate) enum RequestTarget {
     },
 }
 
+/// The response given from a range query
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct RestrictionRange {
+    /// A lower bound of the next page of results
+    pub next_api: Option<Api>,
+    pub next_key: Option<RestrictedDirectory>,
+    /// The range of Restrictions
+    pub restrictions: Vec<Restriction>,
+}
+
 /// Contains information about the restricted API, directory, restriction
 /// details and state
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
