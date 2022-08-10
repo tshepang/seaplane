@@ -1,12 +1,12 @@
-Short help:
+Short help
 
 ```console
-$ seaplane restrict get -h
-seaplane-restrict-get [..]
-Retrieve information about a directory restriction
+$ seaplane restrict delete -h
+seaplane-restrict-delete [..]
+Delete a restriction on directory
 
 USAGE:
-    seaplane restrict get <API> <DIRECTORY> [OPTIONS]
+    seaplane restrict delete <API> <DIRECTORY> [OPTIONS]
 
 ARGS:
     <API>          The API of the restricted directory
@@ -32,15 +32,12 @@ OPTIONS:
 Long help:
 
 ```console
-$ seaplane restrict get --help
-seaplane-restrict-get [..]
-Get information about restrictions on a directory
-
-Directory will be displayed in base64 encoded format by default because they may contain
-arbitrary binary data. Use --decode to output the decoded values instead.
+$ seaplane restrict delete --help
+seaplane-restrict-delete [..]
+Delete a restriction on directory
 
 USAGE:
-    seaplane restrict get <API> <DIRECTORY> [OPTIONS]
+    seaplane restrict delete <API> <DIRECTORY> [OPTIONS]
 
 ARGS:
     <API>

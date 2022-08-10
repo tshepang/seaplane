@@ -771,3 +771,51 @@ fn seaplane_restrict_get() {
     // three is a crowd
     assert!(cli!("restrict get foo bar baz").is_err());
 }
+
+#[test]
+fn seaplane_restrict_delete() {
+    // requires API and directory
+    assert!(cli!("restrict delete").is_err());
+    assert!(cli!("restrict delete config").is_err());
+    assert!(cli!("restrict delete foo/bar").is_err());
+
+    // provide API and directory
+    assert!(cli!("restrict delete config foo").is_ok());
+
+    // three is a crowd
+    assert!(cli!("restrict delete foo bar baz").is_err());
+}
+
+#[test]
+fn seaplane_restrict_set() {
+    // requires API, directory and restriction details
+    assert!(cli!("restrict set").is_err());
+    assert!(cli!("restrict set config").is_err());
+    assert!(cli!("restrict set foo/bar").is_err());
+
+    // too many arguments
+    assert!(cli!("restrict set foo bar baz").is_err());
+
+    // wrong option
+    assert!(cli!("restrict set config foo --unknown-option").is_err());
+
+    // wrong option usage
+    assert!(cli!("restrict set config foo --provider not_a_provider").is_err());
+    assert!(cli!("restrict set config foo --region not_a_region").is_err());
+
+    // some happy paths
+    assert!(cli!("restrict set config foo --provider aws").is_ok());
+    assert!(cli!("restrict set config foo --exclude-provider azure").is_ok());
+    assert!(cli!("restrict set config foo --provider aws --exclude-provider azure").is_ok());
+    assert!(cli!("restrict set config foo --provider aws --exclude-provider azure --region xe --exclude-region xn").is_ok());
+    assert!(cli!("restrict set config foo --region xe").is_ok());
+    assert!(cli!("restrict set config foo --exclude-region xn").is_ok());
+    assert!(cli!("restrict set config foo --region xe --exclude-region xn").is_ok());
+    assert!(cli!("restrict set config foo --region EuRoPe --exclude-region Namerica").is_ok());
+
+    // lists everywhere
+    assert!(cli!("restrict set config foo --provider aws,digitalocean --exclude-provider azure,gcp --region xe,xs --exclude-region xn,xc").is_ok());
+
+    // default is all providers and regions allowed
+    assert!(cli!("restrict set config foo").is_ok());
+}

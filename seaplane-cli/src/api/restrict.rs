@@ -1,7 +1,10 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        v1::{RangeQueryContext, RestrictRequest, RestrictedDirectory, Restriction},
+        v1::{
+            RangeQueryContext, RestrictRequest, RestrictedDirectory, Restriction,
+            RestrictionDetails,
+        },
         AccessToken, ApiErrorKind,
     },
     error::SeaplaneError,
@@ -118,5 +121,12 @@ macro_rules! maybe_retry {
 impl RestrictReq {
     pub fn get_restriction(&mut self) -> Result<Restriction> {
         maybe_retry!(self.get_restriction())
+    }
+
+    pub fn set_restriction(&mut self, details: RestrictionDetails) -> Result<()> {
+        maybe_retry!(self.set_restriction(details))
+    }
+    pub fn delete_restriction(&mut self) -> Result<()> {
+        maybe_retry!(self.delete_restriction())
     }
 }

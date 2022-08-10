@@ -1,10 +1,17 @@
-mod common;
+pub mod common;
+mod delete;
 mod get;
+mod set;
 
-use clap::{value_parser, ArgMatches, Command};
+use clap::{ArgMatches, Command};
 
-pub use self::{common::SeaplaneRestrictCommonArgMatches, get::SeaplaneRestrictGet};
-use crate::{cli::CliCommand, printer::OutputFormat};
+pub use self::{
+    common::SeaplaneRestrictCommonArgMatches,
+    delete::SeaplaneRestrictDelete,
+    get::SeaplaneRestrictGet,
+    set::{SeaplaneRestrictSet, SeaplaneRestrictSetArgMatches},
+};
+use crate::cli::CliCommand;
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneRestrict;
@@ -15,12 +22,9 @@ impl SeaplaneRestrict {
             .about("Restrict the placement of data for Global Data Coordination API")
             .subcommand_required(true)
             .arg_required_else_help(true)
-            .arg(
-                arg!(--format =["FORMAT"=>"table"] global)
-                    .help("Change the output format")
-                    .value_parser(value_parser!(OutputFormat)),
-            )
             .subcommand(SeaplaneRestrictGet::command())
+            .subcommand(SeaplaneRestrictSet::command())
+            .subcommand(SeaplaneRestrictDelete::command())
     }
 }
 
@@ -31,6 +35,8 @@ impl CliCommand for SeaplaneRestrict {
     ) -> Option<(Box<dyn CliCommand>, &'a ArgMatches)> {
         match &matches.subcommand() {
             Some(("get", m)) => Some((Box::new(SeaplaneRestrictGet), m)),
+            Some(("set", m)) => Some((Box::new(SeaplaneRestrictSet), m)),
+            Some(("delete", m)) => Some((Box::new(SeaplaneRestrictDelete), m)),
             _ => None,
         }
     }

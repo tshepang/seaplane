@@ -27,9 +27,6 @@ impl SeaplaneRestrictGet {
             .arg(common::directory())
             .arg(common::base64())
             .args(common::display_args())
-            .mut_arg("no-header", |a| a.hide(true))
-            .mut_arg("only-keys", |a| a.hide(true))
-            .mut_arg("only-values", |a| a.hide(true))
     }
 }
 
