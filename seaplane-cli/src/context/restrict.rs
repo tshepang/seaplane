@@ -8,7 +8,8 @@ use seaplane::api::v1::{
 use crate::{
     cli::cmds::restrict::{
         common::{Provider, Region},
-        SeaplaneRestrictCommonArgMatches, SeaplaneRestrictSetArgMatches,
+        SeaplaneRestrictCommonArgMatches, SeaplaneRestrictListArgMatches,
+        SeaplaneRestrictSetArgMatches,
     },
     error::Result,
 };
@@ -24,7 +25,7 @@ pub struct RestrictCtx {
     pub directory: Option<RestrictedDirectory>,
     pub from_api: Option<String>,
     /// A base64 encoded key
-    pub from: Option<String>,
+    pub from_dir: Option<String>,
     /// Use actual API model since that is ultimately what we want
     pub providers_allowed: HashSet<ProviderModel>,
     /// Use actual API model since that is ultimately what we want
@@ -46,19 +47,29 @@ impl RestrictCtx {
     pub fn from_restrict_common(matches: &SeaplaneRestrictCommonArgMatches) -> Result<RestrictCtx> {
         let matches = matches.0;
         let base64 = matches.contains_id("base64");
-        let raw_api = matches.get_one::<String>("api").unwrap();
-        let raw_dir = matches.get_one::<String>("directory").unwrap();
+        let api = matches.get_one::<String>("api").unwrap();
+        let dir = matches.get_one::<String>("directory").unwrap();
 
         Ok(RestrictCtx {
-            api: Some(raw_api.into()),
+            api: Some(api.into()),
             directory: if base64 {
                 // Check that what the user passed really is valid base64
-                let _ = base64::decode_config(raw_dir, base64::URL_SAFE_NO_PAD)?;
-                Some(RestrictedDirectory::from_encoded(raw_dir))
+                let _ = base64::decode_config(dir, base64::URL_SAFE_NO_PAD)?;
+                Some(RestrictedDirectory::from_encoded(dir))
             } else {
-                Some(RestrictedDirectory::from_unencoded(raw_dir))
+                Some(RestrictedDirectory::from_unencoded(dir))
             },
             base64: true, // At this point all keys and values should be encoded as base64
+            ..RestrictCtx::default()
+        })
+    }
+
+    /// Builds a RestictCtx from ArgMatches
+    pub fn from_restrict_list(matches: &SeaplaneRestrictListArgMatches) -> Result<RestrictCtx> {
+        let api = matches.0.get_one::<String>("api").map(|a| a.to_owned());
+
+        Ok(RestrictCtx {
+            api,
             ..RestrictCtx::default()
         })
     }

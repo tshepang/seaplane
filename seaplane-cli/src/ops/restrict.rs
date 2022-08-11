@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display, io::Write};
+use std::{collections::BTreeSet, fmt::Display, io::Write};
 
 use seaplane::api::v1::restrict::{RestrictedDirectory as RestrictedDirectoryModel, Restriction};
 use serde::Serialize;
@@ -45,39 +45,62 @@ impl Output for Restriction {
 
     fn print_table(&self, ctx: &Ctx) -> Result<()> {
         let restrict_ctx = ctx.restrict_ctx.get_or_init();
-        let rd = RestrictedDirectory::new(self.directory.encoded());
+        let restrictions = Restrictions::from_model(vec![self.clone()]);
+        restrictions.impl_print_table(!restrict_ctx.no_header, restrict_ctx.decode)?;
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default, Clone, Serialize)]
+#[serde(transparent)]
+pub struct Restrictions {
+    inner: Vec<Restriction>,
+}
+
+impl Restrictions {
+    pub fn from_model(model: Vec<Restriction>) -> Self {
+        Self { inner: model }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Restriction> {
+        self.inner.iter()
+    }
+
+    // print a table in whatever state we happen to be in (encoded/unencoded)
+    fn impl_print_table(&self, headers: bool, decode: bool) -> Result<()> {
         let mut tw = TabWriter::new(Vec::new());
 
         // Helper function for displaying region and provider HashSets
-        fn join_hashset<S: Display>(hashset: HashSet<S>) -> String {
-            hashset
-                .iter()
-                .map(|s| s.to_string())
-                .collect::<Vec<String>>()
-                .join(", ")
+        fn join_set<S: Display>(set: BTreeSet<S>) -> String {
+            let mut vec = set.iter().map(|s| s.to_string()).collect::<Vec<String>>();
+            vec.sort();
+            vec.join(",")
         }
 
-        if !restrict_ctx.no_header {
+        if headers {
             writeln!(tw, "API\tDIRECTORY\tSTATE\tREGIONS ALLOWED\tREGIONS DENIED\tPROVIDERS ALLOWED\tPROVIDERS DENIED")?;
         }
 
-        write!(tw, "{}\t", self.api)?;
+        for restriction in self.iter() {
+            let rd = RestrictedDirectory::new(restriction.directory.encoded());
+            write!(tw, "{}\t", restriction.api)?;
 
-        if restrict_ctx.decode {
-            tw.write_all(&rd.directory.decoded()?)?;
-        } else {
-            write!(tw, "{}", rd.directory)?;
+            if decode {
+                tw.write_all(&rd.directory.decoded()?)?;
+            } else {
+                write!(tw, "{}", rd.directory)?;
+            }
+
+            writeln!(
+                tw,
+                "\t{}\t[{}]\t[{}]\t[{}]\t[{}]",
+                restriction.state,
+                join_set(restriction.details.regions_allowed.clone()),
+                join_set(restriction.details.regions_denied.clone()),
+                join_set(restriction.details.providers_allowed.clone()),
+                join_set(restriction.details.providers_denied.clone())
+            )?;
         }
-
-        writeln!(
-            tw,
-            "\t{}\t{}\t{}\t{}\t{}",
-            self.state,
-            join_hashset(self.details.regions_allowed.clone()),
-            join_hashset(self.details.regions_denied.clone()),
-            join_hashset(self.details.providers_allowed.clone()),
-            join_hashset(self.details.providers_denied.clone())
-        )?;
         tw.flush()?;
 
         let mut ptr = printer();
@@ -88,5 +111,17 @@ impl Output for Restriction {
         ptr.flush()?;
 
         Ok(())
+    }
+}
+
+impl Output for Restrictions {
+    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
+        cli_println!("{}", serde_json::to_string(self)?);
+        Ok(())
+    }
+
+    fn print_table(&self, ctx: &Ctx) -> Result<()> {
+        let restrict_ctx = ctx.restrict_ctx.get_or_init();
+        self.impl_print_table(!restrict_ctx.no_header, restrict_ctx.decode)
     }
 }

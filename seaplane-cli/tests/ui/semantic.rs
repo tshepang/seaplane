@@ -773,6 +773,18 @@ fn seaplane_restrict_get() {
 }
 
 #[test]
+fn seaplane_restrict_list() {
+    // requires no args or just API
+    assert!(cli!("restrict list").is_ok());
+    assert!(cli!("restrict list config").is_ok());
+    assert!(cli!("restrict list config foo/bar").is_err());
+
+    assert!(cli!("restrict list config -D").is_ok());
+
+    assert!(cli!("restrict list config --unknown_option").is_err());
+}
+
+#[test]
 fn seaplane_restrict_delete() {
     // requires API and directory
     assert!(cli!("restrict delete").is_err());

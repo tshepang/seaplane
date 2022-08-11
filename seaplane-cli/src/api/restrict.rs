@@ -3,7 +3,7 @@ use seaplane::{
     api::{
         v1::{
             RangeQueryContext, RestrictRequest, RestrictedDirectory, Restriction,
-            RestrictionDetails,
+            RestrictionDetails, RestrictionRange,
         },
         AccessToken, ApiErrorKind,
     },
@@ -23,9 +23,8 @@ pub struct RestrictReq {
     api_key: String,
     api: Option<String>,
     directory: Option<String>,
-    // TODO: Remove this when range queries are supported
-    #[allow(dead_code)]
-    range: Option<RangeQueryContext<RestrictedDirectory>>,
+    from_api: Option<String>,
+    from_dir: Option<String>,
     token: Option<AccessToken>,
     inner: Option<RestrictRequest>,
     identity_url: Option<Url>,
@@ -38,7 +37,8 @@ impl RestrictReq {
             api_key: ctx.args.api_key()?.into(),
             api: None,
             directory: None,
-            range: None,
+            from_api: None,
+            from_dir: None,
             token: None,
             inner: None,
             identity_url: ctx.identity_url.clone(),
@@ -53,6 +53,16 @@ impl RestrictReq {
 
     pub fn set_directory<S: Into<String>>(&mut self, dir: S) -> Result<()> {
         self.directory = Some(dir.into());
+        self.refresh_inner()
+    }
+
+    pub fn set_from_api<S: Into<String>>(&mut self, api: S) -> Result<()> {
+        self.from_api = Some(api.into());
+        self.refresh_inner()
+    }
+
+    pub fn set_from_dir<S: Into<String>>(&mut self, dir: S) -> Result<()> {
+        self.from_dir = Some(dir.into());
         self.refresh_inner()
     }
 
@@ -75,7 +85,20 @@ impl RestrictReq {
 
         match [&self.api, &self.directory] {
             [Some(api), Some(directory)] => builder = builder.single_restriction(api, directory),
-            // TODO: add support for range queries
+            [Some(api), None] => {
+                let mut context = RangeQueryContext::<RestrictedDirectory>::new();
+                if let Some(from_dir) = &self.from_dir {
+                    context.set_from(RestrictedDirectory::from_encoded(from_dir));
+                };
+                builder = builder.api_range(api, context)
+            }
+            [None, None] => {
+                let mut context = RangeQueryContext::<RestrictedDirectory>::new();
+                if let Some(from_dir) = &self.from_dir {
+                    context.set_from(RestrictedDirectory::from_encoded(from_dir));
+                };
+                builder = builder.all_range(self.from_api.clone(), context)
+            }
             [..] => {}
         };
 
@@ -128,5 +151,12 @@ impl RestrictReq {
     }
     pub fn delete_restriction(&mut self) -> Result<()> {
         maybe_retry!(self.delete_restriction())
+    }
+
+    pub fn get_page(&mut self) -> Result<RestrictionRange> {
+        maybe_retry!(self.get_page())
+    }
+    pub fn get_all_pages(&mut self) -> Result<Vec<Restriction>> {
+        maybe_retry!(self.get_all_pages())
     }
 }

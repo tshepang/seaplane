@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt};
+use std::{collections::BTreeSet, fmt};
 
 use serde::{
     de::{self, Deserializer},
@@ -121,10 +121,10 @@ impl_deser_from_str!(RestrictionState);
 /// A builder for creating a [`RestrictionDetails`] struct
 #[derive(Debug, Default)]
 pub struct RestrictionDetailsBuilder {
-    providers_allowed: HashSet<Provider>,
-    providers_denied: HashSet<Provider>,
-    regions_allowed: HashSet<Region>,
-    regions_denied: HashSet<Region>,
+    providers_allowed: BTreeSet<Provider>,
+    providers_denied: BTreeSet<Provider>,
+    regions_allowed: BTreeSet<Region>,
+    regions_denied: BTreeSet<Region>,
 }
 
 impl RestrictionDetailsBuilder {
@@ -213,13 +213,13 @@ impl RestrictionDetailsBuilder {
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct RestrictionDetails {
     #[serde(default)]
-    pub regions_allowed: HashSet<Region>,
+    pub regions_allowed: BTreeSet<Region>,
     #[serde(default)]
-    pub regions_denied: HashSet<Region>,
+    pub regions_denied: BTreeSet<Region>,
     #[serde(default)]
-    pub providers_allowed: HashSet<Provider>,
+    pub providers_allowed: BTreeSet<Provider>,
     #[serde(default)]
-    pub providers_denied: HashSet<Provider>,
+    pub providers_denied: BTreeSet<Provider>,
 }
 
 impl RestrictionDetails {

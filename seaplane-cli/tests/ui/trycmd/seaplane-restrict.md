@@ -23,6 +23,7 @@ SUBCOMMANDS:
     delete    Delete a restriction on directory [aliases: del, remove, rm]
     get       Retrieve information about a directory restriction [aliases: show]
     help      Print this message or the help of the given subcommand(s)
+    list      List restrictions in an API, or across all APIs [aliases: ls]
     set       Set a restriction [aliases: put]
 
 ```
@@ -51,6 +52,7 @@ SUBCOMMANDS:
     delete    Delete a restriction on directory [aliases: del, remove, rm]
     get       Retrieve information about a directory restriction [aliases: show]
     help      Print this message or the help of the given subcommand(s)
+    list      List restrictions in an API, or across all APIs [aliases: ls]
     set       Set a restriction [aliases: put]
 
 ```
@@ -115,6 +117,8 @@ SUBCOMMANDS:
             Retrieve information about a directory restriction [aliases: show]
     help
             Print this message or the help of the given subcommand(s)
+    list
+            List restrictions in an API, or across all APIs [aliases: ls]
     set
             Set a restriction [aliases: put]
 

@@ -10,7 +10,7 @@ fn restrict_get() {
         "api": "Config",
         "directory": "Zm9vL2Jhcg",
         "details": {
-            "regions_allowed": ["XE"],
+            "regions_allowed": ["XE","XN"],
             "regions_denied": [],
             "providers_allowed": [],
             "providers_denied": []
@@ -20,11 +20,11 @@ fn restrict_get() {
 
     static ENCODED: &str = "\
 API     DIRECTORY   STATE     REGIONS ALLOWED  REGIONS DENIED  PROVIDERS ALLOWED  PROVIDERS DENIED
-Config  Zm9vL2Jhcg  Enforced  XE";
+Config  Zm9vL2Jhcg  Enforced  [XE,XN]          []              []                 []";
 
     static DECODED: &str = "\
 API     DIRECTORY  STATE     REGIONS ALLOWED  REGIONS DENIED  PROVIDERS ALLOWED  PROVIDERS DENIED
-Config  foo/bar    Enforced  XE";
+Config  foo/bar    Enforced  [XE,XN]          []              []                 []";
 
     let mut mock = MOCK_SERVER.mock(|w, t| {
         when_json(w, GET, "/v1/restrict/config/base64:Zm9vL2Jhcg/");
@@ -63,6 +63,89 @@ Config  foo/bar    Enforced  XE";
     assert!(res.is_ok());
     mock.assert_hits(4);
     assert_eq!(printer().as_string().trim(), resp.to_string());
+    printer().clear();
+
+    mock.delete();
+}
+
+#[test]
+fn restrict_list() {
+    let resp = json!([
+        {
+            "api": "Config",
+            "directory": "Zm9vL2Jhcg",
+            "details": {
+                "regions_allowed": ["XE","XN"],
+                "regions_denied": [],
+                "providers_allowed": [],
+                "providers_denied": []
+            },
+            "state": "Enforced"
+        },
+        {
+            "api": "Config",
+            "directory": "Zm9vL2Jheg",
+            "details": {
+                "regions_allowed": ["XN"],
+                "regions_denied": [],
+                "providers_allowed": [],
+                "providers_denied": []
+            },
+            "state": "Enforced"
+        },
+    ]);
+    let api_resp = json!({ "restrictions": resp });
+
+    static ENCODED: &str = "\
+API     DIRECTORY   STATE     REGIONS ALLOWED  REGIONS DENIED  PROVIDERS ALLOWED  PROVIDERS DENIED
+Config  Zm9vL2Jhcg  Enforced  [XE,XN]          []              []                 []
+Config  Zm9vL2Jheg  Enforced  [XN]             []              []                 []";
+
+    static DECODED: &str = "\
+API     DIRECTORY  STATE     REGIONS ALLOWED  REGIONS DENIED  PROVIDERS ALLOWED  PROVIDERS DENIED
+Config  foo/bar    Enforced  [XE,XN]          []              []                 []
+Config  foo/baz    Enforced  [XN]             []              []                 []";
+
+    let mut mock = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/restrict/config/");
+        then(t, &api_resp);
+    });
+
+    let res = test_main(&cli!("restrict list config"), MOCK_SERVER.base_url());
+    println!("{:?}", res);
+    assert!(res.is_ok());
+    mock.assert_hits(1);
+    assert_eq!(printer().as_string().trim(), ENCODED);
+    printer().clear();
+
+    let res = test_main(
+        &cli!("restrict list config --decode"),
+        MOCK_SERVER.base_url(),
+    );
+    assert!(res.is_ok());
+    mock.assert_hits(2);
+    assert_eq!(printer().as_string().trim(), DECODED);
+    printer().clear();
+
+    let res = test_main(
+        &cli!("restrict list config --format json"),
+        MOCK_SERVER.base_url(),
+    );
+    assert!(res.is_ok());
+    mock.assert_hits(3);
+    assert_eq!(printer().as_string().trim(), resp.to_string());
+    printer().clear();
+
+    mock.delete();
+
+    let mut mock = MOCK_SERVER.mock(|w, t| {
+        when_json(w, GET, "/v1/restrict/");
+        then(t, &api_resp);
+    });
+    let res = test_main(&cli!("restrict list"), MOCK_SERVER.base_url());
+    assert!(res.is_ok());
+    mock.assert_hits(1);
+    assert_eq!(printer().as_string().trim(), ENCODED);
     printer().clear();
 
     mock.delete();

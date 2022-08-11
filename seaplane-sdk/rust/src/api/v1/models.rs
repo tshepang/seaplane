@@ -25,7 +25,18 @@ pub(crate) use impl_deser_from_str;
 
 /// A backing cloud provider used to restrict data placement
 #[derive(
-    Clone, Copy, Debug, Hash, Serialize, Eq, PartialEq, strum::Display, EnumString, EnumVariantNames,
+    Clone,
+    Copy,
+    Debug,
+    Hash,
+    Serialize,
+    Eq,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    strum::Display,
+    EnumString,
+    EnumVariantNames,
 )]
 #[allow(clippy::upper_case_acronyms)]
 #[strum(ascii_case_insensitive)]
@@ -56,7 +67,9 @@ mod test_provider {
 }
 
 /// A regulatory region used to restrict data placement
-#[derive(strum::Display, EnumString, Debug, Serialize, Hash, Eq, PartialEq, Copy, Clone)]
+#[derive(
+    strum::Display, EnumString, Debug, Serialize, Hash, Eq, PartialEq, PartialOrd, Ord, Copy, Clone,
+)]
 #[allow(clippy::upper_case_acronyms)]
 #[strum(ascii_case_insensitive)]
 #[non_exhaustive]
