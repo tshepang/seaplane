@@ -6,7 +6,7 @@ use seaplane::api::v1::formations::{
 
 use crate::cli::validator::validate_flight_name;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Endpoint {
     src: EndpointSrc,
     dst: EndpointDst,
@@ -46,7 +46,7 @@ impl FromStr for Endpoint {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum EndpointSrc {
     Http(String),
     Tcp(u16),
@@ -96,7 +96,7 @@ impl FromStr for EndpointSrc {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EndpointDst {
     flight: String,
     port: u16,

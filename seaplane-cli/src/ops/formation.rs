@@ -445,33 +445,33 @@ impl FormationConfiguration {
 // Possible Symbols?: ◯ ◉ ◍ ◐ ● ○ ◯
 const SYM: char = '◉';
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize)]
 pub struct FormationStatus {
     name: String,
     status: OpStatus,
     configurations: FormationConfigStatuses,
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Serialize)]
+#[derive(Debug, Default, Eq, PartialEq, Clone, Serialize)]
 #[serde(transparent)]
 pub struct FormationConfigStatuses {
     inner: Vec<FormationConfigStatus>,
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Serialize)]
+#[derive(Debug, Default, Eq, PartialEq, Clone, Serialize)]
 pub struct FormationConfigStatus {
     status: OpStatus,
     uuid: Uuid,
     flights: FlightStatuses,
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Serialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize)]
 #[serde(transparent)]
 pub struct FlightStatuses {
     inner: Vec<FlightStatus>,
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct FlightStatus {
     name: String,
     running: u64,
@@ -483,7 +483,7 @@ pub struct FlightStatus {
     maximum: Option<u64>,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, strum::EnumString, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, strum::EnumString, Serialize)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum OpStatus {
     Up,

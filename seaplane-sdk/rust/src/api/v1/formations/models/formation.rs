@@ -11,7 +11,7 @@ use crate::{
 };
 
 /// Response from `GET /formations/NAME` which contains metadata about the Formation itself.
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct FormationMetadata {
     /// The URL where the Formation is exposed at
     pub url: String,
@@ -258,7 +258,7 @@ impl FormationConfigurationBuilder {
 /// Represents a single configuration of a Formation. A Formation may have many
 /// [`ActiveConfiguration`]s at once which will have traffic balanced between them based on their
 /// `traffic_weight` values.
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct FormationConfiguration {
     #[serde(default)]
     affinity: Vec<String>,
@@ -614,7 +614,7 @@ impl FlightBuilder {
 /// Flights are logically a single container. However, Seaplane spins up many actual backing
 /// *container instances* around the globe (with your Formation's `regions_allowed` map) and load
 /// balances traffic between them.
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Flight {
     /// Returns the human readable name of the [`Flight`], which is unique with a Formation
     name: String,
@@ -736,7 +736,7 @@ impl Flight {
 }
 
 /// The response from the `GET /formations` API call ([`FormationsRequest::list_names`])
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[serde(transparent)]
 pub struct FormationNames {
     inner: Vec<FormationName>,
@@ -751,7 +751,7 @@ impl FormationNames {
 
 /// A single Formation name in the response from the `GET /formations` API call
 /// ([`FormationsRequest::list_names`])
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[serde(transparent)]
 pub struct FormationName {
     name: String,

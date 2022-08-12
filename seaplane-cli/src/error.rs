@@ -289,7 +289,7 @@ impl CliErrorKind {
     fn print(&self) {
         use CliErrorKind::*;
 
-        match &*self {
+        match self {
             OneOff(msg) => {
                 cli_eprintln!("{msg}");
             }

@@ -178,7 +178,7 @@ impl ToDisk for RawConfig {
 }
 
 #[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
-#[cfg_attr(test, derive(PartialEq))]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawSeaplaneConfig {
     #[serde(default)]
@@ -186,7 +186,7 @@ pub struct RawSeaplaneConfig {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-#[cfg_attr(test, derive(PartialEq))]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawAccountConfig {
     #[serde(default)]
@@ -194,7 +194,7 @@ pub struct RawAccountConfig {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-#[cfg_attr(test, derive(PartialEq))]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawApiConfig {
     #[serde(default)]

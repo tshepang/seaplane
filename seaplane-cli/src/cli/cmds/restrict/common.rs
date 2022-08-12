@@ -38,7 +38,7 @@ multiple times.";
 // NOTE: we can't use `derive(clap::ValueEnum)` because it of how it derives the to_possible_value
 // which appears to unconditionally use shish-ka-bob case which we don't want.
 /// We provide a shim between the Seaplane Provider so we can do some additional UX work like 'all'
-#[derive(Debug, Copy, Clone, PartialEq, strum::EnumString)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, strum::EnumString)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum Provider {
     Aws,
@@ -105,7 +105,7 @@ impl<'a> Into<ProviderModel> for &'a Provider {
 // The Compute API only uses the XA, XC, XE values, but those are the least user friendly.
 /// We provide a shim between the Seaplane Region so we can do some additional UX work
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, Copy, Clone, PartialEq, strum::EnumString)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, strum::EnumString)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum Region {
     XA,

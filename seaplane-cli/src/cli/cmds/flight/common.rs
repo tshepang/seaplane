@@ -30,7 +30,7 @@ multiple times.";
 // We have to go through this routine of re-implementing to get around Rust's rule about not being
 // allowed to implement traits on types not defined in the local crate.
 /// Supported Architectures
-#[derive(Debug, Copy, Clone, PartialEq, strum::EnumString, clap::ValueEnum)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, strum::EnumString, clap::ValueEnum)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum Architecture {
     Amd64,

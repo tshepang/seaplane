@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::api::v1::{Provider, Region};
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum ContainerStatus {
     Started,

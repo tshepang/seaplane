@@ -288,7 +288,7 @@ fn validate_domain(input: &str) -> Result<(), ImageReferenceError> {
     Ok(())
 }
 
-#[derive(Debug, Error, PartialEq)]
+#[derive(Debug, Error, Eq, PartialEq)]
 pub enum ImageReferenceError {
     #[error("invalid reference format")]
     ErrReferenceInvalidFormat,

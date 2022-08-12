@@ -45,7 +45,7 @@ impl PartialEq for ApiError {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum ApiErrorKind {
     /// HTTP Status Code that isn't implemented yet

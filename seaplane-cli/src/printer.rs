@@ -58,7 +58,15 @@ impl Drop for Pb {
 }
 
 #[derive(
-    strum::EnumString, strum::Display, Deserialize, Copy, Clone, Debug, PartialEq, clap::ValueEnum,
+    strum::EnumString,
+    strum::Display,
+    Deserialize,
+    Copy,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    clap::ValueEnum,
 )]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum OutputFormat {
@@ -73,7 +81,7 @@ impl Default for OutputFormat {
 }
 
 #[derive(
-    strum::Display, strum::EnumString, Copy, Clone, Debug, PartialEq, Serialize, clap::ValueEnum,
+    strum::Display, strum::EnumString, Copy, Clone, Debug, PartialEq, Eq, Serialize, clap::ValueEnum,
 )]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum ColorChoice {
