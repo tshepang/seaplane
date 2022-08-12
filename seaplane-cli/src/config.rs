@@ -49,7 +49,7 @@ pub trait ExtendConfig {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-#[cfg_attr(test, derive(PartialEq))]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawConfig {
     #[serde(skip)]

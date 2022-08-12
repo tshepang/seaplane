@@ -10,7 +10,7 @@ on:
       - '!doc/**'
       - '!share/**'
       - "!LICENSE"
-    workflow_dispatch:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,22 +21,22 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: seaplane-sdk/python    
+        working-directory: seaplane-sdk/python
     strategy:
       matrix:
         python-version: ['3.8', '3.9', '3.10']
         poetry-version: ['1.1.13']
-    name: Python ${{ matrix.python-version }}    
+    name: Python ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-        architecture: x64                
+        architecture: x64
     - uses: abatilo/actions-poetry@v2.0.0
       with:
-        poetry-version: ${{ matrix.poetry-version }}    
-    - run: poetry install        
+        poetry-version: ${{ matrix.poetry-version }}
+    - run: poetry install
     - run: poetry run nox -s fmt_check
     - run: poetry run nox -s lint
     - run: poetry run nox -s type_check
@@ -45,20 +45,20 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: seaplane-sdk/python    
+        working-directory: seaplane-sdk/python
     strategy:
       matrix:
         python-version: ['3.8', '3.9', '3.10']
         poetry-version: ['1.1.13']
-    name: Python ${{ matrix.python-version }}    
+    name: Python ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-        architecture: x64                
+        architecture: x64
     - uses: abatilo/actions-poetry@v2.0.0
       with:
-        poetry-version: ${{ matrix.poetry-version }}    
-    - run: poetry install        
+        poetry-version: ${{ matrix.poetry-version }}
+    - run: poetry install
     - run: poetry run nox -s test -vv

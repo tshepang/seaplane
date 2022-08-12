@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - 'seaplane-sdk/rust/**'
+      - .github/workflows/pr-sdk-rust.yml
+      - .github/workflows/workflow-rust-tests.yml
       - '!**.md'
       - '!docs/**'
       - '!share/**'
@@ -19,12 +21,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  call-pr-workflow:
-    uses: ./.github/workflows/workflow-pr.yml
+  run-rust-cli-tests:
+    uses: ./.github/workflows/workflow-rust-tests.yml
     with:
-      manifest_path: ./seaplane-sdk/rust/Cargo.toml
-
-  call-api-test-workflow:
-    uses: ./.github/workflows/workflow-api-test.yml
-    with:
-      manifest_path: ./seaplane-sdk/rust/Cargo.toml
+      test_sdk: true
+      test_cli: false
