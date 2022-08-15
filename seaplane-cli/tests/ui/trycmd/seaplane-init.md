@@ -2,11 +2,11 @@ Short help message with `-h`:
 
 ```console
 $ seaplane init -h
-seaplane-init [..]
+seaplane[EXE]-init [..]
 Create the Seaplane directory structure at the appropriate locations
 
 USAGE:
-    seaplane init [OPTIONS]
+    seaplane[EXE] init [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -26,11 +26,11 @@ The long help message with `--help`:
 
 ```console
 $ seaplane init --help
-seaplane-init [..]
+seaplane[EXE]-init [..]
 Create the Seaplane directory structure at the appropriate locations
 
 USAGE:
-    seaplane init [OPTIONS]
+    seaplane[EXE] init [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>

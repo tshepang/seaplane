@@ -21,10 +21,7 @@ impl Endpoint {
         }
     }
     pub fn value(&self) -> EndpointValueModel {
-        EndpointValueModel {
-            flight_name: self.dst.flight.clone(),
-            port: self.dst.port,
-        }
+        EndpointValueModel { flight_name: self.dst.flight.clone(), port: self.dst.port }
     }
 }
 
@@ -117,10 +114,7 @@ impl FromStr for EndpointDst {
             .parse::<u16>()
             .map_err(|_| ("invalid port number").to_string())?;
 
-        Ok(Self {
-            flight: flight.to_string(),
-            port,
-        })
+        Ok(Self { flight: flight.to_string(), port })
     }
 }
 
@@ -135,10 +129,7 @@ mod endpoint_test {
             ep,
             Endpoint {
                 src: EndpointSrc::Http("/foo/bar".into()),
-                dst: EndpointDst {
-                    flight: "baz".into(),
-                    port: 1234
-                }
+                dst: EndpointDst { flight: "baz".into(), port: 1234 }
             }
         )
     }
@@ -150,10 +141,7 @@ mod endpoint_test {
             ep,
             Endpoint {
                 src: EndpointSrc::Http("/foo/bar".into()),
-                dst: EndpointDst {
-                    flight: "baz".into(),
-                    port: 1234
-                }
+                dst: EndpointDst { flight: "baz".into(), port: 1234 }
             }
         )
     }
@@ -193,10 +181,7 @@ mod endpoint_test {
             ep,
             Endpoint {
                 src: EndpointSrc::Tcp(1234),
-                dst: EndpointDst {
-                    flight: "baz".into(),
-                    port: 4321
-                }
+                dst: EndpointDst { flight: "baz".into(), port: 4321 }
             }
         )
     }

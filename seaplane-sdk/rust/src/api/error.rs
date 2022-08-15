@@ -9,12 +9,7 @@ use crate::error::Result;
 pub fn map_api_error(resp: Response) -> Result<Response> {
     if let Err(source) = resp.error_for_status_ref() {
         let kind = source.status().into();
-        return Err(ApiError {
-            message: resp.text()?,
-            source,
-            kind,
-        }
-        .into());
+        return Err(ApiError { message: resp.text()?, source, kind }.into());
     }
     Ok(resp)
 }
@@ -28,21 +23,15 @@ pub struct ApiError {
 }
 
 impl fmt::Display for ApiError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.message) }
 }
 
 impl Error for ApiError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(&self.source)
-    }
+    fn source(&self) -> Option<&(dyn Error + 'static)> { Some(&self.source) }
 }
 
 impl PartialEq for ApiError {
-    fn eq(&self, other: &Self) -> bool {
-        self.kind == other.kind
-    }
+    fn eq(&self, other: &Self) -> bool { self.kind == other.kind }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

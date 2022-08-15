@@ -2,7 +2,7 @@ Short help
 
 ```console
 $ seaplane restrict delete -h
-seaplane-restrict-delete [..]
+seaplane[EXE]-restrict-delete [..]
 Delete a restriction on directory
 
 USAGE:
@@ -33,7 +33,7 @@ Long help:
 
 ```console
 $ seaplane restrict delete --help
-seaplane-restrict-delete [..]
+seaplane[EXE]-restrict-delete [..]
 Delete a restriction on directory
 
 USAGE:

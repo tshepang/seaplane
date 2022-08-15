@@ -41,17 +41,11 @@ pub struct Id {
 }
 
 impl Default for Id {
-    fn default() -> Self {
-        Self {
-            inner: rand::thread_rng().gen(),
-        }
-    }
+    fn default() -> Self { Self { inner: rand::thread_rng().gen() } }
 }
 
 impl Id {
-    pub fn new() -> Self {
-        Self::default()
-    }
+    pub fn new() -> Self { Self::default() }
 }
 
 impl fmt::Display for Id {
@@ -61,7 +55,5 @@ impl fmt::Display for Id {
 }
 
 impl fmt::Debug for Id {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Id [ {} ]", self)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "Id [ {} ]", self) }
 }

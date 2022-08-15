@@ -188,13 +188,10 @@ macro_rules! maybe_retry {
         res.map_err(CliError::from)
     }};
 }
-//
 // Wrapped FormationsRequest methods to handle expired token retries
 //
 impl FormationsReq {
-    pub fn list_names(&mut self) -> Result<FormationNamesModel> {
-        maybe_retry!(self.list_names())
-    }
+    pub fn list_names(&mut self) -> Result<FormationNamesModel> { maybe_retry!(self.list_names()) }
 
     pub fn get_metadata(&mut self) -> Result<FormationMetadataModel> {
         maybe_retry!(self.get_metadata())
@@ -209,15 +206,11 @@ impl FormationsReq {
     pub fn clone_from(&mut self, source_name: &str, active: bool) -> Result<Vec<Uuid>> {
         maybe_retry!(self.clone_from(source_name, active))
     }
-    pub fn delete(&mut self, force: bool) -> Result<Vec<Uuid>> {
-        maybe_retry!(self.delete(force))
-    }
+    pub fn delete(&mut self, force: bool) -> Result<Vec<Uuid>> { maybe_retry!(self.delete(force)) }
     pub fn get_active_configurations(&mut self) -> Result<ActiveConfigurationsModel> {
         maybe_retry!(self.get_active_configurations())
     }
-    pub fn stop(&mut self) -> Result<()> {
-        maybe_retry!(self.stop())
-    }
+    pub fn stop(&mut self) -> Result<()> { maybe_retry!(self.stop()) }
     pub fn set_active_configurations(
         &mut self,
         configs: &ActiveConfigurationsModel,

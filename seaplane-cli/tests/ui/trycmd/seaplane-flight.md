@@ -3,11 +3,11 @@ Be default, `seaplane flight` will display the help text:
 ```console
 $ seaplane flight
 ? 2
-seaplane-flight [..]
+seaplane[EXE]-flight [..]
 Operate on local Flight Plans which define "Flights" (logical containers), and are then referenced by Formations
 
 USAGE:
-    seaplane flight [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] flight [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]

@@ -61,10 +61,7 @@ fn metadata_put() {
     assert_eq!(printer().as_string().trim(), "Success");
     printer().clear();
 
-    let res = test_main(
-        &cli!("metadata set Zm9v YmFy --base64"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("metadata set Zm9v YmFy --base64"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), "Success");
@@ -91,10 +88,7 @@ fn metadata_list_root() {
     let res = test_main(&cli!("metadata list -D"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(
-        printer().as_string().trim(),
-        "KEY: foo\nVALUE:\nbar\n---\nKEY: baz\nVALUE:\nbuz"
-    );
+    assert_eq!(printer().as_string().trim(), "KEY: foo\nVALUE:\nbar\n---\nKEY: baz\nVALUE:\nbuz");
     printer().clear();
     mock.delete();
 }
@@ -115,16 +109,10 @@ fn metadata_list_dir() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("metadata list UGVxdW9kIQ --base64 -D"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("metadata list UGVxdW9kIQ --base64 -D"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(
-        printer().as_string().trim(),
-        "KEY: foo\nVALUE:\nbar\n---\nKEY: baz\nVALUE:\nbuz"
-    );
+    assert_eq!(printer().as_string().trim(), "KEY: foo\nVALUE:\nbar\n---\nKEY: baz\nVALUE:\nbuz");
     printer().clear();
     mock.delete();
 }
@@ -136,10 +124,7 @@ fn metadata_list_dir_json() {
         then(t, &multi_kv_resp());
     });
 
-    let res = test_main(
-        &cli!("metadata list --format json Pequod!"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("metadata list --format json Pequod!"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -149,10 +134,7 @@ fn metadata_list_dir_json() {
 
     printer().clear();
 
-    let res = test_main(
-        &cli!("metadata list -D --format json Pequod!"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("metadata list -D --format json Pequod!"), MOCK_SERVER.base_url());
     assert!(!res.is_ok());
     printer().clear();
     mock.delete();
@@ -165,10 +147,7 @@ fn metadata_list_root_from() {
         then(t, &multi_kv_resp());
     });
 
-    let res = test_main(
-        &cli!("metadata list --from Pequod!"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("metadata list --from Pequod!"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -177,10 +156,7 @@ fn metadata_list_root_from() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("metadata list -f UGVxdW9kIQ --base64"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("metadata list -f UGVxdW9kIQ --base64"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(
@@ -199,10 +175,7 @@ fn metadata_list_dir_from() {
         then(t, &multi_kv_resp());
     });
 
-    let res = test_main(
-        &cli!("metadata list Queequeg --from Pequod!"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("metadata list Queequeg --from Pequod!"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -237,9 +210,6 @@ fn metadata_delete() {
     let res = test_main(&cli!("metadata delete foo"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(
-        printer().as_string().trim(),
-        "Removed Zm9v\n\nSuccessfully removed 1 item"
-    );
+    assert_eq!(printer().as_string().trim(), "Removed Zm9v\n\nSuccessfully removed 1 item");
     printer().clear();
 }

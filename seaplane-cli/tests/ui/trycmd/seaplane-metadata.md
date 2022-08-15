@@ -3,11 +3,11 @@ With no args:
 ```console
 $ seaplane metadata
 ? 2
-seaplane-metadata [..]
+seaplane[EXE]-metadata [..]
 Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:
-    seaplane metadata [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] metadata [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -33,11 +33,11 @@ The short help:
 
 ```console
 $ seaplane metadata -h
-seaplane-metadata [..]
+seaplane[EXE]-metadata [..]
 Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:
-    seaplane metadata [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] metadata [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -63,11 +63,11 @@ The long help:
 
 ```console
 $ seaplane metadata --help
-seaplane-metadata [..]
+seaplane[EXE]-metadata [..]
 Operate on metadata key-value pairs using the Global Data Coordination API
 
 USAGE:
-    seaplane metadata [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] metadata [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>

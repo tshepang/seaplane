@@ -2,11 +2,11 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight list -h
-seaplane-flight-list [..]
+seaplane[EXE]-flight-list [..]
 List all local Flight Plans
 
 USAGE:
-    seaplane flight list [OPTIONS]
+    seaplane[EXE] flight list [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -26,11 +26,11 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight list --help
-seaplane-flight-list [..]
+seaplane[EXE]-flight-list [..]
 List all local Flight Plans
 
 USAGE:
-    seaplane flight list [OPTIONS]
+    seaplane[EXE] flight list [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>

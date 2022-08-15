@@ -16,7 +16,8 @@ pub struct SeaplaneFlightDelete;
 impl SeaplaneFlightDelete {
     pub fn command() -> Command<'static> {
         let validator = |s: &str| validate_name_id(validate_flight_name, s);
-        // TODO: add a --local[-only] flag or similar that combines with --force to only remove local
+        // TODO: add a --local[-only] flag or similar that combines with --force to only remove
+        // local
         Command::new("delete")
             .visible_aliases(&["del", "remove", "rm"])
             .override_usage("seaplane flight delete <NAME|ID> [OPTIONS]")

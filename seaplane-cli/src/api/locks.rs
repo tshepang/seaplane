@@ -104,7 +104,8 @@ impl LocksReq {
         Ok(&self.token.as_ref().unwrap().token)
     }
 
-    /// Gets a page of held locks from `dir` if present (or the root) if not, optionally starting from `next_key`
+    /// Gets a page of held locks from `dir` if present (or the root) if not, optionally starting
+    /// from `next_key`
     pub fn get_page(
         &mut self,
         next_key: Option<LockName>,
@@ -172,20 +173,13 @@ macro_rules! maybe_retry {
         res.map_err(CliError::from)
     }};
 }
-//
 // Wrapped LocksRequest methods to handle expired token retries
 //
 impl LocksReq {
     pub fn acquire(&mut self, ttl: u32, client_id: &str) -> Result<HeldLockModel> {
         maybe_retry!(self.acquire(ttl, client_id))
     }
-    pub fn release(&mut self) -> Result<()> {
-        maybe_retry!(self.release())
-    }
-    pub fn renew(&mut self, ttl: u32) -> Result<()> {
-        maybe_retry!(self.renew(ttl))
-    }
-    pub fn get_lock_info(&mut self) -> Result<LockInfoModel> {
-        maybe_retry!(self.get_lock_info())
-    }
+    pub fn release(&mut self) -> Result<()> { maybe_retry!(self.release()) }
+    pub fn renew(&mut self, ttl: u32) -> Result<()> { maybe_retry!(self.renew(ttl)) }
+    pub fn get_lock_info(&mut self) -> Result<LockInfoModel> { maybe_retry!(self.get_lock_info()) }
 }

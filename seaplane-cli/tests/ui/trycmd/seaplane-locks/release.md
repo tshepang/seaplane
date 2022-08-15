@@ -2,11 +2,11 @@ Short help:
 
 ```console
 $ seaplane locks release -h
-seaplane-locks-release [..]
+seaplane[EXE]-locks-release [..]
 Attempt to release a lock
 
 USAGE:
-    seaplane locks release [OPTIONS] --lock-id <STRING> <LOCK_NAME>
+    seaplane[EXE] locks release [OPTIONS] --lock-id <STRING> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>    The name of the lock
@@ -30,11 +30,11 @@ Long help:
 
 ```console
 $ seaplane locks release --help
-seaplane-locks-release [..]
+seaplane[EXE]-locks-release [..]
 Attempt to release a lock
 
 USAGE:
-    seaplane locks release [OPTIONS] --lock-id <STRING> <LOCK_NAME>
+    seaplane[EXE] locks release [OPTIONS] --lock-id <STRING> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>

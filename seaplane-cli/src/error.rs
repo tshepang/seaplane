@@ -5,7 +5,10 @@ use std::{
     result::Result as StdResult,
 };
 
-use seaplane::{api::v1::ImageReferenceError, api::ApiErrorKind, error::SeaplaneError};
+use seaplane::{
+    api::{v1::ImageReferenceError, ApiErrorKind},
+    error::SeaplaneError,
+};
 
 use crate::{
     log::{log_level, LogLevel},
@@ -105,27 +108,20 @@ pub struct CliError {
 
 impl CliError {
     pub fn bail(msg: &'static str) -> Self {
-        Self {
-            kind: CliErrorKind::UnknownWithContext(msg),
-            ..Default::default()
-        }
+        Self { kind: CliErrorKind::UnknownWithContext(msg), ..Default::default() }
     }
 }
 
 impl Context for CliError {
     fn color_context<S: Into<String>>(mut self, color: Color, msg: S) -> Self {
-        self.context.push(ColorString {
-            msg: msg.into(),
-            color: Some(color),
-        });
+        self.context
+            .push(ColorString { msg: msg.into(), color: Some(color) });
         self
     }
 
     fn context<S: Into<String>>(mut self, msg: S) -> Self {
-        self.context.push(ColorString {
-            msg: msg.into(),
-            color: None,
-        });
+        self.context
+            .push(ColorString { msg: msg.into(), color: None });
         self
     }
 
@@ -134,10 +130,8 @@ impl Context for CliError {
         F: FnOnce() -> S,
         S: Into<String>,
     {
-        self.context.push(ColorString {
-            msg: f().into(),
-            color: None,
-        });
+        self.context
+            .push(ColorString { msg: f().into(), color: None });
         self
     }
 
@@ -147,22 +141,14 @@ impl Context for CliError {
         S: Into<String>,
     {
         let (color, msg) = f();
-        self.context.push(ColorString {
-            msg: msg.into(),
-            color: Some(color),
-        });
+        self.context
+            .push(ColorString { msg: msg.into(), color: Some(color) });
         self
     }
 }
 
 impl Default for CliError {
-    fn default() -> Self {
-        Self {
-            kind: CliErrorKind::Unknown,
-            context: Vec::new(),
-            status: None,
-        }
-    }
+    fn default() -> Self { Self { kind: CliErrorKind::Unknown, context: Vec::new(), status: None } }
 }
 
 // We have to impl Display so we can use the ? operator...but we don't actually want to use it's
@@ -181,10 +167,7 @@ macro_rules! impl_err {
     ($errty:ty, $variant:ident) => {
         impl From<$errty> for CliError {
             fn from(e: $errty) -> Self {
-                CliError {
-                    kind: CliErrorKind::$variant(e),
-                    ..Default::default()
-                }
+                CliError { kind: CliErrorKind::$variant(e), ..Default::default() }
             }
         }
     };
@@ -206,18 +189,13 @@ impl_err!(strum::ParseError, StrumParse);
 impl From<io::Error> for CliError {
     fn from(e: io::Error) -> Self {
         match e.kind() {
-            io::ErrorKind::NotFound => CliError {
-                kind: CliErrorKind::MissingPath,
-                ..Default::default()
-            },
-            io::ErrorKind::PermissionDenied => CliError {
-                kind: CliErrorKind::PermissionDenied,
-                ..Default::default()
-            },
-            _ => CliError {
-                kind: CliErrorKind::Io(e, None),
-                ..Default::default()
-            },
+            io::ErrorKind::NotFound => {
+                CliError { kind: CliErrorKind::MissingPath, ..Default::default() }
+            }
+            io::ErrorKind::PermissionDenied => {
+                CliError { kind: CliErrorKind::PermissionDenied, ..Default::default() }
+            }
+            _ => CliError { kind: CliErrorKind::Io(e, None), ..Default::default() },
         }
     }
 }
@@ -233,20 +211,12 @@ impl From<tempfile::PersistError> for CliError {
 
 impl From<tempfile::PathPersistError> for CliError {
     fn from(e: tempfile::PathPersistError) -> Self {
-        Self {
-            kind: CliErrorKind::Io(e.error, Some(e.path.to_path_buf())),
-            ..Default::default()
-        }
+        Self { kind: CliErrorKind::Io(e.error, Some(e.path.to_path_buf())), ..Default::default() }
     }
 }
 
 impl From<CliErrorKind> for CliError {
-    fn from(kind: CliErrorKind) -> Self {
-        CliError {
-            kind,
-            ..Default::default()
-        }
-    }
+    fn from(kind: CliErrorKind) -> Self { CliError { kind, ..Default::default() } }
 }
 
 #[derive(Debug)]
@@ -443,21 +413,12 @@ impl CliErrorKind {
         }
     }
 
-    pub fn into_err(self) -> CliError {
-        CliError {
-            kind: self,
-            ..Default::default()
-        }
-    }
+    pub fn into_err(self) -> CliError { CliError { kind: self, ..Default::default() } }
 
     #[cfg(test)]
-    pub fn is_parse_int(&self) -> bool {
-        matches!(self, Self::ParseInt(_))
-    }
+    pub fn is_parse_int(&self) -> bool { matches!(self, Self::ParseInt(_)) }
     #[cfg(test)]
-    pub fn is_strum_parse(&self) -> bool {
-        matches!(self, Self::StrumParse(_))
-    }
+    pub fn is_strum_parse(&self) -> bool { matches!(self, Self::StrumParse(_)) }
 }
 
 // Impl PartialEq manually so we can just match on kind, and not the associated data
@@ -535,7 +496,5 @@ impl CliError {
         std::process::exit(self.status.unwrap_or(1))
     }
 
-    pub fn kind(&self) -> &CliErrorKind {
-        &self.kind
-    }
+    pub fn kind(&self) -> &CliErrorKind { &self.kind }
 }

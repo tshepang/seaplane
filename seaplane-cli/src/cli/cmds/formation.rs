@@ -15,10 +15,9 @@ mod status;
 #[cfg(feature = "unstable")]
 mod template;
 
+use clap::{ArgMatches, Command};
 pub use common::{Provider, Region};
 pub use plan::SeaplaneFormationPlanArgMatches;
-
-use clap::{ArgMatches, Command};
 
 #[cfg(feature = "unstable")]
 use self::{
@@ -93,7 +92,5 @@ impl CliCommand for SeaplaneFormation {
         }
     }
 
-    fn update_ctx(&self, _matches: &ArgMatches, _ctx: &mut Ctx) -> Result<()> {
-        Ok(())
-    }
+    fn update_ctx(&self, _matches: &ArgMatches, _ctx: &mut Ctx) -> Result<()> { Ok(()) }
 }

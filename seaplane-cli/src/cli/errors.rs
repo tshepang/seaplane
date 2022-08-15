@@ -44,11 +44,7 @@ pub fn wrap_cli_context(err: CliError, has_exact: bool, has_all: bool) -> Result
 }
 
 pub fn no_matching_item(item: String, has_exact: bool, has_all: bool) -> Result<()> {
-    wrap_cli_context(
-        CliErrorKind::NoMatchingItem(item).into_err(),
-        has_exact,
-        has_all,
-    )
+    wrap_cli_context(CliErrorKind::NoMatchingItem(item).into_err(), has_exact, has_all)
 }
 
 pub fn ambiguous_item(item: String, has_all: bool) -> Result<()> {

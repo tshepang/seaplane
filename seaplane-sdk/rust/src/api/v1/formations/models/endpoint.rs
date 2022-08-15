@@ -57,10 +57,7 @@ mod test_value {
 
     #[test]
     fn test_valid() {
-        let v = EndpointValue {
-            flight_name: "test:test".to_string(),
-            port: 1234,
-        };
+        let v = EndpointValue { flight_name: "test:test".to_string(), port: 1234 };
 
         let s = serde_json::to_string(&v).unwrap();
         assert_eq!(s, "\"test:test:1234\"");
@@ -115,9 +112,7 @@ impl std::str::FromStr for EndpointKey {
         match captures.name("protocol").unwrap().as_str() {
             "http" => {
                 // TODO: Any sort of validation we want to do on this?
-                Ok(EndpointKey::Http {
-                    path: captures.name("route").unwrap().as_str().to_string(),
-                })
+                Ok(EndpointKey::Http { path: captures.name("route").unwrap().as_str().to_string() })
             }
             "tcp" => Ok(EndpointKey::Tcp {
                 port: captures
@@ -162,18 +157,8 @@ mod test_key {
     #[test]
     fn test_valid() {
         let values = [
-            (
-                EndpointKey::Http {
-                    path: "/test".to_string(),
-                },
-                "\"http:/test\"",
-            ),
-            (
-                EndpointKey::Http {
-                    path: "test:test".to_string(),
-                },
-                "\"http:test:test\"",
-            ),
+            (EndpointKey::Http { path: "/test".to_string() }, "\"http:/test\""),
+            (EndpointKey::Http { path: "test:test".to_string() }, "\"http:test:test\""),
             (EndpointKey::Tcp { port: 1234 }, "\"tcp:1234\""),
             (EndpointKey::Udp { port: 1234 }, "\"udp:1234\""),
         ];
@@ -188,14 +173,7 @@ mod test_key {
 
     #[test]
     fn test_invalid() {
-        let strings = [
-            "foo",
-            "test:http:test",
-            "tcp:test",
-            "udp:test",
-            "tcp:100000",
-            "udp:100000",
-        ];
+        let strings = ["foo", "test:http:test", "tcp:test", "udp:test", "tcp:100000", "udp:100000"];
         for s in strings {
             assert!(serde_json::from_str::<EndpointKey>(s).is_err());
         }

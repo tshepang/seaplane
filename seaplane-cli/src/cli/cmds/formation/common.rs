@@ -5,7 +5,6 @@
 //! but many commands need as well.
 
 use clap::{builder::PossibleValue, value_parser, Arg};
-
 use seaplane::api::v1::{Provider as ProviderModel, Region as RegionModel};
 
 use crate::cli::validator::{

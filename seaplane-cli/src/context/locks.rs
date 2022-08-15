@@ -1,5 +1,6 @@
-use crate::{cli::cmds::locks::SeaplaneLocksCommonArgMatches, error::Result, ops::locks::LockName};
 use seaplane::api::v1::LockId;
+
+use crate::{cli::cmds::locks::SeaplaneLocksCommonArgMatches, error::Result, ops::locks::LockName};
 
 /// Represents the "Source of Truth" i.e. it combines all the CLI options, ENV vars, and config
 /// values into a single structure that can be used later to build models for the API or local

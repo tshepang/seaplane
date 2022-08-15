@@ -75,10 +75,8 @@ impl CliCommand for SeaplaneFlightEdit {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         // clap will not let "source" be None
         ctx.args.name_id = matches.get_one::<String>("name_id").map(ToOwned::to_owned);
-        ctx.flight_ctx.init(FlightCtx::from_flight_common(
-            &SeaplaneFlightCommonArgMatches(matches),
-            "",
-        )?);
+        ctx.flight_ctx
+            .init(FlightCtx::from_flight_common(&SeaplaneFlightCommonArgMatches(matches), "")?);
         Ok(())
     }
 }

@@ -1,8 +1,9 @@
 use clap::{ArgMatches, Command};
-
 use seaplane::{
-    api::v1::{ActiveConfiguration, ActiveConfigurations},
-    api::ApiErrorKind,
+    api::{
+        v1::{ActiveConfiguration, ActiveConfigurations},
+        ApiErrorKind,
+    },
     error::SeaplaneError,
 };
 

@@ -16,16 +16,11 @@ fn locks_acquire() {
         then(t, &resp_json);
     });
 
-    let res = test_main(
-        &cli!("locks acquire foo --client-id bar --ttl 30"),
-        MOCK_SERVER.base_url(),
-    );
+    let res =
+        test_main(&cli!("locks acquire foo --client-id bar --ttl 30"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(
-        printer().as_string().trim(),
-        "LOCK-ID: D4lbVpdBE_U\nSEQUENCER: 3"
-    );
+    assert_eq!(printer().as_string().trim(), "LOCK-ID: D4lbVpdBE_U\nSEQUENCER: 3");
     printer().clear();
 
     let res = test_main(
@@ -35,10 +30,7 @@ fn locks_acquire() {
 
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(
-        printer().as_string().trim(),
-        "LOCK-ID: D4lbVpdBE_U\nSEQUENCER: 3"
-    );
+    assert_eq!(printer().as_string().trim(), "LOCK-ID: D4lbVpdBE_U\nSEQUENCER: 3");
     printer().clear();
 
     mock.delete();
@@ -376,22 +368,13 @@ fn locks_list() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("locks list foo --decode --no-header"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("locks list foo --decode --no-header"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(
-        printer().as_string().trim(),
-        "foo  D4lbVpdBE_U  test-client  192.0.2.137  5"
-    );
+    assert_eq!(printer().as_string().trim(), "foo  D4lbVpdBE_U  test-client  192.0.2.137  5");
     printer().clear();
 
-    let res = test_main(
-        &cli!("locks list foo --format json"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("locks list foo --format json"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(printer().as_string().trim(),
@@ -418,10 +401,7 @@ fn locks_list_json() {
         then(t, &resp);
     });
 
-    let res = test_main(
-        &cli!("locks list foo --format json"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("locks list foo --format json"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -430,10 +410,7 @@ fn locks_list_json() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("locks list foo -D --format json"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("locks list foo -D --format json"), MOCK_SERVER.base_url());
     assert!(!res.is_ok());
     printer().clear();
 
@@ -449,17 +426,12 @@ fn locks_renew() {
         then(t, &resp_json);
     });
 
-    let res = test_main(
-        &cli!("locks renew foo --lock-id ATlcuG7mmF4 --ttl 20"),
-        MOCK_SERVER.base_url(),
-    );
+    let res =
+        test_main(&cli!("locks renew foo --lock-id ATlcuG7mmF4 --ttl 20"), MOCK_SERVER.base_url());
 
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(
-        printer().as_string().trim(),
-        "Successfully renewed the lock"
-    );
+    assert_eq!(printer().as_string().trim(), "Successfully renewed the lock");
     printer().clear();
 
     let res = test_main(
@@ -469,10 +441,7 @@ fn locks_renew() {
 
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(
-        printer().as_string().trim(),
-        "Successfully renewed the lock"
-    );
+    assert_eq!(printer().as_string().trim(), "Successfully renewed the lock");
     printer().clear();
 }
 
@@ -485,16 +454,10 @@ fn locks_release() {
         then(t, &resp_json);
     });
 
-    let res = test_main(
-        &cli!("locks release foo --lock-id bar"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("locks release foo --lock-id bar"), MOCK_SERVER.base_url());
 
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(
-        printer().as_string().trim(),
-        "Successfully released the lock"
-    );
+    assert_eq!(printer().as_string().trim(), "Successfully released the lock");
     printer().clear();
 }

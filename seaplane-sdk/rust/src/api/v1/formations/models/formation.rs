@@ -51,9 +51,7 @@ impl FormationConfigurationBuilder {
     /// Removes all `affinity` values
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn clear_affinity(&mut self) {
-        self.affinity.clear();
-    }
+    pub fn clear_affinity(&mut self) { self.affinity.clear(); }
 
     /// Adds the name of another Formation that this Formation is connected to. Two Formations can
     /// communicate over their `FormationConfigurationBuilder::formation_endpoints` if and only if
@@ -71,9 +69,7 @@ impl FormationConfigurationBuilder {
     /// Removes all connection mappings
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn clear_connections(&mut self) {
-        self.connections.clear();
-    }
+    pub fn clear_connections(&mut self) { self.connections.clear(); }
 
     /// Add a [`Flight`] to the makeup of this Formation Configuration.
     ///
@@ -85,9 +81,7 @@ impl FormationConfigurationBuilder {
     }
 
     /// Removes all [`Flight`]s from this Formation Configuration
-    pub fn clear_flights(&mut self) {
-        self.flights.clear();
-    }
+    pub fn clear_flights(&mut self) { self.flights.clear(); }
 
     /// Adds an entry to `public_endpoint` map whose keys describe the publicly exposed endpoints
     /// of this Formation. The keys take the form `http:{endpoint_route}`.
@@ -173,8 +167,8 @@ impl FormationConfigurationBuilder {
     }
 
     /// The inverse of [`FormationConfigurationBuilder::add_allowed_provider`] which specifies
-    /// [`Provider`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation to
-    /// run on. By default no [`Provider`]s are denied.
+    /// [`Provider`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation
+    /// to run on. By default no [`Provider`]s are denied.
     ///
     /// If this conflicts with `providers_allowed`
     /// ([`FormationConfigurationBuilder::add_allowed_provider`]) (e.g. [`Provider::GCP`] is both
@@ -203,8 +197,8 @@ impl FormationConfigurationBuilder {
     }
 
     /// The inverse of [`FormationConfigurationBuilder::add_allowed_region`] which specifies
-    /// [`Region`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation to
-    /// run within. By default no [`Region`]s are denied.
+    /// [`Region`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation
+    /// to run within. By default no [`Region`]s are denied.
     ///
     /// If this conflicts with `regions_allowed`
     /// ([`FormationConfigurationBuilder::add_allowed_region`]) (e.g. [`Region::XN`] is both
@@ -283,9 +277,7 @@ pub struct FormationConfiguration {
 
 impl FormationConfiguration {
     /// Create a [`FormationConfigurationBuilder`] to build a new configuration
-    pub fn builder() -> FormationConfigurationBuilder {
-        FormationConfigurationBuilder::default()
-    }
+    pub fn builder() -> FormationConfigurationBuilder { FormationConfigurationBuilder::default() }
 
     /// The names of another Formation that this Formation has an affinity for.
     ///
@@ -293,9 +285,7 @@ impl FormationConfiguration {
     /// "close" to each other (for some version of close including but not limited to latency).
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn affinities(&self) -> &[String] {
-        &*self.affinity
-    }
+    pub fn affinities(&self) -> &[String] { &self.affinity }
 
     /// The names of another Formation that this Formation has an affinity for.
     ///
@@ -303,32 +293,24 @@ impl FormationConfiguration {
     /// "close" to each other (for some version of close including but not limited to latency).
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn set_affinities(&mut self, affinities: Vec<String>) {
-        self.affinity = affinities;
-    }
+    pub fn set_affinities(&mut self, affinities: Vec<String>) { self.affinity = affinities; }
 
     /// Adds the name of another Formation that this Formation is connected to. Two Formations can
     /// communicate over their `FormationConfigurationBuilder::formation_endpoints` if and only if
     /// both formations opt in to that connection by adding each other to their connection mapping.
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn set_connections(&mut self, connections: Vec<String>) {
-        self.connections = connections;
-    }
+    pub fn set_connections(&mut self, connections: Vec<String>) { self.connections = connections; }
 
     /// The names of another Formation that this Formation is connected to. Two Formations can
     /// communicate over their `FormationConfigurationBuilder::formation_endpoints` if and only if
     /// both formations opt in to that connection by adding each other to their connection mapping.
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn connections(&self) -> &[String] {
-        &*self.connections
-    }
+    pub fn connections(&self) -> &[String] { &self.connections }
 
     /// Add a [`Flight`] to the makeup of this Formation Configuration.
-    pub fn add_flight(&mut self, flight: Flight) {
-        self.flights.push(flight);
-    }
+    pub fn add_flight(&mut self, flight: Flight) { self.flights.push(flight); }
 
     /// Remove a [`Flight`] from the makeup of this Formation Configuration.
     pub fn remove_flight(&mut self, name: &str) -> Option<Flight> {
@@ -345,14 +327,10 @@ impl FormationConfiguration {
     }
 
     /// Set the [`Flight`]s that makeup this Formation Configuration.
-    pub fn set_flights(&mut self, flights: Vec<Flight>) {
-        self.flights = flights;
-    }
+    pub fn set_flights(&mut self, flights: Vec<Flight>) { self.flights = flights; }
 
     /// Set the [`Flight`]s that makeup this Formation Configuration.
-    pub fn flights(&self) -> &[Flight] {
-        &*self.flights
-    }
+    pub fn flights(&self) -> &[Flight] { &self.flights }
 
     /// Adds an entry to `public_endpoint` map whose keys describe the publicly exposed endpoints
     /// of this Formation.
@@ -439,8 +417,8 @@ impl FormationConfiguration {
     }
 
     /// The inverse of [`FormationConfigurationBuilder::add_allowed_provider`] which specifies
-    /// [`Provider`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation to
-    /// run on. By default no [`Provider`]s are denied.
+    /// [`Provider`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation
+    /// to run on. By default no [`Provider`]s are denied.
     ///
     /// If this conflicts with `providers_allowed`
     /// ([`FormationConfigurationBuilder::add_allowed_provider`]) (e.g. [`Provider::GCP`] is both
@@ -471,13 +449,11 @@ impl FormationConfiguration {
     /// [`Flight`]s of this formation to run within. By default all [`Region`]s are allowed. Adding
     /// an entry here effectively restricts the [`Flight`]s of this Formation to only the listed
     /// [`Region`]s.
-    pub fn allowed_regions(&self) -> impl Iterator<Item = &Region> {
-        self.regions_allowed.iter()
-    }
+    pub fn allowed_regions(&self) -> impl Iterator<Item = &Region> { self.regions_allowed.iter() }
 
     /// The inverse of [`FormationConfigurationBuilder::add_allowed_region`] which specifies
-    /// [`Region`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation to
-    /// run within. By default no [`Region`]s are denied.
+    /// [`Region`] which the scheduler is prohibited from scheduling [`Flight`]s of this formation
+    /// to run within. By default no [`Region`]s are denied.
     ///
     /// If this conflicts with `regions_allowed`
     /// ([`FormationConfigurationBuilder::add_allowed_region`]) (e.g. [`Region::XN`] is both
@@ -490,9 +466,7 @@ impl FormationConfiguration {
     /// ([`FormationConfigurationBuilder::add_denied_region`]) which specifies [`Region`] which the
     /// scheduler is prohibited from scheduling [`Flight`]s of this formation to run within. By
     /// default no [`Region`]s are denied.
-    pub fn denied_region(&self) -> impl Iterator<Item = &Region> {
-        self.regions_denied.iter()
-    }
+    pub fn denied_region(&self) -> impl Iterator<Item = &Region> { self.regions_denied.iter() }
 }
 
 /// A builder to construct [`Flight`]s
@@ -508,9 +482,7 @@ pub struct FlightBuilder {
 
 impl FlightBuilder {
     /// Create a new builder
-    pub fn new() -> Self {
-        Self::default()
-    }
+    pub fn new() -> Self { Self::default() }
 
     /// The human readable [`Flight`] name, which must be unique within the Formation
     #[must_use]
@@ -565,9 +537,7 @@ impl FlightBuilder {
     }
 
     /// Reset the maximum number of instances this [`Flight`] should ever have running to infinite.
-    pub fn clear_maximum(&mut self) {
-        self.maximum = None;
-    }
+    pub fn clear_maximum(&mut self) { self.maximum = None; }
 
     /// Adds an [`Architecture`]s the [`Flight`] can be run on. If not specified, the default value
     /// is a single entry of [`Architecture::AMD64`].
@@ -640,9 +610,7 @@ pub struct Flight {
 
 impl Flight {
     /// Create a new [`FlightBuilder`] in order to construct a new [`Flight`]
-    pub fn builder() -> FlightBuilder {
-        FlightBuilder::new()
-    }
+    pub fn builder() -> FlightBuilder { FlightBuilder::new() }
 
     /// Creates a new [`Flight`] with the two required bits of information, a `name` which must be
     /// unique within the Formation, and a container image registry URL which points to the
@@ -666,73 +634,49 @@ impl Flight {
 
     /// Returns the human readable [`Flight`] name, which is unique within the Formation
     #[inline]
-    pub fn name(&self) -> &str {
-        &*self.name
-    }
+    pub fn name(&self) -> &str { &self.name }
 
     /// A human readable [`Flight`] name, which is unique within the Formation
-    pub fn set_name<S: Into<String>>(&mut self, name: S) {
-        self.name = name.into();
-    }
+    pub fn set_name<S: Into<String>>(&mut self, name: S) { self.name = name.into(); }
 
     /// Returns the container image reference this [`Flight`] uses, as a [`String`]
     #[inline]
-    pub fn image_str(&self) -> String {
-        self.image.to_string()
-    }
+    pub fn image_str(&self) -> String { self.image.to_string() }
 
     /// Returns the container image reference this [`Flight`] uses, as an [`ImageReference`]
     #[inline]
-    pub fn image(&self) -> &ImageReference {
-        &self.image
-    }
+    pub fn image(&self) -> &ImageReference { &self.image }
 
     /// Returns the [`Architecture`]s this [`Flight`] can be run on.
     #[inline]
-    pub fn architecture(&self) -> impl Iterator<Item = &Architecture> {
-        self.architecture.iter()
-    }
+    pub fn architecture(&self) -> impl Iterator<Item = &Architecture> { self.architecture.iter() }
 
     /// Add an [`Architecture`]s this [`Flight`] can be run on.
-    pub fn add_architecture(&mut self, arch: Architecture) {
-        self.architecture.insert(arch);
-    }
+    pub fn add_architecture(&mut self, arch: Architecture) { self.architecture.insert(arch); }
 
     /// Returns the minimum number of instances this [`Flight`] should ever have running.
-    pub fn minimum(&self) -> u64 {
-        self.minimum
-    }
+    pub fn minimum(&self) -> u64 { self.minimum }
 
     /// Set the minimum number of instances this [`Flight`] should ever have running.
-    pub fn set_minimum(&mut self, min: u64) {
-        self.minimum = min;
-    }
+    pub fn set_minimum(&mut self, min: u64) { self.minimum = min; }
 
     /// Returns the maximum number of instances this [`Flight`] should ever have running. Returning
     /// `None` means "infinite" or "As many as required to service incoming traffic"
-    pub fn maximum(&self) -> Option<u64> {
-        self.maximum
-    }
+    pub fn maximum(&self) -> Option<u64> { self.maximum }
 
     /// Returns the maximum number of instances this [`Flight`] should ever have running. Returning
     /// `None` means "infinite" or "As many as required to service incoming traffic"
-    pub fn set_maximum(&mut self, max: Option<u64>) {
-        self.maximum = max
-    }
+    pub fn set_maximum(&mut self, max: Option<u64>) { self.maximum = max }
 
     /// Returns `true` if this [`Flight`] should have access to Seaplane's APIs.
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn api_permission(&self) -> bool {
-        self.api_permission
-    }
+    pub fn api_permission(&self) -> bool { self.api_permission }
 
     /// Set if this [`Flight`] should have access to Seaplane's APIs.
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn set_api_permission(&mut self, yes: bool) {
-        self.api_permission = yes;
-    }
+    pub fn set_api_permission(&mut self, yes: bool) { self.api_permission = yes; }
 }
 
 /// The response from the `GET /formations` API call ([`FormationsRequest::list_names`])
@@ -744,9 +688,7 @@ pub struct FormationNames {
 
 impl FormationNames {
     /// Returns the inner `Vec<String>` of Formation Names
-    pub fn into_inner(self) -> Vec<String> {
-        self.inner.into_iter().map(|x| x.name).collect()
-    }
+    pub fn into_inner(self) -> Vec<String> { self.inner.into_iter().map(|x| x.name).collect() }
 }
 
 /// A single Formation name in the response from the `GET /formations` API call
@@ -768,13 +710,9 @@ pub struct ActiveConfigurations {
 
 impl ActiveConfigurations {
     /// Creates a new [`ActiveConfigurations`] empty container
-    pub fn new() -> Self {
-        Self::default()
-    }
+    pub fn new() -> Self { Self::default() }
 
-    pub fn iter(&self) -> impl Iterator<Item = &ActiveConfiguration> {
-        self.inner.iter()
-    }
+    pub fn iter(&self) -> impl Iterator<Item = &ActiveConfiguration> { self.inner.iter() }
 
     /// Add an [`ActiveConfiguration`] via the Builder Pattern style
     #[must_use]
@@ -790,9 +728,7 @@ impl ActiveConfigurations {
     }
 
     /// Returns `true` if there are not [`ActiveConfiguration`]s
-    pub fn is_empty(&self) -> bool {
-        self.inner.is_empty()
-    }
+    pub fn is_empty(&self) -> bool { self.inner.is_empty() }
 }
 
 /// A single [`ActiveConfiguration`] from the response from the `GET
@@ -811,31 +747,23 @@ pub struct ActiveConfiguration {
 
 impl ActiveConfiguration {
     /// Create a new builder
-    pub fn builder() -> ActiveConfigurationBuilder {
-        ActiveConfigurationBuilder::default()
-    }
+    pub fn builder() -> ActiveConfigurationBuilder { ActiveConfigurationBuilder::default() }
 
     /// Returns the UUID of the [`FormationConfiguration`] this [`ActiveConfiguration`] is
     /// referring to
-    pub fn uuid(&self) -> &Uuid {
-        &self.configuration_id
-    }
+    pub fn uuid(&self) -> &Uuid { &self.configuration_id }
 
     /// The proportional weight of traffic this configuration should get. For each endpoint we take
     /// the sum of the weights of every configuration with that endpoint exposed and divide traffic
     /// according to the percentage of that sum each configuration's weight has.
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn traffic_weight(&self) -> Option<f32> {
-        self.traffic_weight
-    }
+    pub fn traffic_weight(&self) -> Option<f32> { self.traffic_weight }
 }
 
 // Impl manually because we only need to check the UUID
 impl PartialEq<Self> for ActiveConfiguration {
-    fn eq(&self, other: &Self) -> bool {
-        self.configuration_id == other.configuration_id
-    }
+    fn eq(&self, other: &Self) -> bool { self.configuration_id == other.configuration_id }
 }
 
 /// A builder for creating a new [`ActiveConfiguration`]. This can be used to load balance traffic
@@ -847,19 +775,12 @@ pub struct ActiveConfigurationBuilder {
 }
 
 impl Default for ActiveConfigurationBuilder {
-    fn default() -> Self {
-        Self {
-            configuration_id: None,
-            traffic_weight: 1.,
-        }
-    }
+    fn default() -> Self { Self { configuration_id: None, traffic_weight: 1. } }
 }
 
 impl ActiveConfigurationBuilder {
     /// Create a new builder
-    pub fn new() -> Self {
-        Self::default()
-    }
+    pub fn new() -> Self { Self::default() }
 
     /// A unique ID of the configuration
     #[must_use]

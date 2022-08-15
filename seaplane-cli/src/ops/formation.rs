@@ -1,12 +1,11 @@
 mod endpoint;
-pub use endpoint::*;
-
 use std::{
     collections::HashSet,
     io::Write,
     path::{Path, PathBuf},
 };
 
+pub use endpoint::*;
 use seaplane::api::v1::formations::{
     Container as ContainerModel, ContainerStatus, Flight as FlightModel,
     FormationConfiguration as FormationConfigurationModel,
@@ -70,9 +69,7 @@ impl Formations {
             .any(|fc| fc.model.flights().iter().any(|f| f.name() == flight))
     }
 
-    pub fn formations(&self) -> impl Iterator<Item = &Formation> {
-        self.formations.iter()
-    }
+    pub fn formations(&self) -> impl Iterator<Item = &Formation> { self.formations.iter() }
     pub fn configurations(&self) -> impl Iterator<Item = &FormationConfiguration> {
         self.configurations.iter()
     }
@@ -92,9 +89,7 @@ impl Formations {
     }
 
     // TODO: this should go away once we're not working with indices anymore
-    pub fn get_formation(&self, idx: usize) -> Option<&Formation> {
-        self.formations.get(idx)
-    }
+    pub fn get_formation(&self, idx: usize) -> Option<&Formation> { self.formations.get(idx) }
 
     // TODO: this should go away once we're not working with indices anymore
     pub fn get_formation_mut(&mut self, idx: usize) -> Option<&mut Formation> {
@@ -278,9 +273,7 @@ impl FromDisk for Formations {
         self.loaded_from = Some(p.as_ref().into());
     }
 
-    fn loaded_from(&self) -> Option<&Path> {
-        self.loaded_from.as_deref()
-    }
+    fn loaded_from(&self) -> Option<&Path> { self.loaded_from.as_deref() }
 }
 
 impl ToDisk for Formations {}
@@ -377,7 +370,8 @@ impl Formation {
         }
     }
 
-    /// Returns the Formation Configuration IDs that are neither Grounded (Inactive) or In Air (active)
+    /// Returns the Formation Configuration IDs that are neither Grounded (Inactive) or In Air
+    /// (active)
     pub fn local_only_configs(&self) -> Vec<Id> {
         self.local
             .difference(&self.in_air.union(&self.grounded).copied().collect())
@@ -417,19 +411,11 @@ pub struct FormationConfiguration {
 
 impl FormationConfiguration {
     pub fn new(model: FormationConfigurationModel) -> Self {
-        Self {
-            id: Id::new(),
-            remote_id: None,
-            model,
-        }
+        Self { id: Id::new(), remote_id: None, model }
     }
 
     pub fn with_uuid(uuid: Uuid, model: FormationConfigurationModel) -> Self {
-        Self {
-            id: Id::new(),
-            remote_id: Some(uuid),
-            model,
-        }
+        Self { id: Id::new(), remote_id: Some(uuid), model }
     }
 
     pub fn get_flight(&self, flight: &str) -> Option<&FlightModel> {
@@ -546,9 +532,7 @@ impl OpStatus {
 }
 
 impl Default for OpStatus {
-    fn default() -> Self {
-        OpStatus::Starting
-    }
+    fn default() -> Self { OpStatus::Starting }
 }
 
 impl FormationStatus {
@@ -642,11 +626,8 @@ impl FormationConfigStatuses {
             let mut fs = FlightStatuses::default();
 
             fs.add_running(name, min, max);
-            self.inner.push(FormationConfigStatus {
-                status: OpStatus::Starting,
-                uuid,
-                flights: fs,
-            })
+            self.inner
+                .push(FormationConfigStatus { status: OpStatus::Starting, uuid, flights: fs })
         }
     }
     pub fn add_starting_flight<S: Into<String>>(
@@ -662,11 +643,8 @@ impl FormationConfigStatuses {
             let mut fs = FlightStatuses::default();
 
             fs.add_starting(name, min, max);
-            self.inner.push(FormationConfigStatus {
-                status: OpStatus::Starting,
-                uuid,
-                flights: fs,
-            })
+            self.inner
+                .push(FormationConfigStatus { status: OpStatus::Starting, uuid, flights: fs })
         }
     }
     pub fn add_stopped_flight<S: Into<String>>(
@@ -683,23 +661,16 @@ impl FormationConfigStatuses {
             let mut fs = FlightStatuses::default();
 
             fs.add_stopped(name, error, min, max);
-            self.inner.push(FormationConfigStatus {
-                status: OpStatus::Starting,
-                uuid,
-                flights: fs,
-            })
+            self.inner
+                .push(FormationConfigStatus { status: OpStatus::Starting, uuid, flights: fs })
         }
     }
 
     #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.inner.is_empty()
-    }
+    pub fn is_empty(&self) -> bool { self.inner.is_empty() }
 
     #[inline]
-    pub fn len(&self) -> usize {
-        self.inner.len()
-    }
+    pub fn len(&self) -> usize { self.inner.len() }
 }
 
 impl FormationConfigStatus {
@@ -859,9 +830,7 @@ impl FlightStatuses {
     }
 
     #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.inner.is_empty()
-    }
+    pub fn is_empty(&self) -> bool { self.inner.is_empty() }
 }
 
 impl Output for FormationStatus {
@@ -923,9 +892,9 @@ impl Output for Vec<FormationStatus> {
 
 //             // Loop through all the Formation Configurations defined in this Formation
 //             for cfg in formation.configs().iter().map(|id| {
-//                 // Map a config ID to an actual Config. We have to use these long chained calls so
-//                 // Rust can tell that `formations` itself isn't being borrowed, just it's fields.
-//                 fs.configurations.swap_remove(
+//                 // Map a config ID to an actual Config. We have to use these long chained calls
+// so                 // Rust can tell that `formations` itself isn't being borrowed, just it's
+// fields.                 fs.configurations.swap_remove(
 //                     // get the index of the Config where the ID matches
 //                     fs.configurations
 //                         .iter()

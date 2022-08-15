@@ -16,10 +16,7 @@ fn when(when: When, m: Method, p: &str) -> When {
         .path(p)
         .header("authorization", "Bearer abc123")
         .header("accept", "*/*")
-        .header(
-            "host",
-            &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()),
-        )
+        .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()))
 }
 
 fn then(then: Then, resp_body: serde_json::Value) -> Then {

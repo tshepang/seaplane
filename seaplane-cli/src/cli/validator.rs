@@ -206,9 +206,7 @@ pub fn validate_id(s: &str) -> StdResult<(), &'static str> {
     Ok(())
 }
 
-fn is_hex_char(c: char) -> bool {
-    matches!(c, 'a'..='f' | 'A'..='F' | '0'..='9')
-}
+fn is_hex_char(c: char) -> bool { matches!(c, 'a'..='f' | 'A'..='F' | '0'..='9') }
 
 #[cfg(test)]
 mod tests {

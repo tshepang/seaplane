@@ -2,7 +2,7 @@ Short help
 
 ```console
 $ seaplane metadata delete -h
-seaplane-metadata-delete [..]
+seaplane[EXE]-metadata-delete [..]
 Delete one or more metadata key-value pairs
 
 USAGE:
@@ -29,7 +29,7 @@ Long help:
 
 ```console
 $ seaplane metadata delete --help
-seaplane-metadata-delete [..]
+seaplane[EXE]-metadata-delete [..]
 Delete one or more metadata key-value pairs
 
 USAGE:

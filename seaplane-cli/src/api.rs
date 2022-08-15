@@ -8,9 +8,8 @@ mod restrict;
 pub use formations::FormationsReq;
 pub use locks::LocksReq;
 pub use metadata::MetadataReq;
-pub use restrict::RestrictReq;
-
 use reqwest::Url;
+pub use restrict::RestrictReq;
 use seaplane::api::{AccessToken, TokenRequest};
 
 use crate::error::{CliError, Context, Result};

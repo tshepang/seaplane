@@ -38,8 +38,9 @@ impl SeaplaneMetadataList {
 
 impl CliCommand for SeaplaneMetadataList {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
-        // Scope releases the mutex on the MetadataCtx so that when we hand off the ctx to print_* we
-        // don't have the chance of a deadlock if those functions need to acquire a MetadataCtx
+        // Scope releases the mutex on the MetadataCtx so that when we hand off the ctx to print_*
+        // we don't have the chance of a deadlock if those functions need to acquire a
+        // MetadataCtx
         let kvs = {
             let mdctx = ctx.md_ctx.get_or_init();
 

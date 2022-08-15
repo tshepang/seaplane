@@ -54,9 +54,8 @@ impl CliCommand for SeaplaneRestrictList {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.restrict_ctx.init(RestrictCtx::from_restrict_list(
-            &SeaplaneRestrictListArgMatches(matches),
-        )?);
+        ctx.restrict_ctx
+            .init(RestrictCtx::from_restrict_list(&SeaplaneRestrictListArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut restrict_ctx = ctx.restrict_ctx.get_mut_or_init();
         restrict_ctx.decode = matches.contains_id("decode");

@@ -7,8 +7,9 @@
 //
 // In this manner we can tell exactly how a particular binary was built.
 
-use const_format::concatcp;
 use std::process::Command;
+
+use const_format::concatcp;
 
 #[cfg(feature = "unstable")]
 const UNSTABLE: &str = "+unstable";
@@ -36,8 +37,5 @@ fn main() {
         env!("CARGO_PKG_VERSION"),
         commit_id.trim()
     );
-    println!(
-        "cargo:rustc-env=SEAPLANE_BUILD_FEATURES={}",
-        concatcp!(COLOR, " ", UNSTABLE)
-    );
+    println!("cargo:rustc-env=SEAPLANE_BUILD_FEATURES={}", concatcp!(COLOR, " ", UNSTABLE));
 }

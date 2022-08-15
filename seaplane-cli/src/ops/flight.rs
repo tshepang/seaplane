@@ -28,16 +28,9 @@ pub struct Flight {
 }
 
 impl Flight {
-    pub fn new(model: FlightModel) -> Self {
-        Self {
-            id: Id::new(),
-            model,
-        }
-    }
+    pub fn new(model: FlightModel) -> Self { Self { id: Id::new(), model } }
 
-    pub fn from_json(s: &str) -> Result<Flight> {
-        serde_json::from_str(s).map_err(CliError::from)
-    }
+    pub fn from_json(s: &str) -> Result<Flight> { serde_json::from_str(s).map_err(CliError::from) }
 
     pub fn starts_with(&self, s: &str) -> bool {
         self.id.to_string().starts_with(s) || self.model.name().starts_with(s)
@@ -135,9 +128,7 @@ impl FromDisk for Flights {
         self.loaded_from = Some(p.as_ref().into());
     }
 
-    fn loaded_from(&self) -> Option<&Path> {
-        self.loaded_from.as_deref()
-    }
+    fn loaded_from(&self) -> Option<&Path> { self.loaded_from.as_deref() }
 }
 
 impl ToDisk for Flights {}
@@ -201,9 +192,7 @@ impl Flights {
             .collect()
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &Flight> {
-        self.inner.iter()
-    }
+    pub fn iter(&self) -> impl Iterator<Item = &Flight> { self.inner.iter() }
 
     pub fn clone_flight(&mut self, src: &str, exact: bool) -> Result<Flight> {
         let src_flight = self.remove_flight(src, exact)?;
@@ -258,18 +247,13 @@ impl Flights {
         Ok(())
     }
 
-    pub fn add_flight(&mut self, flight: Flight) {
-        self.inner.push(flight);
-    }
+    pub fn add_flight(&mut self, flight: Flight) { self.inner.push(flight); }
 
     pub fn remove_flight(&mut self, src: &str, exact: bool) -> Result<Flight> {
         // Ensure only one current Flight matches what the user gave
         // TODO: We should check if these ones we remove are referenced remote or not
-        let indices = if exact {
-            self.indices_of_matches(src)
-        } else {
-            self.indices_of_left_matches(src)
-        };
+        let indices =
+            if exact { self.indices_of_matches(src) } else { self.indices_of_left_matches(src) };
         match indices.len() {
             0 => return Err(CliErrorKind::NoMatchingItem(src.into()).into_err()),
             1 => (),
@@ -326,7 +310,9 @@ impl Output for Flights {
                 flight
                     .model
                     .image_str()
-                    .trim_start_matches(DEFAULT_IMAGE_REGISTRY_URL), // TODO: provide opt-in/out way to collapse long names
+                    .trim_start_matches(DEFAULT_IMAGE_REGISTRY_URL), /* TODO: provide opt-in/out
+                                                                      * way to collapse long
+                                                                      * names */
                 flight.model.minimum(),
                 flight
                     .model

@@ -2,7 +2,7 @@ Short help:
 
 ```console
 $ seaplane restrict get -h
-seaplane-restrict-get [..]
+seaplane[EXE]-restrict-get [..]
 Retrieve information about a directory restriction
 
 USAGE:
@@ -33,7 +33,7 @@ Long help:
 
 ```console
 $ seaplane restrict get --help
-seaplane-restrict-get [..]
+seaplane[EXE]-restrict-get [..]
 Get information about restrictions on a directory
 
 Directory will be displayed in base64 encoded format by default because they may contain

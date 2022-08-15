@@ -68,10 +68,7 @@ impl RestrictCtx {
     pub fn from_restrict_list(matches: &SeaplaneRestrictListArgMatches) -> Result<RestrictCtx> {
         let api = matches.0.get_one::<String>("api").map(|a| a.to_owned());
 
-        Ok(RestrictCtx {
-            api,
-            ..RestrictCtx::default()
-        })
+        Ok(RestrictCtx { api, ..RestrictCtx::default() })
     }
 
     /// Builds a RestictCtx from ArgMatches

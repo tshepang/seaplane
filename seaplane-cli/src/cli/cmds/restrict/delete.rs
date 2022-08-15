@@ -43,18 +43,14 @@ impl CliCommand for SeaplaneRestrictDelete {
             };
             cli_println!("Deleted a restriction on directory {} in {} API", dir, api);
         } else {
-            cli_println!(
-                "{}",
-                json!({"deleted_restriction": {"api": api, "directory": dir} })
-            )
+            cli_println!("{}", json!({"deleted_restriction": {"api": api, "directory": dir} }))
         }
         Ok(())
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.restrict_ctx.init(RestrictCtx::from_restrict_common(
-            &SeaplaneRestrictCommonArgMatches(matches),
-        )?);
+        ctx.restrict_ctx
+            .init(RestrictCtx::from_restrict_common(&SeaplaneRestrictCommonArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut restrict_ctx = ctx.restrict_ctx.get_mut_or_init();
         restrict_ctx.decode = matches.contains_id("decode");

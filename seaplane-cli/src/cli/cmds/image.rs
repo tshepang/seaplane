@@ -6,14 +6,10 @@ use crate::{cli::CliCommand, context::Ctx, error::Result};
 pub struct SeaplaneImage;
 
 impl SeaplaneImage {
-    pub fn command() -> Command<'static> {
-        Command::new("image").visible_alias("img")
-    }
+    pub fn command() -> Command<'static> { Command::new("image").visible_alias("img") }
 }
 impl CliCommand for SeaplaneImage {
-    fn run(&self, _ctx: &mut Ctx) -> Result<()> {
-        todo!("SeaplaneImage::run")
-    }
+    fn run(&self, _ctx: &mut Ctx) -> Result<()> { todo!("SeaplaneImage::run") }
     fn update_ctx(&self, _matches: &ArgMatches, _ctx: &mut Ctx) -> Result<()> {
         todo!("SeaplaneImage::update_ctx")
     }

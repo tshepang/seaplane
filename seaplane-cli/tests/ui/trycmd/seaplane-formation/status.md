@@ -1,10 +1,10 @@
 ```console
 $ seaplane formation status -h
-seaplane-formation-status [..]
+seaplane[EXE]-formation-status [..]
 Show the status of a remote Formation Instance
 
 USAGE:
-    seaplane formation status [OPTIONS] [NAME|ID]
+    seaplane[EXE] formation status [OPTIONS] [NAME|ID]
 
 ARGS:
     <NAME|ID>    The name or ID of the Formation to check, must be unambiguous
@@ -25,7 +25,7 @@ OPTIONS:
 
 ```console
 $ seaplane formation status --help
-seaplane-formation-status [..]
+seaplane[EXE]-formation-status [..]
 Show the status of a remote Formation Instance
 
 This command will display the status of one or more Formation Instances such as how many actual
@@ -33,7 +33,7 @@ containers are running compared to the minimum and maximums per Flight Plan that
 defines.
 
 USAGE:
-    seaplane formation status [OPTIONS] [NAME|ID]
+    seaplane[EXE] formation status [OPTIONS] [NAME|ID]
 
 ARGS:
     <NAME|ID>

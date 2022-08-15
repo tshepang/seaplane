@@ -47,8 +47,9 @@ impl CliCommand for SeaplaneFormationStatus {
         let old_stateless = ctx.args.stateless;
 
         if ctx.args.fetch {
-            // Make sure the local DB is up to date, but don't persist the data. Also keep track of if
-            // we were originally in stateless mode or not so we can go back after this call.
+            // Make sure the local DB is up to date, but don't persist the data. Also keep track of
+            // if we were originally in stateless mode or not so we can go back after
+            // this call.
             ctx.internal_run = true;
             ctx.disable_pb = ctx.args.out_format == OutputFormat::Json;
             ctx.args.stateless = true;

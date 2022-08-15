@@ -23,24 +23,16 @@ pub struct LockName {
 impl LockName {
     /// Creates a new LockName from an encoded name. You must pinky promise the name
     /// is URL safe base64 encoded or Bad Things may happen.
-    pub fn new<S: Into<String>>(name: S) -> Self {
-        Self {
-            name: EncodedString::new(name.into()),
-        }
-    }
+    pub fn new<S: Into<String>>(name: S) -> Self { Self { name: EncodedString::new(name.into()) } }
 
     /// Creates a new LockName from an un-encoded byte slice ref, encoding it along the way
     pub fn from_name_unencoded<S: AsRef<[u8]>>(name: S) -> Self {
         let name = base64::encode_config(name.as_ref(), base64::URL_SAFE_NO_PAD);
-        Self {
-            name: EncodedString::new(name),
-        }
+        Self { name: EncodedString::new(name) }
     }
 
     /// Creates a new LockName from self's data.
-    pub fn to_model(&self) -> LockNameModel {
-        LockNameModel::from_encoded(self.name.to_string())
-    }
+    pub fn to_model(&self) -> LockNameModel { LockNameModel::from_encoded(self.name.to_string()) }
 }
 
 #[derive(Debug, Serialize)]
@@ -80,11 +72,7 @@ pub struct ListedLockInfoInner {
 
 impl From<LockInfoInner> for ListedLockInfoInner {
     fn from(other: LockInfoInner) -> Self {
-        Self {
-            ttl: other.ttl,
-            client_id: other.client_id,
-            ip: other.ip,
-        }
+        Self { ttl: other.ttl, client_id: other.client_id, ip: other.ip }
     }
 }
 
@@ -126,11 +114,7 @@ where
             write!(tw, "{}", l.name)?;
         };
 
-        writeln!(
-            tw,
-            "\t{}\t{}\t{}\t{}",
-            l.id, l.info.client_id, l.info.ip, l.info.ttl
-        )?;
+        writeln!(tw, "\t{}\t{}\t{}\t{}", l.id, l.info.client_id, l.info.ip, l.info.ttl)?;
     }
     tw.flush()?;
 

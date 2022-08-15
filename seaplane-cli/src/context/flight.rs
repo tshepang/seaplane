@@ -298,24 +298,18 @@ mod tests {
                 .kind(),
             &CliErrorKind::InlineFlightInvalidName("invalid_name".into())
         );
-        assert!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,max=2.3")
-                .unwrap_err()
-                .kind()
-                .is_parse_int(),
-        );
-        assert!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,max=foo")
-                .unwrap_err()
-                .kind()
-                .is_parse_int()
-        );
-        assert!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=foo")
-                .unwrap_err()
-                .kind()
-                .is_strum_parse(),
-        );
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,max=2.3")
+            .unwrap_err()
+            .kind()
+            .is_parse_int(),);
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,max=foo")
+            .unwrap_err()
+            .kind()
+            .is_parse_int());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=foo")
+            .unwrap_err()
+            .kind()
+            .is_strum_parse(),);
         assert_eq!(
             FlightCtx::from_inline_flight("image=demos/nginx:latest,name")
                 .unwrap_err()

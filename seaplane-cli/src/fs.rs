@@ -48,9 +48,7 @@ pub fn data_dir() -> PathBuf {
 
 #[cfg(feature = "ui_tests")]
 #[cfg_attr(feature = "ui_tests", inline)]
-pub fn data_dir() -> PathBuf {
-    std::env::current_dir().unwrap()
-}
+pub fn data_dir() -> PathBuf { std::env::current_dir().unwrap() }
 
 /// A struct that writes to a tempfile and persists to a given location atomically on Drop
 #[derive(Debug)]
@@ -62,10 +60,7 @@ pub struct AtomicFile<'p> {
 impl<'p> AtomicFile<'p> {
     /// Creates a new temporary file that will eventually be persisted to path `p`
     pub fn new(p: &'p Path) -> Result<Self> {
-        Ok(Self {
-            path: p,
-            temp_file: Some(NamedTempFile::new()?),
-        })
+        Ok(Self { path: p, temp_file: Some(NamedTempFile::new()?) })
     }
 
     /// Gives a chance to persist the file and retrieve the error if any
@@ -76,9 +71,7 @@ impl<'p> AtomicFile<'p> {
     }
 
     /// Returns the `Path` of the underlying temporary file
-    pub fn temp_path(&self) -> &Path {
-        self.temp_file.as_ref().unwrap().path()
-    }
+    pub fn temp_path(&self) -> &Path { self.temp_file.as_ref().unwrap().path() }
 }
 
 impl<'p> io::Write for AtomicFile<'p> {
@@ -113,9 +106,7 @@ pub trait FromDisk {
     fn set_loaded_from<P: AsRef<Path>>(&mut self, _p: P) {}
 
     /// If saved, get the path the item was loaded from
-    fn loaded_from(&self) -> Option<&Path> {
-        None
-    }
+    fn loaded_from(&self) -> Option<&Path> { None }
 
     /// Only load from disk if `yes` is `true`, otherwise return `None`
     fn load_if<P: AsRef<Path>>(p: P, yes: bool) -> Option<Result<Self>>

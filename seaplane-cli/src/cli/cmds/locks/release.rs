@@ -1,3 +1,7 @@
+use clap::{ArgMatches, Command};
+use seaplane::api::v1::LockId;
+use serde_json::json;
+
 use crate::{
     api::LocksReq,
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
@@ -5,9 +9,6 @@ use crate::{
     error::Result,
     printer::OutputFormat,
 };
-use clap::{ArgMatches, Command};
-use seaplane::api::v1::LockId;
-use serde_json::json;
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneLocksRelease;
@@ -29,10 +30,7 @@ impl CliCommand for SeaplaneLocksRelease {
         let locksctx = ctx.locks_ctx.get_mut_or_init();
         let model_name = locksctx.lock_name.as_ref().map(|s| s.to_model());
 
-        req.set_identifiers(
-            model_name,
-            locksctx.lock_id.as_ref().map(|s| s.encoded().to_owned()),
-        )?;
+        req.set_identifiers(model_name, locksctx.lock_id.as_ref().map(|s| s.encoded().to_owned()))?;
 
         req.release()?;
 
@@ -49,9 +47,8 @@ impl CliCommand for SeaplaneLocksRelease {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.locks_ctx.init(LocksCtx::from_locks_common(
-            &SeaplaneLocksCommonArgMatches(matches),
-        )?);
+        ctx.locks_ctx
+            .init(LocksCtx::from_locks_common(&SeaplaneLocksCommonArgMatches(matches))?);
 
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();

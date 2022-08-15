@@ -18,7 +18,7 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight delete -h
-seaplane-flight-delete [..]
+seaplane[EXE]-flight-delete [..]
 Delete a local Flight Plan
 
 USAGE:
@@ -45,7 +45,7 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight delete --help
-seaplane-flight-delete [..]
+seaplane[EXE]-flight-delete [..]
 Delete a local Flight Plan
 
 USAGE:

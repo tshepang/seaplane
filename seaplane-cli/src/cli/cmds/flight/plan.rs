@@ -102,10 +102,8 @@ impl CliCommand for SeaplaneFlightPlan {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.flight_ctx.init(FlightCtx::from_flight_common(
-            &SeaplaneFlightCommonArgMatches(matches),
-            "",
-        )?);
+        ctx.flight_ctx
+            .init(FlightCtx::from_flight_common(&SeaplaneFlightCommonArgMatches(matches), "")?);
         ctx.args.force = matches.contains_id("force");
         ctx.args.fetch = matches.contains_id("fetch");
         Ok(())

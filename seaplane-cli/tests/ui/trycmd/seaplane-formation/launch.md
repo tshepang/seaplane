@@ -1,10 +1,10 @@
 ```console
 $ seaplane formation launch -h
-seaplane-formation-launch [..]
+seaplane[EXE]-formation-launch [..]
 Start a local Formation Plan creating a remote Formation Instance
 
 USAGE:
-    seaplane formation launch [OPTIONS] <NAME|ID>
+    seaplane[EXE] formation launch [OPTIONS] <NAME|ID>
 
 ARGS:
     <NAME|ID>    The name or ID of the Formation Plan to launch and create an Instance of
@@ -26,7 +26,7 @@ OPTIONS:
 
 ```console
 $ seaplane formation launch --help
-seaplane-formation-launch [..]
+seaplane[EXE]-formation-launch [..]
 Start a local Formation Plan creating a remote Formation Instance
 
 In many cases, or at least initially a local Formation Plan may only have a single
@@ -64,7 +64,7 @@ configurations for the given Formation, these newly activated configurations wil
 and traffic will be balanced between any *all* configurations.
 
 USAGE:
-    seaplane formation launch [OPTIONS] <NAME|ID>
+    seaplane[EXE] formation launch [OPTIONS] <NAME|ID>
 
 ARGS:
     <NAME|ID>

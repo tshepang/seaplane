@@ -6,13 +6,9 @@ use crate::{cli::CliCommand, error::Result, Ctx};
 pub struct SeaplaneFlightTemplate;
 
 impl SeaplaneFlightTemplate {
-    pub fn command() -> Command<'static> {
-        Command::new("template")
-    }
+    pub fn command() -> Command<'static> { Command::new("template") }
 }
 
 impl CliCommand for SeaplaneFlightTemplate {
-    fn run(&self, _ctx: &mut Ctx) -> Result<()> {
-        todo!("impl SeaplaneFlightTemplate::run")
-    }
+    fn run(&self, _ctx: &mut Ctx) -> Result<()> { todo!("impl SeaplaneFlightTemplate::run") }
 }

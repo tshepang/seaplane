@@ -28,24 +28,24 @@ use thiserror::Error;
 // Grammar
 //
 // 	reference                       := name [ ":" tag ] [ "@" digest ]
-//	name                            := [domain '/'] path-component ['/' path-component]*
-//	domain                          := domain-component ['.' domain-component]* [':' port-number]
-//	domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
-//	port-number                     := /[0-9]+/
-//	path-component                  := alpha-numeric [separator alpha-numeric]*
+// 	name                            := [domain '/'] path-component ['/' path-component]*
+// 	domain                          := domain-component ['.' domain-component]* [':' port-number]
+// 	domain-component                := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
+// 	port-number                     := /[0-9]+/
+// 	path-component                  := alpha-numeric [separator alpha-numeric]*
 // 	alpha-numeric                   := /[a-z0-9]+/
-//	separator                       := /[_.]|__|[-]*/
+// 	separator                       := /[_.]|__|[-]*/
 //
-//	tag                             := /[\w][\w.-]{0,127}/
+// 	tag                             := /[\w][\w.-]{0,127}/
 //
-//	digest                          := digest-algorithm ":" digest-hex
-//	digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator digest-algorithm-component ]*
-//	digest-algorithm-separator      := /[+.-_]/
-//	digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
-//	digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
+// 	digest                          := digest-algorithm ":" digest-hex
+// 	digest-algorithm                := digest-algorithm-component [ digest-algorithm-separator
+// digest-algorithm-component ]* 	digest-algorithm-separator      := /[+.-_]/
+// 	digest-algorithm-component      := /[A-Za-z][A-Za-z0-9]*/
+// 	digest-hex                      := /[0-9a-fA-F]{32,}/ ; At least 128 bit digest value
 //
-//	identifier                      := /[a-f0-9]{64}/
-//	short-identifier                := /[a-f0-9]{6,64}/
+// 	identifier                      := /[a-f0-9]{64}/
+// 	short-identifier                := /[a-f0-9]{6,64}/
 
 const NAME_TOTAL_LENGTH_MAX: usize = 255;
 const TAG_TOTAL_LENGTH_MAX: usize = 127;
@@ -72,20 +72,13 @@ impl ImageReference {
             && self.digest == other.digest
     }
 
-    pub fn domain(&self) -> &str {
-        &self.domain
-    }
+    pub fn domain(&self) -> &str { &self.domain }
 
-    pub fn path(&self) -> &str {
-        &self.path
-    }
+    pub fn path(&self) -> &str { &self.path }
 
     /// Add the given digest to this image reference, replacing any digest that currently exists
     pub fn with_digest<S: Into<String>>(self, digest: S) -> Self {
-        Self {
-            digest: Some(digest.into()),
-            ..self
-        }
+        Self { digest: Some(digest.into()), ..self }
     }
 }
 
@@ -124,9 +117,7 @@ impl Display for ImageReference {
 impl FromStr for ImageReference {
     type Err = ImageReferenceError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parse(s)
-    }
+    fn from_str(s: &str) -> Result<Self, Self::Err> { parse(s) }
 }
 
 impl Serialize for ImageReference {
@@ -159,24 +150,18 @@ pub fn parse(input: &str) -> Result<ImageReference, ImageReferenceError> {
     // TODO: Consider how to handle invalid domain. In docker, a name with
     // invalid domain is considered to be docker.io/name. Do we want to do the
     // same? For now, error out and requires user to input a valid domain name.
-    if let Err(err) = validate_domain(&reference.domain) {
-        return Err(err);
-    }
+    validate_domain(&reference.domain)?;
 
     if reference.domain.len() + reference.path.len() > NAME_TOTAL_LENGTH_MAX {
         return Err(ImageReferenceError::ErrNameTooLong);
     }
 
     if let Some(tag) = reference.tag.as_ref() {
-        if let Err(err) = validate_tags(tag) {
-            return Err(err);
-        }
+        validate_tags(tag)?;
     }
 
     if let Some(digest) = reference.digest.as_ref() {
-        if let Err(err) = validate_digest(digest) {
-            return Err(err);
-        }
+        validate_digest(digest)?;
     }
 
     Ok(reference)
@@ -206,17 +191,11 @@ fn parse_name(input: &str) -> Res<&str, &str> {
 // Split name into domain and path. Domain is the first component delimited by a
 // '/'.  For example, name = domain/path1/path2/path3.
 fn split_domain(input: &str) -> Res<&str, (&str, &str)> {
-    context(
-        "split_domain",
-        separated_pair(take_till(|c| c == '/'), tag("/"), rest),
-    )(input)
+    context("split_domain", separated_pair(take_till(|c| c == '/'), tag("/"), rest))(input)
 }
 
 fn parse_tags(input: &str) -> Res<&str, Option<&str>> {
-    context(
-        "parse_tags",
-        opt(preceded(tag(":"), take_till1(|c| c == '@'))),
-    )(input)
+    context("parse_tags", opt(preceded(tag(":"), take_till1(|c| c == '@'))))(input)
 }
 
 fn validate_tags(input: &str) -> Result<(), ImageReferenceError> {
@@ -257,21 +236,15 @@ fn validate_digest(input: &str) -> Result<(), ImageReferenceError> {
         match separated_pair(alphanumeric1, tag(":"), parse_hex)(input) {
             Ok((rest, (protocol, digest_hex))) => (rest, (protocol, digest_hex)),
             Err(_) => {
-                return Err(ImageReferenceError::ErrDigestInvalidFormat(
-                    input.to_string(),
-                ));
+                return Err(ImageReferenceError::ErrDigestInvalidFormat(input.to_string()));
             }
         };
     if !input.is_empty() {
-        return Err(ImageReferenceError::ErrDigestInvalidFormat(
-            input.to_string(),
-        ));
+        return Err(ImageReferenceError::ErrDigestInvalidFormat(input.to_string()));
     }
 
     if !digest_hex.chars().all(|c| c.is_hex_digit()) {
-        return Err(ImageReferenceError::ErrDigestInvalidFormat(
-            input.to_string(),
-        ));
+        return Err(ImageReferenceError::ErrDigestInvalidFormat(input.to_string()));
     }
 
     Ok(())
@@ -280,9 +253,7 @@ fn validate_digest(input: &str) -> Result<(), ImageReferenceError> {
 fn validate_domain(input: &str) -> Result<(), ImageReferenceError> {
     // Check if domain containers a `.` or a `:` or the domain is exactly `localhost`.
     if !input.chars().any(|c| c == '.' || c == ':') && input != "localhost" {
-        return Err(ImageReferenceError::ErrDomainInvalidFormat(
-            input.to_string(),
-        ));
+        return Err(ImageReferenceError::ErrDomainInvalidFormat(input.to_string()));
     }
 
     Ok(())
@@ -302,10 +273,7 @@ pub enum ImageReferenceError {
     #[error("invalid digest format: `{0}`")]
     ErrDigestInvalidFormat(String),
 
-    #[error(
-        "repository name must not be more than {} characters",
-        NAME_TOTAL_LENGTH_MAX
-    )]
+    #[error("repository name must not be more than {} characters", NAME_TOTAL_LENGTH_MAX)]
     ErrNameTooLong,
 
     #[error("repository name must be lower case")]
@@ -359,10 +327,7 @@ mod tests {
         // Parse tags only
         assert_eq!(parse_tags(":latest"), Ok(("", Some("latest"))));
         // Parse both tags and digest
-        assert_eq!(
-            parse_tags(":latest@sha256:XXX"),
-            Ok(("@sha256:XXX", Some("latest")))
-        );
+        assert_eq!(parse_tags(":latest@sha256:XXX"), Ok(("@sha256:XXX", Some("latest"))));
         // Parse only digest
         assert_eq!(parse_tags("@sha256:XXX"), Ok(("@sha256:XXX", None)));
         // Parse no tags
@@ -373,10 +338,7 @@ mod tests {
     fn test_parse_digest() {
         assert_eq!(parse_digest("@sha256:XXX"), Ok(("", Some("sha256:XXX"))));
         assert_eq!(parse_digest("registry.in"), Ok(("registry.in", None)));
-        assert_eq!(
-            parse_digest(":latest@sha256:XXX"),
-            Ok((":latest@sha256:XXX", None))
-        );
+        assert_eq!(parse_digest(":latest@sha256:XXX"), Ok((":latest@sha256:XXX", None)));
     }
 
     #[test]
@@ -411,19 +373,14 @@ mod tests {
 
     #[test]
     fn test_split_domain() {
-        assert_eq!(
-            split_domain("domain/path1/path2"),
-            Ok(("", ("domain", "path1/path2")))
-        );
+        assert_eq!(split_domain("domain/path1/path2"), Ok(("", ("domain", "path1/path2"))));
     }
 
     #[test]
     fn test_validate_domain() {
         assert_eq!(
             parse("seaplane/busybox:latest"),
-            Err(ImageReferenceError::ErrDomainInvalidFormat(
-                "seaplane".to_string()
-            ))
+            Err(ImageReferenceError::ErrDomainInvalidFormat("seaplane".to_string()))
         );
         assert_eq!(validate_domain("docker.io"), Ok(()));
         assert_eq!(validate_domain("registry.hub.docker.com"), Ok(()));

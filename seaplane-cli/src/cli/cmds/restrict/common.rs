@@ -1,5 +1,4 @@
 use clap::{value_parser, Arg, ArgMatches, PossibleValue};
-
 use seaplane::api::v1::{Provider as ProviderModel, Region as RegionModel};
 
 use crate::OutputFormat;

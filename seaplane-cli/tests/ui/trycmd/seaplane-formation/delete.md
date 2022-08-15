@@ -1,6 +1,6 @@
 ```console
 $ seaplane formation delete -h
-seaplane-formation-delete [..]
+seaplane[EXE]-formation-delete [..]
 Deletes local Formation Plans and/or remote Formation Instances
 
 USAGE:
@@ -32,7 +32,7 @@ OPTIONS:
 
 ```console
 $ seaplane formation delete --help
-seaplane-formation-delete [..]
+seaplane[EXE]-formation-delete [..]
 Deletes local Formation Plans and/or remote Formation Instances
 
 USAGE:

@@ -35,9 +35,7 @@ pub struct TokenRequestBuilder {
 
 impl TokenRequestBuilder {
     /// Create a new `Default` builder
-    pub fn new() -> Self {
-        Self::default()
-    }
+    pub fn new() -> Self { Self::default() }
 
     /// Set the API Key used in Bearer Authorization
     ///
@@ -102,9 +100,7 @@ pub struct TokenRequest {
 
 impl TokenRequest {
     /// Create a new request builder
-    pub fn builder() -> TokenRequestBuilder {
-        TokenRequestBuilder::new()
-    }
+    pub fn builder() -> TokenRequestBuilder { TokenRequestBuilder::new() }
 
     /// Returns a short lived JWT that can be used to authenticate to other API endpoints
     ///

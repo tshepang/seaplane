@@ -14,9 +14,7 @@ impl Serialize for EncodedString {
 }
 
 impl EncodedString {
-    pub fn new(s: String) -> Self {
-        EncodedString(s)
-    }
+    pub fn new(s: String) -> Self { EncodedString(s) }
 
     /// Decodes into binary format
     pub fn decoded(&self) -> Result<Vec<u8>> {
@@ -26,30 +24,22 @@ impl EncodedString {
 }
 
 impl Default for EncodedString {
-    fn default() -> Self {
-        EncodedString("".to_owned())
-    }
+    fn default() -> Self { EncodedString("".to_owned()) }
 }
 
 impl fmt::Display for EncodedString {
     // Bit of a footgun here, we "display" as Base64 regardless of encoding.
     // Use direct writes for binary data.
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn bin() -> Vec<u8> {
-        b"Hey\x01There".to_vec()
-    }
+    fn bin() -> Vec<u8> { b"Hey\x01There".to_vec() }
 
-    fn base64() -> String {
-        "SGV5AVRoZXJl".to_owned()
-    }
+    fn base64() -> String { "SGV5AVRoZXJl".to_owned() }
 
     #[test]
     fn test_decode() -> Result<()> {

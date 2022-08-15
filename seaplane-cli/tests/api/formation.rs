@@ -10,7 +10,6 @@ use wildmatch::WildMatch;
 
 use super::{test_main_with_ctx, then, when, when_json, MOCK_SERVER};
 
-//
 // The ARGV must use the name `stubb` as these are just tests, no need to spend brainpower trying to
 // figure out how to make it perfectly generic.
 //
@@ -159,7 +158,12 @@ macro_rules! test_fn_land {
                 then.status(200).body("success");
             });
 
-            let (mut list_names, mut list_cfg_uuids, mut list_active_cfg_uuids, mut get_cfg) = if $remote_instances {
+            let (
+                mut list_names,
+                mut list_cfg_uuids,
+                mut list_active_cfg_uuids,
+                mut get_cfg
+            ) = if $remote_instances {
                 mock_fetch!()
             } else {
                 mock_fetch!(@no_remote_instances)
@@ -192,16 +196,8 @@ macro_rules! test_fn_land {
     };
 }
 
-test_fn_land!(
-    formation_land,
-    "formation land stubb",
-    remote_instances = false
-);
-test_fn_land!(
-    formation_land_fetch,
-    "formation land stubb --fetch",
-    remote_instances = false
-);
+test_fn_land!(formation_land, "formation land stubb", remote_instances = false);
+test_fn_land!(formation_land_fetch, "formation land stubb --fetch", remote_instances = false);
 test_fn_land!(
     formation_land_fetch_w_remotes,
     "formation land stubb --fetch",
@@ -222,7 +218,12 @@ macro_rules! test_fn_delete {
                 then(t, &resp_json);
             });
 
-            let (mut list_names, mut list_cfg_uuids, mut list_active_cfg_uuids, mut get_cfg) = if $remote_instances {
+            let (
+                mut list_names,
+                mut list_cfg_uuids,
+                mut list_active_cfg_uuids,
+                mut get_cfg
+            ) = if $remote_instances {
                 mock_fetch!()
             } else {
                 mock_fetch!(@no_remote_instances)
@@ -257,21 +258,9 @@ macro_rules! test_fn_delete {
     };
 }
 
-test_fn_delete!(
-    formation_del,
-    "formation delete stubb",
-    remote_instances = false
-);
-test_fn_delete!(
-    formation_del_force,
-    "formation delete stubb --force",
-    remote_instances = false
-);
-test_fn_delete!(
-    formation_del_fetch,
-    "formation delete stubb --fetch",
-    remote_instances = false
-);
+test_fn_delete!(formation_del, "formation delete stubb", remote_instances = false);
+test_fn_delete!(formation_del_force, "formation delete stubb --force", remote_instances = false);
+test_fn_delete!(formation_del_fetch, "formation delete stubb --fetch", remote_instances = false);
 test_fn_delete!(
     formation_del_fetch_w_remotes,
     "formation delete stubb --fetch",
@@ -524,7 +513,12 @@ The remote Formation Instance URL is https://stubb--bar.on.cplane.cloud/
         list_active_cfg_uuids.iter_mut().for_each(|m| m.delete());
         get_cfg.iter_mut().for_each(|m| m.delete());
     }};
-    ($argv:expr, should_create = $should_create:expr, remote_instances = $remote_instances:expr, expected_json = $expected_json:expr) => {{
+    (
+        $argv:expr,
+        should_create = $should_create:expr,
+        remote_instances = $remote_instances:expr,
+        expected_json = $expected_json:expr
+    ) => {{
         let mut ctx = Ctx::default();
         ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
         ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
@@ -536,7 +530,12 @@ The remote Formation Instance URL is https://stubb--bar.on.cplane.cloud/
             remote_instances = $remote_instances
         );
     }};
-    ($argv:expr, $ctx:expr, should_create = $should_create:expr, remote_instances = $remote_instances:expr) => {{
+    (
+        $argv:expr,
+        $ctx:expr,
+        should_create = $should_create:expr,
+        remote_instances = $remote_instances:expr
+    ) => {{
         if $ctx.compute_url.is_none() {
             $ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
         }
@@ -551,7 +550,11 @@ The remote Formation Instance URL is https://stubb--bar.on.cplane.cloud/
             remote_instances = $remote_instances
         );
     }};
-    ($argv:expr, should_create = $should_create:expr, remote_instances = $remote_instances:expr) => {{
+    (
+        $argv:expr,
+        should_create = $should_create:expr,
+        remote_instances = $remote_instances:expr
+    ) => {{
         mock_launch!(
             $argv,
             should_create=$should_create,
@@ -701,12 +704,7 @@ fn formation_plan_grounded_new() {
 #[test]
 fn formation_launch() {
     let mut ctx = build_ctx_with_default_formation(true);
-    mock_launch!(
-        "formation launch stubb",
-        ctx,
-        should_create = true,
-        remote_instances = false
-    );
+    mock_launch!("formation launch stubb", ctx, should_create = true, remote_instances = false);
 }
 
 #[test]
@@ -720,11 +718,7 @@ fn formation_launch_fetch() {
             remote_instances = b
         );
     }
-    mock_launch!(
-        "formation launch stubb --fetch",
-        should_create = false,
-        remote_instances = true
-    );
+    mock_launch!("formation launch stubb --fetch", should_create = false, remote_instances = true);
 }
 
 #[test]
@@ -764,7 +758,12 @@ macro_rules! test_fn_fetch {
             // "formation fetch-remote stubb" == 3; get just the stubb formation
             let is_all = $argv.split(' ').count() == 2;
 
-            let (mut list_names, mut list_cfg_uuids, mut list_active_cfg_uuids, mut get_cfg) = mock_fetch!();
+            let (
+                mut list_names,
+                mut list_cfg_uuids,
+                mut list_active_cfg_uuids,
+                mut get_cfg
+            ) = mock_fetch!();
 
             let ctx = build_ctx_with_default_formation(false);
             let res = test_main_with_ctx(&cli!($argv), ctx);
@@ -802,7 +801,12 @@ macro_rules! test_fn_status {
         let is_all = $argv.split(' ').count() == 2;
         let fetch = !$argv.contains("--no-fetch");
 
-        let (mut list_names, mut list_cfg_uuids, mut list_active_cfg_uuids, mut get_cfg) = mock_fetch!(@impl
+        let (
+            mut list_names,
+            mut list_cfg_uuids,
+            mut list_active_cfg_uuids,
+            mut get_cfg
+        ) = mock_fetch!(@impl
             "stubb",
             json!([DEFAULT_CFG_UUID]),
             json!([{

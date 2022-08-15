@@ -60,10 +60,7 @@ impl<T> RequestBuilder<T> {
         }
 
         let mut headers = header::HeaderMap::new();
-        headers.insert(
-            CONTENT_TYPE,
-            header::HeaderValue::from_static("application/json"),
-        );
+        headers.insert(CONTENT_TYPE, header::HeaderValue::from_static("application/json"));
 
         #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
         let mut builder = blocking::Client::builder()

@@ -2,7 +2,7 @@ Short help:
 
 ```console
 $ seaplane metadata list -h
-seaplane-metadata-list [..]
+seaplane[EXE]-metadata-list [..]
 List one or more metadata key-value pairs
 
 USAGE:
@@ -35,7 +35,7 @@ Long help:
 
 ```console
 $ seaplane metadata list --help
-seaplane-metadata-list [..]
+seaplane[EXE]-metadata-list [..]
 List one or more metadata key-value pairs
 
 Keys and values will be displayed in base64 encoded format by default because they may contain

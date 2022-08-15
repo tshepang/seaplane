@@ -1,7 +1,6 @@
 //! The `/locks` endpoint APIs which allows working with [`HeldLock`]s
 mod models;
 pub use models::*;
-
 use reqwest::Url;
 use serde::Deserialize;
 
@@ -29,40 +28,28 @@ pub struct LocksRequest {
 }
 
 impl From<RequestBuilder<RequestTarget>> for LocksRequestBuilder {
-    fn from(builder: RequestBuilder<RequestTarget>) -> Self {
-        Self { builder }
-    }
+    fn from(builder: RequestBuilder<RequestTarget>) -> Self { Self { builder } }
 }
 
 impl Default for LocksRequestBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
 impl LocksRequestBuilder {
     /// Create a new LocksRequestBuilder
-    pub fn new() -> Self {
-        RequestBuilder::new(METADATA_API_URL, "v1/locks/").into()
-    }
+    pub fn new() -> Self { RequestBuilder::new(METADATA_API_URL, "v1/locks/").into() }
 
     /// Build a LocksRequest from the given parameters
-    pub fn build(self) -> Result<LocksRequest> {
-        Ok(self.builder.build()?.into())
-    }
+    pub fn build(self) -> Result<LocksRequest> { Ok(self.builder.build()?.into()) }
 
     /// Set the token used in Bearer Authorization
     ///
     /// **NOTE:** This is required for all endpoints
     #[must_use]
-    pub fn token<U: Into<String>>(self, token: U) -> Self {
-        self.builder.token(token).into()
-    }
+    pub fn token<U: Into<String>>(self, token: U) -> Self { self.builder.token(token).into() }
 
     // Used in testing and development to manually set the URL
     #[doc(hidden)]
-    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self {
-        self.builder.base_url(url).into()
-    }
+    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self { self.builder.base_url(url).into() }
 
     /// The lock name with which to perform operations where you may not be holding the lock.
     /// Encoded in url-safe base64
@@ -103,16 +90,12 @@ impl LocksRequestBuilder {
 }
 
 impl From<ApiRequest<RequestTarget>> for LocksRequest {
-    fn from(request: ApiRequest<RequestTarget>) -> Self {
-        Self { request }
-    }
+    fn from(request: ApiRequest<RequestTarget>) -> Self { Self { request } }
 }
 
 impl LocksRequest {
     /// Create a new request builder
-    pub fn builder() -> LocksRequestBuilder {
-        LocksRequestBuilder::new()
-    }
+    pub fn builder() -> LocksRequestBuilder { LocksRequestBuilder::new() }
 
     // Internal method creating the URL for all single lock endpoints
     fn single_lock_url(&self) -> Result<Url> {
@@ -120,10 +103,9 @@ impl LocksRequest {
             None | Some(RequestTarget::HeldLock(_) | RequestTarget::Range(_)) => {
                 Err(SeaplaneError::IncorrectLocksRequestTarget)
             }
-            Some(RequestTarget::SingleLock(l)) => Ok(add_base64_path_segment(
-                self.request.endpoint_url.clone(),
-                l.encoded(),
-            )),
+            Some(RequestTarget::SingleLock(l)) => {
+                Ok(add_base64_path_segment(self.request.endpoint_url.clone(), l.encoded()))
+            }
         }
     }
 
@@ -184,7 +166,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest};
+    /// use seaplane::api::v1::{LocksRequest, LocksRequestBuilder};
     ///
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -214,11 +196,7 @@ impl LocksRequest {
         let name = self.lock_name()?;
         map_api_error(resp)?
             .json::<AcquireResponse>()
-            .map(|AcquireResponse { id, sequencer }| HeldLock {
-                name,
-                id,
-                sequencer,
-            })
+            .map(|AcquireResponse { id, sequencer }| HeldLock { name, id, sequencer })
             .map_err(Into::into)
     }
 
@@ -228,7 +206,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest, LockName, LockId};
+    /// use seaplane::api::v1::{LockId, LockName, LocksRequest, LocksRequestBuilder};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -270,7 +248,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest, LockName, LockId};
+    /// use seaplane::api::v1::{LockId, LockName, LocksRequest, LocksRequestBuilder};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -313,7 +291,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder,LocksRequest};
+    /// use seaplane::api::v1::{LocksRequest, LocksRequestBuilder};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -337,18 +315,19 @@ impl LocksRequest {
         map_api_error(resp)?.json::<LockInfo>().map_err(Into::into)
     }
 
-    /// Returns a single page of lock information for the given directory, beginning with the `from` key.
+    /// Returns a single page of lock information for the given directory, beginning with the `from`
+    /// key.
     ///
     /// If no directory is given, the root directory is used.
     /// If no `from` is given, the range begins from the start.
     ///
-    /// If more pages are desired, perform another range request using the `next` value from the first request
-    /// as the `from` value of the following request, or use `get_all_pages`.
+    /// If more pages are desired, perform another range request using the `next` value from the
+    /// first request as the `from` value of the following request, or use `get_all_pages`.
     ///
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder, LocksRequest, RangeQueryContext, LockName};
+    /// use seaplane::api::v1::{LockName, LocksRequest, LocksRequestBuilder, RangeQueryContext};
     ///
     /// let root_dir_range: RangeQueryContext<LockName> = RangeQueryContext::new();
     ///
@@ -365,10 +344,10 @@ impl LocksRequest {
     ///     next_page_range.set_from(next_key);
     ///
     ///     let req = LocksRequestBuilder::new()
-    ///     .token("abc123_token")
-    ///     .range(next_page_range)
-    ///     .build()
-    ///     .unwrap();
+    ///         .token("abc123_token")
+    ///         .range(next_page_range)
+    ///         .build()
+    ///         .unwrap();
     ///
     ///     let next_page_resp = req.get_page().unwrap();
     ///     dbg!(next_page_resp);
@@ -395,7 +374,8 @@ impl LocksRequest {
         }
     }
 
-    /// Returns all held lock information for the given directory, from the `from` key onwards. May perform multiple requests.
+    /// Returns all held lock information for the given directory, from the `from` key onwards. May
+    /// perform multiple requests.
     ///
     /// If no directory is given, the root directory is used.
     /// If no `from` is given, the range begins from the start.
@@ -403,7 +383,7 @@ impl LocksRequest {
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequestBuilder, LocksRequest, RangeQueryContext};
+    /// use seaplane::api::v1::{LocksRequest, LocksRequestBuilder, RangeQueryContext};
     ///
     /// let root_dir_range = RangeQueryContext::new();
     ///
@@ -416,14 +396,15 @@ impl LocksRequest {
     /// let resp = req.get_all_pages().unwrap();
     /// dbg!(resp);
     /// ```
-    //TODO: Replace this with a collect on a Pages/Entries iterator
+    // TODO: Replace this with a collect on a Pages/Entries iterator
     pub fn get_all_pages(&mut self) -> Result<Vec<LockInfo>> {
         let mut pages = Vec::new();
         loop {
             let mut lir = self.get_page()?;
             pages.append(&mut lir.infos);
             if let Some(next_key) = lir.next {
-                // TODO: Regrettable duplication here suggests that there should be a ConfigKeyRequest and a ConfigRangeRequest
+                // TODO: Regrettable duplication here suggests that there should be a
+                // ConfigKeyRequest and a ConfigRangeRequest
                 if let Some(RequestTarget::Range(ref mut context)) = self.request.target {
                     context.set_from(next_key);
                 } else {

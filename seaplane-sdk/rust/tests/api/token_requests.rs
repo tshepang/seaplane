@@ -24,10 +24,7 @@ fn access_token() {
             .path("/token")
             .header("authorization", "Bearer abc123")
             .header("accept", "*/*")
-            .header(
-                "host",
-                &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()),
-            );
+            .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()));
         then.status(201).body("abc.123.def");
     });
 
@@ -49,10 +46,7 @@ fn access_token_json() {
             .path("/token")
             .header("authorization", "Bearer abc123")
             .header("accept", "application/json")
-            .header(
-                "host",
-                &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()),
-            );
+            .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()));
         then.status(201).json_body(resp_json.clone());
     });
 

@@ -2,11 +2,11 @@ Short help:
 
 ```console
 $ seaplane locks renew -h
-seaplane-locks-renew [..]
+seaplane[EXE]-locks-renew [..]
 Attempt to renew the lock for N seconds
 
 USAGE:
-    seaplane locks renew [OPTIONS] --lock-id <STRING> --ttl <SECS> <LOCK_NAME>
+    seaplane[EXE] locks renew [OPTIONS] --lock-id <STRING> --ttl <SECS> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>    The name of the lock
@@ -31,11 +31,11 @@ Long Help:
 
 ```console
 $ seaplane locks renew --help
-seaplane-locks-renew [..]
+seaplane[EXE]-locks-renew [..]
 Attempt to renew the lock for N seconds
 
 USAGE:
-    seaplane locks renew [OPTIONS] --lock-id <STRING> --ttl <SECS> <LOCK_NAME>
+    seaplane[EXE] locks renew [OPTIONS] --lock-id <STRING> --ttl <SECS> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>

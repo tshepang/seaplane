@@ -7,7 +7,7 @@ seaplane [..]
 Seaplane IO, Inc.
 
 USAGE:
-    seaplane [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]

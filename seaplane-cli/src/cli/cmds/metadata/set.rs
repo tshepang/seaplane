@@ -1,5 +1,4 @@
 use clap::{ArgMatches, Command};
-
 use seaplane::api::v1::metadata::Value;
 
 use crate::{
@@ -55,9 +54,7 @@ impl CliCommand for SeaplaneMetadataSet {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.md_ctx
-            .init(MetadataCtx::from_md_set(&SeaplaneMetadataSetArgMatches(
-                matches,
-            ))?);
+            .init(MetadataCtx::from_md_set(&SeaplaneMetadataSetArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         Ok(())
     }

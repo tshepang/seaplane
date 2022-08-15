@@ -3,11 +3,11 @@ Be default, `seaplane formation` will display the help text:
 ```console
 $ seaplane formation
 ? 2
-seaplane-formation [..]
+seaplane[EXE]-formation [..]
 Operate on local Formations Plans and remote Formation Instances of those Plans
 
 USAGE:
-    seaplane formation [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] formation [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]

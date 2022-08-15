@@ -30,26 +30,16 @@ pub struct HeldLock {
 
 impl HeldLock {
     /// Get a reference to the held lock's name.
-    pub fn name(&self) -> &LockName {
-        &self.name
-    }
+    pub fn name(&self) -> &LockName { &self.name }
 
     /// Get a reference to the held lock's id.
-    pub fn id(&self) -> &LockId {
-        &self.id
-    }
+    pub fn id(&self) -> &LockId { &self.id }
 
     /// Get the held lock's sequencer.
-    pub fn sequencer(&self) -> u32 {
-        self.sequencer
-    }
+    pub fn sequencer(&self) -> u32 { self.sequencer }
 
     pub fn new(name: LockName, id: LockId, sequencer: u32) -> HeldLock {
-        HeldLock {
-            name,
-            id,
-            sequencer,
-        }
+        HeldLock { name, id, sequencer }
     }
 }
 

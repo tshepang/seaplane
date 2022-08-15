@@ -31,10 +31,7 @@ Config  foo/bar    Enforced  [XE,XN]          []              []                
         then(t, &resp);
     });
 
-    let res = test_main(
-        &cli!("restrict get config Zm9vL2Jhcg --base64"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("restrict get config Zm9vL2Jhcg --base64"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), ENCODED);
@@ -47,19 +44,13 @@ Config  foo/bar    Enforced  [XE,XN]          []              []                
     assert_eq!(printer().as_string().trim(), ENCODED);
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict get config foo/bar --decode"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("restrict get config foo/bar --decode"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(printer().as_string().trim(), DECODED);
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict get config foo/bar --format json"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("restrict get config foo/bar --format json"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(4);
     assert_eq!(printer().as_string().trim(), resp.to_string());
@@ -118,19 +109,13 @@ Config  foo/baz    Enforced  [XN]             []              []                
     assert_eq!(printer().as_string().trim(), ENCODED);
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict list config --decode"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("restrict list config --decode"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), DECODED);
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict list config --format json"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("restrict list config --format json"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(printer().as_string().trim(), resp.to_string());
@@ -168,10 +153,7 @@ fn restrict_set() {
         then(t, &resp_json);
     });
 
-    let res = test_main(
-        &cli!("restrict set config foo/bar --region xe"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("restrict set config foo/bar --region xe"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -228,10 +210,7 @@ fn restrict_delete() {
         then(t, &resp_json);
     });
 
-    let res = test_main(
-        &cli!("restrict delete config foo/bar"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("restrict delete config foo/bar"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -240,10 +219,8 @@ fn restrict_delete() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict delete config Zm9vL2Jhcg --base64"),
-        MOCK_SERVER.base_url(),
-    );
+    let res =
+        test_main(&cli!("restrict delete config Zm9vL2Jhcg --base64"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(
@@ -252,10 +229,7 @@ fn restrict_delete() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict delete config foo/bar --decode"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = test_main(&cli!("restrict delete config foo/bar --decode"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(
@@ -264,10 +238,8 @@ fn restrict_delete() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict delete config foo/bar --format json"),
-        MOCK_SERVER.base_url(),
-    );
+    let res =
+        test_main(&cli!("restrict delete config foo/bar --format json"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(4);
     assert_eq!(

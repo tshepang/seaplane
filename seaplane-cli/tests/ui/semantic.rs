@@ -1,4 +1,3 @@
-//
 // The below tests are, "Do the CLI arguments we've set up have the semantics we expect"
 //
 // Additionally, we don't care about the output, just whether or not a run failed. These tests
@@ -178,10 +177,8 @@ fn seaplane_flight_copy() {
     // provide a NAME|ID
     assert!(cli!("flight copy foo").is_ok());
     // invalid NAME|ID
-    assert!(
-        cli!("flight copy way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
-            .is_err()
-    );
+    assert!(cli!("flight copy way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
+        .is_err());
 
     // clone is an alias
     assert!(cli!("flight clone foo").is_ok());
@@ -208,10 +205,8 @@ fn seaplane_flight_edit() {
     // provide a NAME|ID
     assert!(cli!("flight edit foo").is_ok());
     // invalid NAME|ID
-    assert!(
-        cli!("flight edit way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
-            .is_err()
-    );
+    assert!(cli!("flight edit way-too-long-to-pass-validationway-too-loooong-to-pass-validation")
+        .is_err());
 }
 
 #[test]
@@ -292,10 +287,8 @@ fn seaplane_formation_common() {
     assert!(
         cli!("formation plan --include-flight-plan foo;name=foo,image=demos/nginx:latest").is_ok()
     );
-    assert!(
-        cli!("formation plan --include-flight-plan foo;name=bar,image=demos/nginx:latest;baz")
-            .is_ok()
-    );
+    assert!(cli!("formation plan --include-flight-plan foo;name=bar,image=demos/nginx:latest;baz")
+        .is_ok());
     assert!(cli!("formation plan --include-flight-plan foo --include-flight-plan name=bar,image=demos/nginx:latest;baz").is_ok());
     assert!(cli!("formation plan --include-flight-plan foo;name=bar,image=demos/nginx:latest --include-flight-plan baz;qux").is_ok());
     assert!(cli!("formation plan --include-flight-plan name=bar,image=demos/nginx:latest;name=foo,image=demos/nginx:latest").is_ok());
@@ -332,9 +325,7 @@ fn seaplane_formation_common() {
 
     // provider
     // valid
-    assert!(
-        cli!("formation plan -I foo --provider=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok()
-    );
+    assert!(cli!("formation plan -I foo --provider=Aws,Azure,DigitalOcean,Equinix,Gcp,All").is_ok());
     // invalid
     assert!(cli!("formation plan -I foo --provider=carpet").is_err());
     // Case insensitive
@@ -372,10 +363,8 @@ fn seaplane_formation_common() {
         "formation plan -I foo --exclude-provider=Aws --exclude-provider=DigitalOcean,Azure"
     )
     .is_ok());
-    assert!(
-        cli!("formation plan -I foo --exclude-provider=Aws --exclude-provider=DigitalOcean")
-            .is_ok()
-    );
+    assert!(cli!("formation plan -I foo --exclude-provider=Aws --exclude-provider=DigitalOcean")
+        .is_ok());
     assert!(cli!("formation plan -I foo --exclude-provider Aws Azure DigitalOcean").is_err());
     // alias
     assert!(cli!(

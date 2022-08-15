@@ -2,11 +2,11 @@ Short help:
 
 ```console
 $ seaplane locks list -h
-seaplane-locks-list [..]
+seaplane[EXE]-locks-list [..]
 Get information around currently held locks
 
 USAGE:
-    seaplane locks list [OPTIONS] [LOCK_NAME]
+    seaplane[EXE] locks list [OPTIONS] [LOCK_NAME]
 
 ARGS:
     <LOCK_NAME>    The name of a lock. If omitted, all locks are shown. Append a trailing slash to list directory contents
@@ -32,7 +32,7 @@ Long help:
 
 ```console
 $ seaplane locks list --help
-seaplane-locks-list [..]
+seaplane[EXE]-locks-list [..]
 Get information around currently held locks.
 
 There are 3 ways to list locks with this command:
@@ -44,7 +44,7 @@ Locknames will be displayed in base64 encoded format by default because they may
 arbitrary binary data. Using --decode to output the decoded values instead.
 
 USAGE:
-    seaplane locks list [OPTIONS] [LOCK_NAME]
+    seaplane[EXE] locks list [OPTIONS] [LOCK_NAME]
 
 ARGS:
     <LOCK_NAME>

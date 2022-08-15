@@ -1,3 +1,5 @@
+use clap::{ArgMatches, Command};
+
 use crate::{
     api::LocksReq,
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
@@ -6,7 +8,6 @@ use crate::{
     ops::locks::HeldLock,
     printer::{Output, OutputFormat},
 };
-use clap::{ArgMatches, Command};
 
 /// A newtype wrapper to enforce where the ArgMatches came from which reduces errors in checking if
 /// values of arguments were used or not. i.e. `seaplane locks acquire` may not have the same
@@ -37,10 +38,7 @@ impl CliCommand for SeaplaneLocksAcquire {
         let locksctx = ctx.locks_ctx.get_mut_or_init();
         let model_name = locksctx.lock_name.as_ref().map(|s| s.to_model());
 
-        req.set_identifiers(
-            model_name,
-            locksctx.lock_id.as_ref().map(|s| s.encoded().to_owned()),
-        )?;
+        req.set_identifiers(model_name, locksctx.lock_id.as_ref().map(|s| s.encoded().to_owned()))?;
 
         let ttl = locksctx.ttl.as_ref().unwrap();
         let client_id: &str = locksctx.client_id.as_ref().unwrap();
@@ -60,9 +58,8 @@ impl CliCommand for SeaplaneLocksAcquire {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.locks_ctx.init(LocksCtx::from_locks_common(
-            &SeaplaneLocksCommonArgMatches(matches),
-        )?);
+        ctx.locks_ctx
+            .init(LocksCtx::from_locks_common(&SeaplaneLocksCommonArgMatches(matches))?);
 
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();

@@ -3,11 +3,11 @@ With no args:
 ```console
 $ seaplane restrict
 ? 2
-seaplane-restrict [..]
+seaplane[EXE]-restrict [..]
 Restrict the placement of data for Global Data Coordination API
 
 USAGE:
-    seaplane restrict [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] restrict [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -32,11 +32,11 @@ The short help:
 
 ```console
 $ seaplane restrict -h
-seaplane-restrict [..]
+seaplane[EXE]-restrict [..]
 Restrict the placement of data for Global Data Coordination API
 
 USAGE:
-    seaplane restrict [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] restrict [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -61,11 +61,11 @@ The long help:
 
 ```console
 $ seaplane restrict --help
-seaplane-restrict [..]
+seaplane[EXE]-restrict [..]
 Restrict the placement of data for Global Data Coordination API
 
 USAGE:
-    seaplane restrict [OPTIONS] <SUBCOMMAND>
+    seaplane[EXE] restrict [OPTIONS] <SUBCOMMAND>
 
 OPTIONS:
     -A, --api-key <STRING>

@@ -1,6 +1,6 @@
 ```console
 $ seaplane formation fetch-remote -h
-seaplane-formation-fetch-remote [..]
+seaplane[EXE]-formation-fetch-remote [..]
 Fetch remote Formation Instances and create/synchronize local Plan definitions
 
 USAGE:
@@ -24,7 +24,7 @@ OPTIONS:
 
 ```console
 $ seaplane formation fetch-remote --help
-seaplane-formation-fetch-remote [..]
+seaplane[EXE]-formation-fetch-remote [..]
 Fetch remote Formation Instances and create/synchronize local Plan definitions
 
 USAGE:

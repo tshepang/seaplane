@@ -12,7 +12,5 @@ impl SeaplaneFormationTemplate {
 }
 
 impl CliCommand for SeaplaneFormationTemplate {
-    fn run(&self, _ctx: &mut Ctx) -> Result<()> {
-        todo!("impl SeaplaneFormationTemplate::run")
-    }
+    fn run(&self, _ctx: &mut Ctx) -> Result<()> { todo!("impl SeaplaneFormationTemplate::run") }
 }

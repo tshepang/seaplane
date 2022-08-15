@@ -273,13 +273,16 @@ macro_rules! cli_traceln {
 /// are the same. Due to Rust syntax, if the argument should have hyphens, one must use
 /// `--("foo-bar-baz")`
 /// - `-('f')` sets the Short value. (Due to Rust syntax rules)
-/// - Visible aliases can be set with using `|` along with the similar Long value rules. I.e. `|foo` or
+/// - Visible aliases can be set with using `|` along with the similar Long value rules. I.e. `|foo`
+///   or
 /// `|("foo-with-hyphens"). When combined the Long/name it actually looks good `--foo|bar`, etc.
-/// - A value name can be set with `=["STRING"]` optionally also setting a default value `=["STRING"=>"default"]`
+/// - A value name can be set with `=["STRING"]` optionally also setting a default value
+///   `=["STRING"=>"default"]`
 /// - Setting multiple values can be done with `...` Note that this sets multiple
 /// values/occurrences in a consistent manner for this application. If you need arguments with
 /// different semantics you'll have to set those manually. `...` is equivalent to setting
-/// `Arg::new("foo").action(ArgAction::Append).multiple_values(true).number_of_values(1).value_delimiter(',')`
+/// `Arg::new("foo").action(ArgAction::Append).multiple_values(true).number_of_values(1).
+/// value_delimiter(',')`
 /// - Setting any boolean value to `true` can be done by just the function name i.e. `required`
 /// - Setting any boolean value to `false` can be done by prefixing the function with `!` i.e.
 /// `!required`
@@ -291,7 +294,7 @@ macro_rules! cli_traceln {
 /// arg!(--foo|foos =["NUM"=>"2"]... global !allow_hyphen_values);
 ///
 /// // is equivalent to (with the macro syntax in the comment to the right)...
-///# let _ =
+/// # let _ =
 /// Arg::new("foo")                // --foo
 ///   .long("foo")                 // --foo
 ///   .visible_alias("foos")       // |foos

@@ -14,7 +14,5 @@ impl SeaplaneFormationLoadBalance {
 }
 
 impl CliCommand for SeaplaneFormationLoadBalance {
-    fn run(&self, _ctx: &mut Ctx) -> Result<()> {
-        todo!("impl SeaplaneFormationLoadBalance::run")
-    }
+    fn run(&self, _ctx: &mut Ctx) -> Result<()> { todo!("impl SeaplaneFormationLoadBalance::run") }
 }

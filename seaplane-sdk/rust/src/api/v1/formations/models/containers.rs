@@ -44,14 +44,10 @@ pub struct Containers {
 
 impl Containers {
     /// Iterate through the containers
-    pub fn iter(&self) -> impl Iterator<Item = &Container> {
-        self.inner.iter()
-    }
+    pub fn iter(&self) -> impl Iterator<Item = &Container> { self.inner.iter() }
 
     /// Iterate through the containers mutably
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Container> {
-        self.inner.iter_mut()
-    }
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Container> { self.inner.iter_mut() }
 }
 
 /// A single formation name in the response from `GET /formations/NAME/containers/ID`
@@ -107,7 +103,5 @@ pub struct Container {
 
 // We don't derive the trait because we only need to check the UUID to determine equivalence
 impl PartialEq<Self> for Container {
-    fn eq(&self, other: &Self) -> bool {
-        self.container_id == other.container_id
-    }
+    fn eq(&self, other: &Self) -> bool { self.container_id == other.container_id }
 }

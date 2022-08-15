@@ -18,18 +18,9 @@ use crate::{
 #[non_exhaustive]
 #[derive(Debug)]
 pub(crate) enum RequestTarget {
-    Single {
-        api: String,
-        directory: RestrictedDirectory,
-    },
-    ApiRange {
-        api: String,
-        context: RangeQueryContext<RestrictedDirectory>,
-    },
-    AllRange {
-        from_api: Option<String>,
-        context: RangeQueryContext<RestrictedDirectory>,
-    },
+    Single { api: String, directory: RestrictedDirectory },
+    ApiRange { api: String, context: RangeQueryContext<RestrictedDirectory> },
+    AllRange { from_api: Option<String>, context: RangeQueryContext<RestrictedDirectory> },
 }
 
 /// The response given from a range query
@@ -96,15 +87,11 @@ pub struct RestrictedDirectory {
 impl_base64!(RestrictedDirectory);
 
 impl AsRef<str> for RestrictedDirectory {
-    fn as_ref(&self) -> &str {
-        self.inner.as_ref()
-    }
+    fn as_ref(&self) -> &str { self.inner.as_ref() }
 }
 
 impl fmt::Display for RestrictedDirectory {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.inner)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.inner) }
 }
 
 #[derive(
@@ -224,9 +211,7 @@ pub struct RestrictionDetails {
 
 impl RestrictionDetails {
     /// Create a [`RestrictionDetailsBuilder`] to build a new `RestrcitionDetails`
-    pub fn builder() -> RestrictionDetailsBuilder {
-        RestrictionDetailsBuilder::default()
-    }
+    pub fn builder() -> RestrictionDetailsBuilder { RestrictionDetailsBuilder::default() }
 }
 
 /// The response given from a range query

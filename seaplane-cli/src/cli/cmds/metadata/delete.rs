@@ -37,10 +37,7 @@ impl CliCommand for SeaplaneMetadataDelete {
         }
 
         if ctx.args.out_format == OutputFormat::Table {
-            cli_println!(
-                "\nSuccessfully removed {len} item{}",
-                if len > 1 { "s" } else { "" }
-            );
+            cli_println!("\nSuccessfully removed {len} item{}", if len > 1 { "s" } else { "" });
         } else {
             cli_println!(
                 "{}",
@@ -52,9 +49,8 @@ impl CliCommand for SeaplaneMetadataDelete {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.md_ctx.init(MetadataCtx::from_md_common(
-            &SeaplaneMetadataCommonArgMatches(matches),
-        )?);
+        ctx.md_ctx
+            .init(MetadataCtx::from_md_common(&SeaplaneMetadataCommonArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         Ok(())
     }

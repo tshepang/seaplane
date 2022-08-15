@@ -2,7 +2,6 @@ use std::{
     borrow::Cow,
     io,
     result::Result as StdResult,
-    str::FromStr,
     sync::{Mutex, MutexGuard, PoisonError},
 };
 
@@ -12,6 +11,7 @@ use serde::{
     de::{self, Deserializer},
     Deserialize, Serialize,
 };
+use strum::{Display, EnumString};
 
 use crate::{error::Result, Ctx};
 
@@ -52,22 +52,10 @@ impl Pb {
 }
 
 impl Drop for Pb {
-    fn drop(&mut self) {
-        self.finish_and_clear()
-    }
+    fn drop(&mut self) { self.finish_and_clear() }
 }
 
-#[derive(
-    strum::EnumString,
-    strum::Display,
-    Deserialize,
-    Copy,
-    Clone,
-    Debug,
-    PartialEq,
-    Eq,
-    clap::ValueEnum,
-)]
+#[derive(EnumString, Display, Deserialize, Copy, Clone, Debug, PartialEq, Eq, clap::ValueEnum)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum OutputFormat {
     Table,
@@ -75,14 +63,10 @@ pub enum OutputFormat {
 }
 
 impl Default for OutputFormat {
-    fn default() -> Self {
-        OutputFormat::Table
-    }
+    fn default() -> Self { OutputFormat::Table }
 }
 
-#[derive(
-    strum::Display, strum::EnumString, Copy, Clone, Debug, PartialEq, Eq, Serialize, clap::ValueEnum,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, clap::ValueEnum, Display, EnumString)]
 #[strum(ascii_case_insensitive, serialize_all = "lowercase")]
 pub enum ColorChoice {
     Always,
@@ -92,13 +76,12 @@ pub enum ColorChoice {
 }
 
 impl Default for ColorChoice {
-    fn default() -> Self {
-        ColorChoice::Auto
-    }
+    fn default() -> Self { ColorChoice::Auto }
 }
 
 impl<'de> Deserialize<'de> for ColorChoice {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> StdResult<Self, D::Error> {
+        use std::str::FromStr;
         let s = <&str>::deserialize(deserializer)?;
         ColorChoice::from_str(s).map_err(de::Error::custom)
     }
@@ -138,13 +121,13 @@ pub trait Output {
 
 #[cfg(all(feature = "color", not(feature = "api_tests")))]
 mod _printer {
-    use super::*;
-
     use atty::Stream;
     use termcolor::{
         Color as TermColorColor, ColorChoice as TermColorChoice, ColorSpec, StandardStream,
         WriteColor,
     };
+
+    use super::*;
 
     fn detect_tty(stream: Stream) -> TermColorChoice {
         if atty::is(stream) {
@@ -185,9 +168,7 @@ mod _printer {
             eprinter().set_stream(StandardStream::stderr(echoice));
         }
 
-        fn set_stream(&mut self, stream: StandardStream) {
-            self.0 = stream;
-        }
+        fn set_stream(&mut self, stream: StandardStream) { self.0 = stream; }
 
         pub fn set_color(&mut self, color: Color) {
             let _ = self
@@ -195,19 +176,13 @@ mod _printer {
                 .set_color(ColorSpec::new().set_fg(Some(color.into_termcolor())));
         }
 
-        pub fn reset(&mut self) {
-            let _ = self.0.reset();
-        }
+        pub fn reset(&mut self) { let _ = self.0.reset(); }
     }
 
     impl io::Write for Printer {
-        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            self.0.write(buf)
-        }
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> { self.0.write(buf) }
 
-        fn flush(&mut self) -> io::Result<()> {
-            self.0.flush()
-        }
+        fn flush(&mut self) -> io::Result<()> { self.0.flush() }
     }
 
     impl Color {
@@ -282,8 +257,9 @@ mod _printer {
 
 #[cfg(feature = "api_tests")]
 mod _printer {
-    use super::*;
     use std::borrow::Cow;
+
+    use super::*;
 
     static GLOBAL_TEST_PRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();
     static GLOBAL_TEST_EPRINTER: OnceCell<Mutex<self::_printer::Printer>> = OnceCell::new();
@@ -315,22 +291,14 @@ mod _printer {
 
         pub fn reset(&mut self) {}
 
-        pub fn clear(&mut self) {
-            self.0.clear()
-        }
+        pub fn clear(&mut self) { self.0.clear() }
 
-        pub fn as_string(&self) -> Cow<'_, str> {
-            String::from_utf8_lossy(&self.0)
-        }
+        pub fn as_string(&self) -> Cow<'_, str> { String::from_utf8_lossy(&self.0) }
     }
 
     impl io::Write for Printer {
-        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            self.0.write(buf)
-        }
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> { self.0.write(buf) }
 
-        fn flush(&mut self) -> io::Result<()> {
-            Ok(())
-        }
+        fn flush(&mut self) -> io::Result<()> { Ok(()) }
     }
 }

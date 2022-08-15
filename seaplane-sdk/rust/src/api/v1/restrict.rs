@@ -3,7 +3,6 @@ pub mod models;
 use std::str::FromStr;
 
 pub use models::*;
-
 use reqwest::{
     header::{self, CONTENT_TYPE},
     Url,
@@ -26,41 +25,29 @@ pub struct RestrictRequestBuilder {
 }
 
 impl From<RequestBuilder<RequestTarget>> for RestrictRequestBuilder {
-    fn from(builder: RequestBuilder<RequestTarget>) -> Self {
-        Self { builder }
-    }
+    fn from(builder: RequestBuilder<RequestTarget>) -> Self { Self { builder } }
 }
 
 impl Default for RestrictRequestBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
 
 impl RestrictRequestBuilder {
     /// Create a new RestrictRequestBuilder
-    pub fn new() -> Self {
-        RequestBuilder::new(METADATA_API_URL, "v1/restrict/").into()
-    }
+    pub fn new() -> Self { RequestBuilder::new(METADATA_API_URL, "v1/restrict/").into() }
 
     /// Build a RestrictRequest from the given parameters
-    pub fn build(self) -> Result<RestrictRequest> {
-        Ok(self.builder.build()?.into())
-    }
+    pub fn build(self) -> Result<RestrictRequest> { Ok(self.builder.build()?.into()) }
 
     /// Set the token used in Bearer Authorization
     ///
     /// **NOTE:** This is required for all endpoints
     #[must_use]
-    pub fn token<U: Into<String>>(self, token: U) -> Self {
-        self.builder.token(token).into()
-    }
+    pub fn token<U: Into<String>>(self, token: U) -> Self { self.builder.token(token).into() }
 
     // Used in testing and development to manually set the URL
     #[doc(hidden)]
-    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self {
-        self.builder.base_url(url).into()
-    }
+    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self { self.builder.base_url(url).into() }
 
     /// The restricted directory, encoded in url-safe base64.
     ///
@@ -83,10 +70,7 @@ impl RestrictRequestBuilder {
         api: S,
         context: RangeQueryContext<RestrictedDirectory>,
     ) -> Self {
-        self.builder.target = Some(RequestTarget::ApiRange {
-            api: api.into(),
-            context,
-        });
+        self.builder.target = Some(RequestTarget::ApiRange { api: api.into(), context });
         self
     }
 
@@ -99,10 +83,8 @@ impl RestrictRequestBuilder {
         from_api: Option<S>,
         context: RangeQueryContext<RestrictedDirectory>,
     ) -> Self {
-        self.builder.target = Some(RequestTarget::AllRange {
-            from_api: from_api.map(|a| a.into()),
-            context,
-        });
+        self.builder.target =
+            Some(RequestTarget::AllRange { from_api: from_api.map(|a| a.into()), context });
         self
     }
 }
@@ -114,16 +96,12 @@ pub struct RestrictRequest {
 }
 
 impl From<ApiRequest<RequestTarget>> for RestrictRequest {
-    fn from(request: ApiRequest<RequestTarget>) -> Self {
-        Self { request }
-    }
+    fn from(request: ApiRequest<RequestTarget>) -> Self { Self { request } }
 }
 
 impl RestrictRequest {
     /// Create a new request builder
-    pub fn builder() -> RestrictRequestBuilder {
-        RestrictRequestBuilder::new()
-    }
+    pub fn builder() -> RestrictRequestBuilder { RestrictRequestBuilder::new() }
 
     // Internal method creating the URL for single key endpoints
     fn single_url(&self) -> Result<Url> {
@@ -181,7 +159,7 @@ impl RestrictRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RestrictRequestBuilder,RestrictRequest};
+    /// use seaplane::api::v1::{RestrictRequest, RestrictRequestBuilder};
     ///
     /// let req = RestrictRequestBuilder::new()
     ///     .token("abc123_token")
@@ -221,7 +199,7 @@ impl RestrictRequest {
     /// ## Paging through single API restrictions
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequestBuilder,RestrictRequest};
+    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequest, RestrictRequestBuilder};
     ///
     /// let context = RangeQueryContext::new();
     /// let req = RestrictRequestBuilder::new()
@@ -240,10 +218,10 @@ impl RestrictRequest {
     ///     context.set_from(next_key);
     ///
     ///     let req = RestrictRequestBuilder::new()
-    ///     .token("abc123_token")
-    ///     .api_range("config", context)
-    ///     .build()
-    ///     .unwrap();
+    ///         .token("abc123_token")
+    ///         .api_range("config", context)
+    ///         .build()
+    ///         .unwrap();
     ///
     ///     let next_page_resp = req.get_page().unwrap();
     ///     dbg!(next_page_resp);
@@ -331,7 +309,7 @@ impl RestrictRequest {
     /// ## Getting all restrictions for an API
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequestBuilder,RestrictRequest};
+    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequest, RestrictRequestBuilder};
     ///
     /// let context = RangeQueryContext::new();
     /// let mut req = RestrictRequestBuilder::new()
@@ -347,7 +325,7 @@ impl RestrictRequest {
     /// ## Getting all restrictions across all APIs
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequestBuilder,RestrictRequest};
+    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequest, RestrictRequestBuilder};
     ///
     /// let context = RangeQueryContext::new();
     /// let mut req = RestrictRequestBuilder::new()
@@ -360,7 +338,7 @@ impl RestrictRequest {
     /// dbg!(resp);
     /// ```
 
-    //TODO: Replace this with a collect on a Pages/Entries iterator
+    // TODO: Replace this with a collect on a Pages/Entries iterator
     pub fn get_all_pages(&mut self) -> Result<Vec<Restriction>> {
         let mut pages = Vec::new();
         loop {
@@ -374,10 +352,7 @@ impl RestrictRequest {
                     Some(RequestTarget::ApiRange { api: _, context }) => {
                         context.set_from(next_key);
                     }
-                    Some(RequestTarget::AllRange {
-                        from_api: _,
-                        context,
-                    }) => {
+                    Some(RequestTarget::AllRange { from_api: _, context }) => {
                         context.set_from(next_key);
                         self.request.target = Some(RequestTarget::AllRange {
                             from_api: rr.next_api.map(|a| a.to_string()),
@@ -400,9 +375,8 @@ impl RestrictRequest {
     ///
     /// ```no_run
     /// use std::str::FromStr;
-    /// use seaplane::api::v1::{
-    ///     RestrictRequestBuilder, RestrictRequest, RestrictionDetails, Region
-    /// };
+    ///
+    /// use seaplane::api::v1::{Region, RestrictRequest, RestrictRequestBuilder, RestrictionDetails};
     ///
     /// let req = RestrictRequestBuilder::new()
     ///     .token("abc123_token")
@@ -425,10 +399,7 @@ impl RestrictRequest {
             .client
             .put(url)
             .bearer_auth(&self.request.token)
-            .header(
-                CONTENT_TYPE,
-                header::HeaderValue::from_static("application/json"),
-            )
+            .header(CONTENT_TYPE, header::HeaderValue::from_static("application/json"))
             .body(serde_json::to_string(&details)?)
             .send()?;
         map_api_error(resp)?
@@ -444,7 +415,7 @@ impl RestrictRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RestrictRequestBuilder,RestrictRequest};
+    /// use seaplane::api::v1::{RestrictRequest, RestrictRequestBuilder};
     ///
     /// let req = RestrictRequestBuilder::new()
     ///     .token("abc123_token")

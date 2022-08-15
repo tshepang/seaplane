@@ -57,9 +57,8 @@ impl CliCommand for SeaplaneMetadataGet {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.md_ctx.init(MetadataCtx::from_md_common(
-            &common::SeaplaneMetadataCommonArgMatches(matches),
-        )?);
+        ctx.md_ctx
+            .init(MetadataCtx::from_md_common(&common::SeaplaneMetadataCommonArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut mdctx = ctx.md_ctx.get_mut_or_init();
         mdctx.decode = matches.contains_id("decode");

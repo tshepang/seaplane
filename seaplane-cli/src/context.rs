@@ -12,9 +12,9 @@
 //! 3. Environment Variables (currently none are defined)
 //! 4. Command Line Arguments
 //!   4a. Because we use subcommands and global arguments each subcommand acts as it's own set of
-//!   Command Line Arguments, and can thus affect the Context at each level in the command hierarchy.
-//!   4b. Before the Context is handed off mutably to the next nested level, all updates from the
-//!   parent should be finalized.
+//!   Command Line Arguments, and can thus affect the Context at each level in the command
+//! hierarchy.   4b. Before the Context is handed off mutably to the next nested level, all updates
+//! from the   parent should be finalized.
 //!
 //! After these steps the final Context is what is used to make runtime decisions.
 //!
@@ -31,13 +31,12 @@ pub use metadata::MetadataCtx;
 pub mod locks;
 pub use locks::LocksCtx;
 pub mod restrict;
-pub use restrict::RestrictCtx;
-
 use std::path::{Path, PathBuf};
 
 use clap_complete::Shell;
 use once_cell::unsync::OnceCell;
 use reqwest::Url;
+pub use restrict::RestrictCtx;
 
 use crate::{
     config::RawConfig,
@@ -53,8 +52,8 @@ const FORMATIONS_FILE: &str = "formations.json";
 #[derive(Debug, Default, Clone)]
 pub struct Args {
     // @TODO we may need to get more granular than binary yes/no. For example, there may be times
-    /// when the answer is "yes...but only if the stream is a TTY." In these cases an enum of Never,
-    /// Auto, Always would be more appropriate
+    /// when the answer is "yes...but only if the stream is a TTY." In these cases an enum of
+    /// Never, Auto, Always would be more appropriate
     ///
     /// Should be display ANSI color codes in output?
     pub color: ColorChoice,
@@ -227,8 +226,8 @@ impl From<RawConfig> for Ctx {
             data_dir: fs::data_dir(),
             conf_files: cfg.loaded_from.clone(),
             args: Args {
-                // We default to using color. Later when the context is updated from the CLI args, this
-                // may change.
+                // We default to using color. Later when the context is updated from the CLI args,
+                // this may change.
                 color: cfg.seaplane.color.unwrap_or_default(),
                 api_key: cfg.account.api_key,
                 ..Default::default()
@@ -250,21 +249,13 @@ impl Ctx {
     }
 
     #[inline]
-    pub fn data_dir(&self) -> &Path {
-        &self.data_dir
-    }
+    pub fn data_dir(&self) -> &Path { &self.data_dir }
 
-    pub fn conf_files(&self) -> &[PathBuf] {
-        &*self.conf_files
-    }
+    pub fn conf_files(&self) -> &[PathBuf] { &self.conf_files }
 
-    pub fn flights_file(&self) -> PathBuf {
-        self.data_dir.join(FLIGHTS_FILE)
-    }
+    pub fn flights_file(&self) -> PathBuf { self.data_dir.join(FLIGHTS_FILE) }
 
-    pub fn formations_file(&self) -> PathBuf {
-        self.data_dir.join(FORMATIONS_FILE)
-    }
+    pub fn formations_file(&self) -> PathBuf { self.data_dir.join(FORMATIONS_FILE) }
 
     /// Write out an entirely new JSON file if `--stateless` wasn't used
     pub fn persist_formations(&self) -> Result<()> {
@@ -318,29 +309,17 @@ pub struct LateInit<T> {
 }
 
 impl<T> Default for LateInit<T> {
-    fn default() -> Self {
-        Self {
-            inner: OnceCell::default(),
-        }
-    }
+    fn default() -> Self { Self { inner: OnceCell::default() } }
 }
 
 impl<T> LateInit<T> {
-    pub fn init(&self, val: T) {
-        assert!(self.inner.set(val).is_ok())
-    }
-    pub fn get(&self) -> Option<&T> {
-        self.inner.get()
-    }
-    pub fn get_mut(&mut self) -> Option<&mut T> {
-        self.inner.get_mut()
-    }
+    pub fn init(&self, val: T) { assert!(self.inner.set(val).is_ok()) }
+    pub fn get(&self) -> Option<&T> { self.inner.get() }
+    pub fn get_mut(&mut self) -> Option<&mut T> { self.inner.get_mut() }
 }
 
 impl<T: Default> LateInit<T> {
-    pub fn get_or_init(&self) -> &T {
-        self.inner.get_or_init(|| T::default())
-    }
+    pub fn get_or_init(&self) -> &T { self.inner.get_or_init(|| T::default()) }
     pub fn get_mut_or_init(&mut self) -> &mut T {
         self.inner.get_or_init(|| T::default());
         self.inner.get_mut().unwrap()

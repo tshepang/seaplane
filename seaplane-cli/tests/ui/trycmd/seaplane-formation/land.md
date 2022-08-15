@@ -1,10 +1,10 @@
 ```console
 $ seaplane formation land -h
-seaplane-formation-land [..]
+seaplane[EXE]-formation-land [..]
 Land (Stop) all configurations of a remote Formation Instance
 
 USAGE:
-    seaplane formation land [OPTIONS] <NAME|ID>
+    seaplane[EXE] formation land [OPTIONS] <NAME|ID>
 
 ARGS:
     <NAME|ID>    The name or ID of the Formation Instance to land
@@ -25,11 +25,11 @@ OPTIONS:
 
 ```console
 $ seaplane formation land --help
-seaplane-formation-land [..]
+seaplane[EXE]-formation-land [..]
 Land (Stop) all configurations of a remote Formation Instance
 
 USAGE:
-    seaplane formation land [OPTIONS] <NAME|ID>
+    seaplane[EXE] formation land [OPTIONS] <NAME|ID>
 
 ARGS:
     <NAME|ID>

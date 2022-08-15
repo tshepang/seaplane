@@ -9,7 +9,7 @@ pub struct SeaplaneFormationFetch;
 
 impl SeaplaneFormationFetch {
     pub fn command() -> Command<'static> {
-        //TODO: add a --no-overwrite or similar
+        // TODO: add a --no-overwrite or similar
         Command::new("fetch-remote")
             .visible_aliases(&["fetch", "sync", "synchronize"])
             .about("Fetch remote Formation Instances and create/synchronize local Plan definitions")
@@ -60,8 +60,9 @@ impl CliCommand for SeaplaneFormationFetch {
                     .enumerate()
                     .find_map(|(i, cfg)| if &cfg.id == id { Some(i) } else { None })
                 {
-                    // Map a config ID to an actual Config. We have to use these long chained calls so
-                    // Rust can tell that `formations` itself isn't being borrowed, just it's fields.
+                    // Map a config ID to an actual Config. We have to use these long chained calls
+                    // so Rust can tell that `formations` itself isn't being
+                    // borrowed, just it's fields.
                     Some(remote_instances.configurations.swap_remove(i))
                 } else {
                     None

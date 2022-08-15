@@ -3,8 +3,7 @@ use std::{
     io::{self, Read},
 };
 
-use seaplane::api::v1::metadata::Key;
-use seaplane::api::v1::Directory;
+use seaplane::api::v1::{metadata::Key, Directory};
 
 use crate::{
     cli::cmds::metadata::{SeaplaneMetadataCommonArgMatches, SeaplaneMetadataSetArgMatches},
@@ -106,10 +105,6 @@ impl MetadataCtx {
         let mut kvs = KeyValues::default();
         kvs.push(kv);
 
-        Ok(MetadataCtx {
-            kvs,
-            base64: true,
-            ..MetadataCtx::default()
-        })
+        Ok(MetadataCtx { kvs, base64: true, ..MetadataCtx::default() })
     }
 }

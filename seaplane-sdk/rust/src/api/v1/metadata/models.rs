@@ -1,7 +1,8 @@
 use std::fmt;
 
-use crate::{api::v1::range_query::RangeQueryContext, base64::Base64Encoded, impl_base64};
 use serde::{Deserialize, Serialize};
+
+use crate::{api::v1::range_query::RangeQueryContext, base64::Base64Encoded, impl_base64};
 
 /// A single key value pair, encoded in url-safe base64.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -11,9 +12,7 @@ pub struct KeyValue {
 }
 
 impl KeyValue {
-    pub fn into_value(self) -> Value {
-        self.value
-    }
+    pub fn into_value(self) -> Value { self.value }
 }
 
 /// A single key with which to access a value in the store, encoded in url-safe base64.
@@ -25,15 +24,11 @@ pub struct Key {
 impl_base64!(Key);
 
 impl AsRef<str> for Key {
-    fn as_ref(&self) -> &str {
-        self.inner.as_ref()
-    }
+    fn as_ref(&self) -> &str { self.inner.as_ref() }
 }
 
 impl fmt::Display for Key {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.inner)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.inner) }
 }
 
 /// The raw bytes stored at a given key, encoded in url-safe base64.
@@ -45,15 +40,11 @@ pub struct Value {
 impl_base64!(Value);
 
 impl AsRef<str> for Value {
-    fn as_ref(&self) -> &str {
-        self.inner.as_ref()
-    }
+    fn as_ref(&self) -> &str { self.inner.as_ref() }
 }
 
 impl fmt::Display for Value {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.inner)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.inner) }
 }
 
 /// The target of a request, representing either a single key or a range of keys.

@@ -138,7 +138,6 @@ macro_rules! maybe_retry {
         res.map_err(CliError::from)
     }};
 }
-//
 // Wrapped RestrictRequest methods to handle expired token retries
 //
 impl RestrictReq {
@@ -149,13 +148,9 @@ impl RestrictReq {
     pub fn set_restriction(&mut self, details: RestrictionDetails) -> Result<()> {
         maybe_retry!(self.set_restriction(details))
     }
-    pub fn delete_restriction(&mut self) -> Result<()> {
-        maybe_retry!(self.delete_restriction())
-    }
+    pub fn delete_restriction(&mut self) -> Result<()> { maybe_retry!(self.delete_restriction()) }
 
-    pub fn get_page(&mut self) -> Result<RestrictionRange> {
-        maybe_retry!(self.get_page())
-    }
+    pub fn get_page(&mut self) -> Result<RestrictionRange> { maybe_retry!(self.get_page()) }
     pub fn get_all_pages(&mut self) -> Result<Vec<Restriction>> {
         maybe_retry!(self.get_all_pages())
     }

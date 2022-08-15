@@ -2,7 +2,7 @@ Short help:
 
 ```console
 $ seaplane restrict list -h
-seaplane-restrict-list [..]
+seaplane[EXE]-restrict-list [..]
 List restrictions in an API, or across all APIs
 
 USAGE:
@@ -32,7 +32,7 @@ Long help:
 
 ```console
 $ seaplane restrict list --help
-seaplane-restrict-list [..]
+seaplane[EXE]-restrict-list [..]
 List restrictions in an API, or across all APIs
 
 Directory will be displayed in base64 encoded format by default because they may contain

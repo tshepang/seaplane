@@ -137,9 +137,7 @@ impl FromDisk for RawConfig {
         self.loaded_from.push(p.as_ref().into());
     }
 
-    fn loaded_from(&self) -> Option<&Path> {
-        self.loaded_from.get(0).map(|p| &**p)
-    }
+    fn loaded_from(&self) -> Option<&Path> { self.loaded_from.get(0).map(|p| &**p) }
 
     fn load<P: AsRef<Path>>(p: P) -> Result<Self>
     where
@@ -269,9 +267,7 @@ mod test {
                 loaded_from: Vec::new(),
                 seaplane: RawSeaplaneConfig::default(),
                 api: RawApiConfig::default(),
-                account: RawAccountConfig {
-                    api_key: Some("abc123def456".into())
-                }
+                account: RawAccountConfig { api_key: Some("abc123def456".into()) }
             }
         )
     }
@@ -290,9 +286,7 @@ mod test {
             RawConfig {
                 found: false,
                 loaded_from: Vec::new(),
-                seaplane: RawSeaplaneConfig {
-                    color: Some(ColorChoice::Always),
-                },
+                seaplane: RawSeaplaneConfig { color: Some(ColorChoice::Always) },
                 account: RawAccountConfig::default(),
                 api: RawApiConfig::default(),
             }

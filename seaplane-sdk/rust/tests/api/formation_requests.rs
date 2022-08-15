@@ -17,10 +17,7 @@ fn when(when: When, m: Method, p: &str) -> When {
         .path(p)
         .header("authorization", "Bearer abc123")
         .header("accept", "*/*")
-        .header(
-            "host",
-            &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()),
-        )
+        .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()))
 }
 
 fn then(then: Then, resp_body: serde_json::Value) -> Then {
@@ -126,14 +123,8 @@ fn clone_from_active() {
 
 fn build_configuration() -> FormationConfiguration {
     FormationConfiguration::builder()
-        .add_flight(Flight::new(
-            "pequod",
-            "registry.hub.docker.com/stubb/alpine:latest",
-        ))
-        .add_flight(Flight::new(
-            "flask",
-            "registry.hub.docker.com/stubb/alpine:latest",
-        ))
+        .add_flight(Flight::new("pequod", "registry.hub.docker.com/stubb/alpine:latest"))
+        .add_flight(Flight::new("flask", "registry.hub.docker.com/stubb/alpine:latest"))
         .build()
         .unwrap()
 }
@@ -245,12 +236,8 @@ test_remove_configuration!(remove_configuration_force, true);
 #[test]
 fn get_configuration() {
     let mock = MOCK_SERVER.mock(|w, then| {
-        when(
-            w,
-            GET,
-            "/v1/formations/stubb/configurations/557f87c3-b26c-428c-b970-cb8acac2bd68",
-        )
-        .header("content-type", "application/json");
+        when(w, GET, "/v1/formations/stubb/configurations/557f87c3-b26c-428c-b970-cb8acac2bd68")
+            .header("content-type", "application/json");
         then.status(200).json_body_obj(&build_configuration());
     });
 
@@ -268,10 +255,8 @@ fn get_configuration() {
 // GET /formations/NAME/configurations
 #[test]
 fn list_configuration_ids() {
-    let resp_json = json!([
-        "557f87c3-b26c-428c-b970-cb8acac2bd68",
-        "aa3b6eaf-dd1b-4055-93b7-21d024d2acc9"
-    ]);
+    let resp_json =
+        json!(["557f87c3-b26c-428c-b970-cb8acac2bd68", "aa3b6eaf-dd1b-4055-93b7-21d024d2acc9"]);
 
     let mock = MOCK_SERVER.mock(|w, then| {
         when(w, GET, "/v1/formations/stubb/configurations")
@@ -422,11 +407,7 @@ fn get_container() {
     );
 
     let mut mock = MOCK_SERVER.mock(|w, t| {
-        when(
-            w,
-            GET,
-            "/v1/formations/stubb/containers/91f191f5-be32-4d44-860f-0eccca325e0f",
-        );
+        when(w, GET, "/v1/formations/stubb/containers/91f191f5-be32-4d44-860f-0eccca325e0f");
         then(t, resp_json_minimal.clone());
     });
 
@@ -465,11 +446,7 @@ fn get_container() {
     );
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(
-            w,
-            GET,
-            "/v1/formations/stubb/containers/91f191f5-be32-4d44-860f-0eccca325e0f",
-        );
+        when(w, GET, "/v1/formations/stubb/containers/91f191f5-be32-4d44-860f-0eccca325e0f");
         then(t, resp_json.clone());
     });
 

@@ -40,12 +40,8 @@ A CLI provided value also overrides any environment variables.
 One can use a special value of '-' to signal the value should be read from STDIN.";
 
 pub trait CliCommand {
-    fn update_ctx(&self, _matches: &ArgMatches, _ctx: &mut Ctx) -> Result<()> {
-        Ok(())
-    }
-    fn run(&self, _ctx: &mut Ctx) -> Result<()> {
-        Ok(())
-    }
+    fn update_ctx(&self, _matches: &ArgMatches, _ctx: &mut Ctx) -> Result<()> { Ok(()) }
+    fn run(&self, _ctx: &mut Ctx) -> Result<()> { Ok(()) }
     fn next_subcmd<'a>(
         &self,
         _matches: &'a ArgMatches,
@@ -151,10 +147,8 @@ impl CliCommand for Seaplane {
         // even though they override each-other.
         //
         // So we err on the side of not providing color since that is the safer option
-        ctx.args.color = match (
-            matches.get_one("color").copied(),
-            matches.contains_id("no-color"),
-        ) {
+        ctx.args.color = match (matches.get_one("color").copied(), matches.contains_id("no-color"))
+        {
             (_, true) => ColorChoice::Never,
             (Some(choice), _) => {
                 if choice != ColorChoice::Auto {

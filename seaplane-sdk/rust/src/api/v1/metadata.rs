@@ -1,7 +1,6 @@
 //! The `/config` endpoint APIs which allows working with [`KeyValue`]s
 mod models;
 pub use models::*;
-
 use reqwest::{
     header::{self, CONTENT_TYPE},
     Url,
@@ -25,41 +24,29 @@ pub struct MetadataRequestBuilder {
 }
 
 impl From<RequestBuilder<RequestTarget>> for MetadataRequestBuilder {
-    fn from(builder: RequestBuilder<RequestTarget>) -> Self {
-        Self { builder }
-    }
+    fn from(builder: RequestBuilder<RequestTarget>) -> Self { Self { builder } }
 }
 
 impl Default for MetadataRequestBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
 
 impl MetadataRequestBuilder {
     /// Create a new MetadataRequestBuilder
-    pub fn new() -> Self {
-        RequestBuilder::new(METADATA_API_URL, "v1/config/").into()
-    }
+    pub fn new() -> Self { RequestBuilder::new(METADATA_API_URL, "v1/config/").into() }
 
     /// Build an MetadataRequest from the given parameters
-    pub fn build(self) -> Result<MetadataRequest> {
-        Ok(self.builder.build()?.into())
-    }
+    pub fn build(self) -> Result<MetadataRequest> { Ok(self.builder.build()?.into()) }
 
     /// Set the token used in Bearer Authorization
     ///
     /// **NOTE:** This is required for all endpoints
     #[must_use]
-    pub fn token<U: Into<String>>(self, token: U) -> Self {
-        self.builder.token(token).into()
-    }
+    pub fn token<U: Into<String>>(self, token: U) -> Self { self.builder.token(token).into() }
 
     // Used in testing and development to manually set the URL
     #[doc(hidden)]
-    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self {
-        self.builder.base_url(url).into()
-    }
+    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self { self.builder.base_url(url).into() }
 
     /// The key with which to query the store, encoded in url-safe base64.
     ///
@@ -87,16 +74,12 @@ pub struct MetadataRequest {
 }
 
 impl From<ApiRequest<RequestTarget>> for MetadataRequest {
-    fn from(request: ApiRequest<RequestTarget>) -> Self {
-        Self { request }
-    }
+    fn from(request: ApiRequest<RequestTarget>) -> Self { Self { request } }
 }
 
 impl MetadataRequest {
     /// Create a new request builder
-    pub fn builder() -> MetadataRequestBuilder {
-        MetadataRequestBuilder::new()
-    }
+    pub fn builder() -> MetadataRequestBuilder { MetadataRequestBuilder::new() }
 
     // Internal method creating the URL for all single key endpoints
     fn single_key_url(&self) -> Result<Url> {
@@ -104,10 +87,9 @@ impl MetadataRequest {
             None | Some(RequestTarget::Range(_)) => {
                 Err(SeaplaneError::IncorrectMetadataRequestTarget)
             }
-            Some(RequestTarget::Key(k)) => Ok(add_base64_path_segment(
-                self.request.endpoint_url.clone(),
-                k.encoded(),
-            )),
+            Some(RequestTarget::Key(k)) => {
+                Ok(add_base64_path_segment(self.request.endpoint_url.clone(), k.encoded()))
+            }
         }
     }
 
@@ -142,7 +124,7 @@ impl MetadataRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequestBuilder,MetadataRequest};
+    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder};
     ///
     /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
@@ -174,7 +156,7 @@ impl MetadataRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequestBuilder,MetadataRequest,Value};
+    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder, Value};
     ///
     /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
@@ -195,7 +177,7 @@ impl MetadataRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequestBuilder,MetadataRequest,Value};
+    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder, Value};
     ///
     /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
@@ -213,10 +195,7 @@ impl MetadataRequest {
             .client
             .put(url)
             .bearer_auth(&self.request.token)
-            .header(
-                CONTENT_TYPE,
-                header::HeaderValue::from_static("application/octet-stream"),
-            )
+            .header(CONTENT_TYPE, header::HeaderValue::from_static("application/octet-stream"))
             .body(value.to_string())
             .send()?;
         map_api_error(resp)?
@@ -231,7 +210,7 @@ impl MetadataRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequestBuilder,MetadataRequest};
+    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder};
     ///
     /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
@@ -256,18 +235,19 @@ impl MetadataRequest {
             .map_err(Into::into)
     }
 
-    /// Returns a single page of key value pairs for the given directory, beginning with the `from` key.
+    /// Returns a single page of key value pairs for the given directory, beginning with the `from`
+    /// key.
     ///
     /// If no directory is given, the root directory is used.
     /// If no `from` is given, the range begins from the start.
     ///
-    /// If more pages are desired, perform another range request using the `next_key` value from the first request
-    /// as the `from` value of the following request, or use `get_all_pages`.
+    /// If more pages are desired, perform another range request using the `next_key` value from the
+    /// first request as the `from` value of the following request, or use `get_all_pages`.
     ///
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequestBuilder, MetadataRequest, RangeQueryContext};
+    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder, RangeQueryContext};
     ///
     /// let root_dir_range = RangeQueryContext::new();
     ///
@@ -282,12 +262,12 @@ impl MetadataRequest {
     /// if let Some(next_key) = resp.next_key {
     ///     let mut next_page_range = RangeQueryContext::new();
     ///     next_page_range.set_from(next_key);
-    ///     
+    ///
     ///     let req = MetadataRequestBuilder::new()
-    ///     .token("abc123_token")
-    ///     .range(next_page_range)
-    ///     .build()
-    ///     .unwrap();
+    ///         .token("abc123_token")
+    ///         .range(next_page_range)
+    ///         .build()
+    ///         .unwrap();
     ///
     ///     let next_page_resp = req.get_page().unwrap();
     ///     dbg!(next_page_resp);
@@ -314,7 +294,8 @@ impl MetadataRequest {
         }
     }
 
-    /// Returns all key-value pairs for the given directory, from the `from` key onwards. May perform multiple requests.
+    /// Returns all key-value pairs for the given directory, from the `from` key onwards. May
+    /// perform multiple requests.
     ///
     /// If no directory is given, the root directory is used.
     /// If no `from` is given, the range begins from the start.
@@ -322,7 +303,7 @@ impl MetadataRequest {
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequestBuilder, MetadataRequest, RangeQueryContext};
+    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder, RangeQueryContext};
     ///
     /// let root_dir_range = RangeQueryContext::new();
     ///
@@ -335,7 +316,7 @@ impl MetadataRequest {
     /// let resp = req.get_all_pages().unwrap();
     /// dbg!(resp);
     /// ```
-    //TODO: Replace this with a collect on a Pages/Entries iterator
+    // TODO: Replace this with a collect on a Pages/Entries iterator
     pub fn get_all_pages(&mut self) -> Result<Vec<KeyValue>> {
         let mut pages = Vec::new();
         loop {

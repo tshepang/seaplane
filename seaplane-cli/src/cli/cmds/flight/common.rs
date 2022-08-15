@@ -38,9 +38,7 @@ pub enum Architecture {
 }
 
 impl Architecture {
-    pub fn into_model(&self) -> ArchitectureModel {
-        self.into()
-    }
+    pub fn into_model(&self) -> ArchitectureModel { self.into() }
 }
 
 #[allow(clippy::from_over_into)]

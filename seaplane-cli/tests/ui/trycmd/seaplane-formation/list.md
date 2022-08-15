@@ -1,10 +1,10 @@
 ```console
 $ seaplane formation list -h
-seaplane-formation-list [..]
+seaplane[EXE]-formation-list [..]
 List all local Formation Plans
 
 USAGE:
-    seaplane formation list [OPTIONS]
+    seaplane[EXE] formation list [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
@@ -22,7 +22,7 @@ OPTIONS:
 
 ```console
 $ seaplane formation list --help
-seaplane-formation-list [..]
+seaplane[EXE]-formation-list [..]
 List all local Formation Plans
 
 This command will display the status and number of configurations for each of your Formation
@@ -39,7 +39,7 @@ After which your local database of Formation and Flight Plans will contain all r
 Instances and their configurations as well.
 
 USAGE:
-    seaplane formation list [OPTIONS]
+    seaplane[EXE] formation list [OPTIONS]
 
 OPTIONS:
     -A, --api-key <STRING>

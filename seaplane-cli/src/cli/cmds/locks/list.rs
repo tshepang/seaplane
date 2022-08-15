@@ -1,3 +1,5 @@
+use clap::{ArgMatches, Command};
+
 use crate::{
     api::LocksReq,
     cli::cmds::locks::{common, common::SeaplaneLocksCommonArgMatches, CliCommand},
@@ -6,7 +8,6 @@ use crate::{
     ops::locks::{self, ListedLock, LockName},
     printer::OutputFormat,
 };
-use clap::{ArgMatches, Command};
 
 static OUTPUT_PAGE_SIZE: usize = 10;
 
@@ -108,7 +109,8 @@ impl CliCommand for SeaplaneLocksList {
             // If there's no lock name given it's an "all locks" query
             None => run_dir_info(ctx, None),
             Some(name) => {
-                // We need to at least peek at the final character of the decoded lock name to determine if its a directory query or not.
+                // We need to at least peek at the final character of the decoded lock name to
+                // determine if its a directory query or not.
                 let mut decoded_lock_name = name
                     .name
                     .decoded()
@@ -119,7 +121,8 @@ impl CliCommand for SeaplaneLocksList {
                     .expect("Lock name should hold something else it'd be None")
                     == b'/'
                 {
-                    // The SDK expects a lock name without the trailing slash for getting a directory, so we remove the `/`
+                    // The SDK expects a lock name without the trailing slash for getting a
+                    // directory, so we remove the `/`
                     decoded_lock_name.pop();
                     run_dir_info(ctx, Some(LockName::from_name_unencoded(decoded_lock_name)))
                 } else {
@@ -130,9 +133,8 @@ impl CliCommand for SeaplaneLocksList {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.locks_ctx.init(LocksCtx::from_locks_common(
-            &SeaplaneLocksCommonArgMatches(matches),
-        )?);
+        ctx.locks_ctx
+            .init(LocksCtx::from_locks_common(&SeaplaneLocksCommonArgMatches(matches))?);
 
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();

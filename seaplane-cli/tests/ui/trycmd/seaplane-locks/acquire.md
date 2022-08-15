@@ -2,11 +2,11 @@ Short help
 
 ```console
 $ seaplane locks acquire -h
-seaplane-locks-acquire [..]
+seaplane[EXE]-locks-acquire [..]
 Attempt to acquire the lock for N seconds
 
 USAGE:
-    seaplane locks acquire [OPTIONS] --ttl <SECS> --client-id <STRING> <LOCK_NAME>
+    seaplane[EXE] locks acquire [OPTIONS] --ttl <SECS> --client-id <STRING> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>    The name of the lock
@@ -31,11 +31,11 @@ Long help:
 
 ```console
 $ seaplane locks acquire --help
-seaplane-locks-acquire [..]
+seaplane[EXE]-locks-acquire [..]
 Attempt to acquire the lock for N seconds
 
 USAGE:
-    seaplane locks acquire [OPTIONS] --ttl <SECS> --client-id <STRING> <LOCK_NAME>
+    seaplane[EXE] locks acquire [OPTIONS] --ttl <SECS> --client-id <STRING> <LOCK_NAME>
 
 ARGS:
     <LOCK_NAME>

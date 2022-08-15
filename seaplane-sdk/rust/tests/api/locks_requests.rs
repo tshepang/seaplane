@@ -16,10 +16,7 @@ fn when(when: When, m: Method, p: &str) -> When {
         .path(p)
         .header("authorization", "Bearer abc123")
         .header("accept", "*/*")
-        .header(
-            "host",
-            &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()),
-        )
+        .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()))
 }
 
 fn then(then: Then, resp_body: serde_json::Value) -> Then {
@@ -55,11 +52,8 @@ fn acquire_lock() {
     // Ensure the endpoint was hit
     mock.assert();
 
-    let lock = HeldLock::new(
-        LockName::from_encoded("Zm9v"),
-        LockId::from_encoded("D4lbVpdBE_U"),
-        2,
-    );
+    let lock =
+        HeldLock::new(LockName::from_encoded("Zm9v"), LockId::from_encoded("D4lbVpdBE_U"), 2);
     assert_eq!(lock, resp);
 }
 
@@ -75,11 +69,8 @@ fn renew_lock() {
         then(t, resp_json);
     });
 
-    let lock = HeldLock::new(
-        LockName::from_encoded("Zm9j"),
-        LockId::from_encoded("D4lbVpdBE_U"),
-        2,
-    );
+    let lock =
+        HeldLock::new(LockName::from_encoded("Zm9j"), LockId::from_encoded("D4lbVpdBE_U"), 2);
 
     let req = partial_build().held_lock(lock).build().unwrap();
     let resp = req.renew(10);
@@ -100,11 +91,8 @@ fn release_lock() {
         then(t, resp_json);
     });
 
-    let lock = HeldLock::new(
-        LockName::from_encoded("Zm9k"),
-        LockId::from_encoded("D4lbVpdBE_U"),
-        2,
-    );
+    let lock =
+        HeldLock::new(LockName::from_encoded("Zm9k"), LockId::from_encoded("D4lbVpdBE_U"), 2);
 
     let req = partial_build().held_lock(lock).build().unwrap();
     let resp = req.release();

@@ -117,25 +117,18 @@ macro_rules! maybe_retry {
         res.map_err(CliError::from)
     }};
 }
-//
 // Wrapped MetadataRequest methods to handle expired token retries
 //
 impl MetadataReq {
-    pub fn get_value(&mut self) -> Result<ValueModel> {
-        maybe_retry!(self.get_value())
-    }
+    pub fn get_value(&mut self) -> Result<ValueModel> { maybe_retry!(self.get_value()) }
     pub fn put_value_unencoded<S: AsRef<[u8]> + Clone>(&mut self, value: S) -> Result<()> {
         maybe_retry!(self.put_value_unencoded(value))
     }
     pub fn put_value(&mut self, value: ValueModel) -> Result<()> {
         maybe_retry!(self.put_value(value))
     }
-    pub fn delete_value(&mut self) -> Result<()> {
-        maybe_retry!(self.delete_value())
-    }
-    pub fn get_page(&mut self) -> Result<KeyValueRangeModel> {
-        maybe_retry!(self.get_page())
-    }
+    pub fn delete_value(&mut self) -> Result<()> { maybe_retry!(self.delete_value()) }
+    pub fn get_page(&mut self) -> Result<KeyValueRangeModel> { maybe_retry!(self.get_page()) }
     pub fn get_all_pages(&mut self) -> Result<Vec<KeyValueModel>> {
         maybe_retry!(self.get_all_pages())
     }

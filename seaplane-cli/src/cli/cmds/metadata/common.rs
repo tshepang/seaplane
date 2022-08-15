@@ -12,9 +12,7 @@ things to your terminal)";
 #[derive(Debug)]
 pub struct SeaplaneMetadataCommonArgMatches<'a>(pub &'a ArgMatches);
 
-pub fn args() -> Vec<Arg<'static>> {
-    vec![keys(), base64()]
-}
+pub fn args() -> Vec<Arg<'static>> { vec![keys(), base64()] }
 
 pub fn display_args() -> Vec<Arg<'static>> {
     vec![

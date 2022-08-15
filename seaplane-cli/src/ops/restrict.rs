@@ -4,13 +4,12 @@ use seaplane::api::v1::restrict::{RestrictedDirectory as RestrictedDirectoryMode
 use serde::Serialize;
 use tabwriter::TabWriter;
 
+use super::EncodedString;
 use crate::{
     context::Ctx,
     error::{CliError, Result},
     printer::{printer, Output},
 };
-
-use super::EncodedString;
 
 /// We use our own RestrictedDirectory instead of the models because we need to
 /// *not* enforce base64 encoding, and implement a bunch of additional methods
@@ -26,9 +25,7 @@ impl RestrictedDirectory {
     /// Creates a new RestrictedDirectory from an encoded directory.
     /// The directory must be URL safe base64 encoded or Bad Things may happen.
     pub fn new<S: Into<String>>(directory: S) -> Self {
-        Self {
-            directory: EncodedString::new(directory.into()),
-        }
+        Self { directory: EncodedString::new(directory.into()) }
     }
 
     /// Creates a new RestrictedDirectoryModel from self's data.
@@ -58,13 +55,9 @@ pub struct Restrictions {
 }
 
 impl Restrictions {
-    pub fn from_model(model: Vec<Restriction>) -> Self {
-        Self { inner: model }
-    }
+    pub fn from_model(model: Vec<Restriction>) -> Self { Self { inner: model } }
 
-    pub fn iter(&self) -> impl Iterator<Item = &Restriction> {
-        self.inner.iter()
-    }
+    pub fn iter(&self) -> impl Iterator<Item = &Restriction> { self.inner.iter() }
 
     // print a table in whatever state we happen to be in (encoded/unencoded)
     fn impl_print_table(&self, headers: bool, decode: bool) -> Result<()> {

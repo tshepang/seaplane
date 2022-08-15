@@ -2,7 +2,7 @@ Short help:
 
 ```console
 $ seaplane metadata set -h
-seaplane-metadata-set [..]
+seaplane[EXE]-metadata-set [..]
 Set a metadata key-value pair
 
 USAGE:
@@ -30,7 +30,7 @@ Long Help:
 
 ```console
 $ seaplane metadata set --help
-seaplane-metadata-set [..]
+seaplane[EXE]-metadata-set [..]
 Set a metadata key-value pair
 
 USAGE:

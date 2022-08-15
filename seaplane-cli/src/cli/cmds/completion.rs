@@ -126,12 +126,7 @@ impl CliCommand for SeaplaneShellCompletion {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         let mut app = Seaplane::command();
 
-        clap_complete::generate(
-            ctx.args.shell.unwrap(),
-            &mut app,
-            "seaplane",
-            &mut *printer(),
-        );
+        clap_complete::generate(ctx.args.shell.unwrap(), &mut app, "seaplane", &mut *printer());
 
         Ok(())
     }

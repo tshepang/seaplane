@@ -46,10 +46,7 @@ impl KeyValue {
     /// Creates a new KeyValue from an already encoded string ref. You must pinky promise the key
     /// is URL safe base64 encoded or Bad Things may happen.
     pub fn from_key<S: Into<String>>(key: S) -> Self {
-        Self {
-            key: Some(EncodedString::new(key.into())),
-            ..Self::default()
-        }
+        Self { key: Some(EncodedString::new(key.into())), ..Self::default() }
     }
 
     /// Sets the value to some base64 encoded value
@@ -79,17 +76,11 @@ impl KeyValues {
         self.inner.push(KeyValue::new(key, value));
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &KeyValue> {
-        self.inner.iter()
-    }
+    pub fn iter(&self) -> impl Iterator<Item = &KeyValue> { self.inner.iter() }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut KeyValue> {
-        self.inner.iter_mut()
-    }
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut KeyValue> { self.inner.iter_mut() }
 
-    pub fn push(&mut self, kv: KeyValue) {
-        self.inner.push(kv)
-    }
+    pub fn push(&mut self, kv: KeyValue) { self.inner.push(kv) }
 
     pub fn keys(&self) -> impl Iterator<Item = EncodedString> + '_ {
         self.inner.iter().filter_map(|kv| kv.key.clone())
@@ -176,8 +167,9 @@ impl Output for KeyValues {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use serde_json::json;
+
+    use super::*;
 
     fn build_kvs() -> KeyValues {
         KeyValues {

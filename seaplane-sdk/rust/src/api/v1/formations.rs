@@ -3,7 +3,6 @@
 
 mod models;
 pub use models::*;
-
 use uuid::Uuid;
 
 use crate::{
@@ -23,47 +22,33 @@ pub struct FormationsRequestBuilder {
 }
 
 impl From<RequestBuilder<String>> for FormationsRequestBuilder {
-    fn from(builder: RequestBuilder<String>) -> Self {
-        Self { builder }
-    }
+    fn from(builder: RequestBuilder<String>) -> Self { Self { builder } }
 }
 
 impl Default for FormationsRequestBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
 impl FormationsRequestBuilder {
-    pub fn new() -> Self {
-        RequestBuilder::new(COMPUTE_API_URL, "v1/formations").into()
-    }
+    pub fn new() -> Self { RequestBuilder::new(COMPUTE_API_URL, "v1/formations").into() }
 
     /// Builds a FormationsRequest from the given parameters
-    pub fn build(self) -> Result<FormationsRequest> {
-        Ok(self.builder.build()?.into())
-    }
+    pub fn build(self) -> Result<FormationsRequest> { Ok(self.builder.build()?.into()) }
 
     /// Set the token used in Bearer Authorization
     ///
     /// **NOTE:** This is required for all endpoints
     #[must_use]
-    pub fn token<U: Into<String>>(self, token: U) -> Self {
-        self.builder.token(token).into()
-    }
+    pub fn token<U: Into<String>>(self, token: U) -> Self { self.builder.token(token).into() }
 
     // Used in testing and development to manually set the URL
     #[doc(hidden)]
-    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self {
-        self.builder.base_url(url).into()
-    }
+    pub fn base_url<U: AsRef<str>>(self, url: U) -> Self { self.builder.base_url(url).into() }
 
     /// The name of the Formation to query as part of the request.
     ///
     /// **NOTE:** This is not required for all endpoints
     #[must_use]
-    pub fn name<S: Into<String>>(self, name: S) -> Self {
-        self.builder.target(name.into()).into()
-    }
+    pub fn name<S: Into<String>>(self, name: S) -> Self { self.builder.target(name.into()).into() }
 }
 
 /// For making requests against the `/formations` APIs.
@@ -73,16 +58,12 @@ pub struct FormationsRequest {
 }
 
 impl From<ApiRequest<String>> for FormationsRequest {
-    fn from(request: ApiRequest<String>) -> Self {
-        Self { request }
-    }
+    fn from(request: ApiRequest<String>) -> Self { Self { request } }
 }
 
 impl FormationsRequest {
     /// Create a new request builder
-    pub fn builder() -> FormationsRequestBuilder {
-        FormationsRequestBuilder::new()
-    }
+    pub fn builder() -> FormationsRequestBuilder { FormationsRequestBuilder::new() }
 
     /// Creates a new nameless formations request.
     ///
@@ -93,7 +74,7 @@ impl FormationsRequest {
         FormationsRequest::builder().token(token).build().unwrap()
     }
 
-    //TODO: add the following methods:
+    // TODO: add the following methods:
     //  - start: sets all current configurations to active
     //  - start_configuration: sets given config to active along with all other already active
     //    configs
@@ -136,7 +117,11 @@ impl FormationsRequest {
     ///
     /// ```no_run
     /// # use seaplane::api::v1::{FormationsRequest};
-    /// let req = FormationsRequest::builder().token("abc123_token").name("foo").build().unwrap();
+    /// let req = FormationsRequest::builder()
+    ///     .token("abc123_token")
+    ///     .name("foo")
+    ///     .build()
+    ///     .unwrap();
     ///
     /// let resp = req.get_metadata().unwrap();
     /// dbg!(resp);
@@ -178,10 +163,13 @@ impl FormationsRequest {
     ///     .unwrap();
     ///
     /// let config = FormationConfiguration::builder()
-    ///     .add_flight(Flight::builder()
-    ///         .name("myflight")
-    ///         .image("my/image:latest")
-    ///         .build().unwrap())
+    ///     .add_flight(
+    ///         Flight::builder()
+    ///             .name("myflight")
+    ///             .image("my/image:latest")
+    ///             .build()
+    ///             .unwrap(),
+    ///     )
     ///     .build()
     ///     .unwrap();
     /// let resp = req.create(&config, false).unwrap();
@@ -383,13 +371,17 @@ impl FormationsRequest {
     ///     .unwrap();
     ///
     /// let resp = req.set_active_configurations(
-    ///     &ActiveConfigurations::new()
-    ///         .add_configuration(ActiveConfiguration::builder()
-    ///             .uuid("aa8522e7-06cc-4e35-8966-484ae26e02a9".parse::<Uuid>().unwrap())
+    ///     &ActiveConfigurations::new().add_configuration(
+    ///         ActiveConfiguration::builder()
+    ///             .uuid(
+    ///                 "aa8522e7-06cc-4e35-8966-484ae26e02a9"
+    ///                     .parse::<Uuid>()
+    ///                     .unwrap(),
+    ///             )
     ///             .build()
-    ///             .unwrap()
-    ///         ),
-    ///     false
+    ///             .unwrap(),
+    ///     ),
+    ///     false,
     /// );
     ///
     /// assert!(resp.is_ok());
@@ -402,10 +394,10 @@ impl FormationsRequest {
         if self.request.target.is_none() {
             return Err(SeaplaneError::MissingFormationName);
         }
-        let url = self.request.endpoint_url.join(&format!(
-            "formations/{}/activeConfiguration?force={force}",
-            self.name()
-        ))?;
+        let url = self
+            .request
+            .endpoint_url
+            .join(&format!("formations/{}/activeConfiguration?force={force}", self.name()))?;
         if !force && configs.is_empty() {
             return Err(SeaplaneError::MissingActiveConfiguration);
         }
@@ -473,19 +465,23 @@ impl FormationsRequest {
     ///     .build()
     ///     .unwrap();
     ///
-    /// let resp = req.get_container(
-    ///     "aa8522e7-06cc-4e35-8966-484ae26e02a9".parse::<Uuid>().unwrap()
-    /// ).unwrap();
+    /// let resp = req
+    ///     .get_container(
+    ///         "aa8522e7-06cc-4e35-8966-484ae26e02a9"
+    ///             .parse::<Uuid>()
+    ///             .unwrap(),
+    ///     )
+    ///     .unwrap();
     /// dbg!(resp);
     /// ```
     pub fn get_container(&self, container_id: Uuid) -> Result<Container> {
         if self.request.target.is_none() {
             return Err(SeaplaneError::MissingFormationName);
         }
-        let url = self.request.endpoint_url.join(&format!(
-            "formations/{}/containers/{container_id}",
-            self.name()
-        ))?;
+        let url = self
+            .request
+            .endpoint_url
+            .join(&format!("formations/{}/containers/{container_id}", self.name()))?;
         let resp = self
             .request
             .client
@@ -511,7 +507,11 @@ impl FormationsRequest {
     ///     .unwrap();
     ///
     /// let resp = req
-    ///     .get_configuration("aa8522e7-06cc-4e35-8966-484ae26e02a9".parse::<Uuid>().unwrap())
+    ///     .get_configuration(
+    ///         "aa8522e7-06cc-4e35-8966-484ae26e02a9"
+    ///             .parse::<Uuid>()
+    ///             .unwrap(),
+    ///     )
     ///     .unwrap();
     ///
     /// dbg!(resp);
@@ -589,8 +589,10 @@ impl FormationsRequest {
     ///
     /// let resp = req
     ///     .remove_configuration(
-    ///         "aa8522e7-06cc-4e35-8966-484ae26e02a9".parse::<Uuid>().unwrap(),
-    ///         false
+    ///         "aa8522e7-06cc-4e35-8966-484ae26e02a9"
+    ///             .parse::<Uuid>()
+    ///             .unwrap(),
+    ///         false,
     ///     )
     ///     .unwrap();
     ///
@@ -600,10 +602,10 @@ impl FormationsRequest {
         if self.request.target.is_none() {
             return Err(SeaplaneError::MissingFormationName);
         }
-        let url = self.request.endpoint_url.join(&format!(
-            "formations/{}/configurations/{uuid}?force={force}",
-            self.name()
-        ))?;
+        let url = self
+            .request
+            .endpoint_url
+            .join(&format!("formations/{}/configurations/{uuid}?force={force}", self.name()))?;
         let resp = self
             .request
             .client
@@ -630,10 +632,13 @@ impl FormationsRequest {
     ///     .unwrap();
     ///
     /// let config = FormationConfiguration::builder()
-    ///     .add_flight(Flight::builder()
-    ///         .name("myflight")
-    ///         .image("my/image:latest")
-    ///         .build().unwrap())
+    ///     .add_flight(
+    ///         Flight::builder()
+    ///             .name("myflight")
+    ///             .image("my/image:latest")
+    ///             .build()
+    ///             .unwrap(),
+    ///     )
     ///     .build()
     ///     .unwrap();
     /// let resp = req.create(&config, false).unwrap();
@@ -647,10 +652,10 @@ impl FormationsRequest {
         if self.request.target.is_none() {
             return Err(SeaplaneError::MissingFormationName);
         }
-        let url = self.request.endpoint_url.join(&format!(
-            "formations/{}/configurations?active={active}",
-            self.name()
-        ))?;
+        let url = self
+            .request
+            .endpoint_url
+            .join(&format!("formations/{}/configurations?active={active}", self.name()))?;
         let resp = self
             .request
             .client
@@ -663,7 +668,5 @@ impl FormationsRequest {
 
     // Internal, only used when can only be a valid name.
     #[inline]
-    fn name(&self) -> &str {
-        self.request.target.as_deref().unwrap()
-    }
+    fn name(&self) -> &str { self.request.target.as_deref().unwrap() }
 }
