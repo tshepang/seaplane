@@ -2,7 +2,7 @@ Short help:
 
 ```console
 $ seaplane restrict set -h
-seaplane-restrict-set [..]
+seaplane[EXE]-restrict-set [..]
 Set a restriction
 
 USAGE:
@@ -64,7 +64,7 @@ Long Help:
 
 ```console
 $ seaplane restrict set --help
-seaplane-restrict-set [..]
+seaplane[EXE]-restrict-set [..]
 Set a restriction
 
 USAGE:

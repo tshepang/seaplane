@@ -7,7 +7,7 @@ error: The following required arguments were not provided:
     <shell>
 
 USAGE:
-    seaplane shell-completion [OPTIONS] <shell>
+    seaplane[EXE] shell-completion [OPTIONS] <shell>
 
 For more information try --help
 
@@ -17,11 +17,11 @@ The short help:
 
 ```console
 $ seaplane shell-completion -h
-seaplane-shell-completion [..]
+seaplane[EXE]-shell-completion [..]
 Generate shell completion script files for seaplane
 
 USAGE:
-    seaplane shell-completion [OPTIONS] <shell>
+    seaplane[EXE] shell-completion [OPTIONS] <shell>
 
 ARGS:
     <shell>    The shell to generate completion scripts for [possible values: bash, elvish, fish, powershell, zsh]
@@ -134,11 +134,11 @@ The long help:
 
 ```console
 $ seaplane shell-completion --help
-seaplane-shell-completion [..]
+seaplane[EXE]-shell-completion [..]
 Generate shell completion script files for seaplane
 
 USAGE:
-    seaplane shell-completion [OPTIONS] <shell>
+    seaplane[EXE] shell-completion [OPTIONS] <shell>
 
 ARGS:
     <shell>

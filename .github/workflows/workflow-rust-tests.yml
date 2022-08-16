@@ -164,10 +164,7 @@ jobs:
       if: ${{ inputs.test_cli }}
     - name: Run the CLI UI tests
       run: cargo test --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
-      # UI testing library deadlocks on Windows if the application writes more than 4096 bytes
-      # https://github.com/assert-rs/trycmd/issues/121
-      # Once above issue is closed we can remove the `matrix.os` condition
-      if: matrix.os != 'windows-latest' && inputs.test_cli
+      if: ${{ inputs.test_cli }}
 
     - name: SDK Mock API tests
       run: cargo test --features api_tests --manifest-path ./seaplane-sdk/rust/Cargo.toml -- --test-threads=1

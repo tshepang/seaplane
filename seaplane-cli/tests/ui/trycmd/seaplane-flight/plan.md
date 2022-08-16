@@ -18,7 +18,7 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight plan -h
-seaplane-flight-plan [..]
+seaplane[EXE]-flight-plan [..]
 Make a new local Flight Plan that Formations can include and reference
 
 USAGE:
@@ -79,7 +79,7 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight plan --help
-seaplane-flight-plan [..]
+seaplane[EXE]-flight-plan [..]
 Make a new local Flight Plan that Formations can include and reference
 
 USAGE:

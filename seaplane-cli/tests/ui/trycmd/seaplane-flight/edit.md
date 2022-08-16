@@ -18,7 +18,7 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight edit -h
-seaplane-flight-edit [..]
+seaplane[EXE]-flight-edit [..]
 Edit a local Flight Plan
 
 USAGE:
@@ -81,7 +81,7 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight edit --help
-seaplane-flight-edit [..]
+seaplane[EXE]-flight-edit [..]
 Edit a local Flight Plan
 
 USAGE:

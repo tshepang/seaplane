@@ -2,7 +2,7 @@ The short help message with `-h`:
 
 ```console
 $ seaplane formation plan -h
-seaplane-formation-plan [..]
+seaplane[EXE]-formation-plan [..]
 Create a Seaplane Formation
 
 USAGE:
@@ -70,7 +70,7 @@ The long help message with `--help`:
 
 ```console
 $ seaplane formation plan --help
-seaplane-formation-plan [..]
+seaplane[EXE]-formation-plan [..]
 Make a new local Formation Plan (and optionally launch an instance of it)
 
 Include local Flight Plans by using `--include-flight-plan`. Multiple Flights may be included in a
