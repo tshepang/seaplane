@@ -18,7 +18,7 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight copy -h
-seaplane-flight-copy [..]
+seaplane[EXE]-flight-copy [..]
 Copy a local Flight Plan (optionally make changes to the copy)
 
 USAGE:
@@ -82,7 +82,7 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight copy --help
-seaplane-flight-copy [..]
+seaplane[EXE]-flight-copy [..]
 Copy a local Flight Plan (optionally make changes to the copy)
 
 USAGE:
