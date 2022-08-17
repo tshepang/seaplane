@@ -27,6 +27,7 @@ impl SeaplaneMetadataGet {
             .arg(common::single_key())
             .arg(common::base64())
             .args(common::display_args())
+            .group(common::keys_or_values())
             .mut_arg("no-header", |a| a.hide(true))
             .mut_arg("only-keys", |a| a.hide(true))
             .mut_arg("only-values", |a| a.hide(true))

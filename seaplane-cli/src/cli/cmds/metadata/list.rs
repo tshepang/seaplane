@@ -32,6 +32,7 @@ impl SeaplaneMetadataList {
             )
             .arg(common::base64())
             .args(common::display_args())
+            .group(common::keys_or_values())
             .arg(arg!(--from - ('f') =["KEY"]).help("Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)"))
     }
 }

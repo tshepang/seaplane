@@ -1,4 +1,4 @@
-use clap::{Arg, ArgMatches};
+use clap::{Arg, ArgGroup, ArgMatches};
 
 const LONG_DECODE: &str = "Decode the keys and values before printing them
 
@@ -40,4 +40,11 @@ pub fn single_key() -> Arg<'static> {
 
 pub fn keys() -> Arg<'static> {
     arg!(key =["KEY"]... required ).help("The key(s) of the metadata key-value pair")
+}
+
+pub fn keys_or_values() -> ArgGroup<'static> {
+    ArgGroup::new("keys_or_values")
+        .args(&["only-keys", "only-values"])
+        .multiple(false)
+        .required(false)
 }

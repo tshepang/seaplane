@@ -609,6 +609,9 @@ fn seaplane_md_get() {
 
     // aliases
     assert!(cli!("metadata show foo").is_ok());
+
+    // can't have both --only-keys and --only-values
+    assert!(cli!("metadata get foo --only-keys --only-values").is_err());
 }
 
 #[test]
@@ -645,6 +648,9 @@ fn seaplane_md_list() {
 
     // aliases
     assert!(cli!("metadata ls foo").is_ok());
+
+    // can't have both --only-keys and --only-values
+    assert!(cli!("metadata list --only-keys --only-values").is_err());
 }
 
 #[test]
