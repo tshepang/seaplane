@@ -27,7 +27,7 @@ impl CliCommand for SeaplaneMetadataDelete {
         let mut len = 0;
         let mut req = MetadataReq::new(ctx)?;
         for kv in ctx.md_ctx.get_mut().unwrap().kvs.iter_mut() {
-            let key = kv.key.as_ref().unwrap().to_string();
+            let key = kv.key.to_string();
             req.set_key(key.clone())?;
             req.delete_value()?;
             if ctx.args.out_format == OutputFormat::Table {

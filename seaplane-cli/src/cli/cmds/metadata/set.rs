@@ -35,8 +35,8 @@ impl CliCommand for SeaplaneMetadataSet {
         let mut req = MetadataReq::new(ctx)?;
         let mdctx = ctx.md_ctx.get_mut_or_init();
         for kv in mdctx.kvs.iter_mut() {
-            let key = kv.key.as_ref().unwrap().to_string();
-            let value = kv.value.as_ref().unwrap().to_string();
+            let key = kv.key.to_string();
+            let value = kv.value.to_string();
             req.set_key(&key)?;
             req.put_value(Value::from_encoded(value.clone()))?;
             if ctx.args.out_format == OutputFormat::Table {

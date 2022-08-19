@@ -2,10 +2,11 @@ use std::io::Write;
 
 use seaplane::api::v1::metadata::KeyValue as KeyValueModel;
 use serde::Serialize;
+use tabwriter::TabWriter;
 
 use crate::{
     context::Ctx,
-    error::Result,
+    error::{CliError, Result},
     ops::EncodedString,
     printer::{printer, Output},
 };
@@ -16,18 +17,15 @@ use crate::{
 /// We also need to keep track if the values are encoded or not
 #[derive(Debug, Default, Clone, Serialize)]
 pub struct KeyValue {
-    pub key: Option<EncodedString>,
-    pub value: Option<EncodedString>,
+    pub key: EncodedString,
+    pub value: EncodedString,
 }
 
 impl KeyValue {
     /// Creates a new KeyValue from an encoded key and value. You must pinky promise the key and
     /// value are URL safe base64 encoded or Bad Things may happen.
     pub fn new<S: Into<String>>(key: S, value: S) -> Self {
-        Self {
-            key: Some(EncodedString::new(key.into())),
-            value: Some(EncodedString::new(value.into())),
-        }
+        Self { key: EncodedString::new(key.into()), value: EncodedString::new(value.into()) }
     }
 
     /// Creates a new KeyValue from an un-encoded key and value, encoding them along the way
@@ -46,12 +44,12 @@ impl KeyValue {
     /// Creates a new KeyValue from an already encoded string ref. You must pinky promise the key
     /// is URL safe base64 encoded or Bad Things may happen.
     pub fn from_key<S: Into<String>>(key: S) -> Self {
-        Self { key: Some(EncodedString::new(key.into())), ..Self::default() }
+        Self { key: EncodedString::new(key.into()), ..Self::default() }
     }
 
     /// Sets the value to some base64 encoded value
     pub fn set_value<S: Into<String>>(&mut self, value: S) {
-        self.value = Some(EncodedString::new(value.into()))
+        self.value = EncodedString::new(value.into())
     }
 }
 
@@ -83,47 +81,57 @@ impl KeyValues {
     pub fn push(&mut self, kv: KeyValue) { self.inner.push(kv) }
 
     pub fn keys(&self) -> impl Iterator<Item = EncodedString> + '_ {
-        self.inner.iter().filter_map(|kv| kv.key.clone())
+        self.inner.iter().map(|kv| kv.key.clone())
     }
 
     // print a table in whatever state we happen to be in (encoded/unencoded)
-    fn impl_print_table(&self, headers: bool, decode: bool) -> Result<()> {
+    fn impl_print_table(
+        &self,
+        headers: bool,
+        decode: bool,
+        only_keys: bool,
+        only_values: bool,
+    ) -> Result<()> {
         // TODO: we may have to add ways to elide long keys or values with ... after some char count
-        let mut ptr = printer();
+        let mut tw = TabWriter::new(Vec::new());
 
-        let mut iter = self.iter().peekable();
-        while let Some(kv) = iter.next() {
-            if let Some(k_s) = &kv.key {
-                if headers {
-                    write!(ptr, "KEY: ")?;
-                }
-
-                if decode {
-                    ptr.write_all(&k_s.decoded()?)?;
-                } else {
-                    write!(ptr, "{}", k_s)?;
-                };
-
-                writeln!(ptr)?;
-            }
-
-            if let Some(v_s) = &kv.value {
-                if headers {
-                    writeln!(ptr, "VALUE:")?;
-                }
-
-                if decode {
-                    ptr.write_all(&v_s.decoded()?)?;
-                } else {
-                    write!(ptr, "{}", v_s)?;
-                };
-                writeln!(ptr)?;
-            }
-
-            if iter.peek().is_some() {
-                writeln!(ptr, "---")?;
+        if headers {
+            match [only_keys, only_values] {
+                [true, false] => writeln!(tw, "KEY")?,
+                [false, true] => writeln!(tw, "VALUE")?,
+                [..] => writeln!(tw, "KEY\tVALUE")?,
             }
         }
+
+        for kv in self.iter() {
+            if !only_values {
+                if decode {
+                    tw.write_all(&kv.key.decoded()?)?;
+                } else {
+                    write!(tw, "{}", &kv.key)?;
+                }
+
+                if !only_keys {
+                    tw.write_all(b"\t")?
+                };
+            };
+
+            if !only_keys {
+                if decode {
+                    tw.write_all(&kv.value.decoded()?)?;
+                } else {
+                    write!(tw, "{}", &kv.value)?;
+                }
+            };
+            writeln!(tw)?;
+        }
+        tw.flush()?;
+
+        let mut ptr = printer();
+        let page = tw
+            .into_inner()
+            .map_err(|_| CliError::bail("IO flush error writing key-values"))?;
+        ptr.write_all(&page)?;
         ptr.flush()?;
 
         Ok(())
@@ -131,37 +139,14 @@ impl KeyValues {
 }
 
 impl Output for KeyValues {
-    fn print_json(&self, ctx: &Ctx) -> Result<()> {
-        let mut this = self.clone();
-        let mdctx = ctx.md_ctx.get_or_init();
-        if mdctx.no_keys {
-            this.inner.iter_mut().for_each(|kv| {
-                kv.key.take();
-            });
-        }
-        if mdctx.no_values {
-            this.inner.iter_mut().for_each(|kv| {
-                kv.value.take();
-            });
-        }
+    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
         cli_println!("{}", serde_json::to_string(self)?);
         Ok(())
     }
 
     fn print_table(&self, ctx: &Ctx) -> Result<()> {
-        let mut this = self.clone();
         let mdctx = ctx.md_ctx.get_or_init();
-        if mdctx.no_keys {
-            this.inner.iter_mut().for_each(|kv| {
-                kv.key.take();
-            });
-        }
-        if mdctx.no_values {
-            this.inner.iter_mut().for_each(|kv| {
-                kv.value.take();
-            });
-        }
-        this.impl_print_table(!mdctx.no_header, mdctx.decode)
+        self.impl_print_table(!mdctx.no_header, mdctx.decode, mdctx.no_values, mdctx.no_keys)
     }
 }
 
@@ -175,16 +160,16 @@ mod tests {
         KeyValues {
             inner: vec![
                 KeyValue {
-                    key: Some(EncodedString::new("a2V5MQ".into())),
-                    value: Some(EncodedString::new("dmFsdWUx".into())),
+                    key: EncodedString::new("a2V5MQ".into()),
+                    value: EncodedString::new("dmFsdWUx".into()),
                 },
                 KeyValue {
-                    key: Some(EncodedString::new("a2V5Mg".into())),
-                    value: Some(EncodedString::new("dmFsdWUy".into())),
+                    key: EncodedString::new("a2V5Mg".into()),
+                    value: EncodedString::new("dmFsdWUy".into()),
                 },
                 KeyValue {
-                    key: Some(EncodedString::new("a2V5Mw".into())),
-                    value: Some(EncodedString::new("dmFsdWUz".into())),
+                    key: EncodedString::new("a2V5Mw".into()),
+                    value: EncodedString::new("dmFsdWUz".into()),
                 },
             ],
         }
@@ -197,32 +182,6 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&kvs).unwrap(),
             json!([{"key": "a2V5MQ", "value": "dmFsdWUx"}, {"key": "a2V5Mg", "value": "dmFsdWUy"}, {"key": "a2V5Mw", "value": "dmFsdWUz"}]).to_string()
-        );
-    }
-
-    #[test]
-    fn serialize_keyvalues_base64_no_keys() {
-        let mut kvs = build_kvs();
-        kvs.inner.iter_mut().for_each(|kv| {
-            kv.key.take();
-        });
-
-        assert_eq!(
-            serde_json::to_string(&kvs).unwrap(),
-            json!([{"key": null, "value": "dmFsdWUx"}, {"key": null, "value": "dmFsdWUy"}, {"key": null, "value": "dmFsdWUz"}]).to_string()
-        );
-    }
-
-    #[test]
-    fn serialize_keyvalues_base64_no_values() {
-        let mut kvs = build_kvs();
-        kvs.inner.iter_mut().for_each(|kv| {
-            kv.value.take();
-        });
-
-        assert_eq!(
-            serde_json::to_string(&kvs).unwrap(),
-            json!([{"key": "a2V5MQ", "value": null}, {"key": "a2V5Mg", "value": null}, {"key": "a2V5Mw", "value": null}]).to_string()
         );
     }
 }

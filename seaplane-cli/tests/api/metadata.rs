@@ -79,16 +79,13 @@ fn metadata_list_root() {
     let res = test_main(&cli!("metadata list"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(
-        printer().as_string().trim(),
-        "KEY: Zm9v\nVALUE:\nYmFy\n---\nKEY: YmF6\nVALUE:\nYnV6"
-    );
+    assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
 
     let res = test_main(&cli!("metadata list -D"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(printer().as_string().trim(), "KEY: foo\nVALUE:\nbar\n---\nKEY: baz\nVALUE:\nbuz");
+    assert_eq!(printer().as_string().trim(), "KEY  VALUE\nfoo  bar\nbaz  buz");
     printer().clear();
     mock.delete();
 }
@@ -103,16 +100,13 @@ fn metadata_list_dir() {
     let res = test_main(&cli!("metadata list Pequod!"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(
-        printer().as_string().trim(),
-        "KEY: Zm9v\nVALUE:\nYmFy\n---\nKEY: YmF6\nVALUE:\nYnV6"
-    );
+    assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
 
     let res = test_main(&cli!("metadata list UGVxdW9kIQ --base64 -D"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(printer().as_string().trim(), "KEY: foo\nVALUE:\nbar\n---\nKEY: baz\nVALUE:\nbuz");
+    assert_eq!(printer().as_string().trim(), "KEY  VALUE\nfoo  bar\nbaz  buz");
     printer().clear();
     mock.delete();
 }
@@ -150,19 +144,13 @@ fn metadata_list_root_from() {
     let res = test_main(&cli!("metadata list --from Pequod!"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(
-        printer().as_string().trim(),
-        "KEY: Zm9v\nVALUE:\nYmFy\n---\nKEY: YmF6\nVALUE:\nYnV6"
-    );
+    assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
 
     let res = test_main(&cli!("metadata list -f UGVxdW9kIQ --base64"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(
-        printer().as_string().trim(),
-        "KEY: Zm9v\nVALUE:\nYmFy\n---\nKEY: YmF6\nVALUE:\nYnV6"
-    );
+    assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
     mock.delete();
 }
@@ -178,10 +166,7 @@ fn metadata_list_dir_from() {
     let res = test_main(&cli!("metadata list Queequeg --from Pequod!"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock.assert_hits(1);
-    assert_eq!(
-        printer().as_string().trim(),
-        "KEY: Zm9v\nVALUE:\nYmFy\n---\nKEY: YmF6\nVALUE:\nYnV6"
-    );
+    assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
 
     let res = test_main(
@@ -190,10 +175,7 @@ fn metadata_list_dir_from() {
     );
     assert!(res.is_ok());
     mock.assert_hits(2);
-    assert_eq!(
-        printer().as_string().trim(),
-        "KEY: Zm9v\nVALUE:\nYmFy\n---\nKEY: YmF6\nVALUE:\nYnV6"
-    );
+    assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
     mock.delete();
 }

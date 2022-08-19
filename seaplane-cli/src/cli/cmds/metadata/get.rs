@@ -40,7 +40,7 @@ impl CliCommand for SeaplaneMetadataGet {
             let mut req = MetadataReq::new(ctx)?;
             let mdctx = ctx.md_ctx.get_mut_or_init();
             for kv in mdctx.kvs.iter_mut() {
-                req.set_key(kv.key.as_ref().unwrap().to_string())?;
+                req.set_key(kv.key.to_string())?;
                 kv.set_value(
                     // The key is already in Base64 so no need to convert
                     req.get_value()?.to_string(),
