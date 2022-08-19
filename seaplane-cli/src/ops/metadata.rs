@@ -84,17 +84,23 @@ impl KeyValues {
     pub fn keys(&self) -> impl Iterator<Item = EncodedString> + '_ {
         self.inner.iter().map(|kv| kv.key.clone())
     }
+}
 
-    // print a table in whatever state we happen to be in (encoded/unencoded)
-    fn impl_print_table(
-        &self,
-        headers: bool,
-        decode: bool,
-        only_keys: bool,
-        only_values: bool,
-        keys_width_limit: usize,
-        values_width_limit: usize,
-    ) -> Result<()> {
+impl Output for KeyValues {
+    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
+        cli_println!("{}", serde_json::to_string(self)?);
+        Ok(())
+    }
+
+    fn print_table(&self, ctx: &Ctx) -> Result<()> {
+        let mdctx = ctx.md_ctx.get_or_init();
+        let headers = !mdctx.no_header;
+        let decode = mdctx.decode;
+        let only_keys = mdctx.no_values;
+        let only_values = mdctx.no_keys;
+        let keys_width_limit = mdctx.keys_width_limit;
+        let values_width_limit = mdctx.values_width_limit;
+
         let mut tw = TabWriter::new(Vec::new());
 
         if headers {
@@ -162,25 +168,6 @@ impl KeyValues {
         ptr.flush()?;
 
         Ok(())
-    }
-}
-
-impl Output for KeyValues {
-    fn print_json(&self, _ctx: &Ctx) -> Result<()> {
-        cli_println!("{}", serde_json::to_string(self)?);
-        Ok(())
-    }
-
-    fn print_table(&self, ctx: &Ctx) -> Result<()> {
-        let mdctx = ctx.md_ctx.get_or_init();
-        self.impl_print_table(
-            !mdctx.no_header,
-            mdctx.decode,
-            mdctx.no_values,
-            mdctx.no_keys,
-            mdctx.keys_width_limit,
-            mdctx.values_width_limit,
-        )
     }
 }
 
