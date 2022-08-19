@@ -96,6 +96,7 @@ impl Output for KeyValues {
         let mdctx = ctx.md_ctx.get_or_init();
         let headers = !mdctx.no_header;
         let decode = mdctx.decode;
+        let decode_safe = mdctx.decode_safe;
         let only_keys = mdctx.no_values;
         let only_values = mdctx.no_keys;
         let keys_width_limit = mdctx.keys_width_limit;
@@ -140,6 +141,8 @@ impl Output for KeyValues {
             if !only_values {
                 if decode {
                     tw.write_all(&truncate_vec(kv.key.decoded()?, keys_width_limit))?;
+                } else if decode_safe {
+                    write!(tw, "{}", truncate_string(kv.key.decoded_safe()?, keys_width_limit))?;
                 } else {
                     write!(tw, "{}", truncate_string(kv.key.to_string(), keys_width_limit))?;
                 }
@@ -152,6 +155,12 @@ impl Output for KeyValues {
             if !only_keys {
                 if decode {
                     tw.write_all(&truncate_vec(kv.value.decoded()?, values_width_limit))?;
+                } else if decode_safe {
+                    write!(
+                        tw,
+                        "{}",
+                        truncate_string(kv.value.decoded_safe()?, values_width_limit)
+                    )?;
                 } else {
                     write!(tw, "{}", truncate_string(kv.value.to_string(), values_width_limit))?;
                 }

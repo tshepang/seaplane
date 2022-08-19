@@ -16,6 +16,7 @@ OPTIONS:
     -B, --base64                        The keys/values are already encoded in URL safe Base64
         --color <COLOR>                 Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
     -D, --decode                        Decode the keys and values before printing them
+        --decode-safe                   Decode the keys and values in a terminal-friendly way
     -f, --from <KEY>                    Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
         --format <FORMAT>               Change the output format [default: table] [possible values: table, json]
     -h, --help                          Print help information
@@ -75,6 +76,9 @@ OPTIONS:
             
             Binary values will be written directly to standard output (which may do strange
             things to your terminal)
+
+        --decode-safe
+            Decode the keys and values in a terminal-friendly way
 
     -f, --from <KEY>
             Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)

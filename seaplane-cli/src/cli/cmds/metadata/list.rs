@@ -72,6 +72,7 @@ impl CliCommand for SeaplaneMetadataList {
         let mut mdctx = ctx.md_ctx.get_mut().unwrap();
         mdctx.base64 = matches.contains_id("base64");
         mdctx.decode = matches.contains_id("decode");
+        mdctx.decode_safe = matches.contains_id("decode-safe");
         mdctx.no_keys = matches.contains_id("only-values");
         mdctx.no_values = matches.contains_id("only-keys");
         mdctx.no_header = matches.contains_id("no-header");

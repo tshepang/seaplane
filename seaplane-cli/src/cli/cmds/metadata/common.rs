@@ -19,10 +19,13 @@ pub fn display_args() -> Vec<Arg<'static>> {
         arg!(--decode - ('D'))
             .help("Decode the keys and values before printing them")
             .long_help(LONG_DECODE)
-            .overrides_with("no-decode"),
+            .overrides_with_all(&["no-decode", "decode-safe"]),
+        arg!(--("decode-safe"))
+            .help("Decode the keys and values in a terminal-friendly way")
+            .overrides_with_all(&["decode", "no-decode"]),
         arg!(--("no-decode"))
             .help("Print keys and values without decoding them")
-            .overrides_with("decode"),
+            .overrides_with_all(&["decode", "decode-safe"]),
         arg!(--("no-header") | ("no-heading") | ("no-headers") - ('H'))
             .help("Omit the 'KEY' or 'VALUE' heading when printing with `--format=table`"),
         arg!(--("only-values") | ("only-value")).help("Only print the value"),

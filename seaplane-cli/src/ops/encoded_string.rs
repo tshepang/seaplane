@@ -21,6 +21,12 @@ impl EncodedString {
         let ret = base64::decode_config(&self.0, base64::URL_SAFE_NO_PAD)?;
         Ok(ret)
     }
+
+    /// Decodes into display-safe format
+    pub fn decoded_safe(&self) -> Result<String> {
+        let ret = stfu8::encode_u8(&base64::decode_config(&self.0, base64::URL_SAFE_NO_PAD)?);
+        Ok(ret)
+    }
 }
 
 impl Default for EncodedString {

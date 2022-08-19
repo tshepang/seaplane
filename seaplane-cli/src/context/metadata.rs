@@ -24,6 +24,8 @@ pub struct MetadataCtx {
     pub base64: bool,
     /// Print with decoding
     pub decode: bool,
+    /// Print with safe decoding
+    pub decode_safe: bool,
     /// A base64 encoded key
     pub from: Option<Key>,
     /// Skip the KEY or VALUE header in --format=table
