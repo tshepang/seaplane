@@ -12,22 +12,24 @@ ARGS:
     <DIR>    The root directory of the metadata key-value pairs to list
 
 OPTIONS:
-    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-    -B, --base64              The keys/values are already encoded in URL safe Base64
-        --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -D, --decode              Decode the keys and values before printing them
-    -f, --from <KEY>          Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
-        --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
-    -h, --help                Print help information
-    -H, --no-header           Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading, no-headers]
-        --no-color            Do not color output (alias for --color=never)
-        --no-decode           Print keys and values without decoding them
-        --only-keys           Only print the key [aliases: only-key]
-        --only-values         Only print the value [aliases: only-value]
-    -q, --quiet               Suppress output at a specific level and below
-    -S, --stateless           Ignore local state files, do not read from or write to them
-    -v, --verbose             Display more verbose output
-    -V, --version             Print version information
+    -A, --api-key <STRING>              The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+    -B, --base64                        The keys/values are already encoded in URL safe Base64
+        --color <COLOR>                 Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+    -D, --decode                        Decode the keys and values before printing them
+    -f, --from <KEY>                    Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
+        --format <FORMAT>               Change the output format [default: table] [possible values: table, json]
+    -h, --help                          Print help information
+    -H, --no-header                     Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading, no-headers]
+        --keys-width-limit <LIMIT>      Limit the width of the keys when using `--format=table` (0 means unlimited)
+        --no-color                      Do not color output (alias for --color=never)
+        --no-decode                     Print keys and values without decoding them
+        --only-keys                     Only print the key [aliases: only-key]
+        --only-values                   Only print the value [aliases: only-value]
+    -q, --quiet                         Suppress output at a specific level and below
+    -S, --stateless                     Ignore local state files, do not read from or write to them
+    -v, --verbose                       Display more verbose output
+    -V, --version                       Print version information
+        --values-width-limit <LIMIT>    Limit the width of the values when using `--format=table` (0 means unlimited)
 
 ```
 
@@ -91,6 +93,9 @@ OPTIONS:
             
             [aliases: no-heading, no-headers]
 
+        --keys-width-limit <LIMIT>
+            Limit the width of the keys when using `--format=table` (0 means unlimited)
+
         --no-color
             Do not color output (alias for --color=never)
 
@@ -127,5 +132,8 @@ OPTIONS:
 
     -V, --version
             Print version information
+
+        --values-width-limit <LIMIT>
+            Limit the width of the values when using `--format=table` (0 means unlimited)
 
 ```

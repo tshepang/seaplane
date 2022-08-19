@@ -27,6 +27,14 @@ pub fn display_args() -> Vec<Arg<'static>> {
             .help("Omit the 'KEY' or 'VALUE' heading when printing with `--format=table`"),
         arg!(--("only-values") | ("only-value")).help("Only print the value"),
         arg!(--("only-keys") | ("only-key")).help("Only print the key"),
+        arg!(--("keys-width-limit") = ["LIMIT"])
+            .help("Limit the width of the keys when using `--format=table` (0 means unlimited)")
+            .takes_value(true)
+            .value_parser(clap::value_parser!(usize)),
+        arg!(--("values-width-limit") = ["LIMIT"])
+            .help("Limit the width of the values when using `--format=table` (0 means unlimited)")
+            .takes_value(true)
+            .value_parser(clap::value_parser!(usize)),
     ]
 }
 

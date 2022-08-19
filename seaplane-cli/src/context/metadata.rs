@@ -32,6 +32,10 @@ pub struct MetadataCtx {
     pub no_keys: bool,
     /// Don't print values
     pub no_values: bool,
+    /// Max width of keys
+    pub keys_width_limit: usize,
+    /// Max width of values
+    pub values_width_limit: usize,
 }
 
 impl MetadataCtx {

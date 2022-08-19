@@ -75,6 +75,14 @@ impl CliCommand for SeaplaneMetadataList {
         mdctx.no_keys = matches.contains_id("only-values");
         mdctx.no_values = matches.contains_id("only-keys");
         mdctx.no_header = matches.contains_id("no-header");
+        mdctx.keys_width_limit = matches
+            .get_one::<usize>("keys-width-limit")
+            .copied()
+            .unwrap_or_default();
+        mdctx.values_width_limit = matches
+            .get_one::<usize>("values-width-limit")
+            .copied()
+            .unwrap_or_default();
         mdctx.from = maybe_base64_arg!(matches, "from", matches.contains_id("base64"))
             .map(Key::from_encoded);
         mdctx.directory = maybe_base64_arg!(matches, "dir", matches.contains_id("base64"))

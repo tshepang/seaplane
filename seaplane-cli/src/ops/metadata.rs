@@ -3,6 +3,7 @@ use std::io::Write;
 use seaplane::api::v1::metadata::KeyValue as KeyValueModel;
 use serde::Serialize;
 use tabwriter::TabWriter;
+use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
     context::Ctx,
@@ -91,8 +92,9 @@ impl KeyValues {
         decode: bool,
         only_keys: bool,
         only_values: bool,
+        keys_width_limit: usize,
+        values_width_limit: usize,
     ) -> Result<()> {
-        // TODO: we may have to add ways to elide long keys or values with ... after some char count
         let mut tw = TabWriter::new(Vec::new());
 
         if headers {
@@ -103,12 +105,37 @@ impl KeyValues {
             }
         }
 
+        // Truncate a binary vector to a specific length in bytes.
+        // Appends ellipsis `…` if the vector was truncated
+        fn truncate_vec(vec: Vec<u8>, max: usize) -> Vec<u8> {
+            if max == 0 || vec.len() <= max {
+                vec
+            } else {
+                let mut vec = vec;
+                vec.truncate(max);
+                vec.extend_from_slice("…".as_bytes());
+                vec
+            }
+        }
+
+        // Truncate a unicode string to a specific number of grapheme clusters.
+        // Appends ellipsis `…` if the string was truncated
+        fn truncate_string(str: String, max: usize) -> String {
+            if max == 0 || str.graphemes(true).count() <= max {
+                str
+            } else {
+                let mut s: String = str.graphemes(true).take(max).collect();
+                s.push('…');
+                s
+            }
+        }
+
         for kv in self.iter() {
             if !only_values {
                 if decode {
-                    tw.write_all(&kv.key.decoded()?)?;
+                    tw.write_all(&truncate_vec(kv.key.decoded()?, keys_width_limit))?;
                 } else {
-                    write!(tw, "{}", &kv.key)?;
+                    write!(tw, "{}", truncate_string(kv.key.to_string(), keys_width_limit))?;
                 }
 
                 if !only_keys {
@@ -118,9 +145,9 @@ impl KeyValues {
 
             if !only_keys {
                 if decode {
-                    tw.write_all(&kv.value.decoded()?)?;
+                    tw.write_all(&truncate_vec(kv.value.decoded()?, values_width_limit))?;
                 } else {
-                    write!(tw, "{}", &kv.value)?;
+                    write!(tw, "{}", truncate_string(kv.value.to_string(), values_width_limit))?;
                 }
             };
             writeln!(tw)?;
@@ -146,7 +173,14 @@ impl Output for KeyValues {
 
     fn print_table(&self, ctx: &Ctx) -> Result<()> {
         let mdctx = ctx.md_ctx.get_or_init();
-        self.impl_print_table(!mdctx.no_header, mdctx.decode, mdctx.no_values, mdctx.no_keys)
+        self.impl_print_table(
+            !mdctx.no_header,
+            mdctx.decode,
+            mdctx.no_values,
+            mdctx.no_keys,
+            mdctx.keys_width_limit,
+            mdctx.values_width_limit,
+        )
     }
 }
 
