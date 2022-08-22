@@ -20,10 +20,11 @@ OPTIONS:
     -f, --from <KEY>                    Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
         --format <FORMAT>               Change the output format [default: table] [possible values: table, json]
     -h, --help                          Print help information
-    -H, --no-header                     Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading, no-headers]
+    -H, --human-readable                Safely decode and truncate output for human readability
         --keys-width-limit <LIMIT>      Limit the width of the keys when using `--format=table` (0 means unlimited)
         --no-color                      Do not color output (alias for --color=never)
         --no-decode                     Print keys and values without decoding them
+        --no-header                     Omit the 'KEY' or 'VALUE' heading when printing with `--format=table` [aliases: no-heading, no-headers]
         --only-keys                     Only print the key [aliases: only-key]
         --only-values                   Only print the value [aliases: only-value]
     -q, --quiet                         Suppress output at a specific level and below
@@ -92,10 +93,10 @@ OPTIONS:
     -h, --help
             Print help information
 
-    -H, --no-header
-            Omit the 'KEY' or 'VALUE' heading when printing with `--format=table`
+    -H, --human-readable
+            Safely decode and truncate output for human readability
             
-            [aliases: no-heading, no-headers]
+            Implies --decode-safe --values-width-limit 256
 
         --keys-width-limit <LIMIT>
             Limit the width of the keys when using `--format=table` (0 means unlimited)
@@ -105,6 +106,11 @@ OPTIONS:
 
         --no-decode
             Print keys and values without decoding them
+
+        --no-header
+            Omit the 'KEY' or 'VALUE' heading when printing with `--format=table`
+            
+            [aliases: no-heading, no-headers]
 
         --only-keys
             Only print the key

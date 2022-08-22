@@ -19,6 +19,7 @@ OPTIONS:
         --decode-safe                   Decode the keys and values in a terminal-friendly way
         --format <FORMAT>               Change the output format [default: table] [possible values: table, json]
     -h, --help                          Print help information
+    -H, --human-readable                Safely decode and truncate output for human readability
         --keys-width-limit <LIMIT>      Limit the width of the keys when using `--format=table` (0 means unlimited)
         --no-color                      Do not color output (alias for --color=never)
         --no-decode                     Print keys and values without decoding them
@@ -83,6 +84,11 @@ OPTIONS:
 
     -h, --help
             Print help information
+
+    -H, --human-readable
+            Safely decode and truncate output for human readability
+            
+            Implies --decode-safe --values-width-limit 256
 
         --keys-width-limit <LIMIT>
             Limit the width of the keys when using `--format=table` (0 means unlimited)

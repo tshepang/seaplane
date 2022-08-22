@@ -35,6 +35,7 @@ impl SeaplaneRestrictSet {
             .next_help_heading("RESTRICTION DETAILS")
             .args(common::restriction_details())
             .after_help(REGION_SPEC)
+            .mut_arg("no-header", |a| a.hide(true))
     }
 }
 

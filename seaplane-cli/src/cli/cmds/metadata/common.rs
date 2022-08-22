@@ -5,6 +5,10 @@ const LONG_DECODE: &str = "Decode the keys and values before printing them
 Binary values will be written directly to standard output (which may do strange
 things to your terminal)";
 
+const LONG_HUMAN_READABLE: &str = "Safely decode and truncate output for human readability
+
+Implies --decode-safe --values-width-limit 256";
+
 /// A newtype wrapper to enforce where the ArgMatches came from which reduces errors in checking if
 /// values of arguments were used or not. i.e. `seaplane formation create` may not have the same
 /// arguments as `seaplane account token` even though both produce an `ArgMatches`.
@@ -16,6 +20,9 @@ pub fn args() -> Vec<Arg<'static>> { vec![keys(), base64()] }
 
 pub fn display_args() -> Vec<Arg<'static>> {
     vec![
+        arg!(--("human-readable") - ('H'))
+            .help("Safely decode and truncate output for human readability")
+            .long_help(LONG_HUMAN_READABLE),
         arg!(--decode - ('D'))
             .help("Decode the keys and values before printing them")
             .long_help(LONG_DECODE)
@@ -26,7 +33,7 @@ pub fn display_args() -> Vec<Arg<'static>> {
         arg!(--("no-decode"))
             .help("Print keys and values without decoding them")
             .overrides_with_all(&["decode", "decode-safe"]),
-        arg!(--("no-header") | ("no-heading") | ("no-headers") - ('H'))
+        arg!(--("no-header") | ("no-heading") | ("no-headers"))
             .help("Omit the 'KEY' or 'VALUE' heading when printing with `--format=table`"),
         arg!(--("only-values") | ("only-value")).help("Only print the value"),
         arg!(--("only-keys") | ("only-key")).help("Only print the key"),
@@ -35,6 +42,7 @@ pub fn display_args() -> Vec<Arg<'static>> {
             .takes_value(true)
             .value_parser(clap::value_parser!(usize)),
         arg!(--("values-width-limit") = ["LIMIT"])
+            .default_value_if("human-readable", None, Some("256"))
             .help("Limit the width of the values when using `--format=table` (0 means unlimited)")
             .takes_value(true)
             .value_parser(clap::value_parser!(usize)),

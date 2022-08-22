@@ -261,7 +261,7 @@ pub fn display_args() -> Vec<Arg<'static>> {
         arg!(--("no-decode"))
             .help("Print directories without decoding them")
             .overrides_with("decode"),
-        arg!(--("no-header") | ("no-heading") | ("no-headers") - ('H'))
+        arg!(--("no-header") | ("no-heading") | ("no-headers"))
             .help("Omit the header when printing with `--format=table`"),
     ]
 }

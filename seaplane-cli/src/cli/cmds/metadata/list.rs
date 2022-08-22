@@ -73,6 +73,7 @@ impl CliCommand for SeaplaneMetadataList {
         mdctx.base64 = matches.contains_id("base64");
         mdctx.decode = matches.contains_id("decode");
         mdctx.decode_safe = matches.contains_id("decode-safe");
+        mdctx.no_decode = matches.contains_id("no-decode");
         mdctx.no_keys = matches.contains_id("only-values");
         mdctx.no_values = matches.contains_id("only-keys");
         mdctx.no_header = matches.contains_id("no-header");
@@ -88,6 +89,13 @@ impl CliCommand for SeaplaneMetadataList {
             .map(Key::from_encoded);
         mdctx.directory = maybe_base64_arg!(matches, "dir", matches.contains_id("base64"))
             .map(Directory::from_encoded);
+
+        // We set the decode_safe flag if there's no `decode` or `no-decode`
+        // flags set, because there's no built-in clap method to turn a flag on
+        // with default_value_if()
+        if matches.contains_id("human-readable") && !(mdctx.decode || mdctx.no_decode) {
+            mdctx.decode_safe = true
+        };
 
         if mdctx.decode && ctx.args.out_format != OutputFormat::Table {
             let format_arg = format!("--format {}", ctx.args.out_format);

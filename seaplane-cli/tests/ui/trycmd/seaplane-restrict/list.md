@@ -18,9 +18,9 @@ OPTIONS:
     -D, --decode              Decode the directories before printing them
         --format <FORMAT>     Change the output format [default: table] [possible values: table, json]
     -h, --help                Print help information
-    -H, --no-header           Omit the header when printing with `--format=table` [aliases: no-heading, no-headers]
         --no-color            Do not color output (alias for --color=never)
         --no-decode           Print directories without decoding them
+        --no-header           Omit the header when printing with `--format=table` [aliases: no-heading, no-headers]
     -q, --quiet               Suppress output at a specific level and below
     -S, --stateless           Ignore local state files, do not read from or write to them
     -v, --verbose             Display more verbose output
@@ -79,16 +79,16 @@ OPTIONS:
     -h, --help
             Print help information
 
-    -H, --no-header
-            Omit the header when printing with `--format=table`
-            
-            [aliases: no-heading, no-headers]
-
         --no-color
             Do not color output (alias for --color=never)
 
         --no-decode
             Print directories without decoding them
+
+        --no-header
+            Omit the header when printing with `--format=table`
+            
+            [aliases: no-heading, no-headers]
 
     -q, --quiet
             Suppress output at a specific level and below

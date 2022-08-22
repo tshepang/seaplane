@@ -20,7 +20,7 @@ pub fn display_args() -> Vec<Arg<'static>> {
         arg!(--("no-decode"))
             .help("Print lockname without decoding it")
             .overrides_with("decode"),
-        arg!(--("no-header") | ("no-heading") | ("no-headers") - ('H'))
+        arg!(--("no-header") | ("no-heading") | ("no-headers"))
             .help("Omit the heading when printing with `--format=table`"),
     ]
 }
