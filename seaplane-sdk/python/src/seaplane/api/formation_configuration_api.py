@@ -4,8 +4,8 @@ import requests
 from returns.result import Result
 
 from ..configuration import Configuration, config
-from ..model.active_configuration import ActiveConfiguration
-from ..model.formation_configuration import FormationConfiguration, to_formation_config
+from ..model.compute.active_configuration import ActiveConfiguration
+from ..model.compute.formation_configuration import FormationConfiguration, to_formation_config
 from .api_http import HTTPError, headers, to_json
 from .api_request import provision_req
 from .token_api import TokenAPI
@@ -20,7 +20,7 @@ class FormationConfigurationAPI:
     """
 
     def __init__(self, configuration: Configuration = config) -> None:
-        self.url = f"{configuration.endpoint}/formations"
+        self.url = f"{configuration.compute_endpoint}/formations"
         self.req = provision_req(TokenAPI(configuration))
 
     def create(

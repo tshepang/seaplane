@@ -4,7 +4,7 @@ import requests
 from returns.result import Result
 
 from ..configuration import Configuration, config
-from ..model.formation_metadata import FormationMetadata
+from ..model.compute.formation_metadata import FormationMetadata
 from .api_http import HTTPError, headers
 from .api_request import provision_req
 from .token_api import TokenAPI
@@ -17,7 +17,7 @@ class FormationAPI:
     """
 
     def __init__(self, configuration: Configuration = config) -> None:
-        self.url = f"{configuration.endpoint}/formations"
+        self.url = f"{configuration.compute_endpoint}/formations"
         self.req = provision_req(TokenAPI(configuration))
 
     def create(

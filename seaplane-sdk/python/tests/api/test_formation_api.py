@@ -7,7 +7,7 @@ from returns.result import Failure, Success
 from seaplane.api.api_http import HTTPError
 from seaplane.api.formation_api import FormationAPI
 from seaplane.configuration import Configuration
-from seaplane.model.formation_metadata import FormationMetadata
+from seaplane.model.compute.formation_metadata import FormationMetadata
 
 from ..conftest import add_token_request, fails_any_get  # noqa: F401
 

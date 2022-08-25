@@ -16,7 +16,7 @@ class ContainerAPI:
     """
 
     def __init__(self, configuration: Configuration = config) -> None:
-        self.url = f"{configuration.endpoint}/formations"
+        self.url = f"{configuration.compute_endpoint}/formations"
         self.req = provision_req(TokenAPI(configuration))
 
     def get_all(self, formation_name: Text) -> Result[Any, HTTPError]:

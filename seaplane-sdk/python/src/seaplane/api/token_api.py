@@ -6,9 +6,6 @@ from returns.result import Failure, Result, Success
 from ..configuration import Configuration, config
 from .api_http import SDK_HTTP_ERROR_CODE, HTTPError, headers
 
-# Meanwhile token endpoint is not integrated in compute api
-_SEAPLANE_IDENTIFY_API_ENDPOINT = "https://identity.cplane.cloud"
-
 
 class TokenAPI:
     """
@@ -25,7 +22,7 @@ class TokenAPI:
     """
 
     def __init__(self, configuration: Configuration = config) -> None:
-        self.url = f"{_SEAPLANE_IDENTIFY_API_ENDPOINT}/token"
+        self.url = f"{configuration.identify_endpoint}/token"
         self.api_key = configuration.seaplane_api_key
 
     def set_identify_url(self, url: Text) -> None:

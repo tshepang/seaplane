@@ -1,0 +1,9 @@
+[tool.poetry]
+name = "example configuration"
+version = "0.1"
+description = "Seaplane Python SDK example config"
+authors = ["Seaplane IO, Inc."]
+license = "Apache License"
+readme = "README.md"
+repository = "https://github.com/seaplane-io"
+documentation = "https://github.com/seaplane-io"

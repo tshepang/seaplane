@@ -11,17 +11,49 @@ def test_given_api_key_returns_an_api_key_when_set_by_code() -> None:
     assert config.seaplane_api_key == "api_key"
 
 
-def test_given_configuration_set_endpoint_removing_last_slash() -> None:
+def test_given_configuration_set_compute_endpoint_removing_last_slash() -> None:
     new_config = Configuration()
 
-    new_config.set_endpoint("https://example.com/")
+    new_config.set_compute_endpoint("https://example.com/")
 
-    assert new_config.endpoint == "https://example.com"
+    assert new_config.compute_endpoint == "https://example.com"
 
 
-def test_given_configuration_set_endpoint_correctly() -> None:
+def test_given_configuration_set_compute_endpoint_correctly() -> None:
     new_config = Configuration()
 
-    new_config.set_endpoint("https://example.com")
+    new_config.set_compute_endpoint("https://example.com")
 
-    assert new_config.endpoint == "https://example.com"
+    assert new_config.compute_endpoint == "https://example.com"
+
+
+def test_given_configuration_set_coordination_endpoint_removing_last_slash() -> None:
+    new_config = Configuration()
+
+    new_config.set_coordination_endpoint("https://example.com/")
+
+    assert new_config.coordination_endpoint == "https://example.com"
+
+
+def test_given_configuration_set_coordination_endpoint_correctly() -> None:
+    new_config = Configuration()
+
+    new_config.set_coordination_endpoint("https://example.com")
+
+    assert new_config.coordination_endpoint == "https://example.com"
+
+
+def test_given_configuration_set_identify_endpoint_removing_last_slash() -> None:
+    new_config = Configuration()
+
+    new_config.set_identify_endpoint("https://example.com/")
+
+    assert new_config.identify_endpoint == "https://example.com"
+
+
+def test_given_configuration_set_identify_endpoint_correctly() -> None:
+    new_config = Configuration()
+
+    new_config.set_identify_endpoint("https://example.com")
+
+    assert new_config.identify_endpoint == "https://example.com"

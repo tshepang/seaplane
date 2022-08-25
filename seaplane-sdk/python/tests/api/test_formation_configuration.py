@@ -7,11 +7,11 @@ from returns.result import Failure, Success
 from seaplane.api.api_http import HTTPError
 from seaplane.api.formation_configuration_api import FormationConfigurationAPI
 from seaplane.configuration import Configuration
-from seaplane.model.architecture import Architecture
-from seaplane.model.flight import Flight
-from seaplane.model.formation_configuration import FormationConfiguration
-from seaplane.model.provider import Provider
-from seaplane.model.region import Region
+from seaplane.model.compute.architecture import Architecture
+from seaplane.model.compute.flight import Flight
+from seaplane.model.compute.formation_configuration import FormationConfiguration
+from seaplane.model.compute.provider import Provider
+from seaplane.model.compute.region import Region
 
 from ..conftest import add_token_request
 
