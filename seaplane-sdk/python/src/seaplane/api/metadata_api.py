@@ -26,7 +26,7 @@ class MetadataAPI:
         self.url = f"{configuration.coordination_endpoint}/config"
         self.req = provision_req(TokenAPI(configuration))
 
-    def set_key_value_pair(self, key_value: KeyValue) -> Result[Any, HTTPError]:
+    def set(self, key_value: KeyValue) -> Result[Any, HTTPError]:
         """Set key-value pair, where the key can be used as directory path or name.
 
         Parameters
@@ -76,7 +76,7 @@ class MetadataAPI:
             )
         ).map(lambda key_value_range: to_key_value_range(key_value_range))
 
-    def get_key_value_pair(self, key: Key) -> Result[KeyValue, HTTPError]:
+    def get(self, key: Key) -> Result[KeyValue, HTTPError]:
         """Get a key-value pair.
 
         Parameters
@@ -126,7 +126,7 @@ class MetadataAPI:
             lambda access_token: requests.get(url, params=params, headers=headers(access_token))
         ).map(lambda key_value_range: to_key_value_range(key_value_range))
 
-    def delete_key_value_pair(self, key: Key) -> Result[Any, HTTPError]:
+    def delete(self, key: Key) -> Result[Any, HTTPError]:
         """Delete a key-value pair.
 
         Parameters

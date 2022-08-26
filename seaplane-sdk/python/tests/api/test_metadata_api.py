@@ -154,7 +154,7 @@ def test_given_metadata_get_contents_of_root_directory(  # type: ignore
 def test_given_metadata_get_a_key_value_pair(  # type: ignore
     metadata_api, get_key_value_pair_decoding_in_base64url
 ) -> None:
-    assert metadata_api.get_key_value_pair(KeyString("foo/bar")) == Success(
+    assert metadata_api.get(KeyString("foo/bar")) == Success(
         KeyValue(key="foo/bar".encode(), value="bye".encode())
     )
 
@@ -162,7 +162,7 @@ def test_given_metadata_get_a_key_value_pair(  # type: ignore
 def test_given_metadata_delete_a_key_value_pair(  # type: ignore
     metadata_api, delete_key_value_pair_decoding_in_base64url
 ) -> None:
-    assert metadata_api.delete_key_value_pair(KeyString("foo/bar")) == Success(True)
+    assert metadata_api.delete(KeyString("foo/bar")) == Success(True)
 
 
 def test_given_metadata_get_list_contents_of_directory(  # type: ignore
@@ -179,16 +179,14 @@ def test_given_metadata_get_list_contents_of_directory(  # type: ignore
 def test_given_metadata_set_key_value_pair(  # type: ignore
     metadata_api, set_key_value_pair
 ) -> None:
-    assert metadata_api.set_key_value_pair(KeyValueString("bar/foo", "empty")) == Success(True)
+    assert metadata_api.set(KeyValueString("bar/foo", "empty")) == Success(True)
 
 
 def test_given_metadata_set_key_binary_value_pair(  # type: ignore
     metadata_api, set_key_binary_value_pair
 ) -> None:
     file_path = get_absolute_path("fixtures/metadata/lena.jpeg")
-    assert metadata_api.set_key_value_pair(
-        KeyValueStream(b"bar/foo", open(file_path, "rb"))
-    ) == Success(True)
+    assert metadata_api.set(KeyValueStream(b"bar/foo", open(file_path, "rb"))) == Success(True)
 
 
 def test_given_metadata_using_default_instance(  # type: ignore
