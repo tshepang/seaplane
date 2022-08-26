@@ -50,7 +50,7 @@ class MetadataAPI:
         ).map(lambda success: success == "Ok")
 
     def get_content_of_root_directory(
-        self, next_key: Optional[Key]
+        self, next_key: Optional[Key] = None
     ) -> Result[KeyValueRange, HTTPError]:
         """Get the content of a root directory paginated.
 
