@@ -112,9 +112,9 @@ def set_key_binary_value_pair() -> Generator[None, None, None]:
         add_token_request(requests_mocker)
 
         def match_authorization(request: Any) -> Any:
-            lena_base64 = get_file_bytes(relative_path="fixtures/api/lena_in_base64.txt").decode(
-                "utf-8"
-            )
+            lena_base64 = get_file_bytes(
+                relative_path="fixtures/api/seaplane_img_in_base64.txt"
+            ).decode("utf-8")
 
             return (
                 request.headers["Authorization"] == "Bearer This is a token"
@@ -185,7 +185,7 @@ def test_given_metadata_set_key_value_pair(  # type: ignore
 def test_given_metadata_set_key_binary_value_pair(  # type: ignore
     metadata_api, set_key_binary_value_pair
 ) -> None:
-    file_path = get_absolute_path("fixtures/metadata/lena.jpeg")
+    file_path = get_absolute_path("fixtures/metadata/seaplane.jpeg")
     assert metadata_api.set(KeyValueStream(b"bar/foo", open(file_path, "rb"))) == Success(True)
 
 

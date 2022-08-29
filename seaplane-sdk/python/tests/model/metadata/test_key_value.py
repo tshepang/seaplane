@@ -45,11 +45,11 @@ def test_key_value_stream_reads_value_text_content() -> None:
 
 
 def test_key_value_stream_reads_value_image_content() -> None:
-    image_path = get_absolute_path("fixtures/metadata/lena.jpeg")
+    image_path = get_absolute_path("fixtures/metadata/seaplane.jpeg")
     key_value_stream = KeyValueStream(b"key", open(image_path, "rb"))
 
     image_content = get_file_bytes(absolute_path=image_path)
 
     assert key_value_stream.key == b"key"
-    assert len(key_value_stream.value) == 29993
+    assert len(key_value_stream.value) == 12565
     assert key_value_stream.value == image_content
