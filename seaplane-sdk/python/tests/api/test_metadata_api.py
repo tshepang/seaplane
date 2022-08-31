@@ -7,7 +7,7 @@ from returns.result import Success
 from seaplane import sea
 from seaplane.api.metadata_api import MetadataAPI
 from seaplane.configuration import Configuration
-from seaplane.model import Key, KeyString, KeyValue, KeyValueRange, KeyValueStream, KeyValueString
+from seaplane.model import KeyString, KeyValue, KeyValueRange, KeyValueStream, KeyValueString
 
 from ..conftest import add_token_request
 from ..util import get_absolute_path, get_file_bytes
@@ -143,7 +143,7 @@ def metadata_api() -> Generator[MetadataAPI, None, None]:
 def test_given_metadata_get_contents_of_root_directory(  # type: ignore
     metadata_api, get_contents_of_root_directory
 ) -> None:
-    assert metadata_api.get_content_of_root_directory() == Success(
+    assert metadata_api.get_page() == Success(
         KeyValueRange(
             key_value_pairs=[KeyValue(key="foo/bar\n".encode(), value="bye".encode())],
             next_key=None,
@@ -165,17 +165,6 @@ def test_given_metadata_delete_a_key_value_pair(  # type: ignore
     assert metadata_api.delete(KeyString("foo/bar")) == Success(True)
 
 
-def test_given_metadata_get_list_contents_of_directory(  # type: ignore
-    metadata_api, get_list_contents_of_directory
-) -> None:
-    assert metadata_api.get_content_of_directory(KeyString("foo")) == Success(
-        KeyValueRange(
-            key_value_pairs=[KeyValue(key="foo/bar\n".encode(), value="bye".encode())],
-            next_key=Key("foo/foo".encode()),
-        )
-    )
-
-
 def test_given_metadata_set_key_value_pair(  # type: ignore
     metadata_api, set_key_value_pair
 ) -> None:
@@ -194,7 +183,7 @@ def test_given_metadata_using_default_instance(  # type: ignore
 ) -> None:
     sea.config.set_api_key("api_key")
 
-    assert sea.metadata.get_content_of_root_directory() == Success(
+    assert sea.metadata.get_page() == Success(
         KeyValueRange(
             key_value_pairs=[KeyValue(key="foo/bar\n".encode(), value="bye".encode())],
             next_key=None,
