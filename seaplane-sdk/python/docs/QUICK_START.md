@@ -40,9 +40,9 @@ Seaplane Python SDK has the class `Configuration` which is used to configure the
 There is a default configuration called, `config`:
 
 ```python
-from seaplane import config
+from seaplane import sea
 
-config.set_api_key("your-api-key-here")
+sea.config.set_api_key("your-api-key-here")
 ```
 
 # Usage
@@ -52,16 +52,14 @@ config.set_api_key("your-api-key-here")
 To use the Seaplane Python SDK, you must first import it.
 
 ```python
-import seaplane
+from seaplane import sea
 ```
 
 You can now create a formation easily using `FormationAPI`.
 
 ```python
-from seaplane import FormationAPI
+from seaplane import sea
 from seaplane.model import Formation, Flight
-
-formation_api = FormationAPI()
 
 backend = Flight(
     name = "Backend Flight", 
@@ -73,7 +71,7 @@ formation = Formation(
     flights = [backend]
 )
 
-formation_api.create(formation)
+sea.formation.create(formation)
 ```
 
 And that's it! You've got your Seaplane Python SDK ready to go.

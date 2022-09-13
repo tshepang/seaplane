@@ -19,7 +19,7 @@ from .token_api import TokenAPI
 
 class MetadataAPI:
     """
-    Class for handle Config API calls.
+    Class for handle Metadata API calls.
     """
 
     def __init__(self, configuration: Configuration = config) -> None:

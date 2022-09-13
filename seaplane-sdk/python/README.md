@@ -66,12 +66,19 @@ To run all default sessions:
 (seaplane) $ nox
 ```
 
-## Unit Testing
+## Testing
 
 To pass arguments to pytest through nox:
 
 ```
 (seaplane) $ nox -s test -- -k invalid_factorial
+```
+
+To run end to end tests you have to set the E2E_API_KEY env var:
+
+```
+(seaplane) $ export E2E_API_KEY="sp-your_api_key"
+(seaplane) $ nox -s e2e
 ```
 
 ## Code Style Checking

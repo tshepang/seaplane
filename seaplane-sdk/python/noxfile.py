@@ -23,6 +23,21 @@ def test(s: Session) -> None:
     )
 
 
+@session()
+def e2e(s: Session) -> None:
+    s.install(".", "pytest", "pytest-cov")
+    s.run(
+        "python",
+        "-m",
+        "pytest",
+        "--cov=fact",
+        "--cov-report=html",
+        "--cov-report=term",
+        "tests/end_to_end/e2e_locks_api.py",
+        *s.posargs,
+    )
+
+
 # For some sessions, set venv_backend="none" to simply execute scripts within the existing Poetry
 # environment. This requires that nox is run within `poetry shell` or using `poetry run nox ...`.
 @session(venv_backend="none")

@@ -17,10 +17,10 @@ class KeyString(Key):
 
     Attributes
         ----------
-        key : str
+        key : bytes
             key of the key-value pair
         key_str: str
-            value of the key-value pair in string
+            key of the key-value pair in string
     """
 
     key_str: str
@@ -111,7 +111,7 @@ class KeyValueRange(NamedTuple):
         ----------
         key_value_pairs : KeyValue
             list of key-value
-        next_key: Optinal[Key]
+        next_key: Optional[Key]
             If next_key is non-null and you want to get the next KeyValueRange,
             you can repeat a query using next_key to continue getting KeyValueRange.
     """
