@@ -4,7 +4,8 @@ import requests
 from returns.result import Failure, Result, Success
 
 from ..configuration import Configuration, config
-from .api_http import SDK_HTTP_ERROR_CODE, HTTPError, headers
+from ..model.errors import HTTPError
+from .api_http import SDK_HTTP_ERROR_CODE, headers
 
 
 class TokenAPI:

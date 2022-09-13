@@ -2,9 +2,8 @@ from typing import Any, Generator
 
 import pytest
 import requests_mock
-from returns.result import Failure, Success
+from returns.result import Success
 
-from seaplane.api.api_http import HTTPError
 from seaplane.api.formation_configuration_api import FormationConfigurationAPI
 from seaplane.configuration import Configuration
 from seaplane.model.compute.architecture import Architecture
@@ -130,9 +129,10 @@ def test_given_create_configuration_call_creates_it_with_minimum_setup(  # type:
 def test_given_create_formation_configuration_returns_400_error(  # type: ignore
     formation_configuration, fails_create_formation_config
 ) -> None:
-    assert formation_configuration.create("test-formation", any_formation_config()) == Failure(
-        HTTPError(400, "Some error")
-    )
+    failure = formation_configuration.create("test-formation", any_formation_config()).failure()
+
+    assert failure.status == 400
+    assert failure.message == "Some error"
 
 
 def test_given_get_all_configurations_returns_them_correctly(  # type: ignore

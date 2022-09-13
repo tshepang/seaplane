@@ -2,9 +2,8 @@ from typing import Any, Generator
 
 import pytest
 import requests_mock
-from returns.result import Failure, Success
+from returns.result import Success
 
-from seaplane.api.api_http import HTTPError
 from seaplane.api.formation_api import FormationAPI
 from seaplane.configuration import Configuration
 from seaplane.model.compute.formation_metadata import FormationMetadata
@@ -133,9 +132,9 @@ def test_given_formation_name_create_a_new_formation(  # type: ignore
 def test_given_create_formation_already_created_returns_409_http_error(  # type: ignore
     formation_api, already_created_formation
 ) -> None:
-    assert formation_api.create("test-formation") == Failure(
-        HTTPError(409, "There is already a formation with that name")
-    )
+    failure = formation_api.create("test-formation").failure()
+    assert failure.status == 409
+    assert failure.message == "There is already a formation with that name"
 
 
 def test_given_get_all_api_call_returns_two_formations(  # type: ignore
@@ -147,7 +146,9 @@ def test_given_get_all_api_call_returns_two_formations(  # type: ignore
 def test_given_get_all_api_call_returns_400_http_error(  # type: ignore
     formation_api, fails_any_get  # noqa: F811
 ) -> None:
-    assert formation_api.get_all() == Failure(HTTPError(400, "Some error"))
+    failure = formation_api.get_all().failure()
+    assert failure.status == 400
+    assert failure.message == "Some error"
 
 
 def test_given_get_all_api_call_includes_active_and_source_query_params(  # type: ignore

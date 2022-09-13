@@ -1,9 +1,8 @@
 from typing import Generator
 
 import pytest
-from returns.result import Failure, Success
+from returns.result import Success
 
-from seaplane.api.api_http import HTTPError
 from seaplane.api.token_api import TokenAPI
 from seaplane.configuration import Configuration
 
@@ -26,4 +25,7 @@ def test_given_token_post_call_returns_the_access_token(  # type: ignore
 def test_given_token_post_failure_call_returns_the_error_code(  # type: ignore
     token_api, fail_token_post
 ) -> None:
-    assert token_api.access_token() == Failure(HTTPError(400))
+    failure = token_api.access_token().failure()
+
+    assert failure.status == 400
+    assert failure.message == ""

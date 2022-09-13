@@ -2,12 +2,12 @@ from typing import Any, Generator
 
 import pytest
 import requests_mock
-from returns.result import Success
 
 from seaplane import sea
 from seaplane.api.lock_api import LockAPI
 from seaplane.configuration import Configuration
 from seaplane.model import HeldLock, Lock, LockInfo, LockPage, Name
+from seaplane.model.errors import HTTPError
 
 from ..conftest import add_token_request
 
@@ -34,6 +34,20 @@ def locks_get_page_root_directory() -> Generator[None, None, None]:
                 ],
                 "next": None,
             },
+        )
+
+        yield
+
+
+@pytest.fixture
+def fails_get_page_root_directory() -> Generator[None, None, None]:
+    with requests_mock.Mocker() as requests_mocker:
+        add_token_request(requests_mocker)
+
+        requests_mocker.get(
+            "https://metadata.cplane.cloud/v1/locks",
+            status_code=400,
+            json="Some error",
         )
 
         yield
@@ -131,6 +145,20 @@ def release_lock() -> Generator[None, None, None]:
 
 
 @pytest.fixture
+def fails_release_lock() -> Generator[None, None, None]:
+    with requests_mock.Mocker() as requests_mocker:
+        add_token_request(requests_mocker)
+
+        requests_mocker.delete(
+            "https://metadata.cplane.cloud/v1/locks/base64:Zm9vL2Jhcg",
+            status_code=400,
+            json="Some error",
+        )
+
+        yield
+
+
+@pytest.fixture
 def renew_lock() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         add_token_request(requests_mocker)
@@ -163,59 +191,75 @@ def lock_api() -> Generator[LockAPI, None, None]:
 def test_locks_get_page_of_root_directory(  # type: ignore
     lock_api, locks_get_page_root_directory
 ) -> None:
-    assert lock_api.get_page() == Success(
-        LockPage(
-            locks=[
-                Lock(
-                    id="BiqhSv0tuAk",
-                    name=Name(name=b"lock-test"),
-                    info=LockInfo(ttl=1000, client_id="test", ip=""),
-                )
-            ],
-            next_lock=None,
-        )
+    assert lock_api.get_page() == LockPage(
+        locks=[
+            Lock(
+                id="BiqhSv0tuAk",
+                name=Name(name=b"lock-test"),
+                info=LockInfo(ttl=1000, client_id="test", ip=""),
+            )
+        ],
+        next_lock=None,
     )
+
+
+def test_locks_get_page_of_root_directory_should_raise_http_error_400(  # type: ignore
+    lock_api, fails_get_page_root_directory
+) -> None:
+    try:
+        lock_api.get_page()
+        pytest.fail("get_page must throw an HTTPError")
+    except HTTPError as http_error:
+        assert http_error.status == 400
+        assert http_error.message == "Some error"
 
 
 def test_locks_get_page_of_another_directory(  # type: ignore
     lock_api, locks_get_page_another_directory
 ) -> None:
-    assert lock_api.get_page(directory=Name(b"foo")) == Success(
-        LockPage(
-            locks=[
-                Lock(
-                    id="BiqhSv0tuAk",
-                    name=Name(b"foo/bar"),
-                    info=LockInfo(ttl=1000, client_id="test", ip=""),
-                )
-            ],
-            next_lock=None,
-        )
+    assert lock_api.get_page(directory=Name(b"foo")) == LockPage(
+        locks=[
+            Lock(
+                id="BiqhSv0tuAk",
+                name=Name(b"foo/bar"),
+                info=LockInfo(ttl=1000, client_id="test", ip=""),
+            )
+        ],
+        next_lock=None,
     )
 
 
 def test_get_lock(lock_api, get_lock) -> None:  # type: ignore
-    assert lock_api.get(Name(b"foo/bar")) == Success(
-        Lock(
-            id="BiqhSv0tuAk",
-            name=Name(b"foo/bar"),
-            info=LockInfo(ttl=1000, client_id="test", ip=""),
-        )
+    assert lock_api.get(Name(b"foo/bar")) == Lock(
+        id="BiqhSv0tuAk",
+        name=Name(b"foo/bar"),
+        info=LockInfo(ttl=1000, client_id="test", ip=""),
     )
 
 
 def test_acquire_lock(lock_api, acquire_lock) -> None:  # type: ignore
-    assert lock_api.acquire(Name(b"foo/bar"), "client-id", 60) == Success(
-        HeldLock(id="AOEHFRa4Ayg", sequencer=3)
+    assert lock_api.acquire(Name(b"foo/bar"), "client-id", 60) == HeldLock(
+        id="AOEHFRa4Ayg", sequencer=3
     )
 
 
 def test_release_lock(lock_api, release_lock) -> None:  # type: ignore
-    assert lock_api.release(Name(b"foo/bar"), "AOEHFRa4Ayg") == Success(True)
+    assert lock_api.release(Name(b"foo/bar"), "AOEHFRa4Ayg")
+
+
+def test_release_lock_should_raise_http_error_400(  # type: ignore
+    lock_api, fails_release_lock
+) -> None:
+    try:
+        lock_api.release(Name(b"foo/bar"), "AOEHFRa4Ayg")
+        pytest.fail("get_page must throw an HTTPError")
+    except HTTPError as http_error:
+        assert http_error.status == 400
+        assert http_error.message == "Some error"
 
 
 def test_renew_lock(lock_api, renew_lock) -> None:  # type: ignore
-    assert lock_api.renew(Name(b"foo/bar"), "AOEHFRa4Ayg", 60) == Success(True)
+    assert lock_api.renew(Name(b"foo/bar"), "AOEHFRa4Ayg", 60)
 
 
 def test_locks_get_page_using_default_instance(  # type: ignore
@@ -223,15 +267,13 @@ def test_locks_get_page_using_default_instance(  # type: ignore
 ) -> None:
     sea.config.set_api_key("api_key")
 
-    assert sea.locks.get_page() == Success(
-        LockPage(
-            locks=[
-                Lock(
-                    id="BiqhSv0tuAk",
-                    name=Name(b"lock-test"),
-                    info=LockInfo(ttl=1000, client_id="test", ip=""),
-                )
-            ],
-            next_lock=None,
-        )
+    assert sea.locks.get_page() == LockPage(
+        locks=[
+            Lock(
+                id="BiqhSv0tuAk",
+                name=Name(b"lock-test"),
+                info=LockInfo(ttl=1000, client_id="test", ip=""),
+            )
+        ],
+        next_lock=None,
     )

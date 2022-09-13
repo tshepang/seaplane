@@ -5,11 +5,6 @@ import simplejson as json
 SDK_HTTP_ERROR_CODE = 0
 
 
-class HTTPError(NamedTuple):
-    status: int
-    message: str = ""
-
-
 def headers(api_key: str) -> Dict[str, str]:
     return {
         "Accept": "application/json",

@@ -4,7 +4,8 @@ import requests
 from returns.result import Result
 
 from ..configuration import Configuration, config
-from .api_http import HTTPError, headers
+from ..model.errors import HTTPError
+from .api_http import headers
 from .api_request import provision_req
 from .token_api import TokenAPI
 

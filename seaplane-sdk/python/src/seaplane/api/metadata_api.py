@@ -4,6 +4,7 @@ import requests
 from returns.result import Result
 
 from ..configuration import Configuration, config
+from ..model.errors import HTTPError
 from ..model.metadata.key_value import (
     Key,
     KeyValue,
@@ -12,7 +13,7 @@ from ..model.metadata.key_value import (
     to_key_value_range,
 )
 from ..util.base64url import base64url_encode_from_bytes
-from .api_http import HTTPError, headers
+from .api_http import headers
 from .api_request import provision_req
 from .token_api import TokenAPI
 

@@ -6,7 +6,8 @@ from returns.result import Result
 from ..configuration import Configuration, config
 from ..model.compute.active_configuration import ActiveConfiguration
 from ..model.compute.formation_configuration import FormationConfiguration, to_formation_config
-from .api_http import HTTPError, headers, to_json
+from ..model.errors import HTTPError
+from .api_http import headers, to_json
 from .api_request import provision_req
 from .token_api import TokenAPI
 

@@ -1,13 +1,12 @@
 from typing import Any, Dict, List, Optional
 
 import requests
-from returns.pipeline import is_successful
-from returns.result import Failure, Result, Success
 
 from ..configuration import Configuration, config
 from ..model.locks import HeldLock, Lock, LockPage, Name, to_held_lock, to_lock, to_lock_range
+from ..util import unwrap
 from ..util.base64url import base64url_encode_from_bytes
-from .api_http import HTTPError, headers
+from .api_http import headers
 from .api_request import provision_req
 from .token_api import TokenAPI
 
@@ -21,7 +20,7 @@ class LockAPI:
         self.url = f"{configuration.coordination_endpoint}/locks"
         self.req = provision_req(TokenAPI(configuration))
 
-    def get(self, name: Name) -> Result[Lock, HTTPError]:
+    def get(self, name: Name) -> Lock:
         """Gets information about a single lock.
 
         Parameters
@@ -31,16 +30,18 @@ class LockAPI:
 
         Returns
         -------
-        Result[Lock, HTTPError]
+        Lock
             Returns Lock if sucess, you will get an HTTPError otherwise.
         """
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
 
-        return self.req(
-            lambda access_token: requests.get(_url, headers=headers(access_token))
-        ).map(lambda lock_response: to_lock(lock_response))
+        return unwrap(
+            self.req(lambda access_token: requests.get(_url, headers=headers(access_token))).map(
+                lambda lock_response: to_lock(lock_response)
+            )
+        )
 
-    def acquire(self, name: Name, client_id: str, ttl: int) -> Result[HeldLock, HTTPError]:
+    def acquire(self, name: Name, client_id: str, ttl: int) -> HeldLock:
         """Attempts to acquire the lock with the given lock name with the given TTL.
         Client-ID should identify the client making the request for debugging purposes.
 
@@ -55,7 +56,7 @@ class LockAPI:
 
         Returns
         -------
-        Result[HeldLock, HTTPError]
+        HeldLock
             Returns HeldLock if sucess, you will get an HTTPError otherwise.
         """
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
@@ -64,11 +65,15 @@ class LockAPI:
         params["client-id"] = client_id
         params["ttl"] = ttl
 
-        return self.req(
-            lambda access_token: requests.post(_url, params=params, headers=headers(access_token))
-        ).map(lambda held_lock_response: to_held_lock(held_lock_response))
+        return unwrap(
+            self.req(
+                lambda access_token: requests.post(
+                    _url, params=params, headers=headers(access_token)
+                )
+            ).map(lambda held_lock_response: to_held_lock(held_lock_response))
+        )
 
-    def release(self, name: Name, id: str) -> Result[Any, HTTPError]:
+    def release(self, name: Name, id: str) -> bool:
         """Attempts to release the given lock.
 
         Parameters
@@ -82,7 +87,7 @@ class LockAPI:
 
         Returns
         -------
-        Result[bool, HTTPError]
+        bool
             Returns bool if sucess, you will get an HTTPError otherwise.
         """
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
@@ -90,13 +95,17 @@ class LockAPI:
         params: Dict[str, Any] = {}
         params["id"] = id
 
-        return self.req(
-            lambda access_token: requests.delete(
-                _url, params=params, headers=headers(access_token)
+        release_result = unwrap(
+            self.req(
+                lambda access_token: requests.delete(
+                    _url, params=params, headers=headers(access_token)
+                )
             )
-        ).map(lambda lock_response: lock_response == "OK")
+        )
 
-    def renew(self, name: Name, id: str, ttl: int) -> Result[Any, HTTPError]:
+        return bool(release_result == "OK")  # mypy bug, mypy can't know the
+
+    def renew(self, name: Name, id: str, ttl: int) -> bool:
         """Attempts to renew the given lock.
 
         Parameters
@@ -112,7 +121,7 @@ class LockAPI:
 
         Returns
         -------
-        Result[bool, HTTPError]
+        bool
             Returns bool if sucess, you will get an HTTPError otherwise.
         """
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
@@ -121,13 +130,19 @@ class LockAPI:
         params["id"] = id
         params["ttl"] = ttl
 
-        return self.req(
-            lambda access_token: requests.patch(_url, params=params, headers=headers(access_token))
-        ).map(lambda lock_response: lock_response == "OK")
+        renew_result = unwrap(
+            self.req(
+                lambda access_token: requests.patch(
+                    _url, params=params, headers=headers(access_token)
+                )
+            )
+        )
+
+        return bool(renew_result == "OK")
 
     def get_page(
         self, directory: Optional[Name] = None, from_lock: Optional[Name] = None
-    ) -> Result[LockPage, HTTPError]:
+    ) -> LockPage:
         """Returns a single page of lock information for the given directory,
         beginning with the `from_lock` key.
 
@@ -147,7 +162,7 @@ class LockAPI:
 
         Returns
         -------
-        Result[LockPage, HTTPError]
+        LockPage
             Returns LockPage if sucess, you will get an HTTPError otherwise.
         """
 
@@ -160,13 +175,17 @@ class LockAPI:
         if from_lock is not None:
             params["from"] = f"base64:{base64url_encode_from_bytes(from_lock.name)}"
 
-        return self.req(
-            lambda access_token: requests.get(_url, params=params, headers=headers(access_token))
-        ).map(lambda lock_range: to_lock_range(lock_range))
+        return unwrap(
+            self.req(
+                lambda access_token: requests.get(
+                    _url, params=params, headers=headers(access_token)
+                )
+            ).map(lambda lock_range: to_lock_range(lock_range))
+        )
 
     def get_all_pages(
         self, directory: Optional[Name] = None, from_lock: Optional[Name] = None
-    ) -> Result[List[Lock], HTTPError]:
+    ) -> List[Lock]:
         """Returns all held lock information for the given directory,
         from the `from_lock` key onwards. May perform multiple requests.
 
@@ -185,7 +204,7 @@ class LockAPI:
 
         Returns
         -------
-        Result[LockPage, HTTPError]
+        LockPage
             Returns LockPage if sucess, you will get an HTTPError otherwise.
         """
 
@@ -195,13 +214,10 @@ class LockAPI:
         while True:
             page_result = self.get_page(directory, _from_lock)
 
-            if is_successful(page_result):
-                page: LockPage = page_result.unwrap()
-                pages.extend(page.locks)
+            page: LockPage = page_result
+            pages.extend(page.locks)
 
-                if page.next_lock is not None:
-                    _from_lock = page.next_lock
-                else:
-                    return Success(pages)
+            if page.next_lock is not None:
+                _from_lock = page.next_lock
             else:
-                return Failure(page_result.failure())
+                return pages

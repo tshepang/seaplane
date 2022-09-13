@@ -5,7 +5,8 @@ from requests import Response
 from returns.pipeline import is_successful
 from returns.result import Failure, Result, Success
 
-from .api_http import SDK_HTTP_ERROR_CODE, HTTPError
+from ..model.errors import HTTPError
+from .api_http import SDK_HTTP_ERROR_CODE
 from .token_api import TokenAPI
 
 
