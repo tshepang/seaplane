@@ -2,7 +2,6 @@ from typing import Any, Generator
 
 import pytest
 import requests_mock
-from returns.result import Success
 
 from seaplane import sea
 from seaplane.api.metadata_api import MetadataAPI
@@ -32,7 +31,7 @@ def get_contents_of_root_directory() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def get_list_contents_of_directory() -> Generator[None, None, None]:
+def get_page_of_directory() -> Generator[None, None, None]:
     with requests_mock.Mocker() as requests_mocker:
         add_token_request(requests_mocker)
 
@@ -143,39 +142,37 @@ def metadata_api() -> Generator[MetadataAPI, None, None]:
 def test_given_metadata_get_contents_of_root_directory(  # type: ignore
     metadata_api, get_contents_of_root_directory
 ) -> None:
-    assert metadata_api.get_page() == Success(
-        KeyValueRange(
-            key_value_pairs=[KeyValue(key="foo/bar\n".encode(), value="bye".encode())],
-            next_key=None,
-        )
+    assert metadata_api.get_page() == KeyValueRange(
+        key_value_pairs=[KeyValue(key="foo/bar\n".encode(), value="bye".encode())],
+        next_key=None,
     )
 
 
 def test_given_metadata_get_a_key_value_pair(  # type: ignore
     metadata_api, get_key_value_pair_decoding_in_base64url
 ) -> None:
-    assert metadata_api.get(KeyString("foo/bar")) == Success(
-        KeyValue(key="foo/bar".encode(), value="bye".encode())
+    assert metadata_api.get(KeyString("foo/bar")) == KeyValue(
+        key="foo/bar".encode(), value="bye".encode()
     )
 
 
 def test_given_metadata_delete_a_key_value_pair(  # type: ignore
     metadata_api, delete_key_value_pair_decoding_in_base64url
 ) -> None:
-    assert metadata_api.delete(KeyString("foo/bar")) == Success(True)
+    assert metadata_api.delete(KeyString("foo/bar"))
 
 
 def test_given_metadata_set_key_value_pair(  # type: ignore
     metadata_api, set_key_value_pair
 ) -> None:
-    assert metadata_api.set(KeyValueString("bar/foo", "empty")) == Success(True)
+    assert metadata_api.set(KeyValueString("bar/foo", "empty"))
 
 
 def test_given_metadata_set_key_binary_value_pair(  # type: ignore
     metadata_api, set_key_binary_value_pair
 ) -> None:
     file_path = get_absolute_path("fixtures/metadata/seaplane.jpeg")
-    assert metadata_api.set(KeyValueStream(b"bar/foo", open(file_path, "rb"))) == Success(True)
+    assert metadata_api.set(KeyValueStream(b"bar/foo", open(file_path, "rb")))
 
 
 def test_given_metadata_using_default_instance(  # type: ignore
@@ -183,9 +180,16 @@ def test_given_metadata_using_default_instance(  # type: ignore
 ) -> None:
     sea.config.set_api_key("api_key")
 
-    assert sea.metadata.get_page() == Success(
-        KeyValueRange(
-            key_value_pairs=[KeyValue(key="foo/bar\n".encode(), value="bye".encode())],
-            next_key=None,
-        )
+    assert sea.metadata.get_page() == KeyValueRange(
+        key_value_pairs=[KeyValue(key="foo/bar\n".encode(), value="bye".encode())],
+        next_key=None,
+    )
+
+
+def test_given_metadata_get_page_of_directory(  # type: ignore
+    metadata_api, get_page_of_directory
+) -> None:
+    assert metadata_api.get_page(directory=KeyString("foo")) == KeyValueRange(
+        key_value_pairs=[KeyValue(key="foo/bar\n".encode(), value="bye".encode())],
+        next_key=KeyString("foo/foo"),
     )

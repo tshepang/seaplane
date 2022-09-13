@@ -31,7 +31,7 @@ class LockAPI:
         Returns
         -------
         Lock
-            Returns Lock if sucess, you will get an HTTPError otherwise.
+            Returns Lock if successful or it will raise an HTTPError otherwise.
         """
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
 
@@ -57,7 +57,7 @@ class LockAPI:
         Returns
         -------
         HeldLock
-            Returns HeldLock if sucess, you will get an HTTPError otherwise.
+            Returns HeldLock if successful or it will raise an HTTPError otherwise.
         """
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
 
@@ -88,7 +88,7 @@ class LockAPI:
         Returns
         -------
         bool
-            Returns bool if sucess, you will get an HTTPError otherwise.
+            Returns bool if successful or it will raise an HTTPError otherwise.
         """
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
 
@@ -122,7 +122,7 @@ class LockAPI:
         Returns
         -------
         bool
-            Returns bool if sucess, you will get an HTTPError otherwise.
+            Returns bool if successful or it will raise an HTTPError otherwise.
         """
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
 
@@ -163,7 +163,7 @@ class LockAPI:
         Returns
         -------
         LockPage
-            Returns LockPage if sucess, you will get an HTTPError otherwise.
+            Returns LockPage if successful or it will raise an HTTPError otherwise.
         """
 
         _url = self.url
@@ -204,8 +204,8 @@ class LockAPI:
 
         Returns
         -------
-        LockPage
-            Returns LockPage if sucess, you will get an HTTPError otherwise.
+        List[Lock]
+            Returns a List of Locks if successful or it will raise an HTTPError otherwise.
         """
 
         pages: List[Lock] = []
