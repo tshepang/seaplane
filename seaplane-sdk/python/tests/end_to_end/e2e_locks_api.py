@@ -39,7 +39,7 @@ def test_get_page_should_returns_one_element_when_acquire() -> None:
 
     lock_name = Name(f"foo/bar/acquire/{uuid.uuid4()}".encode())
     sea.locks.acquire(lock_name, "test_acquire", 2)
-    print(lock_name.name)
+
     assert len(sea.locks.get_page().locks) == 1
 
 

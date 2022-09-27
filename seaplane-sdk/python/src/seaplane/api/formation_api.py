@@ -8,7 +8,6 @@ from ..model.compute.formation_metadata import FormationMetadata
 from ..model.errors import HTTPError
 from .api_http import headers
 from .api_request import provision_req
-from .token_api import TokenAPI
 
 
 class FormationAPI:
@@ -19,10 +18,14 @@ class FormationAPI:
 
     def __init__(self, configuration: Configuration = config) -> None:
         self.url = f"{configuration.compute_endpoint}/formations"
-        self.req = provision_req(TokenAPI(configuration))
+        self.req = provision_req(configuration._token_api)
 
     def create(
-        self, formation_name: str, active: bool = False, source: Optional[str] = None
+        self,
+        formation_name: str,
+        active: bool = False,
+        source: Optional[str] = None,
+        token: Optional[str] = None,
     ) -> Result[Any, HTTPError]:
         """
         Create a new formation
@@ -46,22 +49,29 @@ class FormationAPI:
         return self.req(
             lambda access_token: requests.post(
                 url=f"{self.url}/{formation_name}", params=params, headers=headers(access_token)
-            )
+            ),
+            token,
         )
 
-    def get_all(self) -> Result[List[int], HTTPError]:
-        return self.req(lambda access_token: requests.get(self.url, headers=headers(access_token)))
+    def get_all(self, token: Optional[str] = None) -> Result[List[int], HTTPError]:
+        return self.req(
+            lambda access_token: requests.get(self.url, headers=headers(access_token)), token
+        )
 
-    def get_metadata(self, formation_name: Text) -> Result[FormationMetadata, HTTPError]:
+    def get_metadata(
+        self, formation_name: Text, token: Optional[str] = None
+    ) -> Result[FormationMetadata, HTTPError]:
         return self.req(
             lambda access_token: requests.get(
                 url=f"{self.url}/{formation_name}", headers=headers(access_token)
-            )
+            ),
+            token,
         ).map(lambda response: FormationMetadata(response["url"]))
 
-    def delete(self, formation_name: Text) -> Result[Any, HTTPError]:
+    def delete(self, formation_name: Text, token: Optional[str] = None) -> Result[Any, HTTPError]:
         return self.req(
             lambda access_token: requests.delete(
                 url=f"{self.url}/{formation_name}", headers=headers(access_token)
-            )
+            ),
+            token,
         )

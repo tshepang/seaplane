@@ -8,7 +8,6 @@ from ..util import unwrap
 from ..util.base64url import base64url_encode_from_bytes
 from .api_http import headers
 from .api_request import provision_req
-from .token_api import TokenAPI
 
 
 class LockAPI:
@@ -18,15 +17,18 @@ class LockAPI:
 
     def __init__(self, configuration: Configuration = config) -> None:
         self.url = f"{configuration.coordination_endpoint}/locks"
-        self.req = provision_req(TokenAPI(configuration))
+        self.req = provision_req(configuration._token_api)
 
-    def get(self, name: Name) -> Lock:
+    def get(self, name: Name, token: Optional[str] = None) -> Lock:
         """Gets information about a single lock.
 
         Parameters
         ----------
         name : Name
             Name of the lock.
+        token: Optional[str]
+            You can manage the auth token by calling to `sea.auth.get_token()` before
+            and using it among the different functions until you get an HTTPError with 401 code.
 
         Returns
         -------
@@ -36,12 +38,14 @@ class LockAPI:
         _url = f"{self.url}/base64:{base64url_encode_from_bytes(name.name)}"
 
         return unwrap(
-            self.req(lambda access_token: requests.get(_url, headers=headers(access_token))).map(
-                lambda lock_response: to_lock(lock_response)
-            )
+            self.req(
+                lambda access_token: requests.get(_url, headers=headers(access_token)), token
+            ).map(lambda lock_response: to_lock(lock_response))
         )
 
-    def acquire(self, name: Name, client_id: str, ttl: int) -> HeldLock:
+    def acquire(
+        self, name: Name, client_id: str, ttl: int, token: Optional[str] = None
+    ) -> HeldLock:
         """Attempts to acquire the lock with the given lock name with the given TTL.
         Client-ID should identify the client making the request for debugging purposes.
 
@@ -53,6 +57,9 @@ class LockAPI:
             client_id is an identifier showing who is currently holding the lock.
         ttl: int
             This is the requested time to live, in seconds.
+        token: Optional[str]
+            You can manage the auth token by calling to `sea.auth.get_token()` before
+            and using it among the different functions until you get an HTTPError with 401 code.
 
         Returns
         -------
@@ -69,11 +76,12 @@ class LockAPI:
             self.req(
                 lambda access_token: requests.post(
                     _url, params=params, headers=headers(access_token)
-                )
+                ),
+                token,
             ).map(lambda held_lock_response: to_held_lock(held_lock_response))
         )
 
-    def release(self, name: Name, id: str) -> bool:
+    def release(self, name: Name, id: str, token: Optional[str] = None) -> bool:
         """Attempts to release the given lock.
 
         Parameters
@@ -84,6 +92,9 @@ class LockAPI:
             ID which allows for the renewal/release of a lock, represents "holding"
             the lock, this is usually only seen by the original acquirer of the lock
             but may be leaked by listing the locks.
+        token: Optional[str]
+            You can manage the auth token by calling to `sea.auth.get_token()` before
+            and using it among the different functions until you get an HTTPError with 401 code.
 
         Returns
         -------
@@ -99,13 +110,14 @@ class LockAPI:
             self.req(
                 lambda access_token: requests.delete(
                     _url, params=params, headers=headers(access_token)
-                )
+                ),
+                token,
             )
         )
 
         return bool(release_result == "OK")  # mypy bug, mypy can't know the
 
-    def renew(self, name: Name, id: str, ttl: int) -> bool:
+    def renew(self, name: Name, id: str, ttl: int, token: Optional[str] = None) -> bool:
         """Attempts to renew the given lock.
 
         Parameters
@@ -118,6 +130,9 @@ class LockAPI:
             but may be leaked by listing the locks.
         ttl: int
             This is the requested time to live, in seconds.
+        token: Optional[str]
+            You can manage the auth token by calling to `sea.auth.get_token()` before
+            and using it among the different functions until you get an HTTPError with 401 code.
 
         Returns
         -------
@@ -134,14 +149,18 @@ class LockAPI:
             self.req(
                 lambda access_token: requests.patch(
                     _url, params=params, headers=headers(access_token)
-                )
+                ),
+                token,
             )
         )
 
         return bool(renew_result == "OK")
 
     def get_page(
-        self, directory: Optional[Name] = None, from_lock: Optional[Name] = None
+        self,
+        token: Optional[str] = None,
+        directory: Optional[Name] = None,
+        from_lock: Optional[Name] = None,
     ) -> LockPage:
         """Returns a single page of lock information for the given directory,
         beginning with the `from_lock` key.
@@ -151,6 +170,9 @@ class LockAPI:
 
         Parameters
         ----------
+        token: Optional[str]
+            You can manage the auth token by calling to `sea.auth.get_token()` before
+            and using it among the different functions until you get an HTTPError with 401 code.
         directory : Optional[Name]
             The metadata key-value store supports the use of directories.
             Directories are important tools to set up region and provider restrictions
@@ -179,12 +201,16 @@ class LockAPI:
             self.req(
                 lambda access_token: requests.get(
                     _url, params=params, headers=headers(access_token)
-                )
+                ),
+                token,
             ).map(lambda lock_range: to_lock_range(lock_range))
         )
 
     def get_all_pages(
-        self, directory: Optional[Name] = None, from_lock: Optional[Name] = None
+        self,
+        token: Optional[str] = None,
+        directory: Optional[Name] = None,
+        from_lock: Optional[Name] = None,
     ) -> List[Lock]:
         """Returns all held lock information for the given directory,
         from the `from_lock` key onwards. May perform multiple requests.
@@ -194,6 +220,9 @@ class LockAPI:
 
         Parameters
         ----------
+        token: Optional[str]
+            You can manage the auth token by calling to `sea.auth.get_token()` before
+            and using it among the different functions until you get an HTTPError with 401 code.
         directory : Optional[Name]
             The metadata key-value store supports the use of directories.
             Directories are important tools to set up region and provider restrictions
@@ -212,7 +241,7 @@ class LockAPI:
         _from_lock = from_lock
 
         while True:
-            page_result = self.get_page(directory, _from_lock)
+            page_result = self.get_page(token, directory, _from_lock)
 
             page: LockPage = page_result
             pages.extend(page.locks)

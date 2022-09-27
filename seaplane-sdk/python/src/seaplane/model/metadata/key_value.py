@@ -121,6 +121,7 @@ class KeyValueRange(NamedTuple):
 
 
 def to_key_value_range(keyvalue_range: Dict[str, Any]) -> KeyValueRange:
+    print(keyvalue_range)
     return KeyValueRange(
         key_value_pairs=[to_key_value(key_value) for key_value in keyvalue_range["kvs"]],
         next_key=_to_key(keyvalue_range["next_key"]),

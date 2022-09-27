@@ -16,7 +16,9 @@ def add_token_request(requests_mocker: Any) -> None:
         "https://identity.cplane.cloud/token",
         additional_matcher=match_authorization_and_body,
         status_code=200,
-        json={"token": "This is a token"},
+        json={
+            "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJpYXQiOjE2NjM2MTk5MTUsIm5iZiI6MTY2MzYxOTkxNSwiZXhwIjoxNjYzNjE5OTc1LCJpc3MiOiJpZGVudGl0eS5jcGxhbmUuY2xvdWQiLCJhdWQiOiJjcGxhbmUuY2xvdWQiLCJzdWIiOiI0MDEiLCJ0ZW5hbnQiOiI0MDEiLCJzdWJkb21haW4iOiJ0b25pLXRlc3RzIn0.CgSeHIa2fOq0Ro68ALXLkBgNQhXVOMUFy5cUG-R7bVWwtAblhqO6T0PbOzsmRXemTXph94QBSXWoqpPSj079CQ"  # noqa
+        },
     )
 
 

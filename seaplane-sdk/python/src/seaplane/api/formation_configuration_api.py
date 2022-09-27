@@ -1,4 +1,4 @@
-from typing import Any, List, Text
+from typing import Any, List, Optional, Text
 
 import requests
 from returns.result import Result
@@ -9,7 +9,6 @@ from ..model.compute.formation_configuration import FormationConfiguration, to_f
 from ..model.errors import HTTPError
 from .api_http import headers, to_json
 from .api_request import provision_req
-from .token_api import TokenAPI
 
 
 class FormationConfigurationAPI:
@@ -22,10 +21,14 @@ class FormationConfigurationAPI:
 
     def __init__(self, configuration: Configuration = config) -> None:
         self.url = f"{configuration.compute_endpoint}/formations"
-        self.req = provision_req(TokenAPI(configuration))
+        self.req = provision_req(configuration._token_api)
 
     def create(
-        self, formation_name: str, formation: FormationConfiguration, active: bool = False
+        self,
+        formation_name: str,
+        formation: FormationConfiguration,
+        active: bool = False,
+        token: Optional[str] = None,
     ) -> Result[str, HTTPError]:
         url = f"{self.url}/{formation_name}/configurations"
         payload = to_json(formation)
@@ -34,32 +37,51 @@ class FormationConfigurationAPI:
         return self.req(
             lambda access_token: requests.post(
                 url=url, json=payload, params=params, headers=headers(access_token)
-            )
+            ),
+            token,
         )
 
-    def get_all(self, formation_name: Text) -> Result[List[str], HTTPError]:
+    def get_all(
+        self, formation_name: Text, token: Optional[str] = None
+    ) -> Result[List[str], HTTPError]:
         url = f"{self.url}/{formation_name}/configurations"
-        return self.req(lambda access_token: requests.get(url, headers=headers(access_token)))
-
-    def get(self, formation_name: Text, id: Text) -> Result[FormationConfiguration, HTTPError]:
-        url = f"{self.url}/{formation_name}/configurations/{id}"
-
-        return self.req(lambda access_token: requests.get(url, headers=headers(access_token))).map(
-            lambda json: to_formation_config(json)
+        return self.req(
+            lambda access_token: requests.get(url, headers=headers(access_token)), token
         )
 
-    def delete(self, formation_name: Text, id: Text) -> Result[Any, HTTPError]:
+    def get(
+        self, formation_name: Text, id: Text, token: Optional[str] = None
+    ) -> Result[FormationConfiguration, HTTPError]:
         url = f"{self.url}/{formation_name}/configurations/{id}"
 
-        return self.req(lambda access_token: requests.delete(url, headers=headers(access_token)))
+        return self.req(
+            lambda access_token: requests.get(url, headers=headers(access_token)), token
+        ).map(lambda json: to_formation_config(json))
 
-    def get_active_config(self, formation_name: Text) -> Result[Any, HTTPError]:
+    def delete(
+        self, formation_name: Text, id: Text, token: Optional[str] = None
+    ) -> Result[Any, HTTPError]:
+        url = f"{self.url}/{formation_name}/configurations/{id}"
+
+        return self.req(
+            lambda access_token: requests.delete(url, headers=headers(access_token)), token
+        )
+
+    def get_active_config(
+        self, formation_name: Text, token: Optional[str] = None
+    ) -> Result[Any, HTTPError]:
         url = f"{self.url}/{formation_name}/activeConfiguration"
 
-        return self.req(lambda access_token: requests.get(url, headers=headers(access_token)))
+        return self.req(
+            lambda access_token: requests.get(url, headers=headers(access_token)), token
+        )
 
     def set_active_config(
-        self, formation_name: Text, active_configuration: ActiveConfiguration, force: bool
+        self,
+        formation_name: Text,
+        active_configuration: ActiveConfiguration,
+        force: bool,
+        token: Optional[str] = None,
     ) -> Result[Any, HTTPError]:
         url = f"{self.url}/{formation_name}/activeConfiguration"
         params = {"force": force}
@@ -68,10 +90,15 @@ class FormationConfigurationAPI:
         return self.req(
             lambda access_token: requests.put(
                 url, headers=headers(access_token), params=params, json=payload
-            )
+            ),
+            token,
         )
 
-    def stop_formation(self, formation_name: Text) -> Result[Any, HTTPError]:
+    def stop_formation(
+        self, formation_name: Text, token: Optional[str] = None
+    ) -> Result[Any, HTTPError]:
         url = f"{self.url}/{formation_name}/activeConfiguration"
 
-        return self.req(lambda access_token: requests.delete(url, headers=headers(access_token)))
+        return self.req(
+            lambda access_token: requests.delete(url, headers=headers(access_token)), token
+        )

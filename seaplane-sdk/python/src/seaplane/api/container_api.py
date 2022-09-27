@@ -1,4 +1,4 @@
-from typing import Any, Text
+from typing import Any, Optional, Text
 
 import requests
 from returns.result import Result
@@ -7,7 +7,6 @@ from ..configuration import Configuration, config
 from ..model.errors import HTTPError
 from .api_http import headers
 from .api_request import provision_req
-from .token_api import TokenAPI
 
 
 class ContainerAPI:
@@ -18,14 +17,20 @@ class ContainerAPI:
 
     def __init__(self, configuration: Configuration = config) -> None:
         self.url = f"{configuration.compute_endpoint}/formations"
-        self.req = provision_req(TokenAPI(configuration))
+        self.req = provision_req(configuration._token_api)
 
-    def get_all(self, formation_name: Text) -> Result[Any, HTTPError]:
+    def get_all(self, formation_name: Text, token: Optional[str] = None) -> Result[Any, HTTPError]:
         url = f"{self.url}/{formation_name}/containers"
 
-        return self.req(lambda access_token: requests.get(url, headers=headers(access_token)))
+        return self.req(
+            lambda access_token: requests.get(url, headers=headers(access_token)), token
+        )
 
-    def get(self, formation_name: Text, container_id: Text) -> Result[Any, HTTPError]:
+    def get(
+        self, formation_name: Text, container_id: Text, token: Optional[str] = None
+    ) -> Result[Any, HTTPError]:
         url = f"{self.url}/{formation_name}/containers/{container_id}"
 
-        return self.req(lambda access_token: requests.get(url, headers=headers(access_token)))
+        return self.req(
+            lambda access_token: requests.get(url, headers=headers(access_token)), token
+        )
