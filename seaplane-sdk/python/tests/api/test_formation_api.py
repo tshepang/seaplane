@@ -18,8 +18,7 @@ def create_formation_post() -> Generator[None, None, None]:
 
         def match_authorization(request: Any) -> Any:
             return (
-                request.headers["Authorization"]
-                == "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJpYXQiOjE2NjM2MTk5MTUsIm5iZiI6MTY2MzYxOTkxNSwiZXhwIjoxNjYzNjE5OTc1LCJpc3MiOiJpZGVudGl0eS5jcGxhbmUuY2xvdWQiLCJhdWQiOiJjcGxhbmUuY2xvdWQiLCJzdWIiOiI0MDEiLCJ0ZW5hbnQiOiI0MDEiLCJzdWJkb21haW4iOiJ0b25pLXRlc3RzIn0.CgSeHIa2fOq0Ro68ALXLkBgNQhXVOMUFy5cUG-R7bVWwtAblhqO6T0PbOzsmRXemTXph94QBSXWoqpPSj079CQ"  # noqa
+                request.headers["Authorization"] == "Bearer This is a token"  # noqa
                 and request.query == "active=false"
             )
 
@@ -57,10 +56,7 @@ def get_all_formations() -> Generator[None, None, None]:
         add_token_request(requests_mocker)
 
         def match_authorization(request: Any) -> Any:
-            return (
-                request.headers["Authorization"]
-                == "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJpYXQiOjE2NjM2MTk5MTUsIm5iZiI6MTY2MzYxOTkxNSwiZXhwIjoxNjYzNjE5OTc1LCJpc3MiOiJpZGVudGl0eS5jcGxhbmUuY2xvdWQiLCJhdWQiOiJjcGxhbmUuY2xvdWQiLCJzdWIiOiI0MDEiLCJ0ZW5hbnQiOiI0MDEiLCJzdWJkb21haW4iOiJ0b25pLXRlc3RzIn0.CgSeHIa2fOq0Ro68ALXLkBgNQhXVOMUFy5cUG-R7bVWwtAblhqO6T0PbOzsmRXemTXph94QBSXWoqpPSj079CQ"  # noqa
-            )
+            return request.headers["Authorization"] == "Bearer This is a token"  # noqa
 
         requests_mocker.get(
             "https://compute.cplane.cloud/v1/formations",
@@ -78,10 +74,7 @@ def get_metadata() -> Generator[None, None, None]:
         add_token_request(requests_mocker)
 
         def match_authorization(request: Any) -> Any:
-            return (
-                request.headers["Authorization"]
-                == "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJpYXQiOjE2NjM2MTk5MTUsIm5iZiI6MTY2MzYxOTkxNSwiZXhwIjoxNjYzNjE5OTc1LCJpc3MiOiJpZGVudGl0eS5jcGxhbmUuY2xvdWQiLCJhdWQiOiJjcGxhbmUuY2xvdWQiLCJzdWIiOiI0MDEiLCJ0ZW5hbnQiOiI0MDEiLCJzdWJkb21haW4iOiJ0b25pLXRlc3RzIn0.CgSeHIa2fOq0Ro68ALXLkBgNQhXVOMUFy5cUG-R7bVWwtAblhqO6T0PbOzsmRXemTXph94QBSXWoqpPSj079CQ"  # noqa
-            )
+            return request.headers["Authorization"] == "Bearer This is a token"  # noqa
 
         requests_mocker.get(
             "https://compute.cplane.cloud/v1/formations/test-formation",

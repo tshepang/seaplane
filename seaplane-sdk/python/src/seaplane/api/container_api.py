@@ -1,4 +1,4 @@
-from typing import Any, Optional, Text
+from typing import Any, Text
 
 import requests
 from returns.result import Result
@@ -19,18 +19,12 @@ class ContainerAPI:
         self.url = f"{configuration.compute_endpoint}/formations"
         self.req = provision_req(configuration._token_api)
 
-    def get_all(self, formation_name: Text, token: Optional[str] = None) -> Result[Any, HTTPError]:
+    def get_all(self, formation_name: Text) -> Result[Any, HTTPError]:
         url = f"{self.url}/{formation_name}/containers"
 
-        return self.req(
-            lambda access_token: requests.get(url, headers=headers(access_token)), token
-        )
+        return self.req(lambda access_token: requests.get(url, headers=headers(access_token)))
 
-    def get(
-        self, formation_name: Text, container_id: Text, token: Optional[str] = None
-    ) -> Result[Any, HTTPError]:
+    def get(self, formation_name: Text, container_id: Text) -> Result[Any, HTTPError]:
         url = f"{self.url}/{formation_name}/containers/{container_id}"
 
-        return self.req(
-            lambda access_token: requests.get(url, headers=headers(access_token)), token
-        )
+        return self.req(lambda access_token: requests.get(url, headers=headers(access_token)))

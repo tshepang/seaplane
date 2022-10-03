@@ -1,4 +1,4 @@
-from typing import Text
+from typing import Optional
 
 import requests
 from returns.result import Failure, Result, Success
@@ -10,35 +10,77 @@ from .api_http import SDK_HTTP_ERROR_CODE, headers
 
 class TokenAPI:
     """
-    Manage access token from seaplane api.
-    There isn't documentation for token management, as it may change soon.
+    Manage access token.
 
-    The access token will expire in 60 seconds.
-    If you have a couple api calls to make in succession you can reuse the token.
-    Otherwise get a new one each time.
+    Seaplane Python SDK manages the token by default,
+    It can be managed manually as well.
 
-    `curl -H "Authorization: Bearer $api_key" -X POST https://identity.cplane.cloud/token`
+    Any configuration change to the default `config` module,
+    It'll reset `TokenAPI` local configurations, and renewed tokens.
     """
 
     def __init__(self, configuration) -> None:  # type: ignore
         self.url = f"{configuration.identify_endpoint}/token"
         self.api_key = configuration.seaplane_api_key
-        self._current_access_token = None
+        self.access_token = configuration._current_access_token
+        self.auto_renew = configuration._token_auto_renew
 
-    def set_identify_url(self, url: Text) -> None:
+    def set_url(self, url: str) -> None:
         self.url = url
 
-    def get_token(self) -> Text:
+    def set_token(self, access_token: Optional[str]) -> None:
+        """Set a valid Seaplane Token.
+
+        Setting the token, will change auto-renew to False
+        needing to renew the token manually when the token expires.
+
+            $ from seaplane import sea
+
+            $ token = sea.auth.get_token()
+            $ sea.auth.set_token(token)
+
+        If the access_token is None, Auto-renew will still False.
+
+        Parameters
+        ----------
+        access_token : Optional[str]
+        """
+        self.auto_renew = False
+        self.access_token = access_token
+
+    def renew_token(self) -> str:
+        """Renew the token.
+
+        Any configuration change to the default `config` module,
+        It'll the renewed token, and It's needed to renew the token again.
+
+        Returns
+        -------
+        str
+            Returns the renewed token.
+        """
+        token = self.get_token()
+        self.access_token = token
+        return token
+
+    def get_token(self) -> str:
+        """Request a new token.
+
+        Returns
+        -------
+        str
+            Returns the token.
+        """
         return unwrap(self._request_access_token())
 
-    def _request_access_token(self) -> Result[Text, HTTPError]:
+    def _request_access_token(self) -> Result[str, HTTPError]:
         try:
             response = requests.post(self.url, json={}, headers=headers(self.api_key))
 
             if response.ok:
-                access_token = response.json()["token"]
-                self._current_access_token = access_token
-                return Success(access_token)
+                token = response.json()["token"]
+                self.access_token = token
+                return Success(token)
             else:
                 self._current_access_token = None
                 return Failure(HTTPError(response.status_code, response.json()))

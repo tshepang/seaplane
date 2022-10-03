@@ -25,16 +25,13 @@ class MetadataAPI:
         self.url = f"{configuration.coordination_endpoint}/config"
         self.req = provision_req(configuration._token_api)
 
-    def set(self, key_value: KeyValue, token: Optional[str] = None) -> bool:
+    def set(self, key_value: KeyValue) -> bool:
         """Adds a value to the store at the given key.
 
         Parameters
         ----------
         key_value : KeyValue
             key-value pair to be set, for example, key=foo/bar, value=hello
-        token: Optional[str]
-            You can manage the auth token by calling to `sea.auth.get_token()` before
-            and using it among the different functions until you get an HTTPError with 401 code.
 
         Returns
         -------
@@ -49,23 +46,19 @@ class MetadataAPI:
                     url,
                     data=base64url_encode_from_bytes(key_value.value),
                     headers=headers(access_token),
-                ),
-                token,
+                )
             )
         )
 
         return bool(set_result == "Ok")  # mypy bug, mypy can't know the
 
-    def get(self, key: Key, token: Optional[str] = None) -> KeyValue:
+    def get(self, key: Key) -> KeyValue:
         """Returns the key value pair associated with the set key.
 
         Parameters
         ----------
         key : Key
             The key from a key-value previously set, for example, key=foo/bar
-        token: Optional[str]
-            You can manage the auth token by calling to `sea.auth.get_token()` before
-            and using it among the different functions until you get an HTTPError with 401 code.
 
         Returns
         -------
@@ -75,12 +68,12 @@ class MetadataAPI:
         url = f"{self.url}/base64:{base64url_encode_from_bytes(key.key)}"
 
         return unwrap(
-            self.req(
-                lambda access_token: requests.get(url, headers=headers(access_token)), token
-            ).map(lambda key_value: to_key_value(key_value))
+            self.req(lambda access_token: requests.get(url, headers=headers(access_token))).map(
+                lambda key_value: to_key_value(key_value)
+            )
         )
 
-    def delete(self, key: Key, token: Optional[str] = None) -> bool:
+    def delete(self, key: Key) -> bool:
         """Deletes the key value pair at from a given key.
 
         Parameters
@@ -96,16 +89,13 @@ class MetadataAPI:
         url = f"{self.url}/base64:{base64url_encode_from_bytes(key.key)}"
 
         delete_result = unwrap(
-            self.req(
-                lambda access_token: requests.delete(url, headers=headers(access_token)), token
-            )
+            self.req(lambda access_token: requests.delete(url, headers=headers(access_token)))
         )
 
         return bool(delete_result == "Ok")  # mypy bug, mypy can't know the
 
     def get_page(
         self,
-        token: Optional[str] = None,
         directory: Optional[Key] = None,
         next_key: Optional[Key] = None,
     ) -> KeyValueRange:
@@ -117,9 +107,6 @@ class MetadataAPI:
 
         Parameters
         ----------
-        token: Optional[str]
-            You can manage the auth token by calling to `sea.auth.get_token()` before
-            and using it among the different functions until you get an HTTPError with 401 code.
         directory : Optional[Key]
             The metadata key-value store supports the use of directories.
             Directories are important tools to set up region and provider restrictions
@@ -148,14 +135,12 @@ class MetadataAPI:
             self.req(
                 lambda access_token: requests.get(
                     _url, params=params, headers=headers(access_token)
-                ),
-                token,
+                )
             ).map(lambda key_value_range: to_key_value_range(key_value_range))
         )
 
     def get_all_pages(
         self,
-        token: Optional[str] = None,
         directory: Optional[Key] = None,
         next_key: Optional[Key] = None,
     ) -> List[KeyValue]:
@@ -167,9 +152,6 @@ class MetadataAPI:
 
         Parameters
         ----------
-        token: Optional[str]
-            You can manage the auth token by calling to `sea.auth.get_token()` before
-            and using it among the different functions until you get an HTTPError with 401 code.
         directory : Optional[Key]
             The metadata key-value store supports the use of directories.
             Directories are important tools to set up region and provider restrictions
@@ -188,7 +170,7 @@ class MetadataAPI:
         _next_lock = next_key
 
         while True:
-            page_result = self.get_page(token, directory, _next_lock)
+            page_result = self.get_page(directory, _next_lock)
 
             page: KeyValueRange = page_result
             pages.extend(page.key_value_pairs)

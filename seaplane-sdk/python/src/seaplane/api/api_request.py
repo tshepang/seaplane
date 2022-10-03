@@ -1,8 +1,7 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 import requests
 from requests import Response
-from returns.pipeline import is_successful
 from returns.result import Failure, Result, Success
 
 from ..model.errors import HTTPError
@@ -12,7 +11,7 @@ from .token_api import TokenAPI
 
 def provision_req(
     token_api: TokenAPI,
-) -> Callable[[Callable[[str], Response], Optional[str]], Result[Any, HTTPError]]:
+) -> Callable[[Callable[[str], Response]], Result[Any, HTTPError]]:
     """
     Before every request, we make sure we use a valid access token.
     """
@@ -28,17 +27,28 @@ def provision_req(
         except requests.exceptions.RequestException as err:
             return Failure(HTTPError(SDK_HTTP_ERROR_CODE, str(err)))
 
-    def req(
-        request: Callable[[str], Response], token: Optional[str] = None
+    def renew_if_fails(
+        token_api: TokenAPI, request: Callable[[str], Response], http_error: HTTPError
     ) -> Result[Any, HTTPError]:
-        if token is not None:
+        if http_error.status != 401:
+            return Failure(http_error)
+
+        if token_api.auto_renew:
+            token = token_api.renew_token()
             return handle_request(request, token)
+        else:
+            return Failure(http_error)
+
+    def req(request: Callable[[str], Response]) -> Result[Any, HTTPError]:
+        access_token: Result[str, HTTPError]
+
+        if token_api.access_token is not None:
+            access_token = Success(token_api.access_token)
         else:
             access_token = token_api._request_access_token()
 
-            if is_successful(access_token):
-                return handle_request(request, access_token.unwrap())
-            else:
-                return access_token
+        return access_token.bind(lambda token: handle_request(request, token)).lash(
+            lambda error: renew_if_fails(token_api, request, error)
+        )
 
     return req

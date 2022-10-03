@@ -21,11 +21,7 @@ class FormationAPI:
         self.req = provision_req(configuration._token_api)
 
     def create(
-        self,
-        formation_name: str,
-        active: bool = False,
-        source: Optional[str] = None,
-        token: Optional[str] = None,
+        self, formation_name: str, active: bool = False, source: Optional[str] = None
     ) -> Result[Any, HTTPError]:
         """
         Create a new formation
@@ -49,29 +45,22 @@ class FormationAPI:
         return self.req(
             lambda access_token: requests.post(
                 url=f"{self.url}/{formation_name}", params=params, headers=headers(access_token)
-            ),
-            token,
+            )
         )
 
-    def get_all(self, token: Optional[str] = None) -> Result[List[int], HTTPError]:
-        return self.req(
-            lambda access_token: requests.get(self.url, headers=headers(access_token)), token
-        )
+    def get_all(self) -> Result[List[int], HTTPError]:
+        return self.req(lambda access_token: requests.get(self.url, headers=headers(access_token)))
 
-    def get_metadata(
-        self, formation_name: Text, token: Optional[str] = None
-    ) -> Result[FormationMetadata, HTTPError]:
+    def get_metadata(self, formation_name: Text) -> Result[FormationMetadata, HTTPError]:
         return self.req(
             lambda access_token: requests.get(
                 url=f"{self.url}/{formation_name}", headers=headers(access_token)
-            ),
-            token,
+            )
         ).map(lambda response: FormationMetadata(response["url"]))
 
-    def delete(self, formation_name: Text, token: Optional[str] = None) -> Result[Any, HTTPError]:
+    def delete(self, formation_name: Text) -> Result[Any, HTTPError]:
         return self.req(
             lambda access_token: requests.delete(
                 url=f"{self.url}/{formation_name}", headers=headers(access_token)
-            ),
-            token,
+            )
         )

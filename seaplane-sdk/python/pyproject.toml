@@ -28,7 +28,6 @@ returns = "^0.19.0"
 requests-mock = "^1.9.3"
 simplejson = "^3.17.6"
 types-simplejson = "^3.17.7"
-PyJWT = "^2.4.0"
 
 [tool.poetry.dev-dependencies]
 nox-poetry = "*"
