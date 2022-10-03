@@ -1,14 +1,14 @@
 //! The `/formations` endpoint APIs which allows working with [`FormationConfiguration`]s,
 //! [`Flight`]s, and the underlying containers
 
+mod error;
 mod models;
 pub use models::*;
 use uuid::Uuid;
 
 use crate::{
     api::{
-        map_api_error,
-        v1::{ApiRequest, RequestBuilder},
+        v1::{formations::error::map_api_error, ApiRequest, RequestBuilder},
         COMPUTE_API_URL,
     },
     error::{Result, SeaplaneError},

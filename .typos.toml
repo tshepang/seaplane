@@ -1,3 +1,8 @@
+[files]
+extend-exclude = [
+  "seaplane-sdk/python/tests/fixtures/api/seaplane_img_in_base64.txt",
+]
+
 [default.extend-identifiers]
 7cc4b5aefd1d0cadf8d97d435046wwwwwww2ba51c694ebca145b08d7d41b41acc8db5aa = "7cc4b5aefd1d0cadf8d97d435046wwwwwww2ba51c694ebca145b08d7d41b41acc8db5aa"
 XRoZXZpc2libGVzdXJmYWNlb2Z0aGVTcGVybVdoYWxlaXNub3R0aGVsZWFzdGFtb25ndGhlbWFueW1h = "XRoZXZpc2libGVzdXJmYWNlb2Z0aGVTcGVybVdoYWxlaXNub3R0aGVsZWFzdGFtb25ndGhlbWFueW1h"
