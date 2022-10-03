@@ -659,9 +659,6 @@ fn seaplane_locks() {
     assert!(cli!("locks").is_err());
     // provide subcmd
     assert!(cli!("locks list foo").is_ok());
-
-    // aliases
-    assert!(cli!("l list foo").is_ok());
 }
 
 #[test]

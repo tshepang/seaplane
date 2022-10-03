@@ -21,7 +21,6 @@ impl SeaplaneLocks {
             .about("Operate on the Locks API")
             .subcommand_required(true)
             .arg_required_else_help(true)
-            .visible_aliases(&["l"])
             .arg(
                 arg!(--format =["FORMAT"=>"table"] global)
                     .help("Change the output format")

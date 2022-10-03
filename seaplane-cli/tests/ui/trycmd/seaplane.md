@@ -26,7 +26,7 @@ SUBCOMMANDS:
     help                Print this message or the help of the given subcommand(s)
     init                Create the Seaplane directory structure at the appropriate locations
     license             Print license information
-    locks               Operate on the Locks API [aliases: l]
+    locks               Operate on the Locks API
     metadata            Operate on metadata key-value pairs using the Global Data Coordination API [aliases: meta, md]
     restrict            Restrict the placement of data for Global Data Coordination API
     shell-completion    Generate shell completion script files for seaplane
