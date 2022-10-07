@@ -54,7 +54,7 @@ Source and wheel redistributable packages can be [published to PyPI](https://pyt
 $ poetry publish
 ```
 
-## Enforcing Code Quality
+## Enforcing Code Quality
 
 Automated code quality checks are performed using [Nox](https://nox.thea.codes/en/stable/) and [nox-poetry](https://nox-poetry.readthedocs.io/en/stable/)
 
@@ -81,7 +81,7 @@ To run end to end tests you have to set the E2E_API_KEY env var:
 (seaplane) $ nox -s e2e
 ```
 
-## Code Style Checking
+## Code Style Checking
 
 [PEP 8](https://peps.python.org/pep-0008/) is the universally accepted style guide for
 Python code. PEP 8 code compliance is verified using [Flake8](http://flake8.pycqa.org/). Flake8 is
@@ -142,9 +142,9 @@ See also [awesome-python-typing](https://github.com/typeddjango/awesome-python-t
 * Use `config` object in order to set the api key.
 
 ```python
-from seaplane-sdk import config
+from seaplane import sea
 
-config.set_api_key("your_api_key")
+sea.config.set_api_key("your_api_key")
 ```
 
 ## License
