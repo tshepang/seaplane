@@ -1,8 +1,8 @@
 from typing import Any, Dict, List, NamedTuple, Optional
 
+from ..provider import Provider, to_providers
+from ..region import Region, to_regions
 from .flight import Flight, to_flights
-from .provider import Provider, to_providers
-from .region import Region, to_regions
 
 
 class FormationConfiguration(NamedTuple):

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from ..configuration import Configuration, config
-from ..model.locks import HeldLock, Lock, LockPage, Name, to_held_lock, to_lock, to_lock_range
+from ..model.locks import HeldLock, Lock, LockPage, Name, to_held_lock, to_lock, to_lock_page
 from ..util import unwrap
 from ..util.base64url import base64url_encode_from_bytes
 from .api_http import headers
@@ -181,7 +181,7 @@ class LockAPI:
                 lambda access_token: requests.get(
                     _url, params=params, headers=headers(access_token)
                 )
-            ).map(lambda lock_range: to_lock_range(lock_range))
+            ).map(lambda lock_range: to_lock_page(lock_range))
         )
 
     def get_all_pages(

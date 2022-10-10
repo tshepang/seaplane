@@ -6,11 +6,10 @@ from returns.result import Success
 
 from seaplane.api.formation_configuration_api import FormationConfigurationAPI
 from seaplane.configuration import Configuration
+from seaplane.model import Provider, Region
 from seaplane.model.compute.architecture import Architecture
 from seaplane.model.compute.flight import Flight
 from seaplane.model.compute.formation_configuration import FormationConfiguration
-from seaplane.model.compute.provider import Provider
-from seaplane.model.compute.region import Region
 
 from ..conftest import add_token_request
 
@@ -81,7 +80,7 @@ def get_configuration_by_id() -> Generator[None, None, None]:
                         "maximum": 2,
                     }
                 ],
-                "providers_denied": ["DigitalOcean"],
+                "providers_denied": ["DIGITALOCEAN"],
                 "regions_allowed": ["XE"],
                 "regions_denied": ["XF"],
             },
@@ -160,6 +159,7 @@ def test_given_get_configuration_by_id_returns_it_correctly(  # type: ignore
                     api_permission=False,
                 )
             ],
+            providers_allowed=[],
             providers_denied=[Provider.digital_ocean],
             regions_allowed=[Region.europe],
             regions_denied=[Region.africa],

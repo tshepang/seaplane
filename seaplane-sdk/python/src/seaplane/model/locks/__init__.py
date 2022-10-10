@@ -73,7 +73,7 @@ class Lock(NamedTuple):
 
 class LockPage(NamedTuple):
     """
-    Lock Range class.
+    Lock Page class.
 
     It contains a paginated list of locks, next_lock is used for the next call.
 
@@ -108,7 +108,7 @@ class HeldLock(NamedTuple):
     sequencer: int
 
 
-def to_lock_range(lock_range: Dict[str, Any]) -> LockPage:
+def to_lock_page(lock_range: Dict[str, Any]) -> LockPage:
     return LockPage(
         locks=[to_lock(lock) for lock in lock_range["infos"]],
         next_lock=_to_name(lock_range["next"]),

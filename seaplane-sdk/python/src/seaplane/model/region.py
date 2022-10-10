@@ -13,9 +13,12 @@ class Region(Enum):
     south_america = "XS"
     uk = "XU"
 
+    def __str__(self) -> str:
+        return str(self.value)
 
-def to_regions(regions: Optional[List[str]]) -> Optional[List[Region]]:
+
+def to_regions(regions: Optional[List[str]]) -> List[Region]:
     if not regions:
-        return None
+        return []
 
     return [Region(region) for region in regions]

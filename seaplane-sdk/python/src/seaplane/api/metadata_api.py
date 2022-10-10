@@ -3,13 +3,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from ..configuration import Configuration, config
-from ..model.metadata.key_value import (
-    Key,
-    KeyValue,
-    KeyValueRange,
-    to_key_value,
-    to_key_value_range,
-)
+from ..model.metadata import Key, KeyValue, KeyValuePage, to_key_value, to_key_value_page
 from ..util import unwrap
 from ..util.base64url import base64url_encode_from_bytes
 from .api_http import headers
@@ -98,7 +92,7 @@ class MetadataAPI:
         self,
         directory: Optional[Key] = None,
         next_key: Optional[Key] = None,
-    ) -> KeyValueRange:
+    ) -> KeyValuePage:
         """Returns a single page of key value pairs for the given directory,
         beginning with the `next_key` key.
 
@@ -118,8 +112,8 @@ class MetadataAPI:
 
         Returns
         -------
-        KeyValueRange
-            Returns KeyValueRange if successful or it will raise an HTTPError otherwise.
+        KeyValuePage
+            Returns KeyValuePage if successful or it will raise an HTTPError otherwise.
         """
 
         _url = self.url
@@ -136,7 +130,7 @@ class MetadataAPI:
                 lambda access_token: requests.get(
                     _url, params=params, headers=headers(access_token)
                 )
-            ).map(lambda key_value_range: to_key_value_range(key_value_range))
+            ).map(lambda key_value_range: to_key_value_page(key_value_range))
         )
 
     def get_all_pages(
@@ -172,7 +166,7 @@ class MetadataAPI:
         while True:
             page_result = self.get_page(directory, _next_lock)
 
-            page: KeyValueRange = page_result
+            page: KeyValuePage = page_result
             pages.extend(page.key_value_pairs)
 
             if page.next_key is not None:

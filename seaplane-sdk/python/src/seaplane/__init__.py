@@ -1,5 +1,6 @@
 from .api.lock_api import LockAPI
 from .api.metadata_api import MetadataAPI
+from .api.restrict_api import RestrictAPI
 from .api.token_api import TokenAPI
 from .configuration import Configuration, config
 
@@ -20,6 +21,10 @@ class Seaplane:
     @property
     def locks(self) -> LockAPI:
         return LockAPI(config)
+
+    @property
+    def restrict(self) -> RestrictAPI:
+        return RestrictAPI(config)
 
 
 sea = Seaplane()
