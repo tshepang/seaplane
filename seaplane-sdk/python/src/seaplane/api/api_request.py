@@ -4,6 +4,7 @@ import requests
 from requests import Response
 from returns.result import Failure, Result, Success
 
+from ..logging import log
 from ..model.errors import HTTPError
 from .api_http import SDK_HTTP_ERROR_CODE
 from .token_api import TokenAPI
@@ -23,8 +24,11 @@ def provision_req(
             if response.ok:
                 return Success(response.json())
             else:
-                return Failure(HTTPError(response.status_code, response.json()))
+                body_error = response.json()
+                log.error(f"Request Error: {body_error}")
+                return Failure(HTTPError(response.status_code, body_error))
         except requests.exceptions.RequestException as err:
+            log.error(f"Request exception: {str(err)}")
             return Failure(HTTPError(SDK_HTTP_ERROR_CODE, str(err)))
 
     def renew_if_fails(
@@ -34,6 +38,7 @@ def provision_req(
             return Failure(http_error)
 
         if token_api.auto_renew:
+            log.info("Auto-Renew, renewing the token...")
             token = token_api.renew_token()
             return handle_request(request, token)
         else:

@@ -3,6 +3,7 @@ from typing import Optional
 import requests
 from returns.result import Failure, Result, Success
 
+from ..logging import log
 from ..model.errors import HTTPError
 from ..util import unwrap
 from .api_http import SDK_HTTP_ERROR_CODE, headers
@@ -76,6 +77,7 @@ class TokenAPI:
     def _request_access_token(self) -> Result[str, HTTPError]:
         try:
             response = requests.post(self.url, json={}, headers=headers(self.api_key))
+            log.info("Requesting access token...")
 
             if response.ok:
                 token = response.json()["token"]
@@ -83,8 +85,16 @@ class TokenAPI:
                 return Success(token)
             else:
                 self._current_access_token = None
-                return Failure(HTTPError(response.status_code, response.json()))
+                error_body = response.json()
+                log.error(
+                    f"Bad Access token request code {response.status_code}, error {error_body}"
+                )
+                return Failure(HTTPError(response.status_code, error_body))
 
         except requests.exceptions.RequestException as err:
             self._current_access_token = None
-            return Failure(HTTPError(SDK_HTTP_ERROR_CODE, "[TokenAPI]: " + str(err)))
+            if not self.api_key:
+                log.error("API KEY not set, use sea.config.set_api_key")
+            else:
+                log.error(f"Request access token exception: {str(err)}")
+            return Failure(HTTPError(SDK_HTTP_ERROR_CODE, str(err)))

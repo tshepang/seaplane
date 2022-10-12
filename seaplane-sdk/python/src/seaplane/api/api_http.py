@@ -1,11 +1,11 @@
-from typing import Any, Dict, NamedTuple
+from typing import Any, Dict, NamedTuple, Optional
 
 import simplejson as json
 
 SDK_HTTP_ERROR_CODE = 0
 
 
-def headers(api_key: str) -> Dict[str, str]:
+def headers(api_key: Optional[str]) -> Dict[str, str]:
     return {
         "Accept": "application/json",
         "Content-Type": "application/json",
