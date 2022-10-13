@@ -17,13 +17,13 @@ audit: (_cargo-install 'cargo-audit')
     cargo audit
 
 # Run the CI suite for the SDK (only runs for your native os/arch!)
-ci-sdk: test test-api (doc 'seaplane-sdk/rust') fmt-check (lint 'seaplane-sdk/rust') (lint 'seaplane-sdk/rust' '--features unstable') (lint 'seaplane-sdk/rust' '--no-default-features')
+ci-sdk: lint-sdk-rust (doc 'seaplane-sdk/rust') test test-rust-api
 
 # Run the CI suite for the CLI (only runs for your native os/arch!)
-ci-cli: (test 'seaplane-cli') (doc 'seaplane-cli') test-ui (test-api 'seaplane-cli') fmt-check (lint 'seaplane-cli') (lint 'seaplane-cli' '--features unstable') (lint 'seaplane-cli' '--no-default-features')
+ci-cli: lint-cli (doc 'seaplane-cli') (test 'seaplane-cli') (test-rust-api 'seaplane-cli') test-ui 
 
 # Run the full CI suite (only runs for your native os/arch!)
-ci: audit ci-cli ci-sdk spell-check test-doc
+ci: audit ci-cli ci-sdk
 
 # Build documentation
 doc RUST_CRATE='' $RUSTDOCFLAGS="-D warnings":
@@ -37,6 +37,15 @@ fmt-check:
 fmt:
     cargo fmt --all
 
+# Run all lint hecks against the Rust SDK
+lint-cli: spell-check fmt-check (lint 'seaplane-cli' '--no-default-features')
+
+# Run all lint hecks against the Rust SDK
+lint-sdk-rust: spell-check fmt-check (lint 'seaplane-sdk/rust') (lint 'seaplane-sdk/rust' '--features unstable') (lint 'seaplane-sdk/rust' '--no-default-features')
+
+# Run all checks and lints
+lint-all: lint-sdk-rust lint-cli
+
 # Run code linting with warnings denied
 lint RUST_CRATE='' RUST_FEATURES='':
     cargo clippy {{ RUST_FEATURES }} --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml --all-targets -- -D warnings
@@ -47,7 +56,7 @@ test RUST_CRATE='seaplane-sdk/rust' FEATURES='' $RUSTFLAGS='-D warnings':
     {{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
 
 # Run API tests using a mock HTTP server
-test-api RUST_CRATE='seaplane-sdk/rust' $RUSTFLAGS='-D warnings':
+test-rust-api RUST_CRATE='seaplane-sdk/rust' $RUSTFLAGS='-D warnings':
     cargo test --no-run  --features api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
     {{ TEST_RUNNER }}  --features api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
     cargo test --no-run  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
@@ -69,7 +78,7 @@ update-licenses: (_cargo-install 'cargo-lichking')
     cargo lichking bundle --variant name-only > {{justfile_directory()}}/share/third_party_licenses.md
 
 spell-check: (_cargo-install 'typos-cli')
-    typos {{justfile_directory()}}
+    typos
 
 #
 # Small Helpers
