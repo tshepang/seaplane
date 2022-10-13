@@ -3,6 +3,7 @@ use std::{
     io,
     result::Result as StdResult,
     sync::{Mutex, MutexGuard, PoisonError},
+    time::Duration,
 };
 
 use indicatif::{ProgressBar, ProgressStyle};
@@ -30,8 +31,12 @@ impl Pb {
     pub fn new(ctx: &Ctx) -> Self {
         if !ctx.disable_pb && crate::log::log_level() <= &crate::log::LogLevel::Info {
             let pb = ProgressBar::new_spinner();
-            pb.enable_steady_tick(120);
-            pb.set_style(ProgressStyle::default_bar().template("{spinner:.green} {msg}"));
+            pb.enable_steady_tick(Duration::from_millis(120));
+            pb.set_style(
+                ProgressStyle::default_bar()
+                    .template("{spinner:.green} {msg}")
+                    .expect("Invalid progress bar template"),
+            );
             Pb(Some(pb))
         } else {
             Pb(None)
