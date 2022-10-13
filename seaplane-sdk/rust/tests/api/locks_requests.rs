@@ -1,8 +1,10 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::{
-    Directory, HeldLock, LockId, LockInfo, LockInfoInner, LockInfoRange, LockName,
-    LocksRequestBuilder, RangeQueryContext,
+use seaplane::api::{
+    locks::v1::{
+        HeldLock, LockId, LockInfo, LockInfoInner, LockInfoRange, LockName, LocksRequestBuilder,
+    },
+    shared::v1::{Directory, RangeQueryContext},
 };
 use serde_json::json;
 

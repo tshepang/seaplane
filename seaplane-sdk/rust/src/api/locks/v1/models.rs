@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{api::v1::RangeQueryContext, base64::Base64Encoded, impl_base64};
+use crate::{api::shared::v1::RangeQueryContext, base64::Base64Encoded, impl_base64};
 
 /// A single lock name, encoded in url-safe base64, may not contain `\0` bytes
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

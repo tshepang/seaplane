@@ -6,13 +6,14 @@ use serde::Deserialize;
 
 use crate::{
     api::{
-        map_api_error,
-        v1::{ApiRequest, RangeQueryContext, RequestBuilder},
-        METADATA_API_URL,
+        locks::LOCKS_API_URL, map_api_error, shared::v1::RangeQueryContext, ApiRequest,
+        RequestBuilder,
     },
     base64::add_base64_path_segment,
     error::{Result, SeaplaneError},
 };
+
+static LOCKS_API_BASE_PATH: &str = "v1/locks/";
 
 /// A builder struct for creating a [`LocksRequest`] which will then be used for making a
 /// request against the `/locks` APIs
@@ -36,7 +37,7 @@ impl Default for LocksRequestBuilder {
 }
 impl LocksRequestBuilder {
     /// Create a new LocksRequestBuilder
-    pub fn new() -> Self { RequestBuilder::new(METADATA_API_URL, "v1/locks/").into() }
+    pub fn new() -> Self { RequestBuilder::new(LOCKS_API_URL, LOCKS_API_BASE_PATH).into() }
 
     /// Build a LocksRequest from the given parameters
     pub fn build(self) -> Result<LocksRequest> { Ok(self.builder.build()?.into()) }
@@ -166,7 +167,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequest, LocksRequestBuilder};
+    /// use seaplane::api::locks::v1::{LocksRequest, LocksRequestBuilder};
     ///
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -206,7 +207,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LockId, LockName, LocksRequest, LocksRequestBuilder};
+    /// use seaplane::api::locks::v1::{LockId, LockName, LocksRequest, LocksRequestBuilder};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -248,7 +249,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LockId, LockName, LocksRequest, LocksRequestBuilder};
+    /// use seaplane::api::locks::v1::{LockId, LockName, LocksRequest, LocksRequestBuilder};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -291,7 +292,7 @@ impl LocksRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequest, LocksRequestBuilder};
+    /// use seaplane::api::locks::v1::{LocksRequest, LocksRequestBuilder};
     /// // First we acquire the lock
     /// let req = LocksRequestBuilder::new()
     ///     .token("abc123_token")
@@ -327,7 +328,10 @@ impl LocksRequest {
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LockName, LocksRequest, LocksRequestBuilder, RangeQueryContext};
+    /// use seaplane::api::{
+    ///     locks::v1::{LockName, LocksRequest, LocksRequestBuilder},
+    ///     shared::v1::RangeQueryContext,
+    /// };
     ///
     /// let root_dir_range: RangeQueryContext<LockName> = RangeQueryContext::new();
     ///
@@ -383,7 +387,10 @@ impl LocksRequest {
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{LocksRequest, LocksRequestBuilder, RangeQueryContext};
+    /// use seaplane::api::{
+    ///     locks::v1::{LocksRequest, LocksRequestBuilder},
+    ///     shared::v1::RangeQueryContext,
+    /// };
     ///
     /// let root_dir_range = RangeQueryContext::new();
     ///

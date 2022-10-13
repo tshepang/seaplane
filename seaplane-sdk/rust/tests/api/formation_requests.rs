@@ -1,8 +1,11 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::{
-    ActiveConfiguration, ActiveConfigurations, Flight, FormationConfiguration, FormationsRequest,
-    Provider, Region,
+use seaplane::api::{
+    compute::v1::{
+        ActiveConfiguration, ActiveConfigurations, Flight, FormationConfiguration,
+        FormationsRequest,
+    },
+    shared::v1::{Provider, Region},
 };
 use serde_json::json;
 use uuid::Uuid;

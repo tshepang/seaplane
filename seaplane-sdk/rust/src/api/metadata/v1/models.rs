@@ -2,7 +2,7 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{api::v1::range_query::RangeQueryContext, base64::Base64Encoded, impl_base64};
+use crate::{api::shared::v1::RangeQueryContext, base64::Base64Encoded, impl_base64};
 
 /// A single key value pair, encoded in url-safe base64.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]

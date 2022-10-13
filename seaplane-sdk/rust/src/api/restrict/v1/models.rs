@@ -7,7 +7,7 @@ use serde::{
 use strum::{AsRefStr, EnumString, EnumVariantNames};
 
 use crate::{
-    api::v1::{impl_deser_from_str, Provider, RangeQueryContext, Region},
+    api::shared::v1::{impl_deser_from_str, Provider, RangeQueryContext, Region},
     base64::Base64Encoded,
     error::SeaplaneError,
     impl_base64,

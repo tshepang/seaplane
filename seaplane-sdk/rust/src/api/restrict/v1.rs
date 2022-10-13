@@ -10,12 +10,13 @@ use reqwest::{
 
 use crate::{
     api::{
-        map_api_error,
-        v1::{ApiRequest, RangeQueryContext, RequestBuilder},
-        METADATA_API_URL,
+        map_api_error, restrict::RESTRICT_API_URL, shared::v1::RangeQueryContext, ApiRequest,
+        RequestBuilder,
     },
     error::{Result, SeaplaneError},
 };
+
+static RESTRICT_API_BASE_PATH: &str = "v1/restrict/";
 
 /// A builder struct for creating a [`RestrictRequest`] which will then be used for making a
 /// request against the `/restrict` APIs
@@ -34,7 +35,7 @@ impl Default for RestrictRequestBuilder {
 
 impl RestrictRequestBuilder {
     /// Create a new RestrictRequestBuilder
-    pub fn new() -> Self { RequestBuilder::new(METADATA_API_URL, "v1/restrict/").into() }
+    pub fn new() -> Self { RequestBuilder::new(RESTRICT_API_URL, RESTRICT_API_BASE_PATH).into() }
 
     /// Build a RestrictRequest from the given parameters
     pub fn build(self) -> Result<RestrictRequest> { Ok(self.builder.build()?.into()) }
@@ -159,7 +160,7 @@ impl RestrictRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RestrictRequest, RestrictRequestBuilder};
+    /// use seaplane::api::restrict::v1::{RestrictRequest, RestrictRequestBuilder};
     ///
     /// let req = RestrictRequestBuilder::new()
     ///     .token("abc123_token")
@@ -199,7 +200,10 @@ impl RestrictRequest {
     /// ## Paging through single API restrictions
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequest, RestrictRequestBuilder};
+    /// use seaplane::api::{
+    ///     restrict::v1::{RestrictRequest, RestrictRequestBuilder},
+    ///     shared::v1::RangeQueryContext,
+    /// };
     ///
     /// let context = RangeQueryContext::new();
     /// let req = RestrictRequestBuilder::new()
@@ -231,7 +235,10 @@ impl RestrictRequest {
     /// ## Paging through all restrictions
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{Api, RangeQueryContext, RestrictRequestBuilder,RestrictRequest};
+    /// use seaplane::api::{
+    ///     restrict::v1::{RestrictRequest, RestrictRequestBuilder},
+    ///     shared::v1::RangeQueryContext,
+    /// };
     ///
     /// let context = RangeQueryContext::new();
     /// let req = RestrictRequestBuilder::new()
@@ -309,7 +316,10 @@ impl RestrictRequest {
     /// ## Getting all restrictions for an API
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequest, RestrictRequestBuilder};
+    /// use seaplane::api::{
+    ///     restrict::v1::{RestrictRequest, RestrictRequestBuilder},
+    ///     shared::v1::RangeQueryContext,
+    /// };
     ///
     /// let context = RangeQueryContext::new();
     /// let mut req = RestrictRequestBuilder::new()
@@ -325,7 +335,10 @@ impl RestrictRequest {
     /// ## Getting all restrictions across all APIs
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RangeQueryContext, RestrictRequest, RestrictRequestBuilder};
+    /// use seaplane::api::{
+    ///     restrict::v1::{RestrictRequest, RestrictRequestBuilder},
+    ///     shared::v1::RangeQueryContext,
+    /// };
     ///
     /// let context = RangeQueryContext::new();
     /// let mut req = RestrictRequestBuilder::new()
@@ -376,7 +389,10 @@ impl RestrictRequest {
     /// ```no_run
     /// use std::str::FromStr;
     ///
-    /// use seaplane::api::v1::{Region, RestrictRequest, RestrictRequestBuilder, RestrictionDetails};
+    /// use seaplane::api::{
+    ///     restrict::v1::{RestrictRequest, RestrictRequestBuilder, RestrictionDetails},
+    ///     shared::v1::Region,
+    /// };
     ///
     /// let req = RestrictRequestBuilder::new()
     ///     .token("abc123_token")
@@ -415,7 +431,7 @@ impl RestrictRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{RestrictRequest, RestrictRequestBuilder};
+    /// use seaplane::api::restrict::v1::{RestrictRequest, RestrictRequestBuilder};
     ///
     /// let req = RestrictRequestBuilder::new()
     ///     .token("abc123_token")

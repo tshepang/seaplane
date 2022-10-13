@@ -1,5 +1,6 @@
 //! Purpose of those structs is basically just to allow token re-use/retry so
 //! that we don't have to request a new API token on each and every call
+
 use reqwest::{
     blocking,
     header::{self, CONTENT_TYPE},
@@ -27,7 +28,7 @@ pub(crate) struct RequestBuilder<T> {
 
 impl<T> RequestBuilder<T> {
     /// Create a new builder
-    pub fn new<S: Into<String>>(api_url: S, base_path: S) -> Self {
+    pub(crate) fn new<S: Into<String>>(api_url: S, base_path: S) -> Self {
         Self {
             target: None,
             token: None,
@@ -40,7 +41,7 @@ impl<T> RequestBuilder<T> {
     /// Set the token used in Bearer Authorization
     ///
     /// **NOTE:** This is required for all endpoints
-    pub fn token<U: Into<String>>(mut self, token: U) -> Self {
+    pub(crate) fn token<U: Into<String>>(mut self, token: U) -> Self {
         self.token = Some(token.into());
         self
     }
@@ -48,13 +49,13 @@ impl<T> RequestBuilder<T> {
     /// The target resource to query as part of the request.
     ///
     /// **NOTE:** This is not required for all endpoints
-    pub fn target(mut self, target: T) -> Self {
+    pub(crate) fn target(mut self, target: T) -> Self {
         self.target = Some(target);
         self
     }
 
     /// Build an APIRequest from the given parameters
-    pub fn build(self) -> Result<ApiRequest<T>> {
+    pub(crate) fn build(self) -> Result<ApiRequest<T>> {
         if self.token.is_none() {
             return Err(SeaplaneError::MissingRequestAuthToken);
         }
@@ -93,7 +94,7 @@ impl<T> RequestBuilder<T> {
 
     // Used in testing and development to manually set the URL
     #[doc(hidden)]
-    pub fn base_url<U: AsRef<str>>(mut self, url: U) -> Self {
+    pub(crate) fn base_url<U: AsRef<str>>(mut self, url: U) -> Self {
         self.base_url = Some(url.as_ref().parse().unwrap());
         self
     }
@@ -102,10 +103,10 @@ impl<T> RequestBuilder<T> {
 #[derive(Debug)]
 pub(crate) struct ApiRequest<T> {
     /// The target resource
-    pub target: Option<T>,
-    pub token: String,
+    pub(crate) target: Option<T>,
+    pub(crate) token: String,
     #[doc(hidden)]
-    pub client: reqwest::blocking::Client,
+    pub(crate) client: reqwest::blocking::Client,
     #[doc(hidden)]
-    pub endpoint_url: Url,
+    pub(crate) endpoint_url: Url,
 }

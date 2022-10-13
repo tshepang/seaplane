@@ -8,13 +8,14 @@ use reqwest::{
 
 use crate::{
     api::{
-        map_api_error,
-        v1::{ApiRequest, RangeQueryContext, RequestBuilder},
-        METADATA_API_URL,
+        map_api_error, metadata::METADATA_API_URL, shared::v1::RangeQueryContext, ApiRequest,
+        RequestBuilder,
     },
     base64::add_base64_path_segment,
     error::{Result, SeaplaneError},
 };
+
+const METADATA_API_BASE_PATH: &str = "v1/config/";
 
 /// A builder struct for creating a [`MetadataRequest`] which will then be used for making a
 /// request against the `/config` APIs
@@ -33,7 +34,7 @@ impl Default for MetadataRequestBuilder {
 
 impl MetadataRequestBuilder {
     /// Create a new MetadataRequestBuilder
-    pub fn new() -> Self { RequestBuilder::new(METADATA_API_URL, "v1/config/").into() }
+    pub fn new() -> Self { RequestBuilder::new(METADATA_API_URL, METADATA_API_BASE_PATH).into() }
 
     /// Build an MetadataRequest from the given parameters
     pub fn build(self) -> Result<MetadataRequest> { Ok(self.builder.build()?.into()) }
@@ -124,7 +125,7 @@ impl MetadataRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder};
+    /// use seaplane::api::metadata::v1::{MetadataRequest, MetadataRequestBuilder};
     ///
     /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
@@ -156,7 +157,7 @@ impl MetadataRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder, Value};
+    /// use seaplane::api::metadata::v1::{MetadataRequest, MetadataRequestBuilder, Value};
     ///
     /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
@@ -177,7 +178,7 @@ impl MetadataRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder, Value};
+    /// use seaplane::api::metadata::v1::{MetadataRequest, MetadataRequestBuilder, Value};
     ///
     /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
@@ -210,7 +211,7 @@ impl MetadataRequest {
     ///
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder};
+    /// use seaplane::api::metadata::v1::{MetadataRequest, MetadataRequestBuilder};
     ///
     /// let req = MetadataRequestBuilder::new()
     ///     .token("abc123_token")
@@ -247,7 +248,10 @@ impl MetadataRequest {
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder, RangeQueryContext};
+    /// use seaplane::api::{
+    ///     metadata::v1::{MetadataRequest, MetadataRequestBuilder},
+    ///     shared::v1::RangeQueryContext,
+    /// };
     ///
     /// let root_dir_range = RangeQueryContext::new();
     ///
@@ -303,7 +307,10 @@ impl MetadataRequest {
     /// **NOTE:** This endpoint requires the `RequestTarget` be a `Range`.
     /// # Examples
     /// ```no_run
-    /// use seaplane::api::v1::{MetadataRequest, MetadataRequestBuilder, RangeQueryContext};
+    /// use seaplane::api::{
+    ///     metadata::v1::{MetadataRequest, MetadataRequestBuilder},
+    ///     shared::v1::RangeQueryContext,
+    /// };
     ///
     /// let root_dir_range = RangeQueryContext::new();
     ///

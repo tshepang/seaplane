@@ -4,9 +4,12 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[cfg(doc)]
-use crate::api::v1::FormationsRequest;
+use crate::api::compute::v1::FormationsRequest;
 use crate::{
-    api::v1::{Architecture, EndpointKey, EndpointValue, ImageReference, Provider, Region},
+    api::{
+        compute::v1::{Architecture, EndpointKey, EndpointValue, ImageReference},
+        shared::v1::{Provider, Region},
+    },
     error::{Result, SeaplaneError},
 };
 

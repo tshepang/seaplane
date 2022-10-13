@@ -1,14 +1,14 @@
 //! The API endpoints related to Tokens and Authentication
 
 use reqwest::{
-    blocking::{self},
+    blocking,
     header::{HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE},
     Url,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    api::{map_api_error, IDENTITY_API_URL},
+    api::{identity::IDENTITY_API_URL, map_api_error},
     error::{Result, SeaplaneError},
 };
 
@@ -107,7 +107,7 @@ impl TokenRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// # use seaplane::api::TokenRequest;
+    /// # use seaplane::api::identity::TokenRequest;
     /// let req = TokenRequest::builder().api_key("abc123").build().unwrap();
     ///
     /// let resp = req.access_token().unwrap();
@@ -129,7 +129,7 @@ impl TokenRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// # use seaplane::api::TokenRequest;
+    /// # use seaplane::api::identity::TokenRequest;
     /// let req = TokenRequest::builder().api_key("abc123").build().unwrap();
     ///
     /// let resp = req.access_token_json().unwrap();

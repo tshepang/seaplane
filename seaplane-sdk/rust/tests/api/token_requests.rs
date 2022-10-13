@@ -1,6 +1,6 @@
 use httpmock::prelude::*;
 use once_cell::sync::Lazy;
-use seaplane::api::TokenRequest;
+use seaplane::api::identity::TokenRequest;
 use serde_json::json;
 
 // To be used with httpmock standalone server for dev testing

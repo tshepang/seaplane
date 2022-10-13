@@ -13,7 +13,7 @@ use serde::{
 };
 use strum::{Display, EnumString, EnumVariantNames};
 
-use crate::api::v1::impl_deser_from_str;
+use crate::api::shared::v1::impl_deser_from_str;
 
 /// The processor architecture a [`Flight`] wants to run on
 #[derive(

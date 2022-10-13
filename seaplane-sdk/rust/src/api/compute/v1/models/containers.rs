@@ -2,7 +2,7 @@ use chrono::{offset::Utc, DateTime};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::api::v1::{Provider, Region};
+use crate::api::shared::v1::{Provider, Region};
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]

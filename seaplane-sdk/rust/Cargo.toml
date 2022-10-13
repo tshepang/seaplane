@@ -26,8 +26,11 @@ uuid = { version = "0.8.2", features = ["serde", "v4"] }
 url = { version = "2.2.2", features = ["serde"] }
 
 [features]
-default = ["api_v1"]
-api_v1 = []
+default = ["compute_api_v1", "metadata_api_v1", "locks_api_v1", "restrict_api_v1"]
+compute_api_v1 = []
+metadata_api_v1 = []
+locks_api_v1 = []
+restrict_api_v1 = []
 api_tests = [] # enables mock API tests
 unstable = [] # Items which are in active development and are totally unstable or unimplemented
 

@@ -1,6 +1,9 @@
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
-use seaplane::api::v1::{RangeQueryContext, RestrictRequestBuilder, RestrictionDetails};
+use seaplane::api::{
+    restrict::v1::{RestrictRequestBuilder, RestrictionDetails},
+    shared::v1::RangeQueryContext,
+};
 use serde_json::json;
 
 // To be used with httpmock standalone server for dev testing
