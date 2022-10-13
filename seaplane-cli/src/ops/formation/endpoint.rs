@@ -1,6 +1,6 @@
 use std::{result::Result as StdResult, str::FromStr};
 
-use seaplane::api::v1::formations::{
+use seaplane::api::compute::v1::{
     EndpointKey as EndpointKeyModel, EndpointValue as EndpointValueModel,
 };
 

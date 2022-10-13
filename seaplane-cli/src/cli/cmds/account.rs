@@ -1,7 +1,7 @@
 use std::io::{self, BufRead};
 
 use clap::{ArgMatches, Command};
-use seaplane::api::TokenRequest;
+use seaplane::api::identity::TokenRequest;
 
 use crate::{
     cli::CliCommand,

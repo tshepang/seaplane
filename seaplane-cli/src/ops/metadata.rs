@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use seaplane::api::v1::metadata::KeyValue as KeyValueModel;
+use seaplane::api::metadata::v1::KeyValue as KeyValueModel;
 use serde::Serialize;
 use tabwriter::TabWriter;
 use unicode_segmentation::UnicodeSegmentation;

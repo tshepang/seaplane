@@ -6,7 +6,7 @@ use std::{
 };
 
 use seaplane::{
-    api::{v1::ImageReferenceError, ApiErrorKind},
+    api::{compute::v1::ImageReferenceError, ApiErrorKind},
     error::SeaplaneError,
 };
 
@@ -180,7 +180,7 @@ impl_err!(serde_json::Error, SerdeJson);
 impl_err!(toml::de::Error, TomlDe);
 impl_err!(toml::ser::Error, TomlSer);
 impl_err!(seaplane::error::SeaplaneError, Seaplane);
-impl_err!(seaplane::api::v1::ImageReferenceError, ImageReference);
+impl_err!(seaplane::api::compute::v1::ImageReferenceError, ImageReference);
 impl_err!(std::string::FromUtf8Error, InvalidUtf8);
 impl_err!(hex::FromHexError, HexDecode);
 impl_err!(std::num::ParseIntError, ParseInt);

@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
-use seaplane::api::v1::{
-    restrict::RestrictedDirectory, Provider as ProviderModel, Region as RegionModel,
-    RestrictionDetails,
+use seaplane::api::{
+    restrict::v1::{RestrictedDirectory, RestrictionDetails},
+    shared::v1::{Provider as ProviderModel, Region as RegionModel},
 };
 
 use crate::{

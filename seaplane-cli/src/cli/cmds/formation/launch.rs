@@ -1,7 +1,7 @@
 use clap::{ArgMatches, Command};
 use seaplane::{
     api::{
-        v1::{ActiveConfiguration, ActiveConfigurations},
+        compute::v1::{ActiveConfiguration, ActiveConfigurations},
         ApiErrorKind,
     },
     error::SeaplaneError,

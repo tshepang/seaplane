@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use seaplane::api::v1::{locks::LockName as LockNameModel, LockInfo, LockInfoInner};
+use seaplane::api::locks::v1::{LockInfo, LockInfoInner, LockName as LockNameModel};
 use serde::Serialize;
 use tabwriter::TabWriter;
 

@@ -3,7 +3,7 @@ use std::{
     io::{self, Read},
 };
 
-use seaplane::api::v1::{metadata::Key, Directory};
+use seaplane::api::{metadata::v1::Key, shared::v1::Directory};
 
 use crate::{
     cli::cmds::metadata::{SeaplaneMetadataCommonArgMatches, SeaplaneMetadataSetArgMatches},

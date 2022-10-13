@@ -1,4 +1,4 @@
-use seaplane::api::v1::formations::{Architecture, Flight as FlightModel, ImageReference};
+use seaplane::api::compute::v1::{Architecture, Flight as FlightModel, ImageReference};
 
 use crate::{
     cli::{
@@ -180,7 +180,7 @@ impl FlightCtx {
         })
     }
 
-    /// Creates a new seaplane::api::v1::Flight from the contained values
+    /// Creates a new seaplane::api::compute::v1::Flight from the contained values
     pub fn model(&self) -> FlightModel {
         // Create the new Flight model from the CLI inputs
         let mut flight_model = FlightModel::builder()

@@ -1,14 +1,13 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        v1::{
-            metadata::{
-                Key, KeyValue as KeyValueModel, KeyValueRange as KeyValueRangeModel,
-                MetadataRequest, Value as ValueModel,
-            },
-            RangeQueryContext,
+        identity::AccessToken,
+        metadata::v1::{
+            Key, KeyValue as KeyValueModel, KeyValueRange as KeyValueRangeModel, MetadataRequest,
+            Value as ValueModel,
         },
-        AccessToken, ApiErrorKind,
+        shared::v1::RangeQueryContext,
+        ApiErrorKind,
     },
     error::SeaplaneError,
 };

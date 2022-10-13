@@ -1,5 +1,5 @@
 use clap::{ArgMatches, Command};
-use seaplane::api::v1::LockId;
+use seaplane::api::locks::v1::LockId;
 use serde_json::json;
 
 use crate::{

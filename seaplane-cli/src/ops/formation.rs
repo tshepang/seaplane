@@ -6,7 +6,7 @@ use std::{
 };
 
 pub use endpoint::*;
-use seaplane::api::v1::formations::{
+use seaplane::api::compute::v1::{
     Container as ContainerModel, ContainerStatus, Flight as FlightModel,
     FormationConfiguration as FormationConfigurationModel,
 };

@@ -1,5 +1,8 @@
 use clap::{ArgMatches, Command};
-use seaplane::api::v1::{metadata::Key, Directory, RangeQueryContext};
+use seaplane::api::{
+    metadata::v1::Key,
+    shared::v1::{Directory, RangeQueryContext},
+};
 
 use crate::{
     api::MetadataReq,

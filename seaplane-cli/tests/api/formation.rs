@@ -1,5 +1,8 @@
 use httpmock::prelude::*;
-use seaplane::api::v1::{FormationConfiguration as FormationConfigurationModel, Provider, Region};
+use seaplane::api::{
+    compute::v1::FormationConfiguration as FormationConfigurationModel,
+    shared::v1::{Provider, Region},
+};
 use seaplane_cli::{
     context::Ctx,
     ops::formation::{Formation, FormationConfiguration},

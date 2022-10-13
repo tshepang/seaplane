@@ -1,6 +1,6 @@
 use std::{collections::BTreeSet, fmt::Display, io::Write};
 
-use seaplane::api::v1::restrict::{RestrictedDirectory as RestrictedDirectoryModel, Restriction};
+use seaplane::api::restrict::v1::{RestrictedDirectory as RestrictedDirectoryModel, Restriction};
 use serde::Serialize;
 use tabwriter::TabWriter;
 

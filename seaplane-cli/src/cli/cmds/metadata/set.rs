@@ -1,5 +1,5 @@
 use clap::{ArgMatches, Command};
-use seaplane::api::v1::metadata::Value;
+use seaplane::api::metadata::v1::Value;
 
 use crate::{
     api::MetadataReq,

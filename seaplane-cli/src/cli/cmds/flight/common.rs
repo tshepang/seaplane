@@ -1,5 +1,5 @@
 use clap::{value_parser, Arg, ArgMatches};
-use seaplane::api::v1::Architecture as ArchitectureModel;
+use seaplane::api::compute::v1::Architecture as ArchitectureModel;
 
 use crate::cli::validator::validate_flight_name;
 

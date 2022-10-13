@@ -5,7 +5,7 @@
 //! but many commands need as well.
 
 use clap::{builder::PossibleValue, value_parser, Arg};
-use seaplane::api::v1::{Provider as ProviderModel, Region as RegionModel};
+use seaplane::api::shared::v1::{Provider as ProviderModel, Region as RegionModel};
 
 use crate::cli::validator::{
     validate_endpoint, validate_formation_name, validate_name_id, validate_name_id_path_inline,
@@ -222,7 +222,9 @@ impl<'a> Into<ProviderModel> for &'a Provider {
             DigitalOcean => ProviderModel::DigitalOcean,
             Equinix => ProviderModel::Equinix,
             Gcp => ProviderModel::GCP,
-            All => panic!("Provider::All cannot be converted into seaplane::api::v1::Provider"),
+            All => {
+                panic!("Provider::All cannot be converted into seaplane::api::shared::v1::Provider")
+            }
         }
     }
 }
@@ -365,7 +367,7 @@ impl<'a> Into<RegionModel> for &'a Region {
             XQ | Antarctica => RegionModel::XQ,
             XS | SAmerica | SouthAmerica => RegionModel::XS,
             XU | UK | UnitedKingdom => RegionModel::XU,
-            All => panic!("Region::All cannot be converted into seaplane::api::v1::Region"),
+            All => panic!("Region::All cannot be converted into seaplane::api::shared::v1::Region"),
         }
     }
 }

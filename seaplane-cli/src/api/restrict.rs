@@ -1,11 +1,12 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        v1::{
-            RangeQueryContext, RestrictRequest, RestrictedDirectory, Restriction,
-            RestrictionDetails, RestrictionRange,
+        identity::AccessToken,
+        restrict::v1::{
+            RestrictRequest, RestrictedDirectory, Restriction, RestrictionDetails, RestrictionRange,
         },
-        AccessToken, ApiErrorKind,
+        shared::v1::RangeQueryContext,
+        ApiErrorKind,
     },
     error::SeaplaneError,
 };

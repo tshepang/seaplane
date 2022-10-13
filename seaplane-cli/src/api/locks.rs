@@ -1,14 +1,13 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        v1::{
-            locks::{
-                HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockName,
-                LocksRequest, LocksRequestBuilder,
-            },
-            Directory, LockInfoRange, RangeQueryContext,
+        identity::AccessToken,
+        locks::v1::{
+            HeldLock as HeldLockModel, LockId, LockInfo as LockInfoModel, LockInfoRange, LockName,
+            LocksRequest, LocksRequestBuilder,
         },
-        AccessToken, ApiErrorKind,
+        shared::v1::{Directory, RangeQueryContext},
+        ApiErrorKind,
     },
     error::SeaplaneError,
 };

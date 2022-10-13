@@ -1,4 +1,4 @@
-use seaplane::api::v1::LockId;
+use seaplane::api::locks::v1::LockId;
 
 use crate::{cli::cmds::locks::SeaplaneLocksCommonArgMatches, error::Result, ops::locks::LockName};
 

@@ -10,7 +10,7 @@ pub use locks::LocksReq;
 pub use metadata::MetadataReq;
 use reqwest::Url;
 pub use restrict::RestrictReq;
-use seaplane::api::{AccessToken, TokenRequest};
+use seaplane::api::identity::{AccessToken, TokenRequest};
 
 use crate::error::{CliError, Context, Result};
 

@@ -1,13 +1,14 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        v1::formations::{
+        compute::v1::{
             ActiveConfigurations as ActiveConfigurationsModel, Container as ContainerModel,
             Containers as ContainersModel, FormationConfiguration as FormationConfigurationModel,
             FormationMetadata as FormationMetadataModel, FormationNames as FormationNamesModel,
             FormationsRequest,
         },
-        AccessToken, ApiErrorKind,
+        identity::AccessToken,
+        ApiErrorKind,
     },
     error::SeaplaneError,
 };

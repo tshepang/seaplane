@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
-use seaplane::api::v1::{
-    FormationConfiguration as FormationConfigurationModel, Provider as ProviderModel,
-    Region as RegionModel,
+use seaplane::api::{
+    compute::v1::FormationConfiguration as FormationConfigurationModel,
+    shared::v1::{Provider as ProviderModel, Region as RegionModel},
 };
 
 use crate::{
@@ -148,7 +148,7 @@ impl FormationCtx {
         Ok(())
     }
 
-    /// Creates a new seaplane::api::v1::FormationConfiguration from the contained values
+    /// Creates a new seaplane::api::compute::v1::FormationConfiguration from the contained values
     pub fn configuration_model(&self, ctx: &Ctx) -> Result<FormationConfigurationModel> {
         // Create the new Formation model from the CLI inputs
         let mut f_model = FormationConfigurationModel::builder();

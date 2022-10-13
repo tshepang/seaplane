@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use seaplane::api::v1::formations::Flight as FlightModel;
+use seaplane::api::compute::v1::Flight as FlightModel;
 use serde::{Deserialize, Serialize};
 use tabwriter::TabWriter;
 
