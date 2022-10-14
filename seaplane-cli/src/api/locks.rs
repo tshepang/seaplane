@@ -165,33 +165,6 @@ impl LocksReq {
     }
 }
 
-/// Performs the wrapped method request against the Locks API. If the response is that the access
-/// token is expired, it will refresh the access token and try again. All other errors are mapped
-/// to the CliError type.
-// TODO: This macro could most likely be moved up to the src/macros.rs level and be de-duplicated
-// with the other maybe_retry! macros so it does not get confusing which one we mean.
-macro_rules! maybe_retry {
-    ($this:ident . $fn:ident ( $($arg:expr),* ) ) => {{
-        if $this.inner.is_none() {
-            $this.refresh_inner()?;
-        }
-        let req = &mut $this.inner.as_mut().unwrap();
-
-        let res = match req.$fn($( $arg.clone() ),*) {
-            Ok(ret) => Ok(ret),
-            Err(SeaplaneError::ApiResponse(ae))
-                if ae.kind == ApiErrorKind::Unauthorized =>
-            {
-                $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref(),
-                        $this.insecure_urls
-                )?);
-                Ok(req.$fn($( $arg ,)*)?)
-            }
-            Err(e) => Err(e),
-        };
-        res.map_err(CliError::from)
-    }};
-}
 // Wrapped LocksRequest methods to handle expired token retries
 //
 impl LocksReq {

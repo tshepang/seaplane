@@ -178,34 +178,7 @@ impl FormationsReq {
     }
 }
 
-/// Performs the wrapped method request against the Compute API. If the response is that the access
-/// token is expired, it will refresh the access token and try again. All other errors are mapped
-/// to the CliError type.
-macro_rules! maybe_retry {
-    ($this:ident . $fn:ident ( $($arg:expr),* ) ) => {{
-        if $this.inner.is_none() {
-            $this.refresh_inner()?;
-        }
-        let req =  $this.inner.as_ref().unwrap();
-
-        let res = match req.$fn($( $arg ),*) {
-            Ok(ret) => Ok(ret),
-            Err(SeaplaneError::ApiResponse(ae))
-                if ae.kind == ApiErrorKind::Unauthorized =>
-            {
-                $this.token = Some(request_token(
-                        &$this.api_key,
-                        $this.identity_url.as_ref(),
-                        $this.insecure_urls)?);
-                Ok(req.$fn($( $arg ,)*)?)
-            }
-            Err(e) => Err(e),
-        };
-        res.map_err(CliError::from)
-    }};
-}
 // Wrapped FormationsRequest methods to handle expired token retries
-//
 impl FormationsReq {
     pub fn list_names(&mut self) -> Result<FormationNamesModel> { maybe_retry!(self.list_names()) }
 

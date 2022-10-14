@@ -127,41 +127,14 @@ impl RestrictReq {
     }
 }
 
-/// Performs the wrapped method request against the Restrict API. If the
-/// response is that the access token is expired, it will refresh the access
-/// token and try again. All other errors are mapped to the CliError type.
-macro_rules! maybe_retry {
-    ($this:ident . $fn:ident ( $($arg:expr),* ) ) => {{
-        if $this.inner.is_none() {
-            $this.refresh_inner()?;
-        }
-        let req = &mut $this.inner.as_mut().unwrap();
-
-        let res = match req.$fn($( $arg.clone() ),*) {
-            Ok(ret) => Ok(ret),
-            Err(SeaplaneError::ApiResponse(ae))
-                if ae.kind == ApiErrorKind::Unauthorized =>
-            {
-                $this.token = Some(request_token(
-                        &$this.api_key,
-                        $this.identity_url.as_ref(),
-                        $this.insecure_urls)?);
-                Ok(req.$fn($( $arg ,)*)?)
-            }
-            Err(e) => Err(e),
-        };
-        res.map_err(CliError::from)
-    }};
-}
 // Wrapped RestrictRequest methods to handle expired token retries
-//
 impl RestrictReq {
     pub fn get_restriction(&mut self) -> Result<Restriction> {
         maybe_retry!(self.get_restriction())
     }
 
     pub fn set_restriction(&mut self, details: RestrictionDetails) -> Result<()> {
-        maybe_retry!(self.set_restriction(details))
+        maybe_retry_cloned!(self.set_restriction(details))
     }
     pub fn delete_restriction(&mut self) -> Result<()> { maybe_retry!(self.delete_restriction()) }
 

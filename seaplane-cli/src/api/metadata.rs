@@ -103,45 +103,18 @@ impl MetadataReq {
     }
 }
 
-/// Performs the wrapped method request against the Compute API. If the response is that the access
-/// token is expired, it will refresh the access token and try again. All other errors are mapped
-/// to the CliError type.
-macro_rules! maybe_retry {
-    ($this:ident . $fn:ident ( $($arg:expr),* ) ) => {{
-        if $this.inner.is_none() {
-            $this.refresh_inner()?;
-        }
-        let req = &mut $this.inner.as_mut().unwrap();
-
-        let res = match req.$fn($( $arg.clone() ),*) {
-            Ok(ret) => Ok(ret),
-            Err(SeaplaneError::ApiResponse(ae))
-                if ae.kind == ApiErrorKind::Unauthorized =>
-            {
-                $this.token = Some(request_token(
-                        &$this.api_key,
-                        $this.identity_url.as_ref(),
-                        $this.insecure_urls)?);
-                Ok(req.$fn($( $arg ,)*)?)
-            }
-            Err(e) => Err(e),
-        };
-        res.map_err(CliError::from)
-    }};
-}
 // Wrapped MetadataRequest methods to handle expired token retries
-//
 impl MetadataReq {
     pub fn get_value(&mut self) -> Result<ValueModel> { maybe_retry!(self.get_value()) }
-    pub fn put_value_unencoded<S: AsRef<[u8]> + Clone>(&mut self, value: S) -> Result<()> {
-        maybe_retry!(self.put_value_unencoded(value))
+    pub fn put_value_unencoded<S: AsRef<[u8]>>(&mut self, value: S) -> Result<()> {
+        maybe_retry!(self.put_value_unencoded(value.as_ref()))
     }
     pub fn put_value(&mut self, value: ValueModel) -> Result<()> {
-        maybe_retry!(self.put_value(value))
+        maybe_retry_cloned!(self.put_value(value))
     }
     pub fn delete_value(&mut self) -> Result<()> { maybe_retry!(self.delete_value()) }
     pub fn get_page(&mut self) -> Result<KeyValueRangeModel> { maybe_retry!(self.get_page()) }
     pub fn get_all_pages(&mut self) -> Result<Vec<KeyValueModel>> {
-        maybe_retry!(self.get_all_pages())
+        maybe_retry_cloned!(self.get_all_pages())
     }
 }
