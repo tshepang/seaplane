@@ -42,6 +42,11 @@ impl LocksRequestBuilder {
     /// Build a LocksRequest from the given parameters
     pub fn build(self) -> Result<LocksRequest> { Ok(self.builder.build()?.into()) }
 
+    /// Allow non-HTTPS endpoints for this request (default: `false`)
+    #[cfg(feature = "allow_insecure_urls")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "allow_insecure_urls")))]
+    pub fn allow_http(self, yes: bool) -> Self { self.builder.allow_http(yes).into() }
+
     /// Set the token used in Bearer Authorization
     ///
     /// **NOTE:** This is required for all endpoints

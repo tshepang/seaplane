@@ -49,9 +49,10 @@ wildmatch = "2.1.0"
 const_format = "0.2.22"
 
 [features]
-default = ["color"]
+default = ["color", "allow_insecure_urls"]
 color = ["clap/color", "termcolor", "atty"]
 api_tests = ["seaplane/api_tests"]
 semantic_ui_tests = []
+allow_insecure_urls = ["seaplane/allow_insecure_urls"] # Allows HTTP endpoints instead of requing HTTPS
 ui_tests = ["semantic_ui_tests"]
 unstable = ["seaplane/unstable"] # Items which are in active development and are totally unstable or unimplemented

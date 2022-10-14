@@ -21,7 +21,13 @@ const COLOR: &str = "+color";
 #[cfg(not(feature = "color"))]
 const COLOR: &str = "";
 
+#[cfg(feature = "allow_insecure_urls")]
+const INSECURE_URLS: &str = "+allow_insecure_urls";
+#[cfg(not(feature = "allow_insecure_urls"))]
+const INSECURE_URLS: &str = "";
+
 fn main() {
+    // TODO: Use the hash of only the CLI dir
     // If `git` is installed and located in `$PATH` of the build machine, it uses that to determine
     // the latest commit hash. Otherwise uses the string UNKNOWN.
     let commit_id = Command::new("git")
@@ -37,5 +43,8 @@ fn main() {
         env!("CARGO_PKG_VERSION"),
         commit_id.trim()
     );
-    println!("cargo:rustc-env=SEAPLANE_BUILD_FEATURES={}", concatcp!(COLOR, " ", UNSTABLE));
+    println!(
+        "cargo:rustc-env=SEAPLANE_BUILD_FEATURES={}",
+        concatcp!(COLOR, " ", UNSTABLE, " ", INSECURE_URLS)
+    );
 }

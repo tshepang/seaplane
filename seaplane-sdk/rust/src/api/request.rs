@@ -21,6 +21,10 @@ pub(crate) struct RequestBuilder<T> {
     pub api_url: String,
     // Base path for the api
     pub base_path: String,
+    // Only allow HTTPS endpoints (phrasing is to allow deriving Default since default for bool is
+    // false)
+    #[cfg(feature = "allow_insecure_urls")]
+    pub allow_http: bool,
     // Used for testing
     #[doc(hidden)]
     pub base_url: Option<Url>,
@@ -35,6 +39,8 @@ impl<T> RequestBuilder<T> {
             api_url: api_url.into(),
             base_path: base_path.into(),
             base_url: None,
+            #[cfg(feature = "allow_insecure_urls")]
+            allow_http: false,
         }
     }
 
@@ -54,6 +60,14 @@ impl<T> RequestBuilder<T> {
         self
     }
 
+    /// Allow non-HTTPS endpoints for this request (default: `false`)
+    #[cfg(feature = "allow_insecure_urls")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "allow_insecure_urls")))]
+    pub(crate) fn allow_http(mut self, yes: bool) -> Self {
+        self.allow_http = yes;
+        self
+    }
+
     /// Build an APIRequest from the given parameters
     pub(crate) fn build(self) -> Result<ApiRequest<T>> {
         if self.token.is_none() {
@@ -63,17 +77,20 @@ impl<T> RequestBuilder<T> {
         let mut headers = header::HeaderMap::new();
         headers.insert(CONTENT_TYPE, header::HeaderValue::from_static("application/json"));
 
-        #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
+        #[cfg_attr(
+            not(any(feature = "api_tests", feature = "allow_insecure_urls")),
+            allow(unused_mut)
+        )]
         let mut builder = blocking::Client::builder()
             .default_headers(headers)
             .https_only(true);
 
-        // We allow HTTP traffic when testing or debugging
-        // TODO: We should consider replacing debug_assertions with a scary
-        // sounding feature flag like "insecure_urls" when making this public
-        #[cfg(any(feature = "api_tests", debug_assertions))]
-        {
-            builder = builder.https_only(false);
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "api_tests")] {
+                builder = builder.https_only(false);
+            } else if #[cfg(any(feature = "allow_insecure_urls"))] {
+                builder = builder.https_only(!self.allow_http);
+            }
         }
 
         let url = if let Some(url) = &self.base_url {

@@ -32,6 +32,7 @@ pub struct FormationsReq {
     inner: Option<FormationsRequest>,
     identity_url: Option<Url>,
     compute_url: Option<Url>,
+    insecure_urls: bool,
 }
 
 impl FormationsReq {
@@ -57,12 +58,17 @@ impl FormationsReq {
             inner: None,
             identity_url: ctx.identity_url.clone(),
             compute_url: ctx.compute_url.clone(),
+            #[cfg(feature = "allow_insecure_urls")]
+            insecure_urls: ctx.insecure_urls,
+            #[cfg(not(feature = "allow_insecure_urls"))]
+            insecure_urls: false,
         })
     }
 
     /// Request a new Access Token
     pub fn refresh_token(&mut self) -> Result<()> {
-        self.token = Some(request_token(&self.api_key, self.identity_url.as_ref())?);
+        self.token =
+            Some(request_token(&self.api_key, self.identity_url.as_ref(), self.insecure_urls)?);
         Ok(())
     }
 
@@ -71,6 +77,12 @@ impl FormationsReq {
     /// method will also refresh the access token, only if required.
     fn refresh_inner(&mut self) -> Result<()> {
         let mut builder = FormationsRequest::builder().token(self.token_or_refresh()?);
+
+        #[cfg(feature = "allow_insecure_urls")]
+        {
+            builder = builder.allow_http(self.insecure_urls);
+        }
+
         if let Some(url) = &self.compute_url {
             builder = builder.base_url(url);
         }
@@ -181,7 +193,10 @@ macro_rules! maybe_retry {
             Err(SeaplaneError::ApiResponse(ae))
                 if ae.kind == ApiErrorKind::Unauthorized =>
             {
-                $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref())?);
+                $this.token = Some(request_token(
+                        &$this.api_key,
+                        $this.identity_url.as_ref(),
+                        $this.insecure_urls)?);
                 Ok(req.$fn($( $arg ,)*)?)
             }
             Err(e) => Err(e),

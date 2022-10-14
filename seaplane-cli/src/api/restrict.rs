@@ -30,6 +30,7 @@ pub struct RestrictReq {
     inner: Option<RestrictRequest>,
     identity_url: Option<Url>,
     metadata_url: Option<Url>,
+    insecure_urls: bool,
 }
 
 impl RestrictReq {
@@ -44,6 +45,10 @@ impl RestrictReq {
             inner: None,
             identity_url: ctx.identity_url.clone(),
             metadata_url: ctx.metadata_url.clone(),
+            #[cfg(feature = "allow_insecure_urls")]
+            insecure_urls: ctx.insecure_urls,
+            #[cfg(not(feature = "allow_insecure_urls"))]
+            insecure_urls: false,
         })
     }
 
@@ -69,7 +74,8 @@ impl RestrictReq {
 
     /// Request a new Access Token
     pub fn refresh_token(&mut self) -> Result<()> {
-        self.token = Some(request_token(&self.api_key, self.identity_url.as_ref())?);
+        self.token =
+            Some(request_token(&self.api_key, self.identity_url.as_ref(), self.insecure_urls)?);
         Ok(())
     }
 
@@ -79,6 +85,11 @@ impl RestrictReq {
     /// required.
     fn refresh_inner(&mut self) -> Result<()> {
         let mut builder = RestrictRequest::builder().token(self.token_or_refresh()?);
+
+        #[cfg(feature = "allow_insecure_urls")]
+        {
+            builder = builder.allow_http(self.insecure_urls);
+        }
 
         if let Some(url) = &self.metadata_url {
             builder = builder.base_url(url);
@@ -131,7 +142,10 @@ macro_rules! maybe_retry {
             Err(SeaplaneError::ApiResponse(ae))
                 if ae.kind == ApiErrorKind::Unauthorized =>
             {
-                $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref())?);
+                $this.token = Some(request_token(
+                        &$this.api_key,
+                        $this.identity_url.as_ref(),
+                        $this.insecure_urls)?);
                 Ok(req.$fn($( $arg ,)*)?)
             }
             Err(e) => Err(e),

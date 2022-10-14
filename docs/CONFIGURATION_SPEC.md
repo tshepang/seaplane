@@ -87,6 +87,22 @@ The base URL used for the Identity API.
 
 Default: `https://identity.cplane.cloud/`
 
+### The `[danger-zone]` Section
+
+This section contains settings that are potentially dangerous, or not meant to
+be used by the general public except in rare circumstances. Although sometimes
+these options are useful, especially in cases like development.
+
+#### The `allow-insecure-urls` Field
+
+Controls whether API endpoints are allowed to be HTTP or are instead required
+to be HTTPS only.
+
+Default: `false`
+
+> **Note**
+> Only available on crate feature `allow_insecure_urls`
+
 [//]: # (links)
 
 [toml]: https://toml.io/

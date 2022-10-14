@@ -31,6 +31,9 @@ pub struct TokenRequestBuilder {
     // Used for testing
     #[doc(hidden)]
     base_url: Option<Url>,
+    // Used to allow HTTP endpoints
+    #[cfg(feature = "allow_insecure_urls")]
+    allow_http: bool,
 }
 
 impl TokenRequestBuilder {
@@ -46,6 +49,14 @@ impl TokenRequestBuilder {
         self
     }
 
+    /// Allow non-HTTPS endpoints for this request (default: `false`)
+    #[cfg(feature = "allow_insecure_urls")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "allow_insecure_urls")))]
+    pub fn allow_http(mut self, yes: bool) -> Self {
+        self.allow_http = yes;
+        self
+    }
+
     /// Build a TokenRequest from the given parameters
     pub fn build(self) -> Result<TokenRequest> {
         if self.api_key.is_none() {
@@ -55,14 +66,20 @@ impl TokenRequestBuilder {
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
-        #[cfg_attr(not(feature = "api_tests"), allow(unused_mut))]
+        #[cfg_attr(
+            not(any(feature = "api_tests", feature = "allow_insecure_urls")),
+            allow(unused_mut)
+        )]
         let mut builder = blocking::Client::builder()
             .default_headers(headers)
             .https_only(true);
 
-        #[cfg(feature = "api_tests")]
-        {
-            builder = builder.https_only(false);
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "api_tests")] {
+                builder = builder.https_only(false);
+            } else if #[cfg(any(feature = "allow_insecure_urls"))] {
+                builder = builder.https_only(!self.allow_http);
+            }
         }
 
         let url = if let Some(url) = self.base_url {

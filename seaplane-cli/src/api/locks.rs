@@ -29,6 +29,7 @@ pub struct LocksReq {
     inner: Option<LocksRequest>,
     identity_url: Option<Url>,
     locks_url: Option<Url>,
+    insecure_urls: bool,
 }
 
 impl LocksReq {
@@ -41,6 +42,10 @@ impl LocksReq {
             inner: None,
             identity_url: ctx.identity_url.clone(),
             locks_url: ctx.locks_url.clone(),
+            #[cfg(feature = "allow_insecure_urls")]
+            insecure_urls: ctx.insecure_urls,
+            #[cfg(not(feature = "allow_insecure_urls"))]
+            insecure_urls: false,
         })
     }
 
@@ -61,7 +66,8 @@ impl LocksReq {
 
     /// Request a new Access Token
     pub fn refresh_token(&mut self) -> Result<()> {
-        self.token = Some(request_token(&self.api_key, self.identity_url.as_ref())?);
+        self.token =
+            Some(request_token(&self.api_key, self.identity_url.as_ref(), self.insecure_urls)?);
         Ok(())
     }
 
@@ -71,6 +77,10 @@ impl LocksReq {
     fn refresh_inner(&mut self) -> Result<()> {
         let mut builder = LocksRequest::builder().token(self.token_or_refresh()?);
 
+        #[cfg(feature = "allow_insecure_urls")]
+        {
+            builder = builder.allow_http(self.insecure_urls);
+        }
         if self.name.is_none() {
             panic!("all LocksRequests must have a name")
         }
@@ -124,6 +134,10 @@ impl LocksReq {
         let mut builder = LocksRequestBuilder::new()
             .token(self.token_or_refresh()?)
             .range(range.clone());
+        #[cfg(feature = "allow_insecure_urls")]
+        {
+            builder = builder.allow_http(self.insecure_urls);
+        }
 
         if let Some(url) = &self.locks_url {
             builder = builder.base_url(url);
@@ -133,7 +147,11 @@ impl LocksReq {
 
         match req.get_page() {
             Err(SeaplaneError::ApiResponse(ae)) if ae.kind == ApiErrorKind::Unauthorized => {
-                self.token = Some(request_token(&self.api_key, self.identity_url.as_ref())?);
+                self.token = Some(request_token(
+                    &self.api_key,
+                    self.identity_url.as_ref(),
+                    self.insecure_urls,
+                )?);
                 let next_req = LocksRequestBuilder::new()
                     .token(self.token_or_refresh()?)
                     .range(range)
@@ -164,7 +182,9 @@ macro_rules! maybe_retry {
             Err(SeaplaneError::ApiResponse(ae))
                 if ae.kind == ApiErrorKind::Unauthorized =>
             {
-                $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref())?);
+                $this.token = Some(request_token(&$this.api_key, $this.identity_url.as_ref(),
+                        $this.insecure_urls
+                )?);
                 Ok(req.$fn($( $arg ,)*)?)
             }
             Err(e) => Err(e),

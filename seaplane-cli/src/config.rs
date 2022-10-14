@@ -67,6 +67,9 @@ pub struct RawConfig {
 
     #[serde(default)]
     pub api: RawApiConfig,
+
+    #[serde(default)]
+    pub danger_zone: RawDangerZoneConfig,
 }
 
 impl RawConfig {
@@ -126,6 +129,10 @@ impl RawConfig {
         }
         if let Some(url) = new_cfg.api.locks_url {
             self.api.locks_url = Some(url);
+        }
+        #[cfg(feature = "allow_insecure_urls")]
+        {
+            self.danger_zone.allow_insecure_urls = new_cfg.danger_zone.allow_insecure_urls;
         }
         self.loaded_from.extend(new_cfg.loaded_from);
         Ok(())
@@ -208,6 +215,15 @@ pub struct RawApiConfig {
     pub locks_url: Option<Url>,
 }
 
+#[derive(Debug, Copy, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct RawDangerZoneConfig {
+    #[serde(default)]
+    #[cfg(feature = "allow_insecure_urls")]
+    pub allow_insecure_urls: bool,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -252,6 +268,16 @@ mod test {
     }
 
     #[test]
+    fn deser_empty_danger_zone_config() {
+        let cfg_str = r#"
+        [danger-zone]
+        "#;
+
+        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
+        assert_eq!(cfg, RawConfig::default())
+    }
+
+    #[test]
     fn deser_api_key() {
         let cfg_str = r#"
         [account]
@@ -263,11 +289,8 @@ mod test {
         assert_eq!(
             cfg,
             RawConfig {
-                found: false,
-                loaded_from: Vec::new(),
-                seaplane: RawSeaplaneConfig::default(),
-                api: RawApiConfig::default(),
-                account: RawAccountConfig { api_key: Some("abc123def456".into()) }
+                account: RawAccountConfig { api_key: Some("abc123def456".into()) },
+                ..Default::default()
             }
         )
     }
@@ -284,11 +307,8 @@ mod test {
         assert_eq!(
             cfg,
             RawConfig {
-                found: false,
-                loaded_from: Vec::new(),
                 seaplane: RawSeaplaneConfig { color: Some(ColorChoice::Always) },
-                account: RawAccountConfig::default(),
-                api: RawApiConfig::default(),
+                ..Default::default()
             }
         )
     }
@@ -308,16 +328,32 @@ mod test {
         assert_eq!(
             cfg,
             RawConfig {
-                found: false,
-                loaded_from: Vec::new(),
-                seaplane: RawSeaplaneConfig::default(),
-                account: RawAccountConfig::default(),
                 api: RawApiConfig {
                     compute_url: Some("https://compute.local/".parse().unwrap()),
                     identity_url: Some("https://identity.local/".parse().unwrap()),
                     metadata_url: Some("https://metadata.local/".parse().unwrap()),
                     locks_url: Some("https://locks.local/".parse().unwrap()),
                 },
+                ..Default::default()
+            }
+        )
+    }
+
+    #[cfg(feature = "allow_insecure_urls")]
+    #[test]
+    fn deser_insecure_urls() {
+        let cfg_str = r#"
+        [danger-zone]
+        allow-insecure-urls = true
+        "#;
+
+        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
+
+        assert_eq!(
+            cfg,
+            RawConfig {
+                danger_zone: RawDangerZoneConfig { allow_insecure_urls: true },
+                ..Default::default()
             }
         )
     }
