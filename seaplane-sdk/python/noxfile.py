@@ -64,6 +64,15 @@ def type_check(s: Session) -> None:
     s.run("mypy", "src", "tests", "noxfile.py")
 
 
+# noxfile.py
+@nox.session(venv_backend="none")
+def docs(s: Session) -> None:
+    """Build the documentation."""
+    # s.run("poetry", "install", "--no-dev", external=True)
+    # install_with_constraints(session, "sphinx", "sphinx-autodoc-typehints")
+    s.run("sphinx-build", "docs", "docs/_build")
+
+
 # Note: This reuse_venv does not yet have affect due to:
 #   https://github.com/wntrblm/nox/issues/488
 @session(reuse_venv=False)

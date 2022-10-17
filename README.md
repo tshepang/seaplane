@@ -14,7 +14,7 @@ The [Seaplane] [CLI] and [SDK].
 ## What is Seaplane?
 
 Seaplane is the global platform for building and scaling your application stack
-without complexity of managing cloud infrastructure.
+without the complexity of managing cloud infrastructure.
 
 The CLI is a simple and intuitive way to interact with our run your workloads
 on the Seaplane cloud and interact with our public APIs. The CLI utilizes our

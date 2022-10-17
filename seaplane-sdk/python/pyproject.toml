@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "seaplane"
-version = "0.1"
+version = "0.1.0"
 description = "Seaplane Python SDK"
 authors = ["Seaplane IO, Inc."]
 license = "Apache License"
@@ -51,6 +51,9 @@ pyproject-flake8 = "*"
 # Formatting.
 black = "*"
 isort = "*"
+Sphinx = "^5.2.3"
+sphinx-autodoc-typehints = "^1.19.4"
+myst-parser = "^0.18.1"
 
 
 [build-system]

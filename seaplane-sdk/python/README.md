@@ -5,7 +5,7 @@ Simple Python library to manage your resources at seaplane.
 ## What is Seaplane?
 
 Seaplane is the global platform for building and scaling your application stack
-without complexity of managing cloud infrastructure.
+without the complexity of managing cloud infrastructure.
 
 It serves as a reference application for how our APIs can be utilized.
 
