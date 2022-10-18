@@ -1,7 +1,7 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        identity::AccessToken,
+        identity::v0::AccessToken,
         restrict::v1::{
             RestrictRequest, RestrictedDirectory, Restriction, RestrictionDetails, RestrictionRange,
         },

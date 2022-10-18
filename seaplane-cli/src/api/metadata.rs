@@ -1,7 +1,7 @@
 use reqwest::Url;
 use seaplane::{
     api::{
-        identity::AccessToken,
+        identity::v0::AccessToken,
         metadata::v1::{
             Key, KeyValue as KeyValueModel, KeyValueRange as KeyValueRangeModel, MetadataRequest,
             Value as ValueModel,

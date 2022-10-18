@@ -7,7 +7,7 @@ use seaplane::{
             FormationMetadata as FormationMetadataModel, FormationNames as FormationNamesModel,
             FormationsRequest,
         },
-        identity::AccessToken,
+        identity::v0::AccessToken,
         ApiErrorKind,
     },
     error::SeaplaneError,

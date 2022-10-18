@@ -46,12 +46,13 @@ fn test_main_with_ctx(matches: &ArgMatches, mut ctx: Ctx) -> Result<(), CliError
 // To be used with httpmock standalone server for dev testing
 // MockServer::connect("127.0.0.1:5000")
 static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| {
-    let resp_json = json!({"token": "abc.123.def", "tenant": 1_u64, "subdomain": "pequod"});
+    let resp_json =
+        json!({"token": "abc.123.def", "tenant": "tnt-abcdef1234567890", "subdomain": "pequod"});
     let s = MockServer::start();
     // let s = MockServer::connect("127.0.0.1:5000");
     let _mock = s.mock(|when, then| {
         when.method(POST)
-            .path("/token")
+            .path("/identity/token")
             .header("authorization", "Bearer abc123")
             .header("accept", "application/json");
         then.status(201).json_body(resp_json.clone());

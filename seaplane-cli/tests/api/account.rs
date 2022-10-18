@@ -14,7 +14,7 @@ static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
 fn account_token() {
     let mut mock = MOCK_SERVER.mock(|when, then| {
         when.method(POST)
-            .path("/token")
+            .path("/identity/token")
             .header("authorization", "Bearer abc123");
         then.status(201).body("abc.123.def");
     });
@@ -29,10 +29,11 @@ fn account_token() {
     mock.delete();
     printer().clear();
 
-    let resp_json = json!({"token": "abc.123.def", "tenant": 1_u64, "subdomain": "pequod"});
+    let resp_json =
+        json!({"token": "abc.123.def", "tenant": "tnt-abcdef1234567890", "subdomain": "pequod"});
     let mock = MOCK_SERVER.mock(|when, then| {
         when.method(POST)
-            .path("/token")
+            .path("/identity/token")
             .header("authorization", "Bearer abc123")
             .header("accept", "application/json");
         then.status(201).json_body(resp_json.clone());
@@ -43,7 +44,7 @@ fn account_token() {
     mock.assert();
     assert_eq!(
         printer().as_string().trim(),
-        r#"{"token":"abc.123.def","tenant":1,"subdomain":"pequod"}"#
+        r#"{"token":"abc.123.def","tenant":"tnt-abcdef1234567890","subdomain":"pequod"}"#
     );
 
     printer().clear();
