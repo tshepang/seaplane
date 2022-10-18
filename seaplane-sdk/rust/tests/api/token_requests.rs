@@ -1,6 +1,6 @@
 use httpmock::prelude::*;
 use once_cell::sync::Lazy;
-use seaplane::api::identity::TokenRequest;
+use seaplane::api::identity::v0::TokenRequest;
 use serde_json::json;
 
 // To be used with httpmock standalone server for dev testing
@@ -21,7 +21,7 @@ fn build_req() -> TokenRequest {
 fn access_token() {
     let mock = MOCK_SERVER.mock(|when, then| {
         when.method(POST)
-            .path("/token")
+            .path("/identity/token")
             .header("authorization", "Bearer abc123")
             .header("accept", "*/*")
             .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()));
@@ -40,10 +40,11 @@ fn access_token() {
 // Accept: application/json POST /token
 #[test]
 fn access_token_json() {
-    let resp_json = json!({"token": "abc.123.def", "tenant": 1_u64, "subdomain": "pequod"});
+    let resp_json =
+        json!({"token": "abc.123.def", "tenant": "tnt-abcdef1234567890", "subdomain": "pequod"});
     let mock = MOCK_SERVER.mock(|when, then| {
         when.method(POST)
-            .path("/token")
+            .path("/identity/token")
             .header("authorization", "Bearer abc123")
             .header("accept", "application/json")
             .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()));

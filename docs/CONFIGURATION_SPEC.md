@@ -85,7 +85,7 @@ Default: `https://metadata.cplane.cloud/`
 
 The base URL used for the Identity API.
 
-Default: `https://identity.cplane.cloud/`
+Default: `https://flightdeck.cplane.cloud/`
 
 ### The `[danger-zone]` Section
 

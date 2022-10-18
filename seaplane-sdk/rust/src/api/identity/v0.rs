@@ -2,7 +2,7 @@
 
 use reqwest::{
     blocking,
-    header::{HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE},
+    header::{HeaderMap, HeaderValue, ACCEPT, CONTENT_LENGTH, CONTENT_TYPE},
     Url,
 };
 use serde::{Deserialize, Serialize};
@@ -12,14 +12,16 @@ use crate::{
     error::{Result, SeaplaneError},
 };
 
+static TOKEN_API_BASE_PATH: &str = "identity/token";
+
 /// An access token with tenant subdomain and ID
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[cfg_attr(feature = "api_tests", derive(PartialEq))]
 pub struct AccessToken {
     /// The JWT token
     pub token: String,
-    /// Tenant ID
-    pub tenant: u64,
+    /// Tenant OID
+    pub tenant: String,
     /// Tenant Subdomain
     pub subdomain: String,
 }
@@ -65,6 +67,7 @@ impl TokenRequestBuilder {
 
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        headers.insert(CONTENT_LENGTH, HeaderValue::from_static("0"));
 
         #[cfg_attr(
             not(any(feature = "api_tests", feature = "allow_insecure_urls")),
@@ -83,10 +86,10 @@ impl TokenRequestBuilder {
         }
 
         let url = if let Some(url) = self.base_url {
-            url.join("token")?
+            url.join(TOKEN_API_BASE_PATH)?
         } else {
             let mut url: Url = IDENTITY_API_URL.parse()?;
-            url.set_path("token");
+            url.set_path(TOKEN_API_BASE_PATH);
             url
         };
 
@@ -105,7 +108,7 @@ impl TokenRequestBuilder {
     }
 }
 
-/// For making requests against the `/token` APIs.
+/// For making requests against the `/identity/token` APIs.
 #[derive(Debug)]
 pub struct TokenRequest {
     api_key: String,
@@ -124,7 +127,7 @@ impl TokenRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// # use seaplane::api::identity::TokenRequest;
+    /// # use seaplane::api::identity::v0::TokenRequest;
     /// let req = TokenRequest::builder().api_key("abc123").build().unwrap();
     ///
     /// let resp = req.access_token().unwrap();
@@ -146,7 +149,7 @@ impl TokenRequest {
     /// # Examples
     ///
     /// ```no_run
-    /// # use seaplane::api::identity::TokenRequest;
+    /// # use seaplane::api::identity::v0::TokenRequest;
     /// let req = TokenRequest::builder().api_key("abc123").build().unwrap();
     ///
     /// let resp = req.access_token_json().unwrap();
