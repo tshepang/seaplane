@@ -34,8 +34,11 @@ pub struct TokenRequestBuilder {
     #[doc(hidden)]
     base_url: Option<Url>,
     // Used to allow HTTP endpoints
-    #[cfg(feature = "allow_insecure_urls")]
+    #[cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))]
     allow_http: bool,
+    // Used to allow invalid TLS certs
+    #[cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))]
+    allow_invalid_certs: bool,
 }
 
 impl TokenRequestBuilder {
@@ -52,10 +55,18 @@ impl TokenRequestBuilder {
     }
 
     /// Allow non-HTTPS endpoints for this request (default: `false`)
-    #[cfg(feature = "allow_insecure_urls")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "allow_insecure_urls")))]
+    #[cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))))]
     pub fn allow_http(mut self, yes: bool) -> Self {
         self.allow_http = yes;
+        self
+    }
+
+    /// Allow invalid TLS certificates (default: `false`)
+    #[cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))))]
+    pub fn allow_invalid_certs(mut self, yes: bool) -> Self {
+        self.allow_invalid_certs = yes;
         self
     }
 
@@ -70,7 +81,11 @@ impl TokenRequestBuilder {
         headers.insert(CONTENT_LENGTH, HeaderValue::from_static("0"));
 
         #[cfg_attr(
-            not(any(feature = "api_tests", feature = "allow_insecure_urls")),
+            not(any(
+                feature = "api_tests",
+                feature = "allow_insecure_urls",
+                feature = "danger_zone"
+            )),
             allow(unused_mut)
         )]
         let mut builder = blocking::Client::builder()
@@ -80,9 +95,13 @@ impl TokenRequestBuilder {
         cfg_if::cfg_if! {
             if #[cfg(feature = "api_tests")] {
                 builder = builder.https_only(false);
-            } else if #[cfg(any(feature = "allow_insecure_urls"))] {
+            } else if #[cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))] {
                 builder = builder.https_only(!self.allow_http);
             }
+        }
+        #[cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))]
+        {
+            builder = builder.danger_accept_invalid_certs(self.allow_invalid_certs);
         }
 
         let url = if let Some(url) = self.base_url {

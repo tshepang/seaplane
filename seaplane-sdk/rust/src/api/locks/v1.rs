@@ -43,9 +43,16 @@ impl LocksRequestBuilder {
     pub fn build(self) -> Result<LocksRequest> { Ok(self.builder.build()?.into()) }
 
     /// Allow non-HTTPS endpoints for this request (default: `false`)
-    #[cfg(feature = "allow_insecure_urls")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "allow_insecure_urls")))]
+    #[cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))))]
     pub fn allow_http(self, yes: bool) -> Self { self.builder.allow_http(yes).into() }
+
+    /// Allow invalid TLS certificates (default: `false`)
+    #[cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))))]
+    pub fn allow_invalid_certs(self, yes: bool) -> Self {
+        self.builder.allow_invalid_certs(yes).into()
+    }
 
     /// Set the token used in Bearer Authorization
     ///

@@ -23,8 +23,10 @@ pub(crate) struct RequestBuilder<T> {
     pub base_path: String,
     // Only allow HTTPS endpoints (phrasing is to allow deriving Default since default for bool is
     // false)
-    #[cfg(feature = "allow_insecure_urls")]
+    #[cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))]
     pub allow_http: bool,
+    #[cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))]
+    pub allow_invalid_certs: bool,
     // Used for testing
     #[doc(hidden)]
     pub base_url: Option<Url>,
@@ -39,8 +41,10 @@ impl<T> RequestBuilder<T> {
             api_url: api_url.into(),
             base_path: base_path.into(),
             base_url: None,
-            #[cfg(feature = "allow_insecure_urls")]
+            #[cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))]
             allow_http: false,
+            #[cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))]
+            allow_invalid_certs: false,
         }
     }
 
@@ -61,10 +65,18 @@ impl<T> RequestBuilder<T> {
     }
 
     /// Allow non-HTTPS endpoints for this request (default: `false`)
-    #[cfg(feature = "allow_insecure_urls")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "allow_insecure_urls")))]
+    #[cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))))]
     pub(crate) fn allow_http(mut self, yes: bool) -> Self {
         self.allow_http = yes;
+        self
+    }
+
+    /// Allow invalid TLS certs (default: `false`)
+    #[cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))))]
+    pub(crate) fn allow_invalid_certs(mut self, yes: bool) -> Self {
+        self.allow_invalid_certs = yes;
         self
     }
 
@@ -78,7 +90,11 @@ impl<T> RequestBuilder<T> {
         headers.insert(CONTENT_TYPE, header::HeaderValue::from_static("application/json"));
 
         #[cfg_attr(
-            not(any(feature = "api_tests", feature = "allow_insecure_urls")),
+            not(any(
+                feature = "api_tests",
+                feature = "allow_insecure_urls",
+                feature = "danger_zone"
+            )),
             allow(unused_mut)
         )]
         let mut builder = blocking::Client::builder()
@@ -88,9 +104,13 @@ impl<T> RequestBuilder<T> {
         cfg_if::cfg_if! {
             if #[cfg(feature = "api_tests")] {
                 builder = builder.https_only(false);
-            } else if #[cfg(any(feature = "allow_insecure_urls"))] {
+            } else if #[cfg(any(feature = "allow_insecure_urls", feature = "danger_zone"))] {
                 builder = builder.https_only(!self.allow_http);
             }
+        }
+        #[cfg(any(feature = "allow_invalid_certs", feature = "danger_zone"))]
+        {
+            builder = builder.danger_accept_invalid_certs(self.allow_invalid_certs);
         }
 
         let url = if let Some(url) = &self.base_url {
