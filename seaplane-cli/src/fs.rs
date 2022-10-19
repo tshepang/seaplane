@@ -126,13 +126,14 @@ pub trait FromDisk {
     {
         let path = p.as_ref();
 
-        let flights_str = match fs::read_to_string(&path) {
+        let json_str = match fs::read_to_string(&path) {
             Ok(s) => s,
             Err(e) => {
                 // If it's a file missing error we try to auto-initialize, then return the error if
                 // it happens again
                 if e.kind() == io::ErrorKind::NotFound {
                     let mut ctx = Ctx::default();
+                    ctx.internal_run = true;
                     SeaplaneInit.run(&mut ctx)?;
 
                     fs::read_to_string(&path)
@@ -144,7 +145,7 @@ pub trait FromDisk {
                 }
             }
         };
-        let mut item: Self = serde_json::from_str(&flights_str)
+        let mut item: Self = serde_json::from_str(&json_str)
             .map_err(CliError::from)
             .context("\n\tpath: ")
             .with_color_context(|| (Color::Yellow, format!("{path:?}")))?;

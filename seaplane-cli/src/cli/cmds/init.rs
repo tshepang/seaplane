@@ -36,13 +36,13 @@ impl SeaplaneInit {
 impl CliCommand for SeaplaneInit {
     fn run(&self, ctx: &mut Ctx) -> Result<()> {
         // Create the data directory
-        cli_debugln!("Creating directory {:?}", ctx.data_dir());
+        cli_debugln!("Creating or using data directory {:?}", ctx.data_dir());
         fs::create_dir_all(ctx.data_dir())?;
 
         // We only create the first (most preferred) configuration dir. If the user creates more
         // down our search path, that's fine, but we only create and advertise the first.
         let conf_dir = &conf_dirs()[0];
-        cli_debugln!("Creating directory {:?}", conf_dir);
+        cli_debugln!("Creating or using config directory {:?}", conf_dir);
         fs::create_dir_all(conf_dir)?;
 
         // Tuple below is: (File, "empty" bytes, it's --force=OPTION)
@@ -56,8 +56,9 @@ impl CliCommand for SeaplaneInit {
             (ctx.flights_file(), "[]".to_string(), "flights"),
         ];
         // TODO: @security create the file with limited permissions
+        let mut did_create = false;
         for (file, empty_bytes, opt) in to_create {
-            if file.exists() {
+            if file.exists() && !(ctx.did_init || ctx.internal_run) {
                 // Due to how match guards work, we can't use them, we have to use if-else
                 if ctx.args.force
                     || ctx
@@ -79,16 +80,23 @@ impl CliCommand for SeaplaneInit {
                     cli_warn!("{:?} ", file);
                     cli_warnln!(@noprefix, "already exists");
                     cli_warn!("(hint: use '");
-                    cli_warn!(@Green, "seaplane init --overwrite={} ", opt);
-                    cli_warnln!(@noprefix, "to erase and overwrite it)\n");
+                    cli_warn!(@Green, "seaplane init --overwrite={}", opt);
+                    cli_warnln!(@noprefix, "' to erase and overwrite it)\n");
                     continue;
                 }
             }
+            did_create = true;
             cli_debugln!("creating file {:?}", file);
             fs::write(file, empty_bytes)?;
         }
 
-        cli_println!("Successfully created Seaplane directories");
+        if !ctx.internal_run {
+            if did_create {
+                cli_println!("Successfully created Seaplane files and directories");
+            } else {
+                cli_println!("All Seaplane files and directories already exist");
+            }
+        }
 
         Ok(())
     }

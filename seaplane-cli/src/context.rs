@@ -136,6 +136,9 @@ pub struct Ctx {
     /// Allows tracking if we're running a command internally and skippy certain checks or output
     pub internal_run: bool,
 
+    /// Did we run initialization automatically or not on startup?
+    pub did_init: bool,
+
     /// Disable progress bar indicators
     pub disable_pb: bool,
 
@@ -190,6 +193,7 @@ impl Clone for Ctx {
             args: self.args.clone(),
             db: self.db.clone(),
             internal_run: self.internal_run,
+            did_init: self.did_init,
             disable_pb: self.disable_pb,
             compute_url: self.compute_url.clone(),
             identity_url: self.identity_url.clone(),
@@ -213,6 +217,7 @@ impl Default for Ctx {
             args: Args::default(),
             db: Db::default(),
             internal_run: false,
+            did_init: false,
             disable_pb: false,
             compute_url: None,
             identity_url: None,
@@ -239,6 +244,7 @@ impl From<RawConfig> for Ctx {
             identity_url: cfg.api.identity_url,
             metadata_url: cfg.api.metadata_url,
             locks_url: cfg.api.locks_url,
+            did_init: cfg.did_init,
             #[cfg(feature = "allow_insecure_urls")]
             insecure_urls: cfg.danger_zone.allow_insecure_urls,
             ..Self::default()

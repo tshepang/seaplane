@@ -36,6 +36,8 @@ use reqwest::Url;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
+    cli::{CliCommand, SeaplaneInit},
+    context::Ctx,
     error::{CliError, CliErrorKind, Result},
     fs::{conf_dirs, AtomicFile, FromDisk, ToDisk},
     printer::ColorChoice,
@@ -58,6 +60,10 @@ pub struct RawConfig {
     // Used to signal we already found a valid config and to warn the user we will be overriding
     #[serde(skip)]
     found: bool,
+
+    /// Did we run initialization automatically or not on startup?
+    #[serde(skip)]
+    pub did_init: bool,
 
     #[serde(default)]
     pub seaplane: RawSeaplaneConfig,
@@ -105,6 +111,13 @@ impl RawConfig {
 
             cfg.update(new_cfg)?;
             cfg.found = true;
+        }
+
+        if !cfg.found {
+            let mut ctx = Ctx::default();
+            ctx.internal_run = true;
+            SeaplaneInit.run(&mut ctx)?;
+            cfg.did_init = true;
         }
 
         Ok(cfg)
