@@ -18,7 +18,7 @@ The short help:
 ```console
 $ seaplane shell-completion -h
 seaplane[EXE]-shell-completion [..]
-Generate shell completion script files for seaplane
+Generate shell completion scripts for the Seaplane CLI
 
 USAGE:
     seaplane[EXE] shell-completion [OPTIONS] <shell>
@@ -135,7 +135,7 @@ The long help:
 ```console
 $ seaplane shell-completion --help
 seaplane[EXE]-shell-completion [..]
-Generate shell completion script files for seaplane
+Generate shell completion scripts for the Seaplane CLI
 
 USAGE:
     seaplane[EXE] shell-completion [OPTIONS] <shell>

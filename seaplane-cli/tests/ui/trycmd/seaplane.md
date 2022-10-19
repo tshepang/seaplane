@@ -29,6 +29,6 @@ SUBCOMMANDS:
     locks               Operate on the Locks API
     metadata            Operate on metadata key-value pairs using the Global Data Coordination API [aliases: meta, md]
     restrict            Restrict the placement of data for Global Data Coordination API
-    shell-completion    Generate shell completion script files for seaplane
+    shell-completion    Generate shell completion scripts for the Seaplane CLI
 
 ```

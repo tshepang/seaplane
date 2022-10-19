@@ -387,7 +387,7 @@ impl CliErrorKind {
                     }
                 }
                 _ => {
-                    cli_eprintln!("seaplane API: {e}")
+                    cli_eprintln!("Seaplane API: {e}")
                 }
             },
             ExistingValue(value) => {

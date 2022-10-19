@@ -13,7 +13,7 @@ use seaplane_cli::{
 
 fn try_main() -> Result<()> {
     let matches = Seaplane::command().get_matches();
-    // Normally, this would be in the Seapalne::run method, however setting up logging has to
+    // Normally, this would be in the Seaplane::run method, however setting up logging has to
     // happen super early in the process lifetime
     match matches.get_one::<u8>("verbose").copied() {
         Some(0) => match matches.get_one::<u8>("quiet").copied() {

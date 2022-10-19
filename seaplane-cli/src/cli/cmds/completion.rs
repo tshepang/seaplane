@@ -112,7 +112,7 @@ pub struct SeaplaneShellCompletion;
 impl SeaplaneShellCompletion {
     pub fn command() -> Command<'static> {
         Command::new("shell-completion")
-            .about("Generate shell completion script files for seaplane")
+            .about("Generate shell completion scripts for the Seaplane CLI")
             .after_help(COMPLETION_HELP)
             .arg(
                 arg!(shell ignore_case required)
