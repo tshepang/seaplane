@@ -303,7 +303,7 @@ appropriate location of the configuration file.
 ```console
 $ seaplane account login
 Enter your API key below.
-(hint: it can be found by visiting https://cplane.cloud/)
+(hint: it can be found by visiting https://flightdeck.cplane.cloud/)
 
 InlifethevisiblesurfaceoftheSpermWhaleisnottheleastamongthemanymarvelshepresents
 Successfully saved the API key!

@@ -127,7 +127,7 @@ impl CliCommand for SeaplaneAccountLogin {
         }
         cli_println!("Enter an API key below.");
         cli_print!("(hint: it can be found by visiting ");
-        cli_print!(@Green, "https://cplane.cloud/");
+        cli_print!(@Green, "https://flightdeck.cplane.cloud/");
         cli_println!(")\n");
 
         let stdin = io::stdin();
