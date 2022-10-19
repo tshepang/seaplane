@@ -30,6 +30,7 @@ pub struct LocksReq {
     identity_url: Option<Url>,
     locks_url: Option<Url>,
     insecure_urls: bool,
+    invalid_certs: bool,
 }
 
 impl LocksReq {
@@ -46,6 +47,10 @@ impl LocksReq {
             insecure_urls: ctx.insecure_urls,
             #[cfg(not(feature = "allow_insecure_urls"))]
             insecure_urls: false,
+            #[cfg(feature = "allow_invalid_certs")]
+            invalid_certs: ctx.invalid_certs,
+            #[cfg(not(feature = "allow_invalid_certs"))]
+            invalid_certs: false,
         })
     }
 
@@ -66,8 +71,12 @@ impl LocksReq {
 
     /// Request a new Access Token
     pub fn refresh_token(&mut self) -> Result<()> {
-        self.token =
-            Some(request_token(&self.api_key, self.identity_url.as_ref(), self.insecure_urls)?);
+        self.token = Some(request_token(
+            &self.api_key,
+            self.identity_url.as_ref(),
+            self.insecure_urls,
+            self.invalid_certs,
+        )?);
         Ok(())
     }
 
@@ -80,6 +89,10 @@ impl LocksReq {
         #[cfg(feature = "allow_insecure_urls")]
         {
             builder = builder.allow_http(self.insecure_urls);
+        }
+        #[cfg(feature = "allow_invalid_certs")]
+        {
+            builder = builder.allow_invalid_certs(self.invalid_certs);
         }
         if self.name.is_none() {
             panic!("all LocksRequests must have a name")
@@ -138,6 +151,10 @@ impl LocksReq {
         {
             builder = builder.allow_http(self.insecure_urls);
         }
+        #[cfg(feature = "allow_invalid_certs")]
+        {
+            builder = builder.allow_http(self.invalid_certs);
+        }
 
         if let Some(url) = &self.locks_url {
             builder = builder.base_url(url);
@@ -151,6 +168,7 @@ impl LocksReq {
                     &self.api_key,
                     self.identity_url.as_ref(),
                     self.insecure_urls,
+                    self.invalid_certs,
                 )?);
                 let next_req = LocksRequestBuilder::new()
                     .token(self.token_or_refresh()?)

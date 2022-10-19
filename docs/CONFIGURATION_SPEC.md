@@ -103,6 +103,15 @@ Default: `false`
 > **Note**
 > Only available on crate feature `allow_insecure_urls`
 
+#### The `allow-invalid-certs` Field
+
+Controls whether invalid TLS certificate are accepted.
+
+Default: `false`
+
+> **Note**
+> Only available on crate feature `allow_invalid_certs`
+
 [//]: # (links)
 
 [toml]: https://toml.io/

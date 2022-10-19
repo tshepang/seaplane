@@ -31,6 +31,7 @@ pub struct RestrictReq {
     identity_url: Option<Url>,
     metadata_url: Option<Url>,
     insecure_urls: bool,
+    invalid_certs: bool,
 }
 
 impl RestrictReq {
@@ -49,6 +50,10 @@ impl RestrictReq {
             insecure_urls: ctx.insecure_urls,
             #[cfg(not(feature = "allow_insecure_urls"))]
             insecure_urls: false,
+            #[cfg(feature = "allow_invalid_certs")]
+            invalid_certs: ctx.invalid_certs,
+            #[cfg(not(feature = "allow_invalid_certs"))]
+            invalid_certs: false,
         })
     }
 
@@ -74,8 +79,12 @@ impl RestrictReq {
 
     /// Request a new Access Token
     pub fn refresh_token(&mut self) -> Result<()> {
-        self.token =
-            Some(request_token(&self.api_key, self.identity_url.as_ref(), self.insecure_urls)?);
+        self.token = Some(request_token(
+            &self.api_key,
+            self.identity_url.as_ref(),
+            self.insecure_urls,
+            self.invalid_certs,
+        )?);
         Ok(())
     }
 
@@ -89,6 +98,10 @@ impl RestrictReq {
         #[cfg(feature = "allow_insecure_urls")]
         {
             builder = builder.allow_http(self.insecure_urls);
+        }
+        #[cfg(feature = "allow_invalid_certs")]
+        {
+            builder = builder.allow_invalid_certs(self.invalid_certs);
         }
 
         if let Some(url) = &self.metadata_url {

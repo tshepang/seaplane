@@ -33,6 +33,7 @@ pub struct FormationsReq {
     identity_url: Option<Url>,
     compute_url: Option<Url>,
     insecure_urls: bool,
+    invalid_certs: bool,
 }
 
 impl FormationsReq {
@@ -62,13 +63,21 @@ impl FormationsReq {
             insecure_urls: ctx.insecure_urls,
             #[cfg(not(feature = "allow_insecure_urls"))]
             insecure_urls: false,
+            #[cfg(feature = "allow_invalid_certs")]
+            invalid_certs: ctx.invalid_certs,
+            #[cfg(not(feature = "allow_invalid_certs"))]
+            invalid_certs: false,
         })
     }
 
     /// Request a new Access Token
     pub fn refresh_token(&mut self) -> Result<()> {
-        self.token =
-            Some(request_token(&self.api_key, self.identity_url.as_ref(), self.insecure_urls)?);
+        self.token = Some(request_token(
+            &self.api_key,
+            self.identity_url.as_ref(),
+            self.insecure_urls,
+            self.invalid_certs,
+        )?);
         Ok(())
     }
 
@@ -81,6 +90,10 @@ impl FormationsReq {
         #[cfg(feature = "allow_insecure_urls")]
         {
             builder = builder.allow_http(self.insecure_urls);
+        }
+        #[cfg(feature = "allow_invalid_certs")]
+        {
+            builder = builder.allow_invalid_certs(self.invalid_certs);
         }
 
         if let Some(url) = &self.compute_url {

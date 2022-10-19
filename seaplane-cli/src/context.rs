@@ -148,6 +148,7 @@ pub struct Ctx {
     pub metadata_url: Option<Url>,
     pub locks_url: Option<Url>,
     pub insecure_urls: bool,
+    pub invalid_certs: bool,
 }
 
 impl Clone for Ctx {
@@ -200,6 +201,7 @@ impl Clone for Ctx {
             metadata_url: self.metadata_url.clone(),
             locks_url: self.locks_url.clone(),
             insecure_urls: self.insecure_urls,
+            invalid_certs: self.invalid_certs,
         }
     }
 }
@@ -224,6 +226,7 @@ impl Default for Ctx {
             metadata_url: None,
             locks_url: None,
             insecure_urls: false,
+            invalid_certs: false,
         }
     }
 }
@@ -247,6 +250,8 @@ impl From<RawConfig> for Ctx {
             did_init: cfg.did_init,
             #[cfg(feature = "allow_insecure_urls")]
             insecure_urls: cfg.danger_zone.allow_insecure_urls,
+            #[cfg(feature = "allow_invalid_certs")]
+            invalid_certs: cfg.danger_zone.allow_invalid_certs,
             ..Self::default()
         }
     }

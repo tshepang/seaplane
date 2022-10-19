@@ -147,6 +147,10 @@ impl RawConfig {
         {
             self.danger_zone.allow_insecure_urls = new_cfg.danger_zone.allow_insecure_urls;
         }
+        #[cfg(feature = "allow_invalid_certs")]
+        {
+            self.danger_zone.allow_invalid_certs = new_cfg.danger_zone.allow_invalid_certs;
+        }
         self.loaded_from.extend(new_cfg.loaded_from);
         Ok(())
     }
@@ -234,6 +238,10 @@ pub struct RawDangerZoneConfig {
     #[serde(default)]
     #[cfg(feature = "allow_insecure_urls")]
     pub allow_insecure_urls: bool,
+
+    #[serde(default)]
+    #[cfg(feature = "allow_invalid_certs")]
+    pub allow_invalid_certs: bool,
 }
 
 impl RawDangerZoneConfig {
@@ -369,7 +377,32 @@ mod test {
         assert_eq!(
             cfg,
             RawConfig {
-                danger_zone: RawDangerZoneConfig { allow_insecure_urls: true },
+                danger_zone: RawDangerZoneConfig {
+                    allow_insecure_urls: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            }
+        )
+    }
+
+    #[cfg(feature = "allow_invalid_certs")]
+    #[test]
+    fn deser_invalid_certs() {
+        let cfg_str = r#"
+        [danger-zone]
+        allow-invalid-certs = true
+        "#;
+
+        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
+
+        assert_eq!(
+            cfg,
+            RawConfig {
+                danger_zone: RawDangerZoneConfig {
+                    allow_invalid_certs: true,
+                    ..Default::default()
+                },
                 ..Default::default()
             }
         )

@@ -23,8 +23,9 @@ pub fn request_token_jwt(
     api_key: &str,
     identity_url: Option<&Url>,
     allow_insecure: bool,
+    allow_invalid_certs: bool,
 ) -> Result<String> {
-    Ok(request_token(api_key, identity_url, allow_insecure)?.token)
+    Ok(request_token(api_key, identity_url, allow_insecure, allow_invalid_certs)?.token)
 }
 
 /// Makes a request against the `/token` endpoint of FlightDeck using the discovered API key and
@@ -42,12 +43,17 @@ pub fn request_token(
     api_key: &str,
     identity_url: Option<&Url>,
     allow_insecure: bool,
+    allow_invalid_certs: bool,
 ) -> Result<AccessToken> {
     let mut builder = TokenRequest::builder().api_key(api_key);
 
     #[cfg(feature = "allow_insecure_urls")]
     {
         builder = builder.allow_http(allow_insecure);
+    }
+    #[cfg(feature = "allow_invalid_certs")]
+    {
+        builder = builder.allow_invalid_certs(allow_invalid_certs);
     }
     if let Some(url) = identity_url {
         builder = builder.base_url(url);

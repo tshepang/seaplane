@@ -26,6 +26,11 @@ const INSECURE_URLS: &str = "+allow_insecure_urls";
 #[cfg(not(feature = "allow_insecure_urls"))]
 const INSECURE_URLS: &str = "";
 
+#[cfg(feature = "allow_invalid_certs")]
+const INVALID_CERTS: &str = "+allow_invalid_certs";
+#[cfg(not(feature = "allow_invalid_certs"))]
+const INVALID_CERTS: &str = "";
+
 fn main() {
     // TODO: Use the hash of only the CLI dir
     // If `git` is installed and located in `$PATH` of the build machine, it uses that to determine
@@ -45,6 +50,6 @@ fn main() {
     );
     println!(
         "cargo:rustc-env=SEAPLANE_BUILD_FEATURES={}",
-        concatcp!(COLOR, " ", UNSTABLE, " ", INSECURE_URLS)
+        concatcp!(COLOR, " ", UNSTABLE, " ", INSECURE_URLS, " ", INVALID_CERTS)
     );
 }

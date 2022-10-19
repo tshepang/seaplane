@@ -413,7 +413,8 @@ macro_rules! maybe_retry {
                 $this.token = Some(request_token(
                         &$this.api_key,
                         $this.identity_url.as_ref(),
-                        $this.insecure_urls)?);
+                        $this.insecure_urls,
+                        $this.invalid_certs)?);
                 Ok(req.$fn($( $arg ,)*)?)
             }
             Err(e) => Err(e),
