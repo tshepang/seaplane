@@ -68,7 +68,7 @@ pub struct RawConfig {
     #[serde(default)]
     pub api: RawApiConfig,
 
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "RawDangerZoneConfig::is_empty")]
     pub danger_zone: RawDangerZoneConfig,
 }
 
@@ -215,13 +215,17 @@ pub struct RawApiConfig {
     pub locks_url: Option<Url>,
 }
 
-#[derive(Debug, Copy, Clone, Default, Serialize, Deserialize)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
+#[derive(Debug, Copy, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawDangerZoneConfig {
     #[serde(default)]
     #[cfg(feature = "allow_insecure_urls")]
     pub allow_insecure_urls: bool,
+}
+
+impl RawDangerZoneConfig {
+    // Returns `true` if config table is all default values
+    pub fn is_empty(&self) -> bool { self == &RawDangerZoneConfig::default() }
 }
 
 #[cfg(test)]
