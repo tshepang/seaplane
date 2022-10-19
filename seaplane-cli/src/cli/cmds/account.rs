@@ -59,6 +59,15 @@ impl CliCommand for SeaplaneAccountToken {
             builder = builder.base_url(url);
         }
 
+        #[cfg(feature = "allow_insecure_urls")]
+        {
+            builder = builder.allow_http(ctx.insecure_urls);
+        }
+        #[cfg(feature = "allow_invalid_certs")]
+        {
+            builder = builder.allow_invalid_certs(ctx.invalid_certs);
+        }
+
         let t = builder.build().map_err(CliError::from)?;
 
         if ctx.args.out_format == OutputFormat::Json {
