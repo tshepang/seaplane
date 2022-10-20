@@ -5,7 +5,7 @@ from .logging import log
 
 _SEAPLANE_COMPUTE_API_ENDPOINT = "https://compute.cplane.cloud/v1"
 _SEAPLANE_COORDINATION_API_ENDPOINT = "https://metadata.cplane.cloud/v1"
-_SEAPLANE_IDENTIFY_API_ENDPOINT = "https://identity.cplane.cloud"
+_SEAPLANE_IDENTIFY_API_ENDPOINT = "https://flightdeck.cplane.cloud"
 
 
 class Configuration:

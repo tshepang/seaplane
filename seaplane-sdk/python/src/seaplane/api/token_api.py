@@ -21,7 +21,7 @@ class TokenAPI:
     """
 
     def __init__(self, configuration) -> None:  # type: ignore
-        self.url = f"{configuration.identify_endpoint}/token"
+        self.url = f"{configuration.identify_endpoint}/identity/token"
         self.api_key = configuration.seaplane_api_key
         self.access_token = configuration._current_access_token
         self.auto_renew = configuration._token_auto_renew
@@ -76,8 +76,8 @@ class TokenAPI:
 
     def _request_access_token(self) -> Result[str, HTTPError]:
         try:
-            response = requests.post(self.url, json={}, headers=headers(self.api_key))
             log.info("Requesting access token...")
+            response = requests.post(self.url, json={}, headers=headers(self.api_key))
 
             if response.ok:
                 token = response.json()["token"]
