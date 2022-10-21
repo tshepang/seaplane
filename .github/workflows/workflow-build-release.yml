@@ -40,6 +40,8 @@ jobs:
         if: ${{ contains(inputs.runner, 'self-hosted') }}
 
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -63,11 +65,6 @@ jobs:
           cp LICENSE artifacts/share/doc/seaplane/
           cp share/third_party_licenses.md artifacts/share/doc/seaplane/
 
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-        if: inputs.use-tag-version
-
       - uses: benjlevesque/short-sha@v1.2
         id: short-sha
         if: inputs.use-short-sha
@@ -80,11 +77,16 @@ jobs:
         env:
           SHA: ${{ steps.short-sha.outputs.sha }}
 
+      - name: Extract version from tag
+        id: get_version
+        uses: damienaicheh/extract-version-from-tag-action@v1.0.0
+        if: inputs.use-tag-version
+
       - name: Create archive for Linux (use tag version)
         if: inputs.use-tag-version
         run: |
           cd artifacts/
-          tar czf ../seaplane-${{ steps.get_version.outputs.VERSION }}-${{ inputs.target }}.tar.gz ./*
+          tar czf ../seaplane-v${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}-${{ inputs.target }}.tar.gz ./*
 
       - name: Save Artifacts Archive
         uses: actions/upload-artifact@v3
@@ -104,6 +106,8 @@ jobs:
         if: contains(inputs.runner, 'linux')
 
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -132,9 +136,9 @@ jobs:
           cp LICENSE artifacts/share/doc/seaplane/
           cp share/third_party_licenses.md artifacts/share/doc/seaplane/
 
-      - name: Get the version
+      - name: Extract version from tag
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        uses: damienaicheh/extract-version-from-tag-action@v1.0.0
         if: inputs.use-tag-version
 
       - uses: benjlevesque/short-sha@v1.2
@@ -153,7 +157,7 @@ jobs:
         if: inputs.use-tag-version
         run: |
           cd artifacts/
-          tar czf ../seaplane-${{ steps.get_version.outputs.VERSION }}-${{ inputs.target }}.tar.gz ./*
+          tar czf ../seaplane-v${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}-${{ inputs.target }}.tar.gz ./*
 
       - name: Save Artifacts Archive
         uses: actions/upload-artifact@v3

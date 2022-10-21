@@ -2,16 +2,13 @@ on:
   push:
     branches: [main]
     paths:
-      - '**.rs'
-      - 'Cargo.lock'
-      - 'share/**'
+      - 'seaplane-cli/src/**.rs'
+      - 'seaplane-cli/build.rs'
+      - 'seaplane-cli/Cargo.toml'
       - 'LICENSE'
-      - '!**.md'
-      - '!**.yml'
-      - '!docs/**'
   workflow_dispatch:
 
-name: Nightly Release
+name: Nightly Seaplane CLI Release
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

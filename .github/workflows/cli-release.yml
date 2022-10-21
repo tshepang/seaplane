@@ -3,7 +3,7 @@ on:
     tags:
       - 'cli-v*'
 
-name: Release
+name: Seaplane CLI Release
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -46,9 +46,14 @@ jobs:
       - build-linux-aarch64-gnu
         #- build-mac-x64
     steps:
-      - name: Get the version
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        uses: damienaicheh/extract-version-from-tag-action@v1.0.0
 
       - name: Download all workflow release artifacts
         uses: actions/download-artifact@v3
@@ -58,7 +63,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Seaplane v${{ steps.get_version.outputs.VERSION }}
+          name: Seaplane CLI v${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}
           files: artifacts/artifact/seaplane-*.tar.gz
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
