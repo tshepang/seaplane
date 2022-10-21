@@ -1699,6 +1699,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "seaplane"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aabb0c9c12dfb67dcd07418f9f1548c8e3365fd395891d48a4984db8efc1b690"
+dependencies = [
+ "base64",
+ "cfg-if",
+ "chrono",
+ "nom",
+ "once_cell",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "strum",
+ "thiserror",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "seaplane-cli"
 version = "0.1.0"
 dependencies = [
@@ -1715,7 +1736,7 @@ dependencies = [
  "once_cell",
  "rand",
  "reqwest",
- "seaplane",
+ "seaplane 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "serde_json",
  "stfu8",
