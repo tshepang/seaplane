@@ -27,7 +27,6 @@ in each of the dedicated sections about their internal structure.
 
 - `.github/`: CI rules and Github specific metadata
 - `docs/`: Documentation relating to the entire project
-- `share/`: Additional information, such as third party licenses.
 
 ### Seaplane Library
 
@@ -47,6 +46,7 @@ system.
 Seaplane API to build something. This tool also functions as the canonical way
 to interact with the Seaplane System.
 
+- `share/`: Additional information, such as third party licenses.
 - `tests/`: All integration tests for the CLI.
   - `tests/ui/`: These are UI tests that ensure the input and output of the CLI
   is functioning as

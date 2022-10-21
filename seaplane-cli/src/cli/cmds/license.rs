@@ -2,14 +2,15 @@ use clap::{ArgMatches, Command};
 
 use crate::{cli::CliCommand, error::Result, Ctx};
 
-static THIRD_PARTY_LICENSES: &str = include_str!("../../../../share/third_party_licenses.md");
+static THIRD_PARTY_LICENSES: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/third_party_licenses.md"));
 
 // @TODO @SIZE this str is ~11.3kb, it can be stored compressed at ~4kb. However that would
 // require a code to do the compression/decompression which is larger than the 7.3kb savings. There
 // are other locations in the code may benefit as well; if the uncompressed sum of those becomes
 // greater than code required to do the compression, we may look at compressing these large strings
 // to keep the binary size minimal.
-static SELF_LICENSE: &str = include_str!("../../../../LICENSE");
+static SELF_LICENSE: &str = include_str!(concat!(env!("OUT_DIR"), "/LICENSE"));
 
 #[derive(Copy, Clone, Debug)]
 pub struct SeaplaneLicense;

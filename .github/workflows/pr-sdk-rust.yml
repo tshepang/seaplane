@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'seaplane-sdk/rust/**'
+      - 'seaplane-sdk/rust/**/*.rs'
+      - 'seaplane-sdk/rust/Cargo.toml'
       - .github/workflows/pr-sdk-rust.yml
       - .github/workflows/workflow-rust-tests.yml
       - '!**.md'
       - '!docs/**'
-      - '!share/**'
       - "!LICENSE"
 
 env:

@@ -5,13 +5,14 @@ on:
     branches:
       - main
     paths:
-      - 'seaplane-cli/**'
+      - 'seaplane-cli/**/*.rs'
+      - 'seaplane-cli/Cargo.toml'
       - .github/workflows/pr-cli.yml
       - .github/workflows/workflow-rust-tests.yml
       - '!**.md'
       - '!docs/**'
-      - '!share/**'
       - "!LICENSE"
+      - '!seaplane-cli/share/**'
 
 env:
   CARGO_TERM_COLOR: always

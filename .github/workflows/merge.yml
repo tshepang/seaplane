@@ -7,12 +7,11 @@ on:
   push:
     branches: [main]
     paths:
-    - 'seaplane-sdk/rust/**'
-    - 'seaplane-cli/**'
+    - 'seaplane-sdk/rust/**/*.rs'
+    - 'seaplane-cli/**/*.rs'
     - .github/workflows/merge.yml
     - '!**.md'
     - '!docs/**'
-    - '!share/**'
     - "!LICENSE"
 
   workflow_dispatch:

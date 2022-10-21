@@ -8,7 +8,6 @@ on:
       - 'seaplane-sdk/python/**'
       - '!**.md'
       - '!doc/**'
-      - '!share/**'
       - "!LICENSE"
   workflow_dispatch:
 

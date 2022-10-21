@@ -75,7 +75,7 @@ test-ui $RUSTFLAGS='-D warnings':
 
 # Update all third party licenses
 update-licenses: (_cargo-install 'cargo-lichking')
-    cargo lichking bundle --variant name-only > {{justfile_directory()}}/share/third_party_licenses.md
+    cargo lichking bundle --variant name-only > {{justfile_directory()}}/seaplane-cli/share/third_party_licenses.md
 
 spell-check: (_cargo-install 'typos-cli')
     typos
