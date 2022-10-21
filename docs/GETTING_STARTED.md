@@ -7,30 +7,6 @@ examples.
 
 For the absolute fastest up-and-running version, see [Quickstart](#quickstart)
 
-<!-- vim-markdown-toc GFM -->
-
-* [Prerequisites](#prerequisites)
-* [Quickstart](#quickstart)
-* [Setup](#setup)
-	* [The Seaplane CLI Tool](#the-seaplane-cli-tool)
-	* [Initialize our Environment](#initialize-our-environment)
-		* [Setting `NO_COLOR`](#setting-no_color)
-		* [Using `--no-color` or setting `--color=never`](#using---no-color-or-setting---colornever)
-		* [Setting `color = "never"` in the configuration file](#setting-color--never-in-the-configuration-file)
-	* [Configure Your API Key](#configure-your-api-key)
-		* [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
-		* [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
-		* [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
-	* [Test!](#test)
-* [Running Your Workload](#running-your-workload)
-	* [Upload a Container Image](#upload-a-container-image)
-	* [Crate and Launch a Formation with a Single Flight](#crate-and-launch-a-formation-with-a-single-flight)
-		* [Your First Workload](#your-first-workload)
-		* [Working with Local Flight Plans](#working-with-local-flight-plans)
-		* [Working with Local Formation Plans](#working-with-local-formation-plans)
-	* [See a Hello World Page](#see-a-hello-world-page)
-
-<!-- vim-markdown-toc -->
 
 ## Prerequisites 
 
@@ -247,10 +223,10 @@ longer contain any color.
 
 ### Configure Your API Key
 
-The final setup step is to ensure `seplane` knows about our API key. We can do
+The final setup step is to ensure `seaplane` knows about our API key. We can do
 this in a few different ways:
 
-- Set `api_key = "..."` in our configuration file
+- Set `api-key = "..."` in our configuration file
 - Set the `SEAPLANE_API_KEY` environment variable
 - Use the `--api-key` CLI flag
 
@@ -602,7 +578,7 @@ Yay!
 
 [//]: # (Links)
 
-[Flightdeck]: https://cplane.cloud/
+[Flightdeck]: https://flightdeck.cplane.cloud/
 [Github Releases]: https://github.com/seaplane-io/seaplane/releases
 [TOML]: https://toml.io
 [docs/CONFIGURATION_SPEC.md]: https://github.com/seaplane-io/seaplane/blob/main/docs/CONFIGURATION_SPEC.md
