@@ -1,9 +1,13 @@
 [package]
 name = "seaplane"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0"
 authors = ["Seaplane IO, Inc."]
+description = "The Seaplane Rust SDK"
+documentation = "https://docs.rs/seaplane"
+repository = "https://github.com/seaplane-io/seaplane/tree/main/seaplane-sdk/rust"
+homepage = "https://seaplane.io"
 
 [dependencies]
 base64 = "0.13.0"

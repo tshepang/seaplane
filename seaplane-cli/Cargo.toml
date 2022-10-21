@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
 authors = ["Seaplane IO, Inc."]
+description = "The Seaplane Rust SDK"
+documentation = "https://docs.rs/seaplane-cli"
+repository = "https://github.com/seaplane-io/seaplane/tree/main/seaplane-cli"
+homepage = "https://seaplane.io"
 
 [lib]
 name = "seaplane_cli"
