@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "seaplane"
-version = "0.1.0"
+name = "seaplanekit"
+version = "0.1.2"
 description = "Seaplane Python SDK"
 authors = ["Seaplane IO, Inc."]
 license = "Apache License"
@@ -86,7 +86,7 @@ profile = "black"
 line_length = 99
 force_sort_within_sections = true
 # Inform isort of paths to import names that should be considered part of the "First Party" group.
-src_paths = ["tests", "src/seaplane"]
+src_paths = ["tests", "src/seaplanekit"]
 skip_gitignore = true
 
 [tool.pytest.ini_options]

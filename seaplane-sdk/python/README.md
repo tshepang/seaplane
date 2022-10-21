@@ -142,7 +142,7 @@ See also [awesome-python-typing](https://github.com/typeddjango/awesome-python-t
 * Use `config` object in order to set the api key.
 
 ```python
-from seaplane import sea
+from seaplanekit import sea
 
 sea.config.set_api_key("your_api_key")
 ```
@@ -157,3 +157,4 @@ Licensed under the Apache License, Version 2.0, [LICENSE](LICENSE). Copyright 20
 [CLI]: https://github.com/seaplane-io/seaplane/tree/main/seaplane-cli
 [SDK]: https://github.com/seaplane-io/seaplane/tree/main/seaplane
 [Getting Started]: https://github.com/seaplane-io/seaplane/blob/main/docs/GETTING_STARTED.md
+[LICENSE]: https://github.com/seaplane-io/seaplane/blob/main/LICENSE

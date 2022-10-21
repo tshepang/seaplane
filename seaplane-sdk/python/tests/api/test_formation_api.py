@@ -4,9 +4,9 @@ import pytest
 import requests_mock
 from returns.result import Success
 
-from seaplane.api.formation_api import FormationAPI
-from seaplane.configuration import Configuration
-from seaplane.model.compute.formation_metadata import FormationMetadata
+from seaplanekit.api.formation_api import FormationAPI
+from seaplanekit.configuration import Configuration
+from seaplanekit.model.compute.formation_metadata import FormationMetadata
 
 from ..conftest import add_token_request, fails_any_get  # noqa: F401
 

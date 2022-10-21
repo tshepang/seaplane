@@ -4,12 +4,12 @@ import pytest
 import requests_mock
 from returns.result import Success
 
-from seaplane.api.formation_configuration_api import FormationConfigurationAPI
-from seaplane.configuration import Configuration
-from seaplane.model import Provider, Region
-from seaplane.model.compute.architecture import Architecture
-from seaplane.model.compute.flight import Flight
-from seaplane.model.compute.formation_configuration import FormationConfiguration
+from seaplanekit.api.formation_configuration_api import FormationConfigurationAPI
+from seaplanekit.configuration import Configuration
+from seaplanekit.model import Provider, Region
+from seaplanekit.model.compute.architecture import Architecture
+from seaplanekit.model.compute.flight import Flight
+from seaplanekit.model.compute.formation_configuration import FormationConfiguration
 
 from ..conftest import add_token_request
 
