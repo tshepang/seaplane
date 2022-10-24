@@ -28,13 +28,13 @@ All service backends require a valid API Key to be used.
 
 ## License
 
-This crate is licensed under the terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+Licensed under the Apache License, Version 2.0, [LICENSE]. Copyright 2022 Seaplane IO, Inc.
 
 [//]: # (badges)
 
 [crate-image]: https://img.shields.io/crates/v/seaplane.svg
 [crate-link]: https://crates.io/crates/seaplane
-[deps-image]: https://deps.rs/crate/seaplane/status.svg
+[deps-image]: https://deps.rs/repo/github/seaplane-io/seaplane/status.svg
 [deps-link]: https://deps.rs/crate/seaplane
 [rustc-image]: https://img.shields.io/badge/rustc-1.60+-blue.svg
 
@@ -47,3 +47,4 @@ This crate is licensed under the terms of the [Apache License, Version 2.0](http
 [SDK]: https://github.com/seaplane-io/seaplane/tree/main/seaplane
 [`nginxdemos/hello`]: https://hub.docker.com/r/nginxdemos/hello/
 [releases]: https://github.com/seaplane-io/seaplane/releases
+[LICENSE]: https://github.com/seaplane-io/seaplane/blob/main/LICENSE

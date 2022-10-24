@@ -16,7 +16,7 @@ Before you install Seaplane Python SDK, install Python 3.7 or later.
 ### Install Seaplane Python SDK
 
 ```shell
-pip install seaplane
+pip install seaplanekit
 ```
 
 ### Configuration

@@ -21,9 +21,7 @@ Not sure where to go to quickly run a workload on Seaplane? See our :doc:`quicks
 
 Installation
 ------------
-To install the Hypermodern Python project,
-run this command in your terminal:
 
 .. code-block:: console
 
-   $ pip install seaplane
+   $ pip install seaplanekit
