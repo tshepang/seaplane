@@ -2,13 +2,38 @@
 
 This guide will walk through running your first workload on the Seaplane cloud.
 
+<!-- vim-markdown-toc GFM -->
+
+* [Prerequisites](#prerequisites)
+* [Quickstart](#quickstart)
+* [Setup](#setup)
+	* [The Seaplane CLI Tool](#the-seaplane-cli-tool)
+	* [Initialize our Environment](#initialize-our-environment)
+		* [Setting `NO_COLOR`](#setting-no_color)
+		* [Using `--no-color` or setting `--color=never`](#using---no-color-or-setting---colornever)
+		* [Setting `color = "never"` in the configuration file](#setting-color--never-in-the-configuration-file)
+	* [Configure Your API Key](#configure-your-api-key)
+		* [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
+		* [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
+		* [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
+	* [Test!](#test)
+* [Running Your Workload on Compute](#running-your-workload-on-compute)
+	* [Upload a Container Image](#upload-a-container-image)
+	* [Crate and Launch a Formation with a Single Flight](#crate-and-launch-a-formation-with-a-single-flight)
+		* [Your First Workload](#your-first-workload)
+		* [Working with Local Flight Plans](#working-with-local-flight-plans)
+		* [Working with Local Formation Plans](#working-with-local-formation-plans)
+	* [See a Hello World Page](#see-a-hello-world-page)
+* [Using the Metadata Key Value Store](#using-the-metadata-key-value-store)
+
+<!-- vim-markdown-toc -->
+
 We've structured this guide in increasingly complex (read *real world*)
 examples.
 
 For the absolute fastest up-and-running version, see [Quickstart](#quickstart)
 
-
-## Prerequisites 
+## Prerequisites
 
 Before we begin you'll want to ensure you've completed a few steps:
 
@@ -29,8 +54,9 @@ You'll only need:
 - Our single static binary for your particular platform and architecture
 - An API key you received from [Flightdeck]
 
-Here we're combining a bunch of concepts that we'll explain later, but to start with a taste this
-is how simple it is to run your first Formation on our platform:
+Here we're combining a bunch of concepts that we'll explain later, but to start
+with a taste this is how simple it is to run your first Formation on our
+platform:
 
 ```console
 $ seaplane formation plan \
@@ -46,7 +72,8 @@ Successfully launched remote Formation Instance 'few-actor' with remote Configur
     'd87938b6-c57d-47c4-8037-6e69026008ac'
 ```
 
-(**NOTE!:** there are other more secure ways to pass your API key!)
+> **Warning** 
+> There are other more secure ways to pass your API key!
 
 To see it working:
 
@@ -85,18 +112,22 @@ well as x86_64 Windows. Ensure you download the appropriate archive for your
 system. This guide will be using a macOS variant as a demonstration.
 
 We'll assume the download was saved in the Downloads directory of your home
-folder (`~/Downloads`).
+folder (e.g. `~/Downloads`).
 
 We need to extract the binary and place it somewhere pointed to by your `$PATH`
 variable. On macOS and Linux `/usr/local/bin/` is a good location.
 
-**NOTE:** You'll need to replace `$ARCH` and `$VERSION` with whichever
-architecture and version you downloaded from the release page.
+- For macOS use `sudo unzip ./seaplane-$VERSION-$ARCH.zip -d /usr/local/bin/`. 
+- For Linux, use `sudo tar xzf ./seaplane-$VERSION-$ARCH.tar.gz -C /usr/local/bin/`.
 
-```console
-$ cd ~/Downloads
-$ sudo unzip ./seaplane-$VERSION-$ARCH.zip -d /usr/local/bin/
-```
+> **Note** 
+> You'll need to replace `$ARCH` and `$VERSION` with whichever architecture and
+> version you downloaded from the release page.
+
+> **Warning**
+> Windows does not have an equivalent to `/usr/local/bin` — you’ll need to
+> either extract and use the Seaplane CLI from your current directory or make a
+> dedicated directory and add it to `PATH` manually.
 
 We can ensure that it worked by simply typing `seaplane` which should display a
 help message similar to below.
@@ -219,7 +250,8 @@ Support/io.Seaplane.seaplane/seaplane.toml`
 If we add `color = "never"` under the `[seaplane]` table, our output will no
 longer contain any color.
 
-**NOTE:** For more options see the [docs/CONFIGURATION_SPEC.md] in this repository
+> **Note** 
+> For more options see the [docs/CONFIGURATION_SPEC.md] in this repository
 
 ### Configure Your API Key
 
@@ -312,7 +344,7 @@ The token above should be *long* expired by the time you read this.
 Congratulations! You now have a working Seaplane CLI ready to run some
 fantastic workloads!
 
-## Running Your Workload
+## Running Your Workload on Compute
 
 In this chapter we will run our first workload on the Seaplane Cloud.
 
@@ -334,13 +366,14 @@ We'll be using the [`nginxdemos/hello`]
 In Seaplane a *Formation* can be thought of as your application or service.
 Formations are made up of *Flights* which are logical containers. 
 
-Using the Seaplane CLI we can create Formation and Flight Plans. These Plans are
-merely local definitions, so we can edit them, copy them, change them, pretty
-much anything we need.
+Using the Seaplane CLI we can create Formation and Flight Plans. These Plans
+are merely local definitions, so we can edit them, copy them, change them,
+pretty much anything we need.
 
-Once we're satisfied with our local Formation Plan we can `launch` it; sending it to the Seaplane
-Cloud and creating a Remote Instance from our local Plan definition. Once launched Seaplane can
-activate it for receiving public traffic.
+Once we're satisfied with our local Formation Plan we can `launch` it; sending
+it to the Seaplane Cloud and creating a Remote Instance from our local Plan
+definition. Once launched Seaplane can activate it for receiving public
+traffic.
 
 We can also both `plan` and `launch` all in one go, if desired.
 
@@ -352,8 +385,9 @@ Plans.
 
 We'll be running the `nginx-hello` container from earlier.
 
-**NOTE:** Here `seaplane-demo` is our Tenant ID. You'll need to replace that with your
-own tenant ID.
+> **Note** 
+> Here `seaplane-demo` is our Tenant ID. You'll need to replace that with your
+> own tenant ID.
 
 ```console
 $ seaplane formation plan \
@@ -375,10 +409,12 @@ Page](#see-a-hello-world-page) section below.
 
 #### Working with Local Flight Plans
 
-Flight Plans are *included* in Formation Plans (which we'll see in depth later on) and tell
-Seaplane what kind of containers you'd like to use for your workload.
+Flight Plans are *included* in Formation Plans (which we'll see in depth later
+on) and tell Seaplane what kind of containers you'd like to use for your
+workload.
 
-Flight Plans on their own are nothing more than a local definition to be referenced in Formations.
+Flight Plans on their own are nothing more than a local definition to be
+referenced in Formations.
 
 We can see our Flight Plans:
 
@@ -388,24 +424,26 @@ LOCAL ID  NAME          IMAGE                             MIN  MAX  ARCH  API PE
 d4e877b7  mellow-order  seaplane-demo/nginx-hello:latest  1    INF  auto  false
 ```
 
-Notice a bunch of default values because we didn't specify anything in particular other than an
-`image`.
+Notice a bunch of default values because we didn't specify anything in
+particular other than an `image`.
 
-Let's say we wanted to edit this Flight Plan to include in another Formation. We could create
-an entirely new Flight Plan via the `seaplane flight plan` command, but instead let's just edit the
-one we've already made. 
+Let's say we wanted to edit this Flight Plan to include in another Formation.
+We could create an entirely new Flight Plan via the `seaplane flight plan`
+command, but instead let's just edit the one we've already made. 
 
 Let's say that we actually don't want to be running the `:latest` tag, we
 *actually* want to pin to a specific digest. We'll use
-`sha256:33d30466bb608f607a8d708d39bf13ec7a908dde1a8a8b228f7f3f4c6a4d1bdf` for this example.
+`sha256:33d30466bb608f607a8d708d39bf13ec7a908dde1a8a8b228f7f3f4c6a4d1bdf` for
+this example.
 
-**SIDE NOTE:** Even when you specify `:latest` Seaplane pins your containers to
-the last digest at that point so that your Flights don't change out from under
-you. The example commands are somewhat contrived and purely to demonstrate the
-CLI and how to use it.
+> **Note** 
+> Even when you specify `:latest` Seaplane pins your containers to the last
+> digest at that point so that your Flights don't change out from under you.
+> The example commands are somewhat contrived and purely to demonstrate the CLI
+> and how to use it.
 
-When using `seaplane flight edit` we must specify a `NAME` or an `ID` (local ID) that we want to
-edit, along with any parameters we'd like to change.
+When using `seaplane flight edit` we must specify a `NAME` or an `ID` (local
+ID) that we want to edit, along with any parameters we'd like to change.
 
 ```console
 $ seaplane flight edit d4e8 --image seaplane_demo/nginxdemos/hello@sha256:33d30466bb608f607a8d708d39bf13ec7a908dde1a8a8b228f7f3f4c6a4d1bdf
@@ -415,14 +453,16 @@ LOCAL ID  NAME              IMAGE                                               
 d4e877b7  mellow-order      seaplane_demo/nginxdemos/hello@sha256:33d30466bb608f607a8d708d39bf13ec7a908dde1a8a8b228f7f3f4c6a4d1bdf  1    INF  auto  false
 ```
 
-**IMPORTANT:** This edit *only affects our local Flight Plan definition*! Nothing has
-changed to our running Formation Instance in the Seaplane Cloud. Remember, once a remote instance
-has been created from a local definition, the two are disconnected from one another. Much like
-creating a house from a set of blue prints, and then changing the blue prints doesn't automatically
-change any houses built prior!
+> **Warning** 
+> This edit *only affects our local Flight Plan definition*! Nothing has
+> changed to our running Formation Instance in the Seaplane Cloud. Remember,
+> once a remote instance has been created from a local definition, the two are
+> disconnected from one another. Much like creating a house from a set of blue
+> prints, and then changing the blue prints doesn't automatically change any
+> houses built prior!
 
-Notice we used part of the `LOCAL ID` to reference our Flight Plan. We could have
-also done so by unambiguous partial name, or full name if we desired.
+Notice we used part of the `LOCAL ID` to reference our Flight Plan. We could
+have also done so by unambiguous partial name, or full name if we desired.
 
 Hmm. You know what? Actually, I think we do want another Flight Plan that
 points to the `:latest` tag. We can copy `mellow-order` and just make that one
@@ -443,22 +483,26 @@ There are a bunch of other things you can do with your Flights as well, see the
 
 #### Working with Local Formation Plans
 
-Remember that we said a Formation is made up of Flights? *Technically* a Formation is made up of
-zero or more Formation Configurations. These configurations define what Flights are utilized by
-referencing one or more Flight Plan definitions, and how they're allowed to communicate/scale. A
-Formation can have *zero or more* configurations because having multiple Configurations will allow
-you load balance between them! This empowers things like blue/green deployments, atomic upgrades,
-all kinds of nifty tools!
+Remember that we said a Formation is made up of Flights? *Technically* a
+Formation is made up of zero or more Formation Configurations. These
+configurations define what Flights are utilized by referencing one or more
+Flight Plan definitions, and how they're allowed to communicate/scale. A
+Formation can have *zero or more* configurations because having multiple
+Configurations will allow you load balance between them! This empowers things
+like blue/green deployments, atomic upgrades, all kinds of nifty tools!
 
-**IMPORTANT:** Remember, a *remote instance* is created from a *local plan*. Much like creating a
-house from a set of blue prints. We can change the blue prints and create a second, slightly
-different house from the altered blue prints. However, just like changing the blue prints on a
-house won't go back change any physical houses that were created prior; the same logic applies to
-altered local Formation Plans and remote Formation Instances created from them.
+> **Warning** 
+> Remember, a *remote instance* is created from a *local plan*. Much like
+> creating a house from a set of blue prints. We can change the blue prints and
+> create a second, slightly different house from the altered blue prints.
+> However, just like changing the blue prints on a house won't go back change
+> any physical houses that were created prior; the same logic applies to
+> altered local Formation Plans and remote Formation Instances created from
+> them.
 
 But for now, we're staying simple. We're just working with a single
-Configuration, which only references a single Flight Plan. So no load balancing, or
-other complexities. Those will come in future chapters!
+Configuration, which only references a single Flight Plan. So no load
+balancing, or other complexities. Those will come in future chapters!
 
 The reason we bring up this distinction now is if you you're looking for
 something similar to `seaplane flight list`, but for Formations; you'll find
@@ -480,8 +524,8 @@ have one local definition (which we created earlier), and one `DEPLOYED (IN
 AIR)` which means, "Uploaded to the Seaplane Cloud (Deployed) and set to active
 (In Air)."
 
-Let's create another Formation Plan, without any configuration so you can better see
-the distinction.
+Let's create another Formation Plan, without any configuration so you can
+better see the distinction.
 
 ```console
 $ seaplane formation plan
@@ -493,12 +537,13 @@ LOCAL ID  NAME         LOCAL  DEPLOYED (GROUNDED)   DEPLOYED (IN AIR)   TOTAL CO
 86bd3a0c  kind-week    0      0                     0                   0
 ```
 
-Now we have a new Formation Plan! A perfectly useless Formation with no included Flight Plans,
-no nothing, but hey!
+Now we have a new Formation Plan! A perfectly useless Formation with no
+included Flight Plans, no nothing, but hey!
 
-OK, let's actually delete that empty Formation Plan and create one a little more
-useful. This time when we create the Formation Plan we *will not* be automatically
-deploying it to the Seaplane Cloud, so you can see how to do that manually.
+OK, let's actually delete that empty Formation Plan and create one a little
+more useful. This time when we create the Formation Plan we *will not* be
+automatically deploying it to the Seaplane Cloud, so you can see how to do that
+manually.
 
 ```console
 $ seaplane formation delete kind-week
@@ -516,8 +561,8 @@ d3aa195d  festive-winter  1      0                     0                   1
 ```
 
 Now, notice that `festive-winter` has one local configuration, but none
-currently deployed. Let's change that, by deploying an Instance of this Formation Plan but without
-setting it to active.
+currently deployed. Let's change that, by deploying an Instance of this
+Formation Plan but without setting it to active.
 
 ```console
 $ seaplane formation launch --grounded festive-winter
@@ -538,8 +583,8 @@ d3aa195d  festive-winter  1      1                     0                   1
 
 But let's say we *do* want to start up that configuration and make it active.
 We can actually just re-pass the same command but without the `--grounded`
-flag. Which will make all configurations for a given local Formation Plan active (And we
-only have one right now.)
+flag. Which will make all configurations for a given local Formation Plan
+active (And we only have one right now.)
 
 ```console
 $ seaplane formation launch festive-winter
@@ -575,6 +620,35 @@ $ curl https://nimble-bike--seaplane-demo.on.cplane.cloud/ | head -n 4
 ```
 
 Yay!
+
+## Using the Metadata Key Value Store
+
+To confirm that your Seaplane account is properly configured and ready to roll,
+we're going to create a new key-value pair using the _Seaplane Metadata
+Key-Value Store_. To create a new "hello world" key-value pair, run the
+following command in your terminal: 
+
+```console
+$ seaplane metadata set hello world
+Success
+```
+
+This will create a new key-value pair with the key `hello` and value `world` in
+the _Seaplane Metadata Key-Value Store_. Your terminal should return a success
+message after executing the command, but just to be sure let's go ahead and
+give it a quick test.
+
+To retrieve your key-value pair (and confirm that everything is in working
+order) run the command:
+
+```console
+$ seaplane metadata get hello --decode
+world
+```
+
+> **Note**
+> We include `--decode` so the output will be in ASCII and not a string of
+> hexidecimal characters. 
 
 [//]: # (Links)
 
