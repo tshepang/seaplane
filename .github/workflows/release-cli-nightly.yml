@@ -19,28 +19,24 @@ jobs:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
       runner: "['windows-latest']"
-      target: x86_64-pc-windows-gnu
       use-short-sha: true
 
   # build-mac-x64:
   #   uses: ./.github/workflows/workflow-build-release.yml
   #   with:
   #     runner: "['macos-latest']"
-  #     target: x86_64-apple-darwin
   #     use-short-sha: true
 
   build-linux-x64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
       runner: "['self-hosted', 'linux', 'x64']"
-      target: x86_64-unknown-linux-gnu
       use-short-sha: true
 
   build-linux-aarch64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
       runner: "['self-hosted', 'linux', 'arm64']"
-      target: aarch64-unknown-linux-gnu
       use-short-sha: true
 
   release:
@@ -71,12 +67,26 @@ jobs:
           path: artifacts/
 
       - name: Create Nightly Release
+        if: ${{ !contains(inputs.runner, 'windows') }}
         uses: softprops/action-gh-release@v1
         with:
           name: Seaplane CLI Nightly (${{ env.SHA }})
           tag_name: nightly
           prerelease: true
           files: artifacts/artifact/seaplane-*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: seaplane-io/seaplane
+          SHA: ${{ steps.short-sha.outputs.sha }}
+
+      - name: Create Nightly Release
+        if: contains(inputs.runner, 'windows')
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Seaplane CLI Nightly (${{ env.SHA }})
+          tag_name: nightly
+          prerelease: true
+          files: artifacts/artifact/seaplane-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: seaplane-io/seaplane

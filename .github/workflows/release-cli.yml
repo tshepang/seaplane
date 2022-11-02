@@ -2,6 +2,7 @@ on:
   push:
     tags:
       - 'cli-v*'
+  workflow_dispatch:
 
 name: Seaplane CLI Release
 
@@ -14,14 +15,12 @@ jobs:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
       runner: "['windows-latest']"
-      target: x86_64-pc-windows-gnu
       use-tag-version: true
 
   # build-mac-x64:
   #   uses: ./.github/workflows/workflow-build-release.yml
   #   with:
   #     runner: "['macos-latest']"
-  #     target: x86_64-apple-darwin
   #     use-tag-version: true
 
   build-linux-x64-gnu:
@@ -33,7 +32,6 @@ jobs:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
       runner: "['self-hosted', 'linux', 'arm64']"
-      target: aarch64-unknown-linux-gnu
       use-tag-version: true
 
   release:
@@ -47,7 +45,7 @@ jobs:
         #- build-mac-x64
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -61,10 +59,21 @@ jobs:
           path: artifacts/
 
       - name: Create Release
+        if: ${{ !contains(inputs.runner, 'windows') }}
         uses: softprops/action-gh-release@v1
         with:
           name: Seaplane CLI v${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}
           files: artifacts/artifact/seaplane-*.tar.gz
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_REPOSITORY: seaplane-io/seaplane
+
+      - name: Create Release
+        if: contains(inputs.runner, 'windows')
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Seaplane CLI v${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}
+          files: artifacts/artifact/seaplane-*.zip
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           GITHUB_REPOSITORY: seaplane-io/seaplane

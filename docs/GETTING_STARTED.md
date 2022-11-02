@@ -7,23 +7,23 @@ This guide will walk through running your first workload on the Seaplane cloud.
 * [Prerequisites](#prerequisites)
 * [Quickstart](#quickstart)
 * [Setup](#setup)
-	* [The Seaplane CLI Tool](#the-seaplane-cli-tool)
-	* [Initialize our Environment](#initialize-our-environment)
-		* [Setting `NO_COLOR`](#setting-no_color)
-		* [Using `--no-color` or setting `--color=never`](#using---no-color-or-setting---colornever)
-		* [Setting `color = "never"` in the configuration file](#setting-color--never-in-the-configuration-file)
-	* [Configure Your API Key](#configure-your-api-key)
-		* [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
-		* [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
-		* [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
-	* [Test!](#test)
+    * [The Seaplane CLI Tool](#the-seaplane-cli-tool)
+    * [Initialize our Environment](#initialize-our-environment)
+        * [Setting `NO_COLOR`](#setting-no_color)
+        * [Using `--no-color` or setting `--color=never`](#using---no-color-or-setting---colornever)
+        * [Setting `color = "never"` in the configuration file](#setting-color--never-in-the-configuration-file)
+    * [Configure Your API Key](#configure-your-api-key)
+        * [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
+        * [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
+        * [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
+    * [Test!](#test)
 * [Running Your Workload on Compute](#running-your-workload-on-compute)
-	* [Upload a Container Image](#upload-a-container-image)
-	* [Crate and Launch a Formation with a Single Flight](#crate-and-launch-a-formation-with-a-single-flight)
-		* [Your First Workload](#your-first-workload)
-		* [Working with Local Flight Plans](#working-with-local-flight-plans)
-		* [Working with Local Formation Plans](#working-with-local-formation-plans)
-	* [See a Hello World Page](#see-a-hello-world-page)
+    * [Upload a Container Image](#upload-a-container-image)
+    * [Crate and Launch a Formation with a Single Flight](#crate-and-launch-a-formation-with-a-single-flight)
+        * [Your First Workload](#your-first-workload)
+        * [Working with Local Flight Plans](#working-with-local-flight-plans)
+        * [Working with Local Formation Plans](#working-with-local-formation-plans)
+    * [See a Hello World Page](#see-a-hello-world-page)
 * [Using the Metadata Key Value Store](#using-the-metadata-key-value-store)
 
 <!-- vim-markdown-toc -->
@@ -648,7 +648,7 @@ world
 
 > **Note**
 > We include `--decode` so the output will be in ASCII and not a string of
-> hexidecimal characters. 
+> hexadecimal characters. 
 
 [//]: # (Links)
 

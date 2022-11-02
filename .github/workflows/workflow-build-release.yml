@@ -9,11 +9,6 @@ on:
         type: string
         default: X64
         required: false
-      # Target Triple (defaults to x86_64-unknown-linux-gnu)
-      target:
-        type: string
-        required: false
-        default: x86_64-unknown-linux-gnu
       # use the short sha as the binary version ID for the archive
       use-short-sha:
         type: boolean
@@ -26,75 +21,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-jobs:
-  build-release-in-container:
-    name: Build Release Artifacts (in a container)
-    runs-on: ${{ fromJSON(inputs.runner) }}
-    container: rust:slim
-    if: contains(inputs.runner, 'self-hosted')
-    steps:
-      - name: Install Build Deps (Linux)
-        run: |
-          apt-get update
-          apt-get install -y git libssl-dev pkg-config
-        if: ${{ contains(inputs.runner, 'self-hosted') }}
-
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          target: ${{ inputs.target }}
-
-      - name: Build
-        run: cargo build --release --manifest-path seaplane-cli/Cargo.toml
-
-      - name: Make artifacts dir
-        run: mkdir -p artifacts/share/doc/seaplane/
-
-      - name: Copy all build artifacts into dir
-        run: cp target/release/seaplane artifacts/ || cp target/${{ inputs.target }}/release/seaplane artifacts/
-
-      # On windows cp does not support 'cp file1 file2 target/' so we do one at a time on all runners
-      - name: Copy extra artifacts into dir
-        run: |
-          cp LICENSE artifacts/share/doc/seaplane/
-          cp seaplane-cli/share/third_party_licenses.md artifacts/share/doc/seaplane/
-
-      - uses: benjlevesque/short-sha@v1.2
-        id: short-sha
-        if: inputs.use-short-sha
-
-      - name: Create archive for Linux (use SHA)
-        if: inputs.use-short-sha
-        run: |
-          cd artifacts/
-          tar czf ../seaplane-${{ env.SHA }}-${{ inputs.target }}.tar.gz ./*
-        env:
-          SHA: ${{ steps.short-sha.outputs.sha }}
-
-      - name: Extract version from tag
-        id: get_version
-        uses: damienaicheh/extract-version-from-tag-action@v1.0.0
-        if: inputs.use-tag-version
-
-      - name: Create archive for Linux (use tag version)
-        if: inputs.use-tag-version
-        run: |
-          cd artifacts/
-          tar czf ../seaplane-v${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}-${{ inputs.target }}.tar.gz ./*
-
-      - name: Save Artifacts Archive
-        uses: actions/upload-artifact@v3
-        with:
-          path: seaplane-*.tar.gz
-          if-no-files-found: error
-
-  build-release-native:
+  build-release:
     name: Build Release Artifacts
     runs-on: ${{ fromJSON(inputs.runner) }}
     if: ${{ !contains(inputs.runner, 'self-hosted') }}
@@ -106,61 +33,40 @@ jobs:
         if: contains(inputs.runner, 'linux')
 
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
           override: true
-          target: ${{ inputs.target }}
 
-      - name: Build
-        run: cargo build --release --manifest-path seaplane-cli/Cargo.toml
-
-      - name: Make artifacts dir
-        run: mkdir -p artifacts/share/doc/seaplane/
-
-      - name: Copy all build artifacts into dir
-        run: cp target/release/seaplane artifacts/
-        if: ${{ !contains(inputs.runner, 'windows') }}
-
-      - name: Copy all build artifacts into dir (Win)
-        run: cp target/release/seaplane.exe artifacts/
-        if: contains(inputs.runner, 'windows')
-
-      # On windows cp does not support 'cp file1 file2 target/' so we do one at a time on all runners
-      - name: Copy extra artifacts into dir
+      - name: Install Just
+        shell: bash
         run: |
-          cp LICENSE artifacts/share/doc/seaplane/
-          cp seaplane-cli/share/third_party_licenses.md artifacts/share/doc/seaplane/
+          if ! command -v just 2>/dev/null ; then
+            cargo install just
+          fi
 
-      - name: Extract version from tag
-        id: get_version
-        uses: damienaicheh/extract-version-from-tag-action@v1.0.0
+      - name: Package Release
         if: inputs.use-tag-version
+        shell: bash
+        run: just package-release
 
-      - uses: benjlevesque/short-sha@v1.2
-        id: short-sha
+      - name: Package Nightly Release
         if: inputs.use-short-sha
-
-      - name: Create archive for Linux (use SHA)
-        if: inputs.use-short-sha
-        run: |
-          cd artifacts/
-          tar czf ../seaplane-${{ env.SHA }}-${{ inputs.target }}.tar.gz ./*
-        env:
-          SHA: ${{ steps.short-sha.outputs.sha }}
-
-      - name: Create archive for Linux (use tag version)
-        if: inputs.use-tag-version
-        run: |
-          cd artifacts/
-          tar czf ../seaplane-v${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}-${{ inputs.target }}.tar.gz ./*
+        shell: bash
+        run: just package-nightly
 
       - name: Save Artifacts Archive
+        if: ${{ !contains(inputs.runner, 'windows-latest') }}
         uses: actions/upload-artifact@v3
         with:
           path: seaplane-*.tar.gz
+          if-no-files-found: error
+
+      - name: Save Artifacts Archive
+        if: contains(inputs.runner, 'windows-latest')
+        uses: actions/upload-artifact@v3
+        with:
+          path: seaplane-*.zip
           if-no-files-found: error

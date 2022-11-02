@@ -1,5 +1,3 @@
-# CI workflow for every merge to main.
-#
 # This workflow may also be triggered manually for testing purposes.
 name: "Run rust tests"
 
@@ -19,10 +17,11 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  CI: "1"
 
 jobs:
   lint:
-    name: Formatting, clippy, and docs check
+    name: Lints
     runs-on: [self-hosted, linux, x64, lxc]
     steps:
     - name: Check out the repo
@@ -37,35 +36,30 @@ jobs:
 
     - uses: Swatinem/rust-cache@v1
 
-    - name: Check SDK formatting for the SDK
-      run: cargo fmt --all --manifest-path ./seaplane-sdk/rust/Cargo.toml  -- --check
-      if: ${{ inputs.test_sdk }}
-    - name: Lint the rust SDK
-      run: cargo clippy --manifest-path ./seaplane-sdk/rust/Cargo.toml --all-targets --features default,unstable -- -D warnings
-      if: ${{ inputs.test_sdk }}
-    - name: Check SDK documentation
-      env:
-        RUSTDOCFLAGS: -D warnings
-      run: cargo doc --manifest-path ./seaplane-sdk/rust/Cargo.toml  --all-features --no-deps --document-private-items
-      if: ${{ inputs.test_sdk }}
-
-    - name: Check CLI formatting
-      run: cargo fmt --all --manifest-path ./seaplane-cli/Cargo.toml  -- --check
-      if: ${{ inputs.test_cli }}
-    - name: Lint the CLI
-      run: cargo clippy --manifest-path ./seaplane-cli/Cargo.toml --all-targets --features default,unstable -- -D warnings
-      if: ${{ inputs.test_cli }}
-    - name: Check documentation for the rust CLI
-      env:
-        RUSTDOCFLAGS: -D warnings
-      run: cargo doc --manifest-path ./seaplane-cli/Cargo.toml  --all-features --no-deps --document-private-items
-      if: ${{ inputs.test_cli }}
+    - name: Install Just
+      shell: bash
+      run: |
+        if ! command -v just 2>/dev/null ; then
+          cargo install just --force
+        fi
 
     - name: Spell-check the entire repo
-      uses: crate-ci/typos@master
+      run: just spell-check
+
+    - name: Lint the Rust SDK
+      if: ${{ inputs.test_sdk }}
+      run: |
+        just lint-sdk-rust
+        just doc
+
+    - name: Lint the CLI
+      if: ${{ inputs.test_cli }}
+      run: |
+        just lint-cli
+        just doc 'seaplane-cli/Cargo.toml'
 
   test-linux:
-    name: Run CLI tests on Linux
+    name: Tests
     strategy:
       matrix:
         arch: [ "ARM64", "X64" ]
@@ -86,47 +80,28 @@ jobs:
 
     - uses: Swatinem/rust-cache@v1
 
-    # We don't do this as a matrix to avoid the overhead of starting up a test run.
-    # Plus we get more out of our cache this way.
+    - name: Install Just
+      shell: bash
+      run: |
+        if ! command -v just 2>/dev/null ; then
+          cargo install just
+        fi
 
-    - name: Test the SDK, default features
-      run: cargo test --manifest-path ./seaplane-sdk/rust/Cargo.toml
+    - name: Test the SDK
       if: ${{ inputs.test_sdk }}
-    - name: Test the SDK, no default features
-      run: cargo test --no-default-features --manifest-path ./seaplane-sdk/rust/Cargo.toml
-      if: ${{ inputs.test_sdk }}
-    - name: Test the SDK, unstable features
-      run: cargo test --features unstable --manifest-path ./seaplane-sdk/rust/Cargo.toml
-      if: ${{ inputs.test_sdk }}
+      run: |
+        just test-rust
+        just test-rust-api
 
-    - name: Test the CLI, default features
-      run: cargo test --manifest-path ./seaplane-cli/Cargo.toml
+    - name: Test the CLI
       if: ${{ inputs.test_cli }}
-    - name: Test the CLI, no default features
-      run: cargo test --no-default-features --manifest-path ./seaplane-cli/Cargo.toml
-      if: ${{ inputs.test_cli }}
-    - name: Test the CLI, unstable features
-      run: cargo test --features unstable --manifest-path ./seaplane-cli/Cargo.toml
-      if: ${{ inputs.test_cli }}
-    - name: Run the CLI UI tests
-      run: cargo test --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
-      if: ${{ inputs.test_cli }}
-
-    - name: SDK Mock API tests
-      run: cargo test --features api_tests --manifest-path ./seaplane-sdk/rust/Cargo.toml -- --test-threads=1
-      if: ${{ inputs.test_sdk }}
-    - name: SDK Mock API tests, unstable features
-      run: cargo test --features api_tests,unstable --manifest-path ./seaplane-sdk/rust/Cargo.toml -- --test-threads=1
-      if: ${{ inputs.test_sdk }}
-    - name: CLI Mock API tests
-      run: cargo test --features api_tests --manifest-path ./seaplane-cli/Cargo.toml -- --test-threads=1
-      if: ${{ inputs.test_cli }}
-    - name: CLI Mock API tests, unstable features
-      run: cargo test --features api_tests,unstable --manifest-path ./seaplane-cli/Cargo.toml -- --test-threads=1
-      if: ${{ inputs.test_cli }}
+      run: |
+        just test-rust 'seaplane-cli/Cargo.toml'
+        just test-rust-api 'seaplane-cli/Cargo.toml'
+        just test-ui
 
   test-win-macos-x64:
-    name: Test on Intel Mac and Windows
+    name: Tests
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
@@ -143,38 +118,44 @@ jobs:
 
     - uses: Swatinem/rust-cache@v1
 
-    - name: Test the SDK, default features
-      run: cargo test --manifest-path ./seaplane-sdk/rust/Cargo.toml
-      if: ${{ inputs.test_sdk }}
-    - name: Test the SDK, no default features
-      run: cargo test --no-default-features --manifest-path ./seaplane-sdk/rust/Cargo.toml
-      if: ${{ inputs.test_sdk }}
-    - name: Test the SDK, unstable features
-      run: cargo test --features unstable --manifest-path ./seaplane-sdk/rust/Cargo.toml
-      if: ${{ inputs.test_sdk }}
+    - name: Install wget
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: choco install wget -y
 
-    - name: Test the CLI, default features
-      run: cargo test --manifest-path ./seaplane-cli/Cargo.toml
-      if: ${{ inputs.test_cli }}
-    - name: Test the CLI, no default features
-      run: cargo test --no-default-features --manifest-path ./seaplane-cli/Cargo.toml
-      if: ${{ inputs.test_cli }}
-    - name: Test the CLI, unstable features
-      run: cargo test --features unstable --manifest-path ./seaplane-cli/Cargo.toml
-      if: ${{ inputs.test_cli }}
-    - name: Run the CLI UI tests
-      run: cargo test --features ui_tests --manifest-path ./seaplane-cli/Cargo.toml
-      if: ${{ inputs.test_cli }}
+    - name: Install Just
+      shell: bash
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: |
+        if ! command -v just 2>/dev/null ; then
+          wget https://github.com/casey/just/releases/download/1.7.0/just-1.7.0-x86_64-pc-windows-msvc.zip
+          unzip just-1.7.0-x86_64-pc-windows-msvc.zip -d ~/.cargo/bin/
+        fi
 
-    - name: SDK Mock API tests
-      run: cargo test --features api_tests --manifest-path ./seaplane-sdk/rust/Cargo.toml -- --test-threads=1
+    - name: Install Just
+      shell: bash
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: |
+        if ! command -v just 2>/dev/null ; then
+          wget https://github.com/casey/just/releases/download/1.7.0/just-1.7.0-x86_64-apple-darwin.tar.gz
+          tar xzf just-1.7.0-x86_64-apple-darwin.tar.gz -C ~/.cargo/bin/
+        fi
+
+    - name: Test the SDK
       if: ${{ inputs.test_sdk }}
-    - name: SDK Mock API tests, unstable features
-      run: cargo test --features api_tests,unstable --manifest-path ./seaplane-sdk/rust/Cargo.toml -- --test-threads=1
-      if: ${{ inputs.test_sdk }}
-    - name: CLI Mock API tests
-      run: cargo test --features api_tests --manifest-path ./seaplane-cli/Cargo.toml -- --test-threads=1
-      if: ${{ inputs.test_cli }}
-    - name: CLI Mock API tests, unstable features
-      run: cargo test --features api_tests,unstable --manifest-path ./seaplane-cli/Cargo.toml -- --test-threads=1
-      if: ${{ inputs.test_cli }}
+      run: |
+        just test-rust
+        just test-rust-api
+
+    - name: Test the CLI
+      if: ${{ inputs.test_cli && matrix.os == 'macos-latest' }}
+      run: |
+        just test-rust 'seaplane-cli/Cargo.toml'
+        just test-rust-api 'seaplane-cli/Cargo.toml'
+        just test-ui
+
+    - name: Test the CLI
+      if: ${{ inputs.test_cli && matrix.os == 'windows-latest' }}
+      run: |
+        just test-rust 'seaplane-cli\Cargo.toml'
+        just test-rust-api 'seaplane-cli\Cargo.toml'
+        just test-ui

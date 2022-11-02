@@ -20,8 +20,8 @@ SDK internally. As such it also serves as a reference application for how our
 Not sure where to go to quickly run a workload on Seaplane? See our [Getting
 Started] guide.
 
-To build and test this software yourself, see the [CONTRIBUTING.md](CONTRIBUTING.md)
-document that is a peer to this one.
+To build and test this software yourself, see the [CONTRIBUTING.md][contributing]
+document.
 
 ## License
 
@@ -33,3 +33,4 @@ Licensed under the Apache License, Version 2.0, [LICENSE](LICENSE). Copyright 20
 [CLI]: https://github.com/seaplane-io/seaplane/tree/main/seaplane-cli
 [SDK]: https://github.com/seaplane-io/seaplane/tree/main/seaplane-sdk
 [Getting Started]: https://github.com/seaplane-io/seaplane/blob/main/docs/GETTING_STARTED.md
+[contributing]: https://github.com/seaplane-io/seaplane/blob/main/docs/CONTRIBUTING.md

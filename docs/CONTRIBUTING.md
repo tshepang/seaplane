@@ -87,34 +87,46 @@ If your PR only affects the CLI, or the SDK there are recipes to run the test su
 components. 
 
 ```
-$ just cli-ci
+$ just ci-cli
   .. run CLI test suite
 
-$ just sdk-ci
+$ just ci-sdk
   .. run SDK test suite
 ```
 
-All of these run the full gamut of tests, even doc tests, clippy, and rustfmt. Other recipes exist
-for smaller or more targeted operations. 
+All of these run the full gamut of tests, even doc tests, clippy, and rustfmt.
+Other recipes exist for smaller or more targeted operations. 
 
 To see the full list of recipes use `just` by itself:
 
 ```
 $ just
 Available recipes:
-    audit                          # Run cargo-audit to scan for vulnerable crates
-    ci                             # Run the full CI suite (only runs for your native os/arch!)
-    cli-ci                         # Run the CI suite for the CLI (only runs for your native os/arch!)
-    clippy CRATE='' FEATURES=''    # Run clippy and with warnings denied
-    git-shortsha                   # Get the short SHA commit for HEAD
-    rustfmt CRATE='seaplane'       # Format code using rustfmt
-    rustfmt-check CRATE='seaplane' # Check if rustfmt would make changes
-    sdk-ci                         # Run the CI suite for the SDK (only runs for your native os/arch!)
-    setup                          # Install all needed components and tools
-    test-api CRATE='seaplane'      # Run API tests using a mock HTTP server
-    test-docs CRATE='seaplane'     # Ensure documentation builds
-    test-ui                        # Run UI tests
-    update-licenses                # Update all third party licenses
+    audit              # Run cargo-audit to scan for vulnerable crates
+    ci                 # Run the full CI suite (only runs for your native os/arch!)
+    ci-cli             # Run the CI suite for the CLI (only runs for your native os/arch!)
+    ci-sdk             # Run the CI suite for the SDK (only runs for your native os/arch!)
+    doc MANIFEST='seaplane-sdk/rust/Cargo.toml' $RUSTDOCFLAGS="-D warnings" # Build documentation
+    fmt                # Format the code
+    fmt-check          # Check if code formatter would make changes
+    fmt-check-cli      # Check if code formatter would make changes to the CLI
+    fmt-check-sdk-rust # Check if code formatter would make changes to the Rust SDK
+    fmt-cli            # Format the CLI code
+    fmt-sdk-rust       # Format the Rust SDK code
+    lint               # Run all checks and lints
+    lint-cli           # Run all lint hecks against the Rust SDK
+    lint-sdk-rust      # Run all lint hecks against the Rust SDK
+    package-nightly    # Create a nightly CLI release package (latest commit)
+    package-release    # Create a CLI release package (latest 'cli-v*' tag)
+    setup              # Install all needed components and tools
+    spell-check
+    test-rust MANIFEST='seaplane-sdk/rust/Cargo.toml' FEATURES='' $RUSTFLAGS='-D warnings' # Run basic integration and unit tests
+    test-doc MANIFEST='seaplane-sdk/rust/Cargo.toml' # Run documentation tests
+    test-rust-api MANIFEST='seaplane-sdk/rust/Cargo.toml' $RUSTFLAGS='-D warnings' # Run API tests using a mock HTTP server
+    test-ui $RUSTFLAGS='-D warnings' # Run UI tests
+    todos              # List 'TODO:' items
+    todos-in-branch    # List TODO items in current branch only
+    update-licenses    # Update all third party licenses
 ```
 
 If you've made changes to any of the `Cargo.toml` files it's probably a good idea to also update
@@ -122,30 +134,6 @@ the third party licenses by:
 
 ```
 $ just update-licenses
-```
-
-#### Local Tests (manually)
-
-To run local tests:
-
-```sh
-$ cargo test --workspace
-[.. snip ..]
-```
-
-If your changes affect the Seaplane library and it's use of the Seaplane APIs you should also run
-the API tests with:
-
-```sh
-$ cargo test --features api_tests -- --test-threads=1
-[.. snip ..]
-```
-
-If your changes affect the output, or CLI you should also run the UI tests with:
-
-```sh
-$ cargo test --features ui_tests
-[.. snip ..]
 ```
 
 ### Our Merge Strategy

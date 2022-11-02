@@ -1,15 +1,26 @@
-SHORTSHA := `git rev-parse --short HEAD`
+SELF := justfile_directory()
+DIST := SELF / 'dist'
+BIN_NAME := if os() == 'windows' { 'seaplane.exe' } else { 'seaplane' }
+CLI_DIR := 'seaplane-cli'
+CLI_MANIFEST := CLI_DIR / 'Cargo.toml'
+SDK_RUST_DIR := 'seaplane-sdk/rust'
+SDK_RUST_MANIFEST := SDK_RUST_DIR / 'Cargo.toml'
+SDK_PYTHON_DIR := 'seaplane-sdk/python'
+
+GON_CONFIG := SELF / 'target/sign_' / TARGET / 'config.hcl'
 export TARGET := arch()
-GON_CONFIG := justfile_directory() + '/target/sign_' + TARGET + '/config.hcl'
+
+SHORTSHA := `git rev-parse --short HEAD`
 CURRENT_BRANCH := `git rev-parse --abbrev-ref HEAD`
-TEST_RUNNER := 'cargo nextest run'
-ARG_SEP := if "cargo nextest run" == TEST_RUNNER { '' } else { '--' }
+
+TEST_RUNNER := if env_var_or_default("CI", '0') == "1" { 'cargo test' } else { 'cargo nextest run' }
+ARG_SEP := if TEST_RUNNER == "cargo nextest run" { '' } else { '--' }
 
 @_default:
     just --list
 
 # Install all needed components and tools
-setup: (_cargo-install 'httpmock --features standalone') (_cargo-install 'cargo-lichking' 'cargo-audit' 'typos-cli' 'cargo-nextest')
+@setup: (_cargo-install 'httpmock --features standalone') (_cargo-install 'cargo-lichking' 'cargo-audit' 'typos-cli' 'cargo-nextest')
     {{ if os() == 'macos' { 'just _install-gon' } else { '' } }}
 
 # Run cargo-audit to scan for vulnerable crates
@@ -17,67 +28,80 @@ audit: (_cargo-install 'cargo-audit')
     cargo audit
 
 # Run the CI suite for the SDK (only runs for your native os/arch!)
-ci-sdk: lint-sdk-rust (doc 'seaplane-sdk/rust') test test-rust-api
+ci-sdk: lint-sdk-rust doc test-rust test-rust-api
 
 # Run the CI suite for the CLI (only runs for your native os/arch!)
-ci-cli: lint-cli (doc 'seaplane-cli') (test 'seaplane-cli') (test-rust-api 'seaplane-cli') test-ui 
+ci-cli: lint-cli (doc CLI_MANIFEST) (test-rust CLI_MANIFEST) (test-rust-api CLI_MANIFEST) test-ui
 
 # Run the full CI suite (only runs for your native os/arch!)
 ci: audit ci-cli ci-sdk
 
 # Build documentation
-doc RUST_CRATE='' $RUSTDOCFLAGS="-D warnings":
-    cargo doc --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml --no-deps --all-features --document-private-items
+doc MANIFEST=SDK_RUST_MANIFEST $RUSTDOCFLAGS="-D warnings":
+    cargo doc --manifest-path {{ MANIFEST }} --no-deps --all-features --document-private-items
 
 # Check if code formatter would make changes
-fmt-check:
-    cargo fmt --all -- --check
+fmt-check: fmt-check-cli fmt-check-sdk-rust
 
-# Format code
-fmt:
-    cargo fmt --all
+# Check if code formatter would make changes to the CLI
+fmt-check-cli:
+    cargo fmt --manifest-path {{ CLI_DIR / 'Cargo.toml' }} --check
+
+# Check if code formatter would make changes to the Rust SDK
+fmt-check-sdk-rust:
+    cargo fmt --manifest-path {{ SDK_RUST_DIR / 'Cargo.toml' }} --check
+
+# Format the CLI code
+fmt-cli:
+    cargo fmt --manifest-path {{ CLI_MANIFEST }} --check
+
+# Format the Rust SDK code
+fmt-sdk-rust:
+    cargo fmt --manifest-path {{ SDK_RUST_MANIFEST }} --check
+
+# Format the code
+fmt: fmt-sdk-rust fmt-cli
 
 # Run all lint hecks against the Rust SDK
-lint-cli: spell-check fmt-check (lint 'seaplane-cli' '--no-default-features')
+lint-cli: spell-check fmt-check-cli (_lint-rust CLI_MANIFEST '--no-default-features')
 
 # Run all lint hecks against the Rust SDK
-lint-sdk-rust: spell-check fmt-check (lint 'seaplane-sdk/rust') (lint 'seaplane-sdk/rust' '--features unstable') (lint 'seaplane-sdk/rust' '--no-default-features')
+lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust (_lint-rust SDK_RUST_MANIFEST '--features unstable') (_lint-rust SDK_RUST_MANIFEST '--no-default-features')
 
 # Run all checks and lints
-lint-all: lint-sdk-rust lint-cli
+lint: lint-sdk-rust lint-cli
 
-# Run code linting with warnings denied
-lint RUST_CRATE='' RUST_FEATURES='':
-    cargo clippy {{ RUST_FEATURES }} --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml --all-targets -- -D warnings
+_lint-rust MANIFEST=SDK_RUST_MANIFEST RUST_FEATURES='':
+    cargo clippy {{ RUST_FEATURES }} --manifest-path {{ MANIFEST }} --all-targets -- -D warnings
 
-# Run basic integration and unit tests
-test RUST_CRATE='seaplane-sdk/rust' FEATURES='' $RUSTFLAGS='-D warnings':
-    cargo test {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml --no-run
-    {{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
+# Run basic integration and unit tests for Rust
+test-rust MANIFEST=SDK_RUST_MANIFEST FEATURES='' $RUSTFLAGS='-D warnings':
+    {{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{ MANIFEST }}
 
 # Run API tests using a mock HTTP server
-test-rust-api RUST_CRATE='seaplane-sdk/rust' $RUSTFLAGS='-D warnings':
-    cargo test --no-run  --features api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
-    {{ TEST_RUNNER }}  --features api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
-    cargo test --no-run  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
-    {{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml {{ ARG_SEP }} --test-threads=1
+test-rust-api MANIFEST=SDK_RUST_MANIFEST $RUSTFLAGS='-D warnings':
+    {{ TEST_RUNNER }}  --features api_tests --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
+    {{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
 
 # Run documentation tests
-test-doc RUST_CRATE='seaplane-sdk/rust':
-    cargo test --doc --manifest-path {{justfile_directory()}}/{{RUST_CRATE}}/Cargo.toml
+test-doc MANIFEST=SDK_RUST_MANIFEST:
+    cargo test --doc --manifest-path {{ MANIFEST }}
 
 # Run UI tests
 test-ui $RUSTFLAGS='-D warnings':
-    cargo test  --features ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml --no-run
-    {{ TEST_RUNNER }}  --features ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml
-    cargo test  --features unstable,semantic_ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml --no-run
-    {{ TEST_RUNNER }}  --features unstable,semantic_ui_tests --manifest-path {{justfile_directory()}}/seaplane-cli/Cargo.toml
+    {{ TEST_RUNNER }}  --features ui_tests --manifest-path {{ CLI_MANIFEST }}
+    {{ TEST_RUNNER }}  --features unstable,semantic_ui_tests --manifest-path {{ CLI_MANIFEST }}
 
 # Update all third party licenses
 update-licenses: (_cargo-install 'cargo-lichking')
-    cargo lichking bundle --variant name-only > {{justfile_directory()}}/seaplane-cli/share/third_party_licenses.md
+    cargo lichking bundle --variant name-only > {{ CLI_DIR / 'share/third_party_licenses.md' }}
 
-spell-check: (_cargo-install 'typos-cli')
+spell-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! command -v just 2>&1 >/dev/null ; then
+      cargo install typos-cli --force
+    fi
     typos
 
 #
@@ -92,13 +116,42 @@ todos-in-branch:
 todos:
     rg -o 'TODO:.*$' -g '!justfile'
 
-# Get the short SHA commit for HEAD
-git-shortsha:
-    @echo {{ SHORTSHA }}
+# Create a nightly CLI release package (latest commit)
+package-nightly:
+    just _package-build "cli-$(just _git-shortsha-cli)"
+
+# Create a CLI release package (latest 'cli-v*' tag)
+package-release: _package-build
+    just _package-build "$(git tag --list | grep cli-v | head -n1)"
 
 #
 # Private/Internal Items
 #
+
+# Get the short SHA commit for HEAD
+_git-shortsha:
+    @echo {{ SHORTSHA }}
+
+# Get the latest short SHA commit for the just CLI directory
+_git-shortsha-cli:
+    @git --no-pager log -n1 --pretty=format:%h $(dirname {{ CLI_DIR }})
+
+_package-build $TAG='':
+    #!/usr/bin/env bash
+    set -euo pipefail
+    BUILDDIR={{ justfile_directory() / 'target/release/' }}
+    DISTDIR=dist/
+    cargo build --release --manifest-path {{ CLI_MANIFEST }}
+    mkdir -p ${DISTDIR}/{bin,share/doc/seaplane/}
+    cp ${BUILDDIR}/{{BIN_NAME}} ${DISTDIR}/bin/
+    cp seaplane-cli/share/third_party_licenses.md ${DISTDIR}/share/doc/seaplane/
+    cp LICENSE ${DISTDIR}/share/doc/seaplane/
+    cd ${DISTDIR}
+    if [[ "{{os()}}" == "windows" ]]; then
+      zip ../seaplane-${TAG}-$(uname -m).zip ./*
+    else
+      tar czf ../seaplane-${TAG}-$(uname -m).tar.gz ./*
+    fi
 
 _cargo-install +TOOLS:
     cargo install {{ TOOLS }}
@@ -112,7 +165,7 @@ _install-gon:
 _sign $AC_PASSWORD SIGNER='${USER}': _install-gon
     #!/usr/bin/env bash
     echo {{ if os() != 'macos' { error('only macOS needs to sign') } else { '' } }}
-    CARGOTGTDIR={{ justfile_directory() + '/target/' }}
+    CARGOTGTDIR={{ justfile_directory() / 'target' }}
     SIGNDIR=${CARGOTGTDIR}/sign_${TARGET}/
     ARTIFACTSDIR=${CARGOTGTDIR}/${TARGET}-apple-darwin/release/
     echo Cleaning previous runs
