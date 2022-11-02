@@ -2,7 +2,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'seaplane-cli/src/**.rs'
+      - 'seaplane-cli/src/**/*.rs'
       - 'seaplane-cli/build.rs'
       - 'seaplane-cli/Cargo.toml'
       - 'seaplane-cli/share/third_party_licenses.md'
@@ -22,12 +22,6 @@ jobs:
       runner: "['windows-latest']"
       use-short-sha: true
 
-  # build-mac-x64:
-  #   uses: ./.github/workflows/workflow-build-release.yml
-  #   with:
-  #     runner: "['macos-latest']"
-  #     use-short-sha: true
-
   build-linux-x64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
@@ -39,6 +33,13 @@ jobs:
     with:
       runner: "['self-hosted', 'linux', 'arm64']"
       use-short-sha: true
+
+  # Currently we build by hand to sign and notarize the builds
+  # build-mac-x64:
+  #   uses: ./.github/workflows/workflow-build-release.yml
+  #   with:
+  #     runner: "['macos-latest']"
+  #     use-short-sha: true
 
   release:
     name: Nightly Release
@@ -68,26 +69,14 @@ jobs:
           path: artifacts/
 
       - name: Create Nightly Release
-        if: ${{ !contains(inputs.runner, 'windows') }}
         uses: softprops/action-gh-release@v1
         with:
           name: Seaplane CLI Nightly (${{ env.SHA }})
           tag_name: nightly
           prerelease: true
-          files: artifacts/artifact/seaplane-*.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: seaplane-io/seaplane
-          SHA: ${{ steps.short-sha.outputs.sha }}
-
-      - name: Create Nightly Release
-        if: contains(inputs.runner, 'windows')
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Seaplane CLI Nightly (${{ env.SHA }})
-          tag_name: nightly
-          prerelease: true
-          files: artifacts/artifact/seaplane-*.zip
+          files: |
+            artifacts/artifact/seaplane-*.tar.gz
+            artifacts/artifact/seaplane-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: seaplane-io/seaplane

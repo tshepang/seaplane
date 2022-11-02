@@ -1,6 +1,6 @@
 SELF := justfile_directory()
 DIST := SELF / 'dist'
-BIN_NAME := if os() == 'windows' { 'seaplane.exe' } else { 'seaplane' }
+BIN_EXE := if os() == 'windows' { '.exe' } else { '' }
 CLI_DIR := 'seaplane-cli'
 CLI_MANIFEST := CLI_DIR / 'Cargo.toml'
 SDK_RUST_DIR := 'seaplane-sdk/rust'
@@ -18,6 +18,14 @@ ARG_SEP := if TEST_RUNNER == "cargo nextest run" { '' } else { '--' }
 
 @_default:
     just --list
+
+@about:
+    echo "OS: {{ os() }}"
+    echo "Family: {{ os_family() }}"
+    echo "Arch: {{ arch() }}"
+    echo "Rust: $(rustc --version)"
+    echo "Cargo: $(cargo --version)"
+    echo "Invocation Dir: {{ invocation_directory() }}"
 
 # Install all needed components and tools
 @setup: (_cargo-install 'httpmock --features standalone') (_cargo-install 'cargo-lichking' 'cargo-audit' 'typos-cli' 'cargo-nextest')
@@ -139,18 +147,27 @@ _git-shortsha-cli:
 _package-build $TAG='':
     #!/usr/bin/env bash
     set -euo pipefail
-    BUILDDIR={{ justfile_directory() / 'target/release/' }}
+    BUILDDIR=target/release/
     DISTDIR=dist/
+    OS={{ os() }}
     cargo build --release --manifest-path {{ CLI_MANIFEST }}
-    mkdir -p ${DISTDIR}/{bin,share/doc/seaplane/}
-    cp ${BUILDDIR}/{{BIN_NAME}} ${DISTDIR}/bin/
+    if [[ "${OS}" == "windows" ]]; then
+      mkdir -p ${DISTDIR}/bin/
+      mkdir -p ${DISTDIR}/share/
+      mkdir -p ${DISTDIR}/share/doc/
+      mkdir -p ${DISTDIR}/share/doc/seaplane/
+    else
+      mkdir -p ${DISTDIR}/{bin,share/doc/seaplane/}
+    fi
+    rm -rf ${DISTDIR}/bin/*
+    cp ${BUILDDIR}/seaplane{{ BIN_EXE }} ${DISTDIR}/bin/
     cp seaplane-cli/share/third_party_licenses.md ${DISTDIR}/share/doc/seaplane/
     cp LICENSE ${DISTDIR}/share/doc/seaplane/
     cd ${DISTDIR}
-    if [[ "{{os()}}" == "windows" ]]; then
-      zip ../seaplane-${TAG}-$(uname -m).zip ./*
+    if [[ "${OS}" == "windows" ]]; then
+      zip -r ../seaplane-${TAG}-$(uname -m)-windows.zip bin/ share/
     else
-      tar czf ../seaplane-${TAG}-$(uname -m).tar.gz ./*
+      tar czf ../seaplane-${TAG}-$(uname -m)-${OS}.tar.gz ./*
     fi
 
 _cargo-install +TOOLS:

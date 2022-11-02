@@ -25,13 +25,12 @@ jobs:
   build-release:
     name: Build Release
     runs-on: ${{ fromJSON(inputs.runner) }}
-    if: ${{ !contains(inputs.runner, 'self-hosted') }}
     steps:
       - name: Install OpenSSL Headers (Linux)
+        if: ${{ !contains(inputs.runner, 'self-hosted') && contains(inputs.runner, 'linux') }}
         run: |
           apt-get update
           apt-get install -y libssl-dev pkg-config
-        if: contains(inputs.runner, 'linux')
 
       - uses: actions/checkout@v3
 
@@ -41,11 +40,16 @@ jobs:
           toolchain: nightly
           override: true
 
+      - name: Install Windows Tools
+        if: ${{ contains(inputs.runner, 'windows-latest') }}
+        run: choco install -y zip just
+
       - name: Install Just
         shell: bash
+        if: ${{ !contains(inputs.runner, 'windows-latest') }}
         run: |
           if ! command -v just 2>/dev/null ; then
-            cargo install just
+            cargo install just --force
           fi
 
       - name: Package Release

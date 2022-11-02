@@ -118,26 +118,16 @@ jobs:
 
     - uses: Swatinem/rust-cache@v1
 
-    - name: Install wget
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: choco install wget -y
-
     - name: Install Just
-      shell: bash
       if: ${{ matrix.os == 'windows-latest' }}
-      run: |
-        if ! command -v just 2>/dev/null ; then
-          wget https://github.com/casey/just/releases/download/1.7.0/just-1.7.0-x86_64-pc-windows-msvc.zip
-          unzip just-1.7.0-x86_64-pc-windows-msvc.zip -d ~/.cargo/bin/
-        fi
+      run: choco install -y just
 
     - name: Install Just
       shell: bash
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
         if ! command -v just 2>/dev/null ; then
-          wget https://github.com/casey/just/releases/download/1.7.0/just-1.7.0-x86_64-apple-darwin.tar.gz
-          tar xzf just-1.7.0-x86_64-apple-darwin.tar.gz -C ~/.cargo/bin/
+          brew install just
         fi
 
     - name: Test the SDK
