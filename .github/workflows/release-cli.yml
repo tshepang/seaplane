@@ -46,15 +46,6 @@ jobs:
       - build-linux-aarch64-gnu
         #- build-mac-x64
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Extract version from tag
-        id: get_version
-        uses: damienaicheh/extract-version-from-tag-action@v1.0.0
-
       - name: Download all workflow release artifacts
         uses: actions/download-artifact@v3
         with:
@@ -63,7 +54,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Seaplane CLI v${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}
+          name: seaplane-${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
           files: |
             artifacts/artifact/seaplane-*.tar.gz
             artifacts/artifact/seaplane-*.zip

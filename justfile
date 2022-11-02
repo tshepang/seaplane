@@ -167,7 +167,6 @@ _package-build:
     cd ${DISTDIR}
     if [[ "${OS}" == "windows" ]]; then
       zip -r ../seaplane-${TAG}-$(uname -m)-windows.zip bin/ share/
-    elif [[ "${OS}" == "macos" ]]; then
     else
       tar czf ../seaplane-${TAG}-$(uname -m)-${OS}.tar.gz ./*
     fi
@@ -204,7 +203,7 @@ _sign $AC_PASSWORD SIGNER='${USER}': _install-gon
     echo '  application_identity = "663170B344CE42EF1F583807B756239878A92FC8"' >> {{GON_CONFIG}}
     echo '}' >> {{GON_CONFIG}}
     echo 'zip {' >> {{GON_CONFIG}}
-    echo "  output_path = \"seaplane-cli-${TAG}-$(uname -m)-macos.zip\"" >> {{GON_CONFIG}}
+    echo "  output_path = \"seaplane-cli-${TAG}-${TARGET}-macos.zip\"" >> {{GON_CONFIG}}
     echo '}' >> {{GON_CONFIG}}
     echo Compiling ${TARGET}...
     cargo --quiet build --release --manifest-path seaplane-cli/Cargo.toml --target ${TARGET}-apple-darwin
@@ -214,5 +213,5 @@ _sign $AC_PASSWORD SIGNER='${USER}': _install-gon
     cd ${SIGNDIR}; gon config.hcl
     echo Done!
     echo Saving Artifacts to ${DISTDIR}
-    cp ${SIGNDIR}/seaplane-cli-${TAG}-$(uname -m)-macos.zip ${DISTDIR}
+    cp ${SIGNDIR}/seaplane-cli-${TAG}-${TARGET}-macos.zip ${DISTDIR}
 
