@@ -35,7 +35,7 @@ jobs:
       use-tag-version: true
 
   release:
-    name: Create Release
+    name: Release
     runs-on: [self-hosted, linux, x64]
     container: ubuntu:focal
     needs:

@@ -21,8 +21,9 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+jobs:
   build-release:
-    name: Build Release Artifacts
+    name: Build Release
     runs-on: ${{ fromJSON(inputs.runner) }}
     if: ${{ !contains(inputs.runner, 'self-hosted') }}
     steps:

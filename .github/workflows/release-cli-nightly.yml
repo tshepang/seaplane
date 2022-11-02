@@ -5,6 +5,7 @@ on:
       - 'seaplane-cli/src/**.rs'
       - 'seaplane-cli/build.rs'
       - 'seaplane-cli/Cargo.toml'
+      - 'seaplane-cli/share/third_party_licenses.md'
       - 'LICENSE'
   workflow_dispatch:
 
@@ -40,7 +41,7 @@ jobs:
       use-short-sha: true
 
   release:
-    name: Create Nightly Release
+    name: Nightly Release
     runs-on: [self-hosted, linux, x64]
     container: ubuntu:focal
     needs:
