@@ -3,7 +3,11 @@
 
 use std::{path::Path, result::Result as StdResult};
 
-use crate::{context::FlightCtx, error::CliErrorKind, ops::formation::Endpoint};
+use crate::{
+    context::{FlightCtx, DEFAULT_IMAGE_REGISTRY_URL},
+    error::CliErrorKind,
+    ops::formation::Endpoint,
+};
 
 /// Ensures a valid Endpoint
 pub fn validate_endpoint(s: &str) -> StdResult<(), String> {
@@ -165,7 +169,9 @@ pub fn validate_at_stdin(s: &str) -> StdResult<(), &'static str> {
 ///
 /// where only image is required, and architecture can be passed multiple times.
 pub fn validate_inline_flight_spec(s: &str) -> StdResult<(), String> {
-    if let Err(e) = FlightCtx::from_inline_flight(s) {
+    // We use the default image registry URL regardless of what the user has set because we're only
+    // checking validity, not actually using this data
+    if let Err(e) = FlightCtx::from_inline_flight(s, DEFAULT_IMAGE_REGISTRY_URL) {
         return Err(format!("invalid INLINE-SPEC: {}", {
             match e.kind() {
                 CliErrorKind::InlineFlightUnknownItem(s) => format!("unknown item {s}"),

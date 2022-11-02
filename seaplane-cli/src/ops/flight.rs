@@ -16,9 +16,6 @@ use crate::{
     printer::{Color, Output},
 };
 
-/// The registry to use for image references when the registry is omitted by the user
-pub const DEFAULT_IMAGE_REGISTRY_URL: &str = "registry.hub.docker.com/";
-
 /// A wrapper round a Flight model
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Flight {
@@ -281,7 +278,7 @@ impl Output for Flights {
         Ok(())
     }
 
-    fn print_table(&self, _ctx: &Ctx) -> Result<()> {
+    fn print_table(&self, ctx: &Ctx) -> Result<()> {
         let buf = Vec::new();
         let mut tw = TabWriter::new(buf);
         // TODO: Add local/remote formation references
@@ -307,12 +304,7 @@ impl Output for Flights {
                 "{}\t{}\t{}\t{}\t{}\t{}\t{}",
                 &flight.id.to_string()[..8], // TODO: make sure length is not ambiguous
                 flight.model.name(),
-                flight
-                    .model
-                    .image_str()
-                    .trim_start_matches(DEFAULT_IMAGE_REGISTRY_URL), /* TODO: provide opt-in/out
-                                                                      * way to collapse long
-                                                                      * names */
+                flight.model.image_str().trim_start_matches(&ctx.registry),
                 flight.model.minimum(),
                 flight
                     .model

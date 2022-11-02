@@ -48,10 +48,11 @@ use crate::{
 
 const FLIGHTS_FILE: &str = "flights.json";
 const FORMATIONS_FILE: &str = "formations.json";
+/// The registry to use for image references when the registry is omitted by the user
+pub const DEFAULT_IMAGE_REGISTRY_URL: &str = "registry.hub.docker.com";
 
 #[derive(Debug, Default, Clone)]
 pub struct Args {
-    // @TODO we may need to get more granular than binary yes/no. For example, there may be times
     /// when the answer is "yes...but only if the stream is a TTY." In these cases an enum of
     /// Never, Auto, Always would be more appropriate
     ///
@@ -142,6 +143,9 @@ pub struct Ctx {
     /// Disable progress bar indicators
     pub disable_pb: bool,
 
+    /// The container image registry to infer if not provided
+    pub registry: String,
+
     /// Set the base URL for the request
     pub compute_url: Option<Url>,
     pub identity_url: Option<Url>,
@@ -196,6 +200,7 @@ impl Clone for Ctx {
             internal_run: self.internal_run,
             did_init: self.did_init,
             disable_pb: self.disable_pb,
+            registry: self.registry.clone(),
             compute_url: self.compute_url.clone(),
             identity_url: self.identity_url.clone(),
             metadata_url: self.metadata_url.clone(),
@@ -227,6 +232,7 @@ impl Default for Ctx {
             locks_url: None,
             insecure_urls: false,
             invalid_certs: false,
+            registry: DEFAULT_IMAGE_REGISTRY_URL.into(),
         }
     }
 }
@@ -243,6 +249,12 @@ impl From<RawConfig> for Ctx {
                 api_key: cfg.account.api_key,
                 ..Default::default()
             },
+            registry: cfg
+                .seaplane
+                .default_registry_url
+                .unwrap_or_else(|| DEFAULT_IMAGE_REGISTRY_URL.into())
+                .trim_end_matches('/')
+                .to_string(),
             compute_url: cfg.api.compute_url,
             identity_url: cfg.api.identity_url,
             metadata_url: cfg.api.metadata_url,

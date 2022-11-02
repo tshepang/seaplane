@@ -146,7 +146,7 @@ impl CliCommand for SeaplaneFormationPlan {
             cloned_ctx.internal_run = true;
             cloned_ctx
                 .flight_ctx
-                .init(FlightCtx::from_inline_flight(flight)?);
+                .init(FlightCtx::from_inline_flight(flight, &ctx.registry)?);
 
             let flight_plan: Box<dyn CliCommand> = Box::new(SeaplaneFlightPlan);
             flight_plan.run(&mut cloned_ctx)?;

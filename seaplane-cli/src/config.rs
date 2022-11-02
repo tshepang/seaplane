@@ -131,6 +131,9 @@ impl RawConfig {
         if let Some(choice) = new_cfg.seaplane.color {
             self.seaplane.color = Some(choice);
         }
+        if let Some(registry) = new_cfg.seaplane.default_registry_url {
+            self.seaplane.default_registry_url = Some(registry);
+        }
         if let Some(url) = new_cfg.api.compute_url {
             self.api.compute_url = Some(url);
         }
@@ -199,18 +202,24 @@ impl ToDisk for RawConfig {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawSeaplaneConfig {
+    /// Whether to color output or not
     #[serde(default)]
     pub color: Option<ColorChoice>,
+
+    /// The default container image registry to infer if not provided
+    #[serde(default)]
+    pub default_registry_url: Option<String>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawAccountConfig {
+    /// The user's API key
     #[serde(default)]
     pub api_key: Option<String>,
 }
@@ -219,15 +228,19 @@ pub struct RawAccountConfig {
 #[cfg_attr(test, derive(PartialEq, Eq))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawApiConfig {
+    /// The URL of Compute Service
     #[serde(default)]
     pub compute_url: Option<Url>,
 
+    /// The URL of Token Identity Service
     #[serde(default)]
     pub identity_url: Option<Url>,
 
+    /// The URL of Metadata KVS Service
     #[serde(default)]
     pub metadata_url: Option<Url>,
 
+    /// The URL of Locks Service
     #[serde(default)]
     pub locks_url: Option<Url>,
 }
@@ -235,10 +248,12 @@ pub struct RawApiConfig {
 #[derive(Debug, Copy, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RawDangerZoneConfig {
+    /// Allow HTTP in URLs pointing to services
     #[serde(default)]
     #[cfg(feature = "allow_insecure_urls")]
     pub allow_insecure_urls: bool,
 
+    /// Allow invalid or self signed HTTPS certs
     #[serde(default)]
     #[cfg(feature = "allow_invalid_certs")]
     pub allow_invalid_certs: bool,
@@ -332,7 +347,31 @@ mod test {
         assert_eq!(
             cfg,
             RawConfig {
-                seaplane: RawSeaplaneConfig { color: Some(ColorChoice::Always) },
+                seaplane: RawSeaplaneConfig {
+                    color: Some(ColorChoice::Always),
+                    default_registry_url: None
+                },
+                ..Default::default()
+            }
+        )
+    }
+
+    #[test]
+    fn deser_default_registry_key() {
+        let cfg_str = r#"
+        [seaplane]
+        default-registry-url = "quay.io/"
+        "#;
+
+        let cfg: RawConfig = toml::from_str(cfg_str).unwrap();
+
+        assert_eq!(
+            cfg,
+            RawConfig {
+                seaplane: RawSeaplaneConfig {
+                    color: None,
+                    default_registry_url: Some("quay.io/".into())
+                },
                 ..Default::default()
             }
         )

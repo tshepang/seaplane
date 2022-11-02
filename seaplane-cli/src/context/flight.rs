@@ -5,6 +5,7 @@ use crate::{
         cmds::flight::{str_to_image_ref, SeaplaneFlightCommonArgMatches, FLIGHT_MINIMUM_DEFAULT},
         validator::validate_flight_name,
     },
+    context::Ctx,
     error::{CliErrorKind, Result},
     ops::generate_flight_name,
 };
@@ -47,7 +48,7 @@ impl FlightCtx {
     /// name=FOO,image=nginx:latest,api-permission,architecture=amd64,minimum=1,maximum,2
     ///
     /// Where only image=... is required
-    pub fn from_inline_flight(inline_flight: &str) -> Result<FlightCtx> {
+    pub fn from_inline_flight(inline_flight: &str, registry: &str) -> Result<FlightCtx> {
         if inline_flight.contains(' ') {
             return Err(CliErrorKind::InlineFlightHasSpace.into_err());
         }
@@ -91,7 +92,7 @@ impl FlightCtx {
                 }
                 // @TODO technically imageFOOBAR=.. is valid... oh well
                 img if part.starts_with("image") => {
-                    fctx.image = Some(str_to_image_ref(parse_item!(img)?)?);
+                    fctx.image = Some(str_to_image_ref(registry, parse_item!(img)?)?);
                 }
                 // @TODO technically maxFOOBAR=.. is valid... oh well
                 max if part.starts_with("max") => {
@@ -141,6 +142,7 @@ impl FlightCtx {
     pub fn from_flight_common(
         matches: &SeaplaneFlightCommonArgMatches,
         prefix: &str,
+        ctx: &Ctx,
     ) -> Result<FlightCtx> {
         let matches = matches.0;
         let mut generated_name = false;
@@ -155,7 +157,7 @@ impl FlightCtx {
 
         // We have to use if let in order to use the ? operator
         let image = if let Some(s) = matches.get_one::<String>(&format!("{prefix}image")) {
-            Some(str_to_image_ref(s)?)
+            Some(str_to_image_ref(&ctx.registry, s)?)
         } else {
             None
         };
@@ -218,124 +220,130 @@ impl FlightCtx {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::context::DEFAULT_IMAGE_REGISTRY_URL as IR;
 
     #[test]
     fn from_inline_flight_valid() {
         assert!(FlightCtx::from_inline_flight(
-            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission,architecture=amd64"
+            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission,architecture=amd64", IR
         )
         .is_ok());
         assert!(FlightCtx::from_inline_flight(
-            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission"
+            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission",
+            IR
         )
         .is_ok());
         assert!(FlightCtx::from_inline_flight(
-            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2"
+            "image=demos/nginx:latest,name=foo,maximum=2,minimum=2",
+            IR
         )
         .is_ok());
-        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo").is_ok());
-        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest").is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo", IR).is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest", IR).is_ok());
         assert!(FlightCtx::from_inline_flight(
-            "image=demos/nginx:latest,name=foo,max=2,minimum=2,api-permission,architecture=amd64"
+            "image=demos/nginx:latest,name=foo,max=2,minimum=2,api-permission,architecture=amd64",
+            IR
         )
         .is_ok());
         assert!(FlightCtx::from_inline_flight(
-            "image=demos/nginx:latest,name=foo,maximum=2,min=2,api-permission"
+            "image=demos/nginx:latest,name=foo,maximum=2,min=2,api-permission",
+            IR
         )
         .is_ok());
-        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permissions").is_ok());
-        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=amd64").is_ok());
-        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=arm64").is_ok());
         assert!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permission=true").is_ok(),
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permissions", IR).is_ok()
         );
-        assert!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permission=false").is_ok()
-        );
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=amd64", IR).is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=arm64", IR).is_ok());
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permission=true", IR)
+            .is_ok(),);
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,api-permission=false", IR)
+            .is_ok());
     }
 
     #[test]
     fn from_inline_flight_invalid() {
         assert_eq!(FlightCtx::from_inline_flight(
-            "image= demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission,architecture=amd64"
+            "image= demos/nginx:latest,name=foo,maximum=2,minimum=2,api-permission,architecture=amd64", IR
         )
         .unwrap_err().kind(), &CliErrorKind::InlineFlightHasSpace);
         assert_eq!(
             FlightCtx::from_inline_flight(
-                "image=demos/nginx:latest, name=foo,maximum=2,minimum=2,api-permission"
+                "image=demos/nginx:latest, name=foo,maximum=2,minimum=2,api-permission",
+                IR
             )
             .unwrap_err()
             .kind(),
             &CliErrorKind::InlineFlightHasSpace
         );
         assert_eq!(
-            FlightCtx::from_inline_flight("name=foo,maximum=2,minimum=2")
+            FlightCtx::from_inline_flight("name=foo,maximum=2,minimum=2", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightMissingImage
         );
         assert_eq!(
-            FlightCtx::from_inline_flight(",image=demos/nginx:latest,name=foo")
+            FlightCtx::from_inline_flight(",image=demos/nginx:latest,name=foo", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightUnknownItem("".into())
         );
         assert_eq!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,")
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightUnknownItem("".into())
         );
         assert_eq!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,foo")
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,foo", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightUnknownItem("foo".into())
         );
         assert_eq!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=invalid_name")
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=invalid_name", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightInvalidName("invalid_name".into())
         );
-        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,max=2.3")
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,max=2.3", IR)
             .unwrap_err()
             .kind()
             .is_parse_int(),);
-        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,max=foo")
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,max=foo", IR)
             .unwrap_err()
             .kind()
             .is_parse_int());
-        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=foo")
+        assert!(FlightCtx::from_inline_flight("image=demos/nginx:latest,arch=foo", IR)
             .unwrap_err()
             .kind()
             .is_strum_parse(),);
         assert_eq!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,name")
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightMissingValue("name".into())
         );
         assert_eq!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,arch")
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,arch", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightMissingValue("arch".into())
         );
         assert_eq!(
-            FlightCtx::from_inline_flight("image,name=foo")
+            FlightCtx::from_inline_flight("image,name=foo", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightMissingValue("image".into())
         );
         assert_eq!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,min=")
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,min=", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightMissingValue("min".into())
         );
         assert_eq!(
-            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,max=")
+            FlightCtx::from_inline_flight("image=demos/nginx:latest,name=foo,max=", IR)
                 .unwrap_err()
                 .kind(),
             &CliErrorKind::InlineFlightMissingValue("max".into())
