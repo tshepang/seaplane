@@ -7,8 +7,9 @@ SDK_RUST_DIR := 'seaplane-sdk/rust'
 SDK_RUST_MANIFEST := SDK_RUST_DIR / 'Cargo.toml'
 SDK_PYTHON_DIR := 'seaplane-sdk/python'
 
-GON_CONFIG := SELF / 'target/sign_' / TARGET / 'config.hcl'
 export TARGET := arch()
+export TAG := SHORTSHA
+GON_CONFIG := SELF / 'dist/sign_' + TARGET / 'config.hcl'
 
 SHORTSHA := `git rev-parse --short HEAD`
 CURRENT_BRANCH := `git rev-parse --abbrev-ref HEAD`
@@ -126,11 +127,11 @@ todos:
 
 # Create a nightly CLI release package (latest commit)
 package-nightly:
-    just _package-build "cli-$(just _git-shortsha-cli)"
+    just TAG="cli-$(just _git-shortsha-cli)" _package-build
 
 # Create a CLI release package (latest 'cli-v*' tag)
 package-release: _package-build
-    just _package-build "$(git tag --list | grep cli-v | head -n1)"
+    just TAG="$(git tag --list | grep cli-v | head -n1)" _package-build
 
 #
 # Private/Internal Items
@@ -144,7 +145,7 @@ _git-shortsha:
 _git-shortsha-cli:
     @git --no-pager log -n1 --pretty=format:%h $(dirname {{ CLI_DIR }})
 
-_package-build $TAG='':
+_package-build:
     #!/usr/bin/env bash
     set -euo pipefail
     BUILDDIR=target/release/
@@ -166,6 +167,7 @@ _package-build $TAG='':
     cd ${DISTDIR}
     if [[ "${OS}" == "windows" ]]; then
       zip -r ../seaplane-${TAG}-$(uname -m)-windows.zip bin/ share/
+    elif [[ "${OS}" == "macos" ]]; then
     else
       tar czf ../seaplane-${TAG}-$(uname -m)-${OS}.tar.gz ./*
     fi
@@ -176,14 +178,16 @@ _cargo-install +TOOLS:
 _install-gon:
     #!/usr/bin/env bash
     echo {{ if os() != 'macos' { error('only macOS') } else { '' } }}
-    if ! which gon; then brew install mitchellh/gon/gon; fi
+    if ! command -v gon 2>&1 >/dev/null ; then brew install mitchellh/gon/gon; fi
 
 # Sign and notarize a release for macOS
 _sign $AC_PASSWORD SIGNER='${USER}': _install-gon
     #!/usr/bin/env bash
+    set -euo pipefail
     echo {{ if os() != 'macos' { error('only macOS needs to sign') } else { '' } }}
-    CARGOTGTDIR={{ justfile_directory() / 'target' }}
-    SIGNDIR=${CARGOTGTDIR}/sign_${TARGET}/
+    DISTDIR={{ justfile_directory() }}/dist
+    SIGNDIR=${DISTDIR}/sign_${TARGET}/
+    CARGOTGTDIR={{ justfile_directory() }}/target
     ARTIFACTSDIR=${CARGOTGTDIR}/${TARGET}-apple-darwin/release/
     echo Cleaning previous runs
     rm -rf $SIGNDIR
@@ -200,15 +204,15 @@ _sign $AC_PASSWORD SIGNER='${USER}': _install-gon
     echo '  application_identity = "663170B344CE42EF1F583807B756239878A92FC8"' >> {{GON_CONFIG}}
     echo '}' >> {{GON_CONFIG}}
     echo 'zip {' >> {{GON_CONFIG}}
-    echo "  output_path = \"seaplane-{{SHORTSHA}}-${TARGET}-apple-darwin.zip\"" >> {{GON_CONFIG}}
+    echo "  output_path = \"seaplane-cli-${TAG}-$(uname -m)-macos.zip\"" >> {{GON_CONFIG}}
     echo '}' >> {{GON_CONFIG}}
     echo Compiling ${TARGET}...
-    cargo --quiet build --release --manifest-path {{justfile_directory() + '/seaplane-cli/Cargo.toml' }} --target ${TARGET}-apple-darwin
+    cargo --quiet build --release --manifest-path seaplane-cli/Cargo.toml --target ${TARGET}-apple-darwin
     echo Copying binaries...
     cp ${ARTIFACTSDIR}/seaplane ${SIGNDIR}
     echo Signing...
     cd ${SIGNDIR}; gon config.hcl
     echo Done!
-    echo Saving Artifacts to ${CARGOTGTDIR}
-    cp ${SIGNDIR}/seaplane-{{SHORTSHA}}-${TARGET}-apple-darwin.zip ${CARGOTGTDIR}
+    echo Saving Artifacts to ${DISTDIR}
+    cp ${SIGNDIR}/seaplane-cli-${TAG}-$(uname -m)-macos.zip ${DISTDIR}
 

@@ -20,6 +20,7 @@ jobs:
   build-linux-x64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
+      runner: "['self-hosted', 'linux', 'x64']"
       use-tag-version: true
 
   build-linux-aarch64-gnu:
