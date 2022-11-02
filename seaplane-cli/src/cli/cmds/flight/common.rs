@@ -7,7 +7,7 @@ static LONG_IMAGE: &str =
     "The container image registry reference that this Flight will use (See IMAGE SPEC below)
 
 NOTE at this time the if the registry is omitted, such as `nginxdemos/hello:latest` a default
-registry of `registry.hub.docker.com` will be used. This may change in the future, so it is
+registry of `registry.cplane.cloud` will be used. This may change in the future, so it is
 recommended to always specify a full image reference path.";
 
 static LONG_NAME: &str =

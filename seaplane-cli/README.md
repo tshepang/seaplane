@@ -15,15 +15,15 @@ the Seaplane Rust SDK).
 
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
-	* [Install from a Github Release](#install-from-a-github-release)
-	* [Compile from crates.io](#compile-from-cratesio)
-	* [Compile from Source](#compile-from-source)
+    * [Install from a Github Release](#install-from-a-github-release)
+    * [Compile from crates.io](#compile-from-cratesio)
+    * [Compile from Source](#compile-from-source)
 * [Usage of the Seaplane CLI Tool](#usage-of-the-seaplane-cli-tool)
-	* [Configure Your API Key](#configure-your-api-key)
-		* [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
-		* [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
-		* [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
-	* [Test!](#test)
+    * [Configure Your API Key](#configure-your-api-key)
+        * [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
+        * [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
+        * [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
+    * [Test!](#test)
 * [License](#license)
 
 <!-- vim-markdown-toc -->
@@ -236,6 +236,5 @@ Licensed under the Apache License, Version 2.0, [LICENSE]. Copyright 2022 Seapla
 [rustup]: https://rustup.rs
 [docs/CONFIGURATION_SPEC.md]: https://github.com/seaplane-io/seaplane/blob/main/docs/CONFIGURATION_SPEC.md
 [SDK]: https://github.com/seaplane-io/seaplane/tree/main/seaplane
-[`nginxdemos/hello`]: https://hub.docker.com/r/nginxdemos/hello/
 [releases]: https://github.com/seaplane-io/seaplane/releases
 [LICENSE]: https://github.com/seaplane-io/seaplane/blob/main/LICENSE

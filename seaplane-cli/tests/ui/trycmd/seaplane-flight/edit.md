@@ -46,7 +46,7 @@ OPTIONS:
 
 IMAGE SPEC
 
-    NOTE that a default registry of `registry.hub.docker.com` is used.
+    NOTE that a default registry of `registry.cplane.cloud` is used.
 
     Valid images can be defined using the grammar
 
@@ -72,8 +72,8 @@ IMAGE SPEC
 
     EXAMPLES
 
-    registry.hub.docker.com/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
-    registry.hub.docker.com/seaplane/busybox:latest
+    registry.cplane.cloud/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
+    registry.cplane.cloud/seaplane/busybox:latest
 
 ```
 
@@ -123,7 +123,7 @@ OPTIONS:
             The container image registry reference that this Flight will use (See IMAGE SPEC below)
             
             NOTE at this time the if the registry is omitted, such as `nginxdemos/hello:latest` a default
-            registry of `registry.hub.docker.com` will be used. This may change in the future, so it is
+            registry of `registry.cplane.cloud` will be used. This may change in the future, so it is
             recommended to always specify a full image reference path.
             
             [aliases: img]
@@ -185,7 +185,7 @@ OPTIONS:
 
 IMAGE SPEC
 
-    NOTE that a default registry of `registry.hub.docker.com` is used.
+    NOTE that a default registry of `registry.cplane.cloud` is used.
 
     Valid images can be defined using the grammar
 
@@ -211,7 +211,7 @@ IMAGE SPEC
 
     EXAMPLES
 
-    registry.hub.docker.com/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
-    registry.hub.docker.com/seaplane/busybox:latest
+    registry.cplane.cloud/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
+    registry.cplane.cloud/seaplane/busybox:latest
 
 ```

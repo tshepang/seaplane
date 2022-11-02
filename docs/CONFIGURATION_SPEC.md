@@ -90,10 +90,10 @@ may contain one of the following values:
 Names which container image registry will be inferred if not provided for
 commands and CLI flags that take a container image reference.
 
-Default value: `registry.hub.docker.com/`
+Default value: `registry.cplane.cloud`
 
-For example, `seaplane flight plan --image=library/nginx:latest` will be
-expanded to `registry.hub.docker.com/library/nginx:latest`
+For example, `seaplane flight plan --image=nginx:latest` will be
+expanded to `registry.cplane.cloud/nginx:latest`
 
 ### The `[account]` Section
 

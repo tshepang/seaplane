@@ -49,7 +49,7 @@ use crate::{
 const FLIGHTS_FILE: &str = "flights.json";
 const FORMATIONS_FILE: &str = "formations.json";
 /// The registry to use for image references when the registry is omitted by the user
-pub const DEFAULT_IMAGE_REGISTRY_URL: &str = "registry.hub.docker.com";
+pub const DEFAULT_IMAGE_REGISTRY_URL: &str = "registry.cplane.cloud";
 
 #[derive(Debug, Default, Clone)]
 pub struct Args {

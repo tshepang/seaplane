@@ -34,7 +34,7 @@ pub const REGION_SPEC: &str = "REGION SPEC
 
 pub const IMAGE_SPEC: &str = r#"IMAGE SPEC
 
-    NOTE that a default registry of `registry.hub.docker.com` is used.
+    NOTE that a default registry of `registry.cplane.cloud` is used.
 
     Valid images can be defined using the grammar
 
@@ -60,5 +60,5 @@ pub const IMAGE_SPEC: &str = r#"IMAGE SPEC
 
     EXAMPLES
 
-    registry.hub.docker.com/library/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
-    registry.hub.docker.com/seaplane/busybox:latest"#;
+    registry.cplane.cloud/busybox@sha256:7cc4b5aefd1d0cadf8d97d4350462ba51c694ebca145b08d7d41b41acc8db5aa
+    registry.cplane.cloud/seaplane/busybox:latest"#;

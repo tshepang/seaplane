@@ -45,7 +45,7 @@ fn default_cfg_json() -> serde_json::Value {
         "connections":[],
         "flights":[{
             "name":"flask",
-            "image":"registry.hub.docker.com/stubb/alpine:latest",
+            "image":"registry.cplane.cloud/stubb/alpine:latest",
             "minimum":1_u64,
             "maximum":null,
             "architecture":[],
@@ -53,7 +53,7 @@ fn default_cfg_json() -> serde_json::Value {
         },
         {
             "name":"pequod",
-            "image":"registry.hub.docker.com/stubb/alpine:latest",
+            "image":"registry.cplane.cloud/stubb/alpine:latest",
             "minimum":1_u64,
             "maximum":null,
             "architecture":[],
@@ -310,7 +310,7 @@ macro_rules! mock_launch {
                     "connections":[],
                     "flights":[{
                         "name":"ishmael",
-                        "image":"registry.hub.docker.com/queequeg/alpine:latest",
+                        "image":"registry.cplane.cloud/queequeg/alpine:latest",
                         "minimum":1_u64,
                         "maximum":null,
                         "architecture":[],
@@ -606,14 +606,14 @@ fn formation_plan_launch_all_fields_unstable() {
             "connections":["queequeg"],
             "flights":[{
                 "name":"flask",
-                "image":"registry.hub.docker.com/stubb/alpine:latest",
+                "image":"registry.cplane.cloud/stubb/alpine:latest",
                 "minimum":5,
                 "maximum":20,
                 "architecture":["AMD64"],
                 "api_permission":true
             },{
                 "name":"pequod",
-                "image":"registry.hub.docker.com/stubb/alpine:latest",
+                "image":"registry.cplane.cloud/stubb/alpine:latest",
                 "minimum":1,
                 "maximum":null,
                 "architecture":[],
@@ -651,14 +651,14 @@ fn formation_plan_launch_all_fields() {
             "connections":[],
             "flights":[{
                 "name":"flask",
-                "image":"registry.hub.docker.com/stubb/alpine:latest",
+                "image":"registry.cplane.cloud/stubb/alpine:latest",
                 "minimum":5,
                 "maximum":20,
                 "architecture":["AMD64"],
                 "api_permission":false
             },{
                 "name":"pequod",
-                "image":"registry.hub.docker.com/stubb/alpine:latest",
+                "image":"registry.cplane.cloud/stubb/alpine:latest",
                 "minimum":1,
                 "maximum":null,
                 "architecture":[],

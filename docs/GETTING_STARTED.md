@@ -46,7 +46,7 @@ Before we begin you'll want to ensure you've completed a few steps:
 ## Quickstart
 
 As a preview, and to show just how quick it can be to spin up a Seaplane
-workload, here is what it looks like to run [`nginxdemos/hello`] on our
+workload, here is what it looks like to run `nginxdemos/hello` on our
 platform.
 
 You'll only need:
@@ -359,7 +359,7 @@ Let's get started!
 ### Upload a Container Image
 
 You must first upload your container image to the Seaplane Cloud Registry.
-We'll be using the [`nginxdemos/hello`]
+We'll be using the `nginxdemos/hello`
 
 ### Crate and Launch a Formation with a Single Flight
 
@@ -648,7 +648,7 @@ world
 
 > **Note**
 > We include `--decode` so the output will be in ASCII and not a string of
-> hexadecimal characters. 
+> hexadecimal characters.
 
 [//]: # (Links)
 
@@ -657,4 +657,3 @@ world
 [TOML]: https://toml.io
 [docs/CONFIGURATION_SPEC.md]: https://github.com/seaplane-io/seaplane/blob/main/docs/CONFIGURATION_SPEC.md
 [SDK]: https://github.com/seaplane-io/seaplane/tree/main/seaplane
-[`nginxdemos/hello`]: https://hub.docker.com/r/nginxdemos/hello/
