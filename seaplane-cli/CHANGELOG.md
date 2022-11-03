@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3.1 - 03 Nov 2022
+
+### Bug Fixes
+
+- Fixes panic when using legacy `--minimum` and `--maximum` when defining Flight Plans ([#263](https://github.com/seaplane-io/seaplane/pull/263))
 
 ## 0.3.0 - 01 Nov 2022
 

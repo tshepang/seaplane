@@ -1,7 +1,7 @@
 use clap::{value_parser, Arg, ArgMatches};
 use seaplane::api::compute::v1::Architecture as ArchitectureModel;
 
-use crate::cli::validator::validate_flight_name;
+use crate::cli::validator::{validate_flight_name, validate_u64};
 
 static LONG_IMAGE: &str =
     "The container image registry reference that this Flight will use (See IMAGE SPEC below)
@@ -78,9 +78,11 @@ pub fn args(image_required: bool) -> Vec<Arg<'static>> {
             .help("A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned")
             .long_help(LONG_NAME),
         arg!(--minimum|min =["NUM"=>"1"])
+            .validator(validate_u64)
             .help("The minimum number of container instances that should ever be running"),
         arg!(--maximum|max =["NUM"])
             .overrides_with("no-maximum")
+            .validator(validate_u64)
             .help("The maximum number of container instances that should ever be running (default: autoscale as needed)"),
         arg!(--architecture|arch|arches|architectures ignore_case =["ARCH"]...)
             .value_parser(value_parser!(Architecture))

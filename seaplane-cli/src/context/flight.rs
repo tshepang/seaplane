@@ -141,14 +141,13 @@ impl FlightCtx {
     /// Builds a FlightCtx from ArgMatches using some `prefix` if any to search for args
     pub fn from_flight_common(
         matches: &SeaplaneFlightCommonArgMatches,
-        prefix: &str,
         ctx: &Ctx,
     ) -> Result<FlightCtx> {
         let matches = matches.0;
         let mut generated_name = false;
         // We generate a random name if one is not provided
         let name = matches
-            .get_one::<String>(&format!("{prefix}name"))
+            .get_one::<String>("name")
             .map(ToOwned::to_owned)
             .unwrap_or_else(|| {
                 generated_name = true;
@@ -156,7 +155,7 @@ impl FlightCtx {
             });
 
         // We have to use if let in order to use the ? operator
-        let image = if let Some(s) = matches.get_one::<String>(&format!("{prefix}image")) {
+        let image = if let Some(s) = matches.get_one::<String>("image") {
             Some(str_to_image_ref(&ctx.registry, s)?)
         } else {
             None
@@ -166,18 +165,22 @@ impl FlightCtx {
             image,
             name_id: name,
             minimum: matches
-                .get_one(&format!("{prefix}minimum"))
-                .copied()
+                .get_one::<String>("minimum")
+                // clap validates valid u64 prior to this
+                .map(|min| min.parse::<u64>().expect("failed to parse valid u64"))
                 .unwrap_or(FLIGHT_MINIMUM_DEFAULT),
-            maximum: matches.get_one(&format!("{prefix}maximum")).copied(),
+            maximum: matches
+                .get_one::<String>("maximum")
+                // clap validates valid u64 prior to this
+                .map(|max| max.parse().expect("failed to parse valid u64")),
             architecture: matches
-                .get_many::<Architecture>(&format!("{prefix}architecture"))
+                .get_many::<Architecture>("architecture")
                 .unwrap_or_default()
                 .copied()
                 .collect(),
             // because of clap overrides we only have to check api_permissions
-            api_permission: matches.contains_id(&format!("{prefix}api-permission")),
-            reset_maximum: matches.contains_id(&format!("{prefix}no-maximum")),
+            api_permission: matches.contains_id("api-permission"),
+            reset_maximum: matches.contains_id("no-maximum"),
             generated_name,
         })
     }

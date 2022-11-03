@@ -9,6 +9,13 @@ use crate::{
     ops::formation::Endpoint,
 };
 
+pub fn validate_u64(s: &str) -> StdResult<(), String> {
+    match s.parse::<u64>() {
+        Err(_) => Err("value must be a valid 64-bit integer".into()),
+        Ok(_) => Ok(()),
+    }
+}
+
 /// Ensures a valid Endpoint
 pub fn validate_endpoint(s: &str) -> StdResult<(), String> {
     let res = s.parse::<Endpoint>();
