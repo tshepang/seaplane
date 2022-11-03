@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-rust-cli-tests:
+  run-rust-sdk-tests:
     uses: ./.github/workflows/workflow-rust-tests.yml
     with:
       test_sdk: true

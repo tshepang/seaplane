@@ -14,6 +14,5 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-rust-cli-tests:
+  run-python-sdk-tests:
     uses: ./.github/workflows/workflow-python-tests.yml
-    with:
