@@ -1,14 +1,12 @@
-name: Python SDK Pull Request
+name: Python SDK PR
 
 on:
   pull_request:
     branches:
       - main
     paths:
-      - 'seaplane-sdk/python/**'
-      - '!**.md'
-      - '!doc/**'
-      - "!LICENSE"
+      - 'seaplane-sdk/python/**/*.py'
+      - 'seaplane-sdk/python/pyproject.toml'
   workflow_dispatch:
 
 concurrency:
@@ -16,48 +14,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: seaplane-sdk/python
-    strategy:
-      matrix:
-        python-version: ['3.8', '3.9', '3.10']
-        poetry-version: ['1.1.13']
-    name: Python ${{ matrix.python-version }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-        architecture: x64
-    - uses: abatilo/actions-poetry@v2.0.0
-      with:
-        poetry-version: ${{ matrix.poetry-version }}
-    - run: poetry install
-    - run: poetry run nox -s fmt_check
-    - run: poetry run nox -s lint
-    - run: poetry run nox -s type_check
-
-  tests:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: seaplane-sdk/python
-    strategy:
-      matrix:
-        python-version: ['3.8', '3.9', '3.10']
-        poetry-version: ['1.1.13']
-    name: Python ${{ matrix.python-version }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-        architecture: x64
-    - uses: abatilo/actions-poetry@v2.0.0
-      with:
-        poetry-version: ${{ matrix.poetry-version }}
-    - run: poetry install
-    - run: poetry run nox -s test -vv
+  run-rust-cli-tests:
+    uses: ./.github/workflows/workflow-python-tests.yml
+    with:

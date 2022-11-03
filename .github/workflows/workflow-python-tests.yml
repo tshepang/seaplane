@@ -1,0 +1,53 @@
+# This workflow may also be triggered manually for testing purposes.
+name: Python Tests Workflow
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: seaplane-sdk/python
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+        poetry-version: ['1.1.13']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+    - uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: ${{ matrix.poetry-version }}
+    - run: poetry install
+    - run: poetry run nox -s fmt_check
+    - run: poetry run nox -s lint
+    - run: poetry run nox -s type_check
+
+  tests:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: seaplane-sdk/python
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+        poetry-version: ['1.1.13']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+    - uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: ${{ matrix.poetry-version }}
+    - run: poetry install
+    - run: poetry run nox -s test -vv

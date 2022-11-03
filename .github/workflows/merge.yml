@@ -1,23 +1,17 @@
 # CI workflow for every merge to main.
 #
 # This workflow may also be triggered manually for testing purposes.
-name: "Rust merge to main"
+name: Merge to Main
 
 on:
   push:
     branches: [main]
     paths:
-    - 'seaplane-sdk/rust/**/*.rs'
     - 'seaplane-cli/**/*.rs'
+    - 'seaplane-sdk/rust/**/*.rs'
+    - 'seaplane-sdk/python/**/*.py'
     - .github/workflows/merge.yml
-    - '!**.md'
-    - '!docs/**'
-    - "!LICENSE"
-
   workflow_dispatch:
-
-env:
-  CARGO_TERM_COLOR: always
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,3 +23,6 @@ jobs:
     with:
       test_sdk: true
       test_cli: true
+
+  run-python-tests:
+    uses: ./.github/workflows/workflow-python-tests.yml

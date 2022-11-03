@@ -1,5 +1,5 @@
 # This workflow may also be triggered manually for testing purposes.
-name: "Run rust tests"
+name: Rust Tests Workflow
 
 on:
   workflow_call:
