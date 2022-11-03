@@ -57,8 +57,8 @@ jobs:
           name: seaplane-${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           files: |
-            artifacts/artifact/seaplane-*.tar.gz
-            artifacts/artifact/seaplane-*.zip
+            artifacts/artifact/seaplane-cli-v*.tar.gz
+            artifacts/artifact/seaplane-cli-v*.zip
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           GITHUB_REPOSITORY: seaplane-io/seaplane
