@@ -5,7 +5,7 @@
 ---
 # Seaplane CLI and SDK
 
-The [Seaplane] [CLI] and [SDK].
+The Seaplane [CLI] and [SDK].
 
 ## What is Seaplane?
 
