@@ -7,23 +7,23 @@ This guide will walk through running your first workload on the Seaplane cloud.
 * [Prerequisites](#prerequisites)
 * [Quickstart](#quickstart)
 * [Setup](#setup)
-    * [The Seaplane CLI Tool](#the-seaplane-cli-tool)
-    * [Initialize our Environment](#initialize-our-environment)
-        * [Setting `NO_COLOR`](#setting-no_color)
-        * [Using `--no-color` or setting `--color=never`](#using---no-color-or-setting---colornever)
-        * [Setting `color = "never"` in the configuration file](#setting-color--never-in-the-configuration-file)
-    * [Configure Your API Key](#configure-your-api-key)
-        * [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
-        * [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
-        * [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
-    * [Test!](#test)
+	* [The Seaplane CLI Tool](#the-seaplane-cli-tool)
+	* [Initialize our Environment](#initialize-our-environment)
+		* [Setting `NO_COLOR`](#setting-no_color)
+		* [Using `--no-color` or setting `--color=never`](#using---no-color-or-setting---colornever)
+		* [Setting `color = "never"` in the configuration file](#setting-color--never-in-the-configuration-file)
+	* [Configure Your API Key](#configure-your-api-key)
+		* [Security of `SEAPLANE_API_KEY` Environment Variable](#security-of-seaplane_api_key-environment-variable)
+		* [Security of `--api-key` CLI Flag](#security-of---api-key-cli-flag)
+		* [Storing the API key in the Configuration File](#storing-the-api-key-in-the-configuration-file)
+	* [Test!](#test)
 * [Running Your Workload on Compute](#running-your-workload-on-compute)
-    * [Upload a Container Image](#upload-a-container-image)
-    * [Crate and Launch a Formation with a Single Flight](#crate-and-launch-a-formation-with-a-single-flight)
-        * [Your First Workload](#your-first-workload)
-        * [Working with Local Flight Plans](#working-with-local-flight-plans)
-        * [Working with Local Formation Plans](#working-with-local-formation-plans)
-    * [See a Hello World Page](#see-a-hello-world-page)
+	* [Upload a Container Image](#upload-a-container-image)
+	* [Crate and Launch a Formation with a Single Flight](#crate-and-launch-a-formation-with-a-single-flight)
+		* [Your First Workload](#your-first-workload)
+		* [Working with Local Flight Plans](#working-with-local-flight-plans)
+		* [Working with Local Formation Plans](#working-with-local-formation-plans)
+	* [See a Hello World Page](#see-a-hello-world-page)
 * [Using the Metadata Key Value Store](#using-the-metadata-key-value-store)
 
 <!-- vim-markdown-toc -->
@@ -117,12 +117,21 @@ folder (e.g. `~/Downloads`).
 We need to extract the binary and place it somewhere pointed to by your `$PATH`
 variable. On macOS and Linux `/usr/local/bin/` is a good location.
 
-- For macOS use `sudo unzip ./seaplane-$VERSION-$ARCH.zip -d /usr/local/bin/`. 
-- For Linux, use `sudo tar xzf ./seaplane-$VERSION-$ARCH.tar.gz -C /usr/local/bin/`.
-
 > **Note** 
 > You'll need to replace `$ARCH` and `$VERSION` with whichever architecture and
 > version you downloaded from the release page.
+
+- For macOS use `sudo unzip ./seaplane-cli-$VERSION-$ARCH.zip -d /usr/local/bin/`. 
+- For Linux, use `sudo tar xzf ./seaplane-cli-$VERSION-$ARCH.tar.gz -C /usr/local/`.
+
+> **Note**
+> Our macOS releases only contain the binary inside the zip archive because
+> they're signed and notarized by Apple.
+> 
+> Our Linux archives contain an install overlay with additional files like the
+> `LICENSE` and a list of third party libraries and their licenses that we
+> depend on. This is why the extraction path looks different between these two
+> OSes.
 
 > **Warning**
 > Windows does not have an equivalent to `/usr/local/bin` — you’ll need to
