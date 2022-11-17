@@ -1,23 +1,49 @@
-# Contributing to `seaplane` and `seaplane-cli`
+# Contributing to the Seaplane CLI and SDKs
 
 Contributions are welcome!
 
 ## Requirements
 
-seaplane is built with `cargo`, but we use
-[just](https://github.com/casey/just) as a command runner. You can install it
-with
+All projects in this repository require [`just`][just] (v1.8.0 or greater)
+ as a command runner.
+
+Additionally, see the sub-project README for details on the specific project requirements.
+
+You can install `just` if you have a Rust toolchain installed via:
 
 ```console
-$ cargo install just
+cargo install just
 ```
 
-Once just is installed, you can install the other tooling we use to build
-and test the system with
+Otherwise, see the `just` repository for pre-built binaries or how to install for your specific OS.
+
+Once `just` is installed, you can install the other tooling we use to build
+and test the system in one command with:
 
 ```console
-$ just setup
+just setup
 ```
+
+### macOS
+
+macOS additionally requires `brew` to be installed if creating and signing releases.
+
+### Windows
+
+Windows additionally requires `zip` if creating releases. This can be installed
+ via a package
+manager such as [Chocolatey][choco]
+
+> **Note**
+> When running some recipes like `spell-check`, if you receive an error about Execution Policy you
+> may need to run the following command. Some `just` recipes run as generated PowerShell scripts which
+> require the `unrestricted` policy.
+>
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy unrestricted -Scope CurrentUser
+> ```
+>
+> See https:/go.microsoft.com/fwlink/?LinkID=135170 for more details.
 
 ## Workflow
 
@@ -79,27 +105,27 @@ your native architecture.
 
 To run the full test suite use:
 
-```
-$ just ci
+```console
+just ci
 ```
 
-If your PR only affects the CLI, or the SDK there are recipes to run the test suites for only those
-components. 
+If your PR only affects the CLI, or a specific SDK there are recipes to run the test suites for only those
+components.
 
-```
+```console
 $ just ci-cli
   .. run CLI test suite
 
-$ just ci-sdk
-  .. run SDK test suite
+$ just ci-sdk-rust
+  .. run Rust SDK test suite
 ```
 
-All of these run the full gamut of tests, even doc tests, clippy, and rustfmt.
-Other recipes exist for smaller or more targeted operations. 
+All of these run the full gamut of tests, even doc tests, `clippy`, and `rustfmt`.
+Other recipes exist for smaller or more targeted operations.
 
 To see the full list of recipes use `just` by itself:
 
-```
+```console
 $ just
 Available recipes:
     audit              # Run cargo-audit to scan for vulnerable crates
@@ -132,8 +158,8 @@ Available recipes:
 If you've made changes to any of the `Cargo.toml` files it's probably a good idea to also update
 the third party licenses by:
 
-```
-$ just update-licenses
+```console
+just update-licenses
 ```
 
 ### Our Merge Strategy
@@ -147,7 +173,7 @@ This has a few implications for your workflow.
 First, prior to opening the PR it's a good idea to make sure you're working off the latest `main`
 branch. This can be done with a `rebase` command. For example,
 
-```sh
+```console
 $ git switch my-pr-branch
 [..]
 
@@ -196,3 +222,5 @@ Congratulations, you're now a Seaplane Contributor! Welcome Aboard!
 
 [architecture]: ./ARCHITECTURE.md#support-matrix
 [squash]: https://docs.gitlab.com/ee/user/project/merge_requests/squash_and_merge.html
+[just]: https://github.com/casey/just
+[choco]: https://chocolatey.org/install

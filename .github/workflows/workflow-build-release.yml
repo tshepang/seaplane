@@ -54,12 +54,10 @@ jobs:
 
       - name: Package Release
         if: inputs.use-tag-version
-        shell: bash
         run: just package-release
 
       - name: Package Nightly Release
         if: inputs.use-short-sha
-        shell: bash
         run: just package-nightly
 
       - name: Save Artifacts Archive
