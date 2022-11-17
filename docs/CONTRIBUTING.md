@@ -30,10 +30,6 @@ macOS additionally requires `brew` to be installed if creating and signing relea
 
 ### Windows
 
-Windows additionally requires `zip` if creating releases. This can be installed
- via a package
-manager such as [Chocolatey][choco]
-
 > **Note**
 > When running some recipes like `spell-check`, if you receive an error about Execution Policy you
 > may need to run the following command. Some `just` recipes run as generated PowerShell scripts which

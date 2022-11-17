@@ -188,7 +188,11 @@ _package-build TAG=SHORTSHA:
     Copy-Item seaplane-cli/share/third_party_licenses.md "$DISTDIR/share/doc/seaplane/"
     Copy-Item LICENSE "$DISTDIR/share/doc/seaplane/"
     cd "$DISTDIR"
-    zip -r ../seaplane-{{ TAG }}-$("$($Env:PROCESSOR_ARCHITECTURE)".ToLower())-windows.zip bin/ share/
+    $compress = @{
+        Path = ".\bin\", ".\share\"
+        DestinationPath = "..\seaplane-{{ TAG }}-$("$($Env:PROCESSOR_ARCHITECTURE)".ToLower())-windows.zip"
+    }
+    Compress-Archive @compress
 
 [unix]
 _package-build TAG=SHORTSHA:
