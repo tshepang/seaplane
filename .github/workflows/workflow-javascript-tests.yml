@@ -1,0 +1,45 @@
+# This workflow may also be triggered manually for testing purposes.
+name: Javascript Tests Workflow
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: seaplane-sdk/python
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 15.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          architecture: x64    
+    - run: npm ci
+    - run: npm run lint  
+
+  tests:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: seaplane-sdk/javascript
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 15.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          architecture: x64
+    - run: npm run build  
+    - run: npm test

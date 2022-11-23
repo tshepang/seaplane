@@ -1,0 +1,19 @@
+name: Javascript SDK PR
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'seaplane-sdk/javascript/**/*.ts'
+      - 'seaplane-sdk/javascript/**/*.js'
+      - 'seaplane-sdk/javascript/**/*.json'      
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-javascript-sdk-tests:
+    uses: ./.github/workflows/workflow-javascript-tests.yml
