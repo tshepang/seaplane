@@ -2,7 +2,7 @@ import Configuration from '../configuration';
 import Request, { headers } from './request';
 import { Key, KeyValue, KeyValuePage, mapToKeyValue, mapToKeyValuePage } from '../model/metadata';
 
-import {encode} from '../utils/base64'
+import { encode } from '../utils/base64';
 
 const axios = require('axios'); // eslint-disable-line
 
@@ -18,10 +18,10 @@ export default class Metadata {
   async set(keyValue: KeyValue): Promise<boolean> {
     const url = `${this.url}/base64:${encode(keyValue.key)}`;
     const data = encode(keyValue.value);
-    
+
     const result = await this.request.send((token) =>
       axios.put(url, data, {
-        headers: {          
+        headers: {
           Authorization: `Bearer ${token}`,
         },
       }),
@@ -54,38 +54,38 @@ export default class Metadata {
     return result === 'Ok';
   }
 
-  async getPage(options: { directory?: Key, nextKey?: Key }): Promise<KeyValuePage> {
+  async getPage(options?: { directory?: Key; nextKey?: Key }): Promise<KeyValuePage> {
     let url = this.url;
-    
-    if (options?.directory) {      
+
+    if (options?.directory) {
       url = `${this.url}/base64:${encode(options.directory.key)}/`;
     }
-    
+
     let params = {};
-    if (options?.nextKey) {      
+    if (options?.nextKey) {
       params = {
         from: `base64:${encode(options.nextKey.key)}`,
       };
     }
-    
+
     const result = await this.request.send((token) =>
       axios.get(url, {
         headers: headers(token),
         params: params,
       }),
     );
-    
+
     return mapToKeyValuePage(result);
   }
 
-  async getAllPages(options: { directory?: Key, nextKey?: Key }): Promise<KeyValue[]> {
+  async getAllPages(options?: { directory?: Key; nextKey?: Key }): Promise<KeyValue[]> {
     const pages: KeyValue[] = [];
     let forNextKey = options?.nextKey;
 
     while (true) {
       const pageResult = await this.getPage({
         directory: options?.directory,
-        nextKey: forNextKey
+        nextKey: forNextKey,
       });
 
       const page: KeyValuePage = pageResult;

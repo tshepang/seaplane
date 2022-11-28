@@ -11,17 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: seaplane-sdk/python
+        working-directory: seaplane-sdk/javascript
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        node-version: [16.x, 17.x, 18.x, 19.x]
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          architecture: x64    
+    - uses: actions/checkout@v2    
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        architecture: x64    
     - run: npm ci
     - run: npm run lint  
 
@@ -33,13 +32,13 @@ jobs:
         working-directory: seaplane-sdk/javascript
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        node-version: [16.x, 17.x, 18.x, 19.x]
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          architecture: x64
+    - uses: actions/checkout@v2    
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        architecture: x64
+    - run: npm ci
     - run: npm run build  
     - run: npm test

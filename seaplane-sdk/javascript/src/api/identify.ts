@@ -1,5 +1,5 @@
 const axios = require('axios'); // eslint-disable-line
- 
+
 import Configuration from '../configuration';
 import { headers } from './request';
 import { log } from '../logging';

@@ -16,7 +16,7 @@ export default class Request {
     this.identify = identify;
   }
 
-  private async renewIfFails(error: any, request: (token: string) => Promise<any>): Promise<any> {
+  private async renewIfFails(error: any, request: (token: string) => Promise<any>): Promise<any> { // eslint-disable-line
     const httpError = new HTTPError(error.response.status, JSON.stringify(error.response.data));
 
     if (error.response.status != 401 || !this.identify.autoRenew) {
@@ -28,16 +28,16 @@ export default class Request {
     return await request(token);
   }
 
-  async send(request: (token: string) => Promise<any>): Promise<any> {
+  async send(request: (token: string) => Promise<any>): Promise<any> { // eslint-disable-line
     const accessToken: string = this.identify.accessToken || (await this.identify.getToken());
 
     try {
       const result = await request(accessToken);
-      
+
       return result.data;
-    } catch (err: any) {    // eslint-disable-line        
-      const title = err?.response?.data?.title || "No title"
-      const detail = err?.response?.data?.detail || "No detail"      
+    } catch (err: any) { // eslint-disable-line
+      const title = err?.response?.data?.title || 'No title';
+      const detail = err?.response?.data?.detail || 'No detail';
       log.error(`Request error: ${title} ${detail}`);
       return await this.renewIfFails(err, request);
     }

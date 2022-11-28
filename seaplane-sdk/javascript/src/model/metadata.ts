@@ -16,18 +16,18 @@ export type KeyValuePage = {
 
 const mapNextKey = (nextKey?: string) => {
   if (!nextKey) {
-    return null
-  } 
+    return null;
+  }
 
-  return {key: decode(nextKey)}
-}
+  return { key: decode(nextKey) };
+};
 
-export const mapToKeyValue = (json: any) => ({
+export const mapToKeyValue = (json: any) => ({ // eslint-disable-line
   key: decode(json.key),
   value: decode(json.value),
 });
 
-export const mapToKeyValuePage = (json: any) => ({
-  keyValuePairs: json.kvs.map((kv: any) => mapToKeyValue(kv)),
+export const mapToKeyValuePage = (json: any) => ({  // eslint-disable-line
+  keyValuePairs: json.kvs.map((kv: any) => mapToKeyValue(kv)), // eslint-disable-line
   nextKey: mapNextKey(json.next_key),
 });
