@@ -9,3 +9,11 @@ export enum Region {
   SouthAmerica = "XS",
   Uk = "XU"
 }
+
+export const mapToRegions = (regions?: string[]): Region[] => {
+  if(!regions) {
+    return []
+  }
+
+  return regions.map(region => Region[region])
+}

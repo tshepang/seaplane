@@ -1,8 +1,10 @@
 import Configuration from '../configuration';
 import Request, { headers } from './request';
-import { Lock, Name, HeldLock, toLock, toHeldLock, LockPage, toLockPage } from '../model/locks';
 
 import { encode } from '../utils/base64';
+import { Key } from '../model/metadata';
+import { SeaplaneApi, Restriction, mapToRestriction, RestrictionDetails, RestrictionPage, mapToRestrictionPage } from '../model/restrictions'
+import { SeaplaneError } from '../model/errors';
 
 const axios = require('axios'); // eslint-disable-line
 
@@ -11,12 +13,12 @@ export default class Restrictions {
   request: Request;
 
   constructor(configuration: Configuration) {
-    this.url = `${configuration.values().coordinationEndpoint}/locks`;
+    this.url = `${configuration.values().coordinationEndpoint}/restrict`;
     this.request = new Request(configuration.identify);
   }
 
-  async get(name: Name): Promise<Lock> {
-    const url = `${this.url}/base64:${encode(name.name)}`;
+  async get(api: SeaplaneApi, key: Key): Promise<Restriction> {
+    const url = `${this.url}/base64:${encode(key.key)}`;
 
     const result = await this.request.send((token) =>
       axios.get(url, {
@@ -24,73 +26,60 @@ export default class Restrictions {
       }),
     );
 
-    return toLock(result);
+    return mapToRestriction(result);
   }
 
-  async acquire(name: Name, clientId: string, ttl: number): Promise<HeldLock> {
-    const url = `${this.url}/base64:${encode(name.name)}`;
-
-    const params = {
-      'client-id': clientId,
-      ttl,
+  async set(api: SeaplaneApi, key: Key, restrictionDetails: RestrictionDetails): Promise<boolean> {
+    const url = `${this.url}/${api}/base64:${encode(key.key)}`;
+    
+    const data = {
+      "regions_allowed": restrictionDetails.regionsAllowed.map(region => String(region)),
+      "regions_denied": restrictionDetails.regionsDenied.map(region => String(region)),
+      "providers_allowed": restrictionDetails.providersAllowed.map(provider => String(provider)),
+      "providers_denied": restrictionDetails.providersDenied.map(provider => String(provider))
     };
-    const data = {};
+
     const result = await this.request.send((token) =>
       axios.post(url, data, {
-        headers: headers(token),
-        params,
+        headers: headers(token)        
       }),
     );
 
-    return toHeldLock(result);
+    return result == "Ok";
   }
 
-  async release(name: Name, id: string): Promise<boolean> {
-    const url = `${this.url}/base64:${encode(name.name)}`;
-
-    const params = {
-      id: id,
-    };
+  async delete(api: SeaplaneApi, key: Key): Promise<boolean> {
+    const url = `${this.url}/${api}/base64:${encode(key.key)}`;
 
     const result = await this.request.send((token) =>
       axios.delete(url, {
-        headers: headers(token),
-        params,
+        headers: headers(token)        
       }),
     );
 
-    return result === 'OK';
+    return result === 'Ok';
   }
 
-  async renew(name: Name, id: string, ttl: number): Promise<boolean> {
-    const url = `${this.url}/base64:${encode(name.name)}`;
-
-    const params = {
-      id,
-      ttl,
-    };
-
-    const result = await this.request.send((token) =>
-      axios.patch(url, {
-        headers: headers(token),
-        params,
-      }),
-    );
-
-    return result === 'OK';
-  }
-
-  async getPage(options?: { directory?: Name; fromLock?: Name }): Promise<LockPage> {
-    let url = this.url;
-
-    if (options?.directory) {
-      url = `${this.url}/base64:${encode(options.directory.name)}/`;
+  async getPage(options?: { 
+    api?: SeaplaneApi,
+    fromRestriction?: Key,
+    isAllRange?: boolean
+  }): Promise<RestrictionPage> {
+    let url = this.url;    
+    
+    if (options?.api && !options?.isAllRange) {
+      url = `${url}/${options!.api}`;
     }
 
     let params = {};
-    if (options?.fromLock) {
+    if (options?.fromRestriction) {
+      if(!options?.api) {
+        throw new SeaplaneError("You must set 'api' with 'fromRestriction' parameters.")
+      }
+
       params = {
-        from: `base64:${encode(options.fromLock.name)}`,
+        from: `base64:${encode(options.fromRestriction.key)}`,
+        from_api: String(options.api)
       };
     }
 
@@ -101,24 +90,30 @@ export default class Restrictions {
       }),
     );
 
-    return toLockPage(result);
+    return mapToRestrictionPage(result);
   }
 
-  async getAllPages(options?: { directory?: Name; fromLock?: Name }): Promise<Lock[]> {
-    const pages: Lock[] = [];
-    let forNextLock = options?.fromLock;
+  async getAllPages(options?: { 
+    api?: SeaplaneApi,
+    fromRestriction?: Key    
+  }): Promise<Restriction[]> {
+    const pages: Restriction[] = [];
+    let forNextRestriction = options?.fromRestriction;
+    let fromApi = options?.api
 
     while (true) {
       const pageResult = await this.getPage({
-        directory: options?.directory,
-        fromLock: forNextLock,
+        api: fromApi,
+        fromRestriction: forNextRestriction,
+        isAllRange: true
       });
 
-      const page: LockPage = pageResult;
-      pages.push(...page.locks);
+      const page: RestrictionPage = pageResult;
+      pages.push(...page.restrictions);
 
-      if (page.nextLock) {
-        forNextLock = page.nextLock;
+      if (page.nextKey && page.nextApi) {
+        forNextRestriction = page.nextKey;
+        fromApi = page.nextApi
       } else {
         return pages;
       }
