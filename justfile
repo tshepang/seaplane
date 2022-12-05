@@ -207,7 +207,7 @@ _package-build TAG=SHORTSHA:
     cp seaplane-cli/share/third_party_licenses.md ${DISTDIR}/share/doc/seaplane/
     cp LICENSE ${DISTDIR}/share/doc/seaplane/
     cd ${DISTDIR}
-    tar czf ../seaplane-{{ TAG }}-$(uname -m)-${OS}.tar.gz ./*
+    tar czf ../seaplane-{{ TAG }}-$(uname -m)-{{ os() }}.tar.gz ./*
 
 _cargo-install +TOOLS:
     cargo install {{ TOOLS }}
