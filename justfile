@@ -63,7 +63,7 @@ ci-sdk-javascript: lint-sdk-javascript test-sdk-javascript doc-javascript
     cd seaplane-sdk/javascript; npm ci
 
 # Run the CI suite for the CLI (only runs for your native os/arch!)
-ci-cli: lint-cli (_doc-rust-crate CLI_MANIFEST) (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST) test-ui
+ci-cli: lint-cli test-cli
 
 # Run the full CI suite (only runs for your native os/arch!)
 ci: audit ci-cli ci-sdk
@@ -72,7 +72,10 @@ ci: audit ci-cli ci-sdk
 doc: doc-rust doc-python doc-javascript
 
 # Build Rust documentation
-doc-rust: _doc-rust-crate (_doc-rust-crate CLI_MANIFEST)
+doc-rust: _doc-rust-crate doc-cli
+
+# Build Rust documentation for the CLI
+doc-cli: (_doc-rust-crate CLI_MANIFEST)
 
 # Build Python documentation
 doc-python:
@@ -140,6 +143,9 @@ lint-sdk-javascript: spell-check fmt-check-sdk-javascript
 
 # Run basic integration and unit tests for all Rust crates
 test-rust: test-sdk-rust (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST)
+
+# Run basic integration and unit tests for the CLI
+test-cli: (_doc-rust-crate CLI_MANIFEST) (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST) test-ui
 
 # Run basic integration and unit tests for the Rust SDK
 test-sdk-rust: _test-rust-crate _test-rust-api-crate
