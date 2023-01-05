@@ -49,21 +49,41 @@ setup: _setup-internal (_cargo-install 'cargo-nextest') _install-gon
 audit: (_cargo-install 'cargo-audit')
     cargo audit
 
-# Run the CI suite for the SDK (only runs for your native os/arch!)
-ci-sdk: lint-sdk-rust doc test-rust test-rust-api
+# Run the CI suite for all SDKs (only runs for your native os/arch!)
+ci-sdk: lint-sdk-rust lint-sdk-python lint-sdk-javascript test-sdk-rust test-sdk-python test-sdk-javascript doc
+
+# Run the CI suite for the Rust SDK (only runs for your native os/arch!)
+ci-sdk-rust: lint-sdk-rust test-sdk-rust _doc-rust-crate
+
+# Run the CI suite for the Python SDK (only runs for your native os/arch!)
+ci-sdk-python: lint-sdk-python test-sdk-python doc-python
+
+# Run the CI suite for the JavaScript SDK (only runs for your native os/arch!)
+ci-sdk-javascript: lint-sdk-javascript test-sdk-javascript doc-javascript
+    cd seaplane-sdk/javascript; npm ci
 
 # Run the CI suite for the CLI (only runs for your native os/arch!)
-ci-cli: lint-cli (doc CLI_MANIFEST) (test-rust CLI_MANIFEST) (test-rust-api CLI_MANIFEST) test-ui
+ci-cli: lint-cli (_doc-rust-crate CLI_MANIFEST) (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST) test-ui
 
 # Run the full CI suite (only runs for your native os/arch!)
 ci: audit ci-cli ci-sdk
 
-# Build documentation
-doc MANIFEST=SDK_RUST_MANIFEST $RUSTDOCFLAGS="-D warnings":
-    cargo doc --manifest-path {{ MANIFEST }} --no-deps --all-features --document-private-items
+# Build all documentation
+doc: doc-rust doc-python doc-javascript
+
+# Build Rust documentation
+doc-rust: _doc-rust-crate (_doc-rust-crate CLI_MANIFEST)
+
+# Build Python documentation
+doc-python:
+    @echo "doc-python: NOT YET IMPLEMENTED"
+
+# Build JavaScript documentation
+doc-javascript:
+    @echo "doc-javascript: NOT YET IMPLEMENTED"
 
 # Check if code formatter would make changes
-fmt-check: fmt-check-cli fmt-check-sdk-rust
+fmt-check: fmt-check-cli fmt-check-sdk-rust fmt-check-sdk-python fmt-check-sdk-javascript
 
 # Check if code formatter would make changes to the CLI
 fmt-check-cli:
@@ -73,41 +93,64 @@ fmt-check-cli:
 fmt-check-sdk-rust:
     cargo fmt --manifest-path {{ SDK_RUST_DIR / 'Cargo.toml' }} --check
 
+# Check if code formatter would make changes to the Python SDK
+fmt-check-sdk-python: _python-setup
+    cd seaplane-sdk/python/; poetry run nox -s fmt_check
+
+# Check if code formatter would make changes to the JavaScript SDK
+fmt-check-sdk-javascript:
+    @echo "fmt-check-sdk-javascript: NOT YET IMPLEMENTED"
+
+# Format all the code
+fmt: fmt-sdk-rust fmt-cli fmt-sdk-python fmt-sdk-javascript
+
 # Format the CLI code
 fmt-cli:
-    cargo fmt --manifest-path {{ CLI_MANIFEST }} --check
+    cargo fmt --manifest-path {{ CLI_MANIFEST }}
 
 # Format the Rust SDK code
 fmt-sdk-rust:
-    cargo fmt --manifest-path {{ SDK_RUST_MANIFEST }} --check
+    cargo fmt --manifest-path {{ SDK_RUST_MANIFEST }}
 
-# Format the code
-fmt: fmt-sdk-rust fmt-cli
+# Format the Python SDK code
+fmt-sdk-python: _python-setup
+    cd seaplane-sdk/python/; poetry run nox -s fmt
 
-# Run all lint hecks against the Rust SDK
-lint-cli: spell-check fmt-check-cli (_lint-rust CLI_MANIFEST '--no-default-features')
-
-# Run all lint hecks against the Rust SDK
-lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust (_lint-rust SDK_RUST_MANIFEST '--features unstable') (_lint-rust SDK_RUST_MANIFEST '--no-default-features')
+# Format the JavaScript SDK code
+fmt-sdk-javascript:
+    @echo "fmt-sdk-javascript: NOT YET IMPLEMENTED"
 
 # Run all checks and lints
-lint: lint-sdk-rust lint-cli
+lint: lint-sdk-rust lint-sdk-python lint-sdk-javascript lint-cli
 
-_lint-rust MANIFEST=SDK_RUST_MANIFEST RUST_FEATURES='':
-    cargo clippy {{ RUST_FEATURES }} --manifest-path {{ MANIFEST }} --all-targets -- -D warnings
+# Run all lint checks against the CLI
+lint-cli: spell-check fmt-check-cli (_lint-rust-crate CLI_MANIFEST '--no-default-features')
 
-# Run basic integration and unit tests for Rust
-test-rust MANIFEST=SDK_RUST_MANIFEST FEATURES='' $RUSTFLAGS='-D warnings':
-    {{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{ MANIFEST }}
+# Run all lint checks against the Rust SDK
+lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust-crate (_lint-rust-crate SDK_RUST_MANIFEST '--features unstable') (_lint-rust-crate SDK_RUST_MANIFEST '--no-default-features')
 
-# Run API tests using a mock HTTP server
-test-rust-api MANIFEST=SDK_RUST_MANIFEST $RUSTFLAGS='-D warnings':
-    {{ TEST_RUNNER }}  --features api_tests --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
-    {{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
+# Run all lint checks against the Python SDK
+lint-sdk-python: spell-check fmt-check-sdk-python
+    cd seaplane-sdk/python/; poetry run nox -s lint
+    cd seaplane-sdk/python/; poetry run nox -s type_check
 
-# Run documentation tests
-test-doc MANIFEST=SDK_RUST_MANIFEST:
-    cargo test --doc --manifest-path {{ MANIFEST }}
+# Run all lint checks against the JavaScript SDK
+lint-sdk-javascript: spell-check fmt-check-sdk-javascript
+    cd seaplane-sdk/javascript; npm run lint
+
+# Run basic integration and unit tests for all Rust crates
+test-rust: test-sdk-rust (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST)
+
+# Run basic integration and unit tests for the Rust SDK
+test-sdk-rust: _test-rust-crate _test-rust-api-crate
+
+# Run basic integration and unit tests for the Python SDK
+test-sdk-python: _python-setup
+    cd seaplane-sdk/python/; poetry run nox -s test
+
+# Run basic integration and unit tests for the JavaScript SDK
+test-sdk-javascript:
+    cd seaplane-sdk/javascript/; npm test
 
 # Run UI tests
 test-ui $RUSTFLAGS='-D warnings':
@@ -118,29 +161,61 @@ test-ui $RUSTFLAGS='-D warnings':
 update-licenses: (_cargo-install 'cargo-lichking')
     cargo lichking bundle --variant name-only > {{ CLI_DIR / 'share/third_party_licenses.md' }}
 
+# Spell check the entire repo
+spell-check: _install-spell-check
+    typos
+
+#
+# Python Helpers
+#
+_python-setup:
+    cd seaplane-sdk/python/; poetry install
+
+#
+# Rust Helpers
+#
+
+# Run basic integration and unit tests for a Rust crate
+_test-rust-crate MANIFEST=SDK_RUST_MANIFEST FEATURES='' $RUSTFLAGS='-D warnings':
+    {{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{ MANIFEST }}
+
+# build documentation for a Rust crate
+_doc-rust-crate MANIFEST=SDK_RUST_MANIFEST $RUSTDOCFLAGS="-D warnings":
+    cargo doc --manifest-path {{ MANIFEST }} --no-deps --all-features --document-private-items
+
+# Lint a Rust crate
+_lint-rust-crate MANIFEST=SDK_RUST_MANIFEST RUST_FEATURES='':
+    cargo clippy {{ RUST_FEATURES }} --manifest-path {{ MANIFEST }} --all-targets -- -D warnings
+
+# Run API tests using a mock HTTP server
+_test-rust-api-crate MANIFEST=SDK_RUST_MANIFEST $RUSTFLAGS='-D warnings':
+    {{ TEST_RUNNER }}  --features api_tests --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
+    {{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
+
+# Run documentation tests
+_test-rust-doc-crate MANIFEST=SDK_RUST_MANIFEST:
+    cargo test --doc --manifest-path {{ MANIFEST }}
+
+#
+# Small Helpers
+#
+
 [unix]
-spell-check:
+_install-spell-check:
     #!/usr/bin/env bash
     set -euo pipefail
     if ! command -v typos 2>&1 >/dev/null ; then
       cargo install typos-cli --force
     fi
-    typos
 
 [windows]
-spell-check:
+_install-spell-check:
     #!powershell.exe
     $ret = Get-Command typos >$null 2>$null
 
     if (! $?) {
       cargo install typos-cli --force
     }
-
-    typos
-
-#
-# Small Helpers
-#
 
 # List TODO items in current branch only
 todos-in-branch:

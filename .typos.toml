@@ -1,6 +1,7 @@
 [files]
 extend-exclude = [
   "seaplane-sdk/python/tests/fixtures/api/seaplane_img_in_base64.txt",
+  "seaplane-sdk/javascript/lib/esm/**/*.map",
 ]
 
 [default.extend-identifiers]
