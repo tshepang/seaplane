@@ -22,7 +22,7 @@ env:
 jobs:
   lint:
     name: Lints
-    runs-on: [self-hosted, linux, x64, lxc]
+    runs-on: buildjet-4vcpu-ubuntu-2204
     steps:
     - name: Check out the repo
       uses: actions/checkout@v3
@@ -50,24 +50,21 @@ jobs:
       if: ${{ inputs.test_sdk }}
       run: |
         just lint-sdk-rust
-        just doc
 
     - name: Lint the CLI
       if: ${{ inputs.test_cli }}
       run: |
         just lint-cli
-        just doc 'seaplane-cli/Cargo.toml'
 
   test-linux:
     name: Tests
     strategy:
       matrix:
-        arch: [ "ARM64", "X64" ]
-    runs-on:
-      - self-hosted
-      - linux
-      - ${{matrix.arch}}
-      - lxc
+        runner:
+         - buildjet-4vcpu-ubuntu-2204
+           # the larger SKU for ARM is due to memory constraints
+         - buildjet-8vcpu-ubuntu-2204-arm
+    runs-on: ${{ matrix.runner }}
     steps:
     - name: Check out the repo
       uses: actions/checkout@v3
@@ -90,15 +87,22 @@ jobs:
     - name: Test the SDK
       if: ${{ inputs.test_sdk }}
       run: |
-        just test-rust
-        just test-rust-api
+        just test-sdk-rust
 
     - name: Test the CLI
       if: ${{ inputs.test_cli }}
       run: |
-        just test-rust 'seaplane-cli/Cargo.toml'
-        just test-rust-api 'seaplane-cli/Cargo.toml'
-        just test-ui
+        just test-cli
+
+    - name: Build SDK Docs
+      if: ${{ inputs.test_sdk }}
+      run: |
+        just _doc-rust-crate
+
+    - name: Build CLI Docs
+      if: ${{ inputs.test_cli }}
+      run: |
+        just doc-cli
 
   test-win-macos-x64:
     name: Tests
@@ -133,19 +137,9 @@ jobs:
     - name: Test the SDK
       if: ${{ inputs.test_sdk }}
       run: |
-        just test-rust
-        just test-rust-api
+        just test-sdk-rust
 
     - name: Test the CLI
-      if: ${{ inputs.test_cli && matrix.os == 'macos-latest' }}
+      if: ${{ inputs.test_cli }}
       run: |
-        just test-rust 'seaplane-cli/Cargo.toml'
-        just test-rust-api 'seaplane-cli/Cargo.toml'
-        just test-ui
-
-    - name: Test the CLI
-      if: ${{ inputs.test_cli && matrix.os == 'windows-latest' }}
-      run: |
-        just test-rust 'seaplane-cli\Cargo.toml'
-        just test-rust-api 'seaplane-cli\Cargo.toml'
-        just test-ui
+        just test-cli
