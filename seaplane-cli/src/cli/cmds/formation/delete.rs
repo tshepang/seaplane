@@ -22,7 +22,7 @@ impl SeaplaneFormationDelete {
         let validator = |s: &str| validate_name_id(validate_formation_name, s);
         // TODO: add --recursive to handle configurations too
         Command::new("delete")
-            .visible_aliases(&["del", "remove", "rm"])
+            .visible_aliases(["del", "remove", "rm"])
             .about("Deletes local Formation Plans and/or remote Formation Instances")
             .override_usage("
     seaplane formation delete [OPTIONS] <NAME|ID>

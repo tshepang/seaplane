@@ -16,7 +16,7 @@ pub struct SeaplaneRestrictDelete;
 impl SeaplaneRestrictDelete {
     pub fn command() -> Command {
         Command::new("delete")
-            .visible_aliases(&["del", "remove", "rm"])
+            .visible_aliases(["del", "remove", "rm"])
             .about("Delete a restriction on directory")
             .arg(common::api())
             .arg(common::directory())

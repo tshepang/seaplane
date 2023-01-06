@@ -84,8 +84,7 @@ impl FromStr for EndpointSrc {
             proto if proto.starts_with('/') => EndpointSrc::Http(proto.to_string()),
             _ => {
                 return Err(format!(
-                    "invalid protocol '{}' (valid options: http, https, tcp, udp)",
-                    proto
+                    "invalid protocol '{proto}' (valid options: http, https, tcp, udp)"
                 ))
             }
         };

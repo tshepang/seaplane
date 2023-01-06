@@ -563,7 +563,7 @@ impl FormationStatus {
             ContainerStatus::Stopped => self.configurations.add_stopped_flight(
                 c.configuration_id,
                 c.flight_name.clone(),
-                c.exit_status == None || c.exit_status == Some(0),
+                c.exit_status.is_none() || c.exit_status == Some(0),
                 min,
                 max,
             ),

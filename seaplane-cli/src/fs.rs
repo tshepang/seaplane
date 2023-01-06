@@ -126,7 +126,7 @@ pub trait FromDisk {
     {
         let path = p.as_ref();
 
-        let json_str = match fs::read_to_string(&path) {
+        let json_str = match fs::read_to_string(path) {
             Ok(s) => s,
             Err(e) => {
                 // If it's a file missing error we try to auto-initialize, then return the error if
@@ -136,7 +136,7 @@ pub trait FromDisk {
                     ctx.internal_run = true;
                     SeaplaneInit.run(&mut ctx)?;
 
-                    fs::read_to_string(&path)
+                    fs::read_to_string(path)
                         .map_err(CliError::from)
                         .context("\n\tpath: ")
                         .with_color_context(|| (Color::Yellow, format!("{path:?}")))?

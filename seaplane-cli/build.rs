@@ -41,7 +41,7 @@ fn main() {
     // If `git` is installed and located in `$PATH` of the build machine, it uses that to determine
     // the latest commit hash. Otherwise uses the string UNKNOWN.
     let commit_id = Command::new("git")
-        .args(&["rev-parse", "--short", "HEAD"])
+        .args(["rev-parse", "--short", "HEAD"])
         .output()
         .ok()
         .filter(|output| !output.stdout.is_empty())

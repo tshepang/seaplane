@@ -484,7 +484,7 @@ impl CliError {
                 if let Some(c) = color {
                     ptr.set_color(*c);
                 }
-                let _ = write!(ptr, "{}", msg);
+                let _ = write!(ptr, "{msg}");
                 ptr.reset();
             }
         }

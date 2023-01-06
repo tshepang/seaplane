@@ -39,7 +39,7 @@ impl SeaplaneFormationPlan {
     pub fn command() -> Command {
         Command::new("plan")
             .after_help(concatcp!(FLIGHT_SPEC, "\n\n", REGION_SPEC))
-            .visible_aliases(&["create", "add"])
+            .visible_aliases(["create", "add"])
             .about("Create a Seaplane Formation")
             .long_about(LONG_ABOUT)
             .args(common::args())

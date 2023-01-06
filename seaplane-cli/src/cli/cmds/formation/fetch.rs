@@ -11,7 +11,7 @@ impl SeaplaneFormationFetch {
     pub fn command() -> Command {
         // TODO: add a --no-overwrite or similar
         Command::new("fetch-remote")
-            .visible_aliases(&["fetch", "sync", "synchronize"])
+            .visible_aliases(["fetch", "sync", "synchronize"])
             .about("Fetch remote Formation Instances and create/synchronize local Plan definitions")
             .override_usage("
     seaplane formation fetch-remote

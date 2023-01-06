@@ -25,7 +25,7 @@ impl SeaplaneFlightPlan {
     pub fn command() -> Command {
         // TODO: add --from
         Command::new("plan")
-            .visible_aliases(&["create", "add"])
+            .visible_aliases(["create", "add"])
             .after_help(IMAGE_SPEC)
             .about("Make a new local Flight Plan that Formations can include and reference")
             .arg(arg!(--force - ('f')).help("Override any existing Flights Plans with the same NAME"))
