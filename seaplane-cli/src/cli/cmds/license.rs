@@ -16,7 +16,7 @@ static SELF_LICENSE: &str = include_str!(concat!(env!("OUT_DIR"), "/LICENSE"));
 pub struct SeaplaneLicense;
 
 impl SeaplaneLicense {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("license")
             .about("Print license information")
             .arg(
@@ -38,7 +38,7 @@ impl CliCommand for SeaplaneLicense {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.third_party = matches.contains_id("third-party");
+        ctx.args.third_party = matches.get_flag("third-party");
         Ok(())
     }
 }

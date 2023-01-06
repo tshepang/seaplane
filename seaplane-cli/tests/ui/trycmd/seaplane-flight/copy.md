@@ -4,13 +4,13 @@ With no additional arguments, an error is displayed about a missing required arg
 $ seaplane flight copy
 ? 2
 error: The following required arguments were not provided:
-    <NAME|ID>
+  <NAME|ID>
 
-USAGE:
-    seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
-    seaplane flight copy <NAME|ID> [OPTIONS]
+Usage: 
+    seaplane flight copy [OPTIONS] <NAME|ID> --name=<DEST_NAME>
+    seaplane flight copy [OPTION] <NAME|ID> [OPTIONS]
 
-For more information try --help
+For more information try '--help'
 
 ```
 
@@ -18,32 +18,31 @@ The short help message with `-h`:
 
 ```console
 $ seaplane flight copy -h
-seaplane[EXE]-flight-copy [..]
 Copy a local Flight Plan (optionally make changes to the copy)
 
-USAGE:
-    seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
-    seaplane flight copy <NAME|ID> [OPTIONS]
+Usage: 
+    seaplane flight copy [OPTIONS] <NAME|ID> --name=<DEST_NAME>
+    seaplane flight copy [OPTION] <NAME|ID> [OPTIONS]
 
-ARGS:
-    <NAME|ID>    The source name or ID of the Flight Plan to copy
+Arguments:
+  <NAME|ID>  The source name or ID of the Flight Plan to copy
 
-OPTIONS:
-    -A, --api-key <STRING>       The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --architecture <ARCH>    The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: amd64, arm64]
-        --color <COLOR>          Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -h, --help                   Print help information
-        --image <SPEC>           The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
-        --maximum <NUM>          The maximum number of container instances that should ever be running (default: autoscale as needed) [aliases: max]
-        --minimum <NUM>          The minimum number of container instances that should ever be running [default: 1] [aliases: min]
-    -n, --name <STRING>          A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
-        --no-color               Do not color output (alias for --color=never)
-        --no-maximum             There is no maximum number of instances [aliases: no-max]
-    -q, --quiet                  Suppress output at a specific level and below
-    -S, --stateless              Ignore local state files, do not read from or write to them
-    -v, --verbose                Display more verbose output
-    -V, --version                Print version information
-    -x, --exact                  The given SOURCE must be an exact match
+Options:
+  -v, --verbose...           Display more verbose output
+  -x, --exact                The given SOURCE must be an exact match
+      --image <SPEC>         The container image registry reference that this Flight will use (See IMAGE SPEC below) [aliases: img]
+  -q, --quiet...             Suppress output at a specific level and below
+      --color <COLOR>        Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+  -n, --name <STRING>        A human readable name for the Flight (must be unique within any Formation it is a part of) if omitted a pseudo random name will be assigned
+      --minimum <NUM>        The minimum number of container instances that should ever be running [default: 1] [aliases: min]
+      --no-color             Do not color output (alias for --color=never)
+  -A, --api-key <STRING>     The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+      --maximum <NUM>        The maximum number of container instances that should ever be running (default: autoscale as needed) [aliases: max]
+      --architecture <ARCH>  The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: amd64, arm64]
+  -S, --stateless            Ignore local state files, do not read from or write to them
+      --no-maximum           There is no maximum number of instances [aliases: no-max]
+  -h, --help                 Print help information (use `--help` for more detail)
+  -V, --version              Print version information
 
 IMAGE SPEC
 
@@ -82,108 +81,107 @@ The long help message with `--help`:
 
 ```console
 $ seaplane flight copy --help
-seaplane[EXE]-flight-copy [..]
 Copy a local Flight Plan (optionally make changes to the copy)
 
-USAGE:
-    seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
-    seaplane flight copy <NAME|ID> [OPTIONS]
+Usage: 
+    seaplane flight copy [OPTIONS] <NAME|ID> --name=<DEST_NAME>
+    seaplane flight copy [OPTION] <NAME|ID> [OPTIONS]
 
-ARGS:
-    <NAME|ID>
-            The source name or ID of the Flight Plan to copy
+Arguments:
+  <NAME|ID>
+          The source name or ID of the Flight Plan to copy
 
-OPTIONS:
-    -A, --api-key <STRING>
-            The API key associated with a Seaplane account used to access Seaplane API endpoints
-            
-            The value provided here will override any provided in any configuration files.
-            A CLI provided value also overrides any environment variables.
-            One can use a special value of '-' to signal the value should be read from STDIN.
-            
-            [env: SEAPLANE_API_KEY]
+Options:
+  -v, --verbose...
+          Display more verbose output
+          
+          More uses displays more verbose output
+              -v:  Display debug info
+              -vv: Display trace info
 
-        --architecture <ARCH>
-            The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
-            
-            Multiple items can be passed as a comma separated list, or by using the argument
-            multiple times.
-            
-            [aliases: arch, arches, architectures]
-            [possible values: amd64, arm64]
+  -x, --exact
+          The given SOURCE must be an exact match
 
-        --color <COLOR>
-            Should the output include color?
-            
-            [default: auto]
-            [possible values: always, ansi, auto, never]
+      --image <SPEC>
+          The container image registry reference that this Flight will use (See IMAGE SPEC below)
+          
+          NOTE at this time the if the registry is omitted, such as `nginxdemos/hello:latest` a default
+          registry of `registry.cplane.cloud` will be used. This may change in the future, so it is
+          recommended to always specify a full image reference path.
+          
+          [aliases: img]
 
-    -h, --help
-            Print help information
+  -q, --quiet...
+          Suppress output at a specific level and below
+          
+          More uses suppresses higher levels of output
+              -q:   Only display WARN messages and above
+              -qq:  Only display ERROR messages
+              -qqq: Suppress all output
 
-        --image <SPEC>
-            The container image registry reference that this Flight will use (See IMAGE SPEC below)
-            
-            NOTE at this time the if the registry is omitted, such as `nginxdemos/hello:latest` a default
-            registry of `registry.cplane.cloud` will be used. This may change in the future, so it is
-            recommended to always specify a full image reference path.
-            
-            [aliases: img]
+      --color <COLOR>
+          Should the output include color?
+          
+          [default: auto]
+          [possible values: always, ansi, auto, never]
 
-        --maximum <NUM>
-            The maximum number of container instances that should ever be running (default: autoscale as needed)
-            
-            [aliases: max]
+  -n, --name <STRING>
+          A human readable name for the Flight (must be unique within any Formation it
+          
+          Rules for a valid name are as follows:
+          
+            - may only include 0-9, a-z, A-Z, and '-' (hyphen)
+            - hyphens ('-') may not be repeated (i.e. '--')
+            - no more than three (3) total hyphens
+            - the total length must be <= 27
+          
+          Some of these restrictions may be lifted in the future.
 
-        --minimum <NUM>
-            The minimum number of container instances that should ever be running
-            
-            [default: 1]
-            [aliases: min]
+      --minimum <NUM>
+          The minimum number of container instances that should ever be running
+          
+          [default: 1]
+          [aliases: min]
 
-    -n, --name <STRING>
-            A human readable name for the Flight (must be unique within any Formation it
-            
-            Rules for a valid name are as follows:
-            
-              - may only include 0-9, a-z, A-Z, and '-' (hyphen)
-              - hyphens ('-') may not be repeated (i.e. '--')
-              - no more than three (3) total hyphens
-              - the total length must be <= 27
-            
-            Some of these restrictions may be lifted in the future.
+      --no-color
+          Do not color output (alias for --color=never)
 
-        --no-color
-            Do not color output (alias for --color=never)
+  -A, --api-key <STRING>
+          The API key associated with a Seaplane account used to access Seaplane API endpoints
+          
+          The value provided here will override any provided in any configuration files.
+          A CLI provided value also overrides any environment variables.
+          One can use a special value of '-' to signal the value should be read from STDIN.
+          
+          [env: SEAPLANE_API_KEY]
 
-        --no-maximum
-            There is no maximum number of instances
-            
-            [aliases: no-max]
+      --maximum <NUM>
+          The maximum number of container instances that should ever be running (default: autoscale as needed)
+          
+          [aliases: max]
 
-    -q, --quiet
-            Suppress output at a specific level and below
-            
-            More uses suppresses higher levels of output
-                -q:   Only display WARN messages and above
-                -qq:  Only display ERROR messages
-                -qqq: Suppress all output
+      --architecture <ARCH>
+          The architectures this flight is capable of running on. No value means it will be auto detected from the image definition
+          
+          Multiple items can be passed as a comma separated list, or by using the argument
+          multiple times.
+          
+          [aliases: arch, arches, architectures]
+          [possible values: amd64, arm64]
 
-    -S, --stateless
-            Ignore local state files, do not read from or write to them
+  -S, --stateless
+          Ignore local state files, do not read from or write to them
 
-    -v, --verbose
-            Display more verbose output
-            
-            More uses displays more verbose output
-                -v:  Display debug info
-                -vv: Display trace info
+      --no-maximum
+          There is no maximum number of instances
+          
+          [aliases: no-max]
 
-    -V, --version
-            Print version information
+  -h, --help
+          Print help information (use `-h` for a summary)
 
-    -x, --exact
-            The given SOURCE must be an exact match
+  -V, --version
+          Print version information
 
 IMAGE SPEC
 

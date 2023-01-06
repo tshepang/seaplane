@@ -8,13 +8,13 @@ use crate::{api::FormationsReq, cli::CliCommand, error::Result, printer::Pb, Ctx
 pub struct SeaplaneFormationFetch;
 
 impl SeaplaneFormationFetch {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         // TODO: add a --no-overwrite or similar
         Command::new("fetch-remote")
             .visible_aliases(&["fetch", "sync", "synchronize"])
             .about("Fetch remote Formation Instances and create/synchronize local Plan definitions")
-            .override_usage(
-                "seaplane formation fetch-remote
+            .override_usage("
+    seaplane formation fetch-remote
     seaplane formation fetch-remote [NAME|ID]",
             )
             .arg(

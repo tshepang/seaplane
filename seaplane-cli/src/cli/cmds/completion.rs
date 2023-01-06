@@ -110,7 +110,7 @@ static COMPLETION_HELP: &str = "DISCUSSION:
 pub struct SeaplaneShellCompletion;
 
 impl SeaplaneShellCompletion {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("shell-completion")
             .about("Generate shell completion scripts for the Seaplane CLI")
             .after_help(COMPLETION_HELP)

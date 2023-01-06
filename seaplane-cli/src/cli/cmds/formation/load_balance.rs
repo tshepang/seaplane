@@ -6,7 +6,7 @@ use crate::{cli::CliCommand, error::Result, Ctx};
 pub struct SeaplaneFormationLoadBalance;
 
 impl SeaplaneFormationLoadBalance {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("load-balance")
             .visible_alias("lb")
             .about("Control how traffic balances between various configurations of a Formation")

@@ -46,7 +46,7 @@ impl RestrictCtx {
     /// Builds a RestictCtx from ArgMatches
     pub fn from_restrict_common(matches: &SeaplaneRestrictCommonArgMatches) -> Result<RestrictCtx> {
         let matches = matches.0;
-        let base64 = matches.contains_id("base64");
+        let base64 = matches.get_flag("base64");
         let api = matches.get_one::<String>("api").unwrap();
         let dir = matches.get_one::<String>("directory").unwrap();
 
@@ -54,7 +54,11 @@ impl RestrictCtx {
             api: Some(api.into()),
             directory: if base64 {
                 // Check that what the user passed really is valid base64
-                let _ = base64::decode_config(dir, base64::URL_SAFE_NO_PAD)?;
+                let engine = ::base64::engine::fast_portable::FastPortable::from(
+                    &::base64::alphabet::URL_SAFE,
+                    ::base64::engine::fast_portable::NO_PAD,
+                );
+                let _ = base64::decode_engine(dir, &engine)?;
                 Some(RestrictedDirectory::from_encoded(dir))
             } else {
                 Some(RestrictedDirectory::from_unencoded(dir))
@@ -74,7 +78,7 @@ impl RestrictCtx {
     /// Builds a RestictCtx from ArgMatches
     pub fn from_restrict_set(matches: &SeaplaneRestrictSetArgMatches) -> Result<RestrictCtx> {
         let matches = matches.0;
-        let base64 = matches.contains_id("base64");
+        let base64 = matches.get_flag("base64");
         let raw_api = matches.get_one::<String>("api").unwrap();
         let raw_dir = matches.get_one::<String>("directory").unwrap();
 
@@ -102,7 +106,11 @@ impl RestrictCtx {
             api: Some(raw_api.into()),
             directory: if base64 {
                 // Check that what the user passed really is valid base64
-                let _ = base64::decode_config(raw_dir, base64::URL_SAFE_NO_PAD)?;
+                let engine = ::base64::engine::fast_portable::FastPortable::from(
+                    &::base64::alphabet::URL_SAFE,
+                    ::base64::engine::fast_portable::NO_PAD,
+                );
+                let _ = base64::decode_engine(raw_dir, &engine)?;
                 Some(RestrictedDirectory::from_encoded(raw_dir))
             } else {
                 Some(RestrictedDirectory::from_unencoded(raw_dir))

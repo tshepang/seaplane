@@ -6,7 +6,7 @@ use crate::{cli::CliCommand, error::Result, Ctx};
 pub struct SeaplaneFormationConfiguration;
 
 impl SeaplaneFormationConfiguration {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("configuration")
             .visible_alias("cfg")
             .about("Operate on Seaplane Formation Configurations")

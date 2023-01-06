@@ -31,15 +31,23 @@ impl KeyValue {
 
     /// Creates a new KeyValue from an un-encoded key and value, encoding them along the way
     pub fn new_unencoded<S: AsRef<str>>(key: S, value: S) -> Self {
+        let engine = ::base64::engine::fast_portable::FastPortable::from(
+            &::base64::alphabet::URL_SAFE,
+            ::base64::engine::fast_portable::NO_PAD,
+        );
         Self::new(
-            base64::encode_config(key.as_ref(), base64::URL_SAFE_NO_PAD),
-            base64::encode_config(value.as_ref(), base64::URL_SAFE_NO_PAD),
+            base64::encode_engine(key.as_ref(), &engine),
+            base64::encode_engine(value.as_ref(), &engine),
         )
     }
 
     /// Creates a new KeyValue from an un-encoded string ref, encoding it along the way
     pub fn from_key_unencoded<S: AsRef<str>>(key: S) -> Self {
-        Self::from_key(base64::encode_config(key.as_ref(), base64::URL_SAFE_NO_PAD))
+        let engine = ::base64::engine::fast_portable::FastPortable::from(
+            &::base64::alphabet::URL_SAFE,
+            ::base64::engine::fast_portable::NO_PAD,
+        );
+        Self::from_key(base64::encode_engine(key.as_ref(), &engine))
     }
 
     /// Creates a new KeyValue from an already encoded string ref. You must pinky promise the key

@@ -20,12 +20,9 @@ pub struct SeaplaneRestrictSetArgMatches<'a>(pub &'a ArgMatches);
 pub struct SeaplaneRestrictSet;
 
 impl SeaplaneRestrictSet {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("set")
             .visible_alias("put")
-            .override_usage(
-                "seaplane restrict set <API> <DIRECTORY> [RESTRICTION DETAILS] [OPTIONS]",
-            )
             .about("Set a restriction")
             .arg(common::api())
             .arg(common::directory())
@@ -68,7 +65,7 @@ impl CliCommand for SeaplaneRestrictSet {
             .init(RestrictCtx::from_restrict_set(&SeaplaneRestrictSetArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut restrict_ctx = ctx.restrict_ctx.get_mut_or_init();
-        restrict_ctx.decode = matches.contains_id("decode");
+        restrict_ctx.decode = matches.get_flag("decode");
         Ok(())
     }
 }

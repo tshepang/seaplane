@@ -20,7 +20,7 @@ multiple times.";
 pub struct SeaplaneInit;
 
 impl SeaplaneInit {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("init")
             .about("Create the Seaplane directory structure at the appropriate locations")
             .arg(arg!(--force)
@@ -102,7 +102,7 @@ impl CliCommand for SeaplaneInit {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.force = matches.contains_id("force");
+        ctx.args.force = matches.get_flag("force");
         ctx.args.overwrite = matches
             .get_many::<String>("overwrite")
             .unwrap_or_default()

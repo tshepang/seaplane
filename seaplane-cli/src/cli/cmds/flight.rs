@@ -39,7 +39,7 @@ pub fn str_to_image_ref(registry: &str, image_str: &str) -> Result<ImageReferenc
 pub struct SeaplaneFlight;
 
 impl SeaplaneFlight {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
         let mut app = Command::new("flight")
             .about("Operate on local Flight Plans which define \"Flights\" (logical containers), and are then referenced by Formations")

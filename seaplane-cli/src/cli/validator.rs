@@ -9,33 +9,33 @@ use crate::{
     ops::formation::Endpoint,
 };
 
-pub fn validate_u64(s: &str) -> StdResult<(), String> {
+pub fn validate_u64(s: &str) -> StdResult<u64, String> {
     match s.parse::<u64>() {
         Err(_) => Err("value must be a valid 64-bit integer".into()),
-        Ok(_) => Ok(()),
+        Ok(n) => Ok(n),
     }
 }
 
 /// Ensures a valid Endpoint
-pub fn validate_endpoint(s: &str) -> StdResult<(), String> {
-    let res = s.parse::<Endpoint>();
-    if res.is_err() {
-        return Err(format!("invalid endpoint SPEC: {}", res.unwrap_err()));
+pub fn validate_endpoint(s: &str) -> StdResult<Endpoint, String> {
+    match s.parse::<Endpoint>() {
+        Err(e) => Err(format!("invalid endpoint SPEC: {e}")),
+        Ok(ep) => Ok(ep),
     }
-    Ok(())
 }
 
 /// Ensures a valid Public Endpoint, we must special case Public Endpoints because it only supports
 /// the 'http' and 'https' protocol field.
-pub fn validate_public_endpoint(s: &str) -> StdResult<(), String> {
-    let res = s.parse::<Endpoint>();
-    if let Err(mut details) = res {
-        if details.starts_with("invalid protocol") {
-            details = "invalid protocol (valid options: http, https)".into();
+pub fn validate_public_endpoint(s: &str) -> StdResult<Endpoint, String> {
+    match s.parse::<Endpoint>() {
+        Ok(ep) => Ok(ep),
+        Err(mut details) => {
+            if details.starts_with("invalid protocol") {
+                details = "invalid protocol (valid options: http, https)".into();
+            }
+            Err(format!("invalid endpoint SPEC: {details}"))
         }
-        return Err(format!("invalid endpoint SPEC: {}", details));
     }
-    Ok(())
 }
 
 /// The arg can be any of:
@@ -44,9 +44,9 @@ pub fn validate_public_endpoint(s: &str) -> StdResult<(), String> {
 /// - Local ID (32byte hex encoded string)
 /// - @- (means STDIN)
 /// - @path
-pub fn validate_name_id_path<F>(name_validator: F, s: &str) -> StdResult<(), String>
+pub fn validate_name_id_path<F>(name_validator: F, s: &str) -> StdResult<String, String>
 where
-    F: Fn(&str) -> StdResult<(), &'static str>,
+    F: Fn(&str) -> StdResult<String, &'static str>,
 {
     name_validator(s)
         .or_else(|_| validate_id(s))
@@ -65,7 +65,7 @@ where
 /// - @- (means STDIN)
 /// - @path
 /// - INLINE-SPEC for Flights
-pub fn validate_name_id_path_inline(s: &str) -> StdResult<(), String> {
+pub fn validate_name_id_path_inline(s: &str) -> StdResult<String, String> {
     validate_flight_name(s)
         .or_else(|_| validate_id(s))
         .or_else(|_| validate_at_path(s))
@@ -80,9 +80,9 @@ pub fn validate_name_id_path_inline(s: &str) -> StdResult<(), String> {
 ///
 /// - name
 /// - Local ID (32byte hex encoded string)
-pub fn validate_name_id<F>(name_validator: F, s: &str) -> StdResult<(), &'static str>
+pub fn validate_name_id<F>(name_validator: F, s: &str) -> StdResult<String, &'static str>
 where
-    F: Fn(&str) -> StdResult<(), &'static str>,
+    F: Fn(&str) -> StdResult<String, &'static str>,
 {
     name_validator(s).or_else(|_| validate_id(s))
 }
@@ -91,7 +91,7 @@ where
 ///
 /// - 1-63 alphanumeric characters (only ASCII lowercase) and hyphens ( 0-9, a-z, A-Z, and '-' )
 /// (aka, one DNS segment)
-pub fn validate_flight_name(name: &str) -> StdResult<(), &'static str> {
+pub fn validate_flight_name(name: &str) -> StdResult<String, &'static str> {
     if name.is_empty() {
         return Err("Flight name cannot be empty");
     }
@@ -110,7 +110,7 @@ pub fn validate_flight_name(name: &str) -> StdResult<(), &'static str> {
         return Err("repeated hyphens ('--') not allowed in Flight name");
     }
 
-    Ok(())
+    Ok(name.into())
 }
 
 /// Current Rules:
@@ -120,7 +120,7 @@ pub fn validate_flight_name(name: &str) -> StdResult<(), &'static str> {
 ///  - no more than three (3) total hyphens
 ///  - no consecutive hyphens
 ///  - no trailing hyphen
-pub fn validate_formation_name(name: &str) -> StdResult<(), &'static str> {
+pub fn validate_formation_name(name: &str) -> StdResult<String, &'static str> {
     if name.is_empty() {
         return Err("Formation name cannot be empty");
     }
@@ -145,11 +145,11 @@ pub fn validate_formation_name(name: &str) -> StdResult<(), &'static str> {
         return Err("Formation names may not end with a hyphen ('-')");
     }
 
-    Ok(())
+    Ok(name.into())
 }
 
 /// The value may be `@path` where `path` is some path that exists
-pub fn validate_at_path(s: &str) -> StdResult<(), String> {
+pub fn validate_at_path(s: &str) -> StdResult<String, String> {
     if let Some(path) = s.strip_prefix('@') {
         if !Path::exists(path.as_ref()) {
             return Err(format!("path '{path}' does not exist"));
@@ -158,16 +158,16 @@ pub fn validate_at_path(s: &str) -> StdResult<(), String> {
         return Err("the '@<path>'  was not provided".to_owned());
     }
 
-    Ok(())
+    Ok(s.into())
 }
 
 /// The value may be `@-`
-pub fn validate_at_stdin(s: &str) -> StdResult<(), &'static str> {
+pub fn validate_at_stdin(s: &str) -> StdResult<String, &'static str> {
     if s != "@-" {
         return Err("the value '@-' was not provided");
     }
 
-    Ok(())
+    Ok(s.into())
 }
 
 /// The value may be:
@@ -175,7 +175,7 @@ pub fn validate_at_stdin(s: &str) -> StdResult<(), &'static str> {
 /// name=NAME,image=IMG,maximum=NUM,minimum=NUM,api-permission[=true|false],architecture=ARCH
 ///
 /// where only image is required, and architecture can be passed multiple times.
-pub fn validate_inline_flight_spec(s: &str) -> StdResult<(), String> {
+pub fn validate_inline_flight_spec(s: &str) -> StdResult<String, String> {
     // We use the default image registry URL regardless of what the user has set because we're only
     // checking validity, not actually using this data
     if let Err(e) = FlightCtx::from_inline_flight(s, DEFAULT_IMAGE_REGISTRY_URL) {
@@ -201,11 +201,11 @@ pub fn validate_inline_flight_spec(s: &str) -> StdResult<(), String> {
             }
         }));
     }
-    Ok(())
+    Ok(s.into())
 }
 
 /// The value may be a *up to* a 32byte hex encoded string
-pub fn validate_id(s: &str) -> StdResult<(), &'static str> {
+pub fn validate_id(s: &str) -> StdResult<String, &'static str> {
     if s.is_empty() {
         return Err("ID cannot be empty");
     }
@@ -216,7 +216,7 @@ pub fn validate_id(s: &str) -> StdResult<(), &'static str> {
         return Err("ID provided is too long");
     }
 
-    Ok(())
+    Ok(s.into())
 }
 
 fn is_hex_char(c: char) -> bool { matches!(c, 'a'..='f' | 'A'..='F' | '0'..='9') }

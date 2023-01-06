@@ -183,7 +183,7 @@ impl clap::ValueEnum for Provider {
         &[Aws, Azure, DigitalOcean, Equinix, Gcp, All]
     }
 
-    fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
+    fn to_possible_value<'a>(&self) -> Option<PossibleValue> {
         use Provider::*;
         match self {
             Aws => Some(PossibleValue::new("aws")),
@@ -281,7 +281,7 @@ impl clap::ValueEnum for Region {
         ]
     }
 
-    fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
+    fn to_possible_value<'a>(&self) -> Option<PossibleValue> {
         use Region::*;
         match self {
             XA => Some(PossibleValue::new("xa").alias("asia")),
@@ -372,7 +372,7 @@ impl<'a> Into<RegionModel> for &'a Region {
     }
 }
 
-pub fn args() -> Vec<Arg<'static>> {
+pub fn args() -> Vec<Arg> {
     let validator = |s: &str| validate_name_id(validate_formation_name, s);
     #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
     let mut hide = true;
@@ -387,7 +387,7 @@ pub fn args() -> Vec<Arg<'static>> {
         arg!(name_id --name -('n') =["STRING"])
             .help("A human readable name for the Formation (must be unique within the tenant) if omitted a pseudo random name will be assigned")
             .long_help(LONG_NAME)
-            .validator(validate_formation_name),
+            .value_parser(validate_formation_name),
         arg!(--launch|active)
             .overrides_with("launch") // Override with self so someone can do `--launch --active` which isn't needed, but people will do it
             .help("This Formation Plan should be deployed and set as active right away (requires a formation configuration)"),
@@ -398,7 +398,7 @@ pub fn args() -> Vec<Arg<'static>> {
             .value_delimiter(';')
             .required(true)
             .long_help(LONG_FLIGHT)
-            .validator(validate_name_id_path_inline),
+            .value_parser(validate_name_id_path_inline),
         arg!(--provider|providers =["PROVIDER"=>"all"]... ignore_case)
             .help("A provider that this Formation's Flights are permitted to run on (supports comma separated list, or multiple uses)")
             .long_help(LONG_PROVIDER)
@@ -419,25 +419,25 @@ pub fn args() -> Vec<Arg<'static>> {
         arg!(--("public-endpoint")|("public-endpoints") =["SPEC"]...)
             .help("An endpoint that will be publicly exposed by instances of this Formation Plan in the form of 'ROUTE=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
             .long_help(LONG_PUBLIC_ENDPOINT)
-            .validator(validate_public_endpoint),
+            .value_parser(validate_public_endpoint),
         // TODO: maybe allow omitting the Flight's port if it's the same
         arg!(--("flight-endpoint")|("flight-endpoints") =["SPEC"]...)
-            .validator(validate_endpoint)
+            .value_parser(validate_endpoint)
             .help("An endpoint that will only be privately exposed on Instances of this Formation Plan to Flights within the same Formation Instance. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
             .long_help(LONG_FLIGHT_ENDPOINT),
         arg!(--affinity|affinities =["NAME|ID"]...)
             .help("A Formation that this Formation has an affinity for (supports comma separated list, or multiple uses)")
             .long_help(LONG_AFFINITY)
-            .validator(validator)
+            .value_parser(validator)
             .hide(hide), // Hidden on feature = unstable
         arg!(--connection|connections =["NAME|ID"]...)
             .help("A Formations that this Formation is connected to (supports comma separated list, or multiple uses)")
             .long_help(LONG_CONNECTION)
-            .validator(validator)
+            .value_parser(validator)
             .hide(hide), // Hidden on feature = unstable
         // TODO: maybe allow omitting the Flight's port if it's the same
         arg!(--("formation-endpoint")|("formation-endpoints") =["SPEC"]...)
-            .validator(validate_endpoint)
+            .value_parser(validate_endpoint)
             .help("An endpoints that will only be exposed privately on Instances of this Formation Plan to other Formations within the same tenant and who have declared mutual connections. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses)")
             .long_help(LONG_FORMATION_ENDPOINT)
             .hide(hide), // Hidden on feature = unstable

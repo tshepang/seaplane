@@ -6,7 +6,7 @@ use crate::{cli::CliCommand, context::Ctx, error::Result};
 pub struct SeaplaneImage;
 
 impl SeaplaneImage {
-    pub fn command() -> Command<'static> { Command::new("image").visible_alias("img") }
+    pub fn command() -> Command { Command::new("image").visible_alias("img") }
 }
 impl CliCommand for SeaplaneImage {
     fn run(&self, _ctx: &mut Ctx) -> Result<()> { todo!("SeaplaneImage::run") }

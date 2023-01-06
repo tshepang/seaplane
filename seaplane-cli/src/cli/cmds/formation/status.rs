@@ -23,14 +23,14 @@ defines.";
 pub struct SeaplaneFormationStatus;
 
 impl SeaplaneFormationStatus {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         let validator = |s: &str| validate_name_id(validate_formation_name, s);
         Command::new("status")
             .long_about(LONG_ABOUT)
             .about("Show the status of a remote Formation Instance")
             .arg(
                 arg!(formation = ["NAME|ID"])
-                    .validator(validator)
+                    .value_parser(validator)
                     .help("The name or ID of the Formation to check, must be unambiguous"),
             )
             .arg(
@@ -106,7 +106,7 @@ impl CliCommand for SeaplaneFormationStatus {
         ctx.args.name_id = matches
             .get_one::<String>("formation")
             .map(ToOwned::to_owned);
-        ctx.args.fetch = !matches.contains_id("no-fetch");
+        ctx.args.fetch = !matches.get_flag("no-fetch");
         Ok(())
     }
 }

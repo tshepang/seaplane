@@ -179,8 +179,8 @@ impl FlightCtx {
                 .copied()
                 .collect(),
             // because of clap overrides we only have to check api_permissions
-            api_permission: matches.contains_id("api-permission"),
-            reset_maximum: matches.contains_id("no-maximum"),
+            api_permission: matches.get_flag("api-permission"),
+            reset_maximum: matches.get_flag("no-maximum"),
             generated_name,
         })
     }

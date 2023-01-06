@@ -16,7 +16,7 @@ use crate::{
 pub struct SeaplaneAccount;
 
 impl SeaplaneAccount {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("account")
             .visible_alias("acct")
             .about("Operate on Seaplane account details, including access tokens")
@@ -44,7 +44,7 @@ impl CliCommand for SeaplaneAccount {
 pub struct SeaplaneAccountToken;
 
 impl SeaplaneAccountToken {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("token").arg(arg!(--json - ('j')).help(
             "Returns the access token in a JSON object also containing tenant ID and subdomain",
         ))
@@ -80,7 +80,7 @@ impl CliCommand for SeaplaneAccountToken {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        if matches.contains_id("json") {
+        if matches.get_flag("json") {
             ctx.args.out_format = OutputFormat::Json;
         }
         Ok(())
@@ -91,7 +91,7 @@ impl CliCommand for SeaplaneAccountToken {
 pub struct SeaplaneAccountLogin;
 
 impl SeaplaneAccountLogin {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("login").arg(arg!(--force - ('f')).help("Override any existing API key"))
     }
 }
@@ -146,7 +146,7 @@ impl CliCommand for SeaplaneAccountLogin {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.force = matches.contains_id("force");
+        ctx.args.force = matches.get_flag("force");
         Ok(())
     }
 }

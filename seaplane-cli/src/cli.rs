@@ -74,12 +74,12 @@ impl dyn CliCommand + 'static {
 pub struct Seaplane;
 
 impl Seaplane {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         #[cfg_attr(not(any(feature = "unstable", feature = "ui_tests")), allow(unused_mut))]
         let mut app = Command::new("seaplane")
+            .about("Seaplane CLI for managing resources on the Seaplane Cloud")
             .author(AUTHORS)
             .version(VERSION)
-            .disable_colored_help(true)
             .long_version(concatcp!(VERSION, "\n", env!("SEAPLANE_BUILD_FEATURES")))
             .propagate_version(true)
             .subcommand_required(true)
@@ -147,8 +147,7 @@ impl CliCommand for Seaplane {
         // even though they override each-other.
         //
         // So we err on the side of not providing color since that is the safer option
-        ctx.args.color = match (matches.get_one("color").copied(), matches.contains_id("no-color"))
-        {
+        ctx.args.color = match (matches.get_one("color").copied(), matches.get_flag("no-color")) {
             (_, true) => ColorChoice::Never,
             (Some(choice), _) => {
                 if choice != ColorChoice::Auto {
@@ -160,7 +159,7 @@ impl CliCommand for Seaplane {
             _ => unreachable!("neither --color nor --no-color were used somehow"),
         };
 
-        ctx.args.stateless = matches.contains_id("stateless");
+        ctx.args.stateless = matches.get_flag("stateless");
 
         // API tests sometimes write their own DB to test, so we don't want to overwrite that
         #[cfg(not(feature = "api_tests"))]

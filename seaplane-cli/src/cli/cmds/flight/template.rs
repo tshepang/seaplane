@@ -6,7 +6,7 @@ use crate::{cli::CliCommand, error::Result, Ctx};
 pub struct SeaplaneFlightTemplate;
 
 impl SeaplaneFlightTemplate {
-    pub fn command() -> Command<'static> { Command::new("template") }
+    pub fn command() -> Command { Command::new("template") }
 }
 
 impl CliCommand for SeaplaneFlightTemplate {

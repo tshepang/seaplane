@@ -23,13 +23,17 @@ impl LocksCtx {
     /// Builds a LocksCtx from ArgMatches
     pub fn from_locks_common(matches: &SeaplaneLocksCommonArgMatches) -> Result<LocksCtx> {
         let matches = matches.0;
-        let base64 = matches.contains_id("base64");
+        let base64 = matches.get_flag("base64");
         let raw_lock_name = matches.get_one::<String>("lock_name");
 
         let lock_name: Option<LockName> = if base64 {
             let res: Option<Result<LockName>> = raw_lock_name.map(|name| {
                 // Check that what the user passed really is valid base64
-                let _ = base64::decode_config(name, base64::URL_SAFE_NO_PAD)?;
+                let engine = ::base64::engine::fast_portable::FastPortable::from(
+                    &::base64::alphabet::URL_SAFE,
+                    ::base64::engine::fast_portable::NO_PAD,
+                );
+                let _ = base64::decode_engine(name, &engine)?;
                 Ok::<LockName, _>(LockName::new(name))
             });
             res.transpose()?

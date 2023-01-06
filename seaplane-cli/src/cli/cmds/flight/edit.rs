@@ -18,18 +18,17 @@ use crate::{
 pub struct SeaplaneFlightEdit;
 
 impl SeaplaneFlightEdit {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         let validator = |s: &str| validate_name_id(validate_flight_name, s);
         // TODO: add --no-maximum or similar
         // TODO: add --from
         Command::new("edit")
             .about("Edit a local Flight Plan")
             .after_help(IMAGE_SPEC)
-            .override_usage("seaplane flight edit <NAME|ID> [OPTIONS]")
             .arg(
                 arg!(name_id required =["NAME|ID"])
                     .help("The source name or ID of the Flight Plan to edit")
-                    .validator(validator),
+                    .value_parser(validator),
             )
             .arg(arg!(--exact - ('x')).help("The given name or ID must be an exact match"))
             .args(common::args(false))

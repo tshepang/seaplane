@@ -17,7 +17,7 @@ use crate::{
 pub struct SeaplaneFlightCopy;
 
 impl SeaplaneFlightCopy {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         let validator = |s: &str| validate_name_id(validate_flight_name, s);
 
         // TODO: add --from
@@ -26,12 +26,13 @@ impl SeaplaneFlightCopy {
             .about("Copy a local Flight Plan (optionally make changes to the copy)")
             .after_help(IMAGE_SPEC)
             .override_usage(
-                "seaplane flight copy <NAME|ID> --name=<DEST_NAME> [OPTIONS]
-    seaplane flight copy <NAME|ID> [OPTIONS]",
-            ) // TODO: DEST_NAME is never used?!
+                "
+    seaplane flight copy [OPTIONS] <NAME|ID> --name=<DEST_NAME>
+    seaplane flight copy [OPTION] <NAME|ID> [OPTIONS]",
+            )
             .arg(
                 arg!(name_id =["NAME|ID"] required)
-                    .validator(validator)
+                    .value_parser(validator)
                     .help("The source name or ID of the Flight Plan to copy"),
             )
             .arg(arg!(--exact - ('x')).help("The given SOURCE must be an exact match"))

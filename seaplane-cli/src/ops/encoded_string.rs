@@ -1,5 +1,6 @@
 use std::{fmt, result::Result as StdResult};
 
+use base64::{alphabet, engine::fast_portable};
 use serde::{ser::Serializer, Serialize};
 
 use crate::error::Result;
@@ -18,14 +19,14 @@ impl EncodedString {
 
     /// Decodes into binary format
     pub fn decoded(&self) -> Result<Vec<u8>> {
-        let ret = base64::decode_config(&self.0, base64::URL_SAFE_NO_PAD)?;
-        Ok(ret)
+        let engine = fast_portable::FastPortable::from(&alphabet::URL_SAFE, fast_portable::NO_PAD);
+        Ok(base64::decode_engine(&self.0, &engine)?)
     }
 
     /// Decodes into display-safe format
     pub fn decoded_safe(&self) -> Result<String> {
-        let ret = stfu8::encode_u8(&base64::decode_config(&self.0, base64::URL_SAFE_NO_PAD)?);
-        Ok(ret)
+        let engine = fast_portable::FastPortable::from(&alphabet::URL_SAFE, fast_portable::NO_PAD);
+        Ok(stfu8::encode_u8(&base64::decode_engine(&self.0, &engine)?))
     }
 }
 

@@ -25,7 +25,7 @@ arbitrary binary data. Using --decode to output the decoded values instead.";
 pub struct SeaplaneLocksList;
 
 impl SeaplaneLocksList {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("list")
             .visible_alias("ls")
             .about("Get information around currently held locks")
@@ -138,9 +138,9 @@ impl CliCommand for SeaplaneLocksList {
 
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();
-        locksctx.base64 = matches.contains_id("base64");
-        locksctx.decode = matches.contains_id("decode");
-        locksctx.no_header = matches.contains_id("no-header");
+        locksctx.base64 = matches.get_flag("base64");
+        locksctx.decode = matches.get_flag("decode");
+        locksctx.no_header = matches.get_flag("no-header");
 
         if locksctx.decode && ctx.args.out_format != OutputFormat::Table {
             let format_arg = format!("--format {}", ctx.args.out_format);

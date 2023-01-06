@@ -17,7 +17,7 @@ use crate::{
 pub struct SeaplaneLocksAcquire;
 
 impl SeaplaneLocksAcquire {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("acquire")
             .visible_alias("acq")
             .about("Attempt to acquire the lock for N seconds")
@@ -64,7 +64,7 @@ impl CliCommand for SeaplaneLocksAcquire {
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();
         locksctx.ttl = matches.get_one::<u32>("ttl").copied();
-        locksctx.base64 = matches.contains_id("base64");
+        locksctx.base64 = matches.get_flag("base64");
         locksctx.client_id = Some(matches.get_one::<String>("client-id").unwrap().to_string());
 
         Ok(())

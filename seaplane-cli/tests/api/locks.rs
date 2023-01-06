@@ -322,7 +322,7 @@ fn locks_list_dir() {
         then(t, &p1);
     });
 
-    let res = dbg!(test_main(&cli!("locks list dir/"), MOCK_SERVER.base_url()));
+    let res = test_main(&cli!("locks list dir/"), MOCK_SERVER.base_url());
     assert!(res.is_ok());
     mock1.assert_hits(1);
     mock2.assert_hits(1);

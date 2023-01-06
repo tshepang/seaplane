@@ -19,7 +19,7 @@ use crate::cli::CliCommand;
 pub struct SeaplaneRestrict;
 
 impl SeaplaneRestrict {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("restrict")
             .about("Restrict the placement of data for Global Data Coordination API")
             .subcommand_required(true)

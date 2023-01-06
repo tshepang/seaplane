@@ -16,7 +16,7 @@ use crate::{cli::CliCommand, printer::OutputFormat};
 pub struct SeaplaneLocks;
 
 impl SeaplaneLocks {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("locks")
             .about("Operate on the Locks API")
             .subcommand_required(true)
