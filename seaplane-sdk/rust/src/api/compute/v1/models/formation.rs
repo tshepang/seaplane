@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use container_image_ref::ImageReference;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -7,7 +8,7 @@ use uuid::Uuid;
 use crate::api::compute::v1::FormationsRequest;
 use crate::{
     api::{
-        compute::v1::{Architecture, EndpointKey, EndpointValue, ImageReference},
+        compute::v1::{Architecture, EndpointKey, EndpointValue},
         shared::v1::{Provider, Region},
     },
     error::{Result, SeaplaneError},
@@ -499,7 +500,7 @@ impl FlightBuilder {
     ///
     /// # Panics
     ///
-    /// This method `panic!`s if the `image_ref` provided cannot be parsed into a valid
+    /// This method `panic!`s if the `container_image_ref` provided cannot be parsed into a valid
     /// [`ImageReference`]
     #[must_use]
     pub fn image<R: AsRef<str>>(mut self, image_ref: R) -> Self {
@@ -621,7 +622,7 @@ impl Flight {
     ///
     /// # Panics
     ///
-    /// This method `panic!`s if the `image_ref` provided cannot be parsed into a valid
+    /// This method `panic!`s if the `container_image_ref` provided cannot be parsed into a valid
     /// [`ImageReference`]
     pub fn new<S, R>(name: S, image_ref: R) -> Flight
     where

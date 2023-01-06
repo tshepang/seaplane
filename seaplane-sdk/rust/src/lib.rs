@@ -26,5 +26,6 @@ pub mod error;
 /// most likely means the derived trait appears in a types public API and you should `use` the
 /// re-exported crate trait instead of one from your own dependencies list.
 pub mod rexports {
+    pub use container_image_ref;
     pub use strum;
 }

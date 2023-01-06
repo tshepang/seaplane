@@ -7,6 +7,7 @@ CLI_DIR := 'seaplane-cli'
 CLI_MANIFEST := CLI_DIR / 'Cargo.toml'
 SDK_RUST_DIR := 'seaplane-sdk/rust'
 SDK_RUST_MANIFEST := SDK_RUST_DIR / 'Cargo.toml'
+IMAGE_REF_MANIFEST := 'crates/container-image-ref/Cargo.toml'
 SDK_PYTHON_DIR := 'seaplane-sdk/python'
 
 SHORTSHA := `git rev-parse --short HEAD`
@@ -53,7 +54,7 @@ audit: (_cargo-install 'cargo-audit')
 ci-sdk: lint-sdk-rust lint-sdk-python lint-sdk-javascript test-sdk-rust test-sdk-python test-sdk-javascript doc
 
 # Run the CI suite for the Rust SDK (only runs for your native os/arch!)
-ci-sdk-rust: lint-sdk-rust test-sdk-rust _doc-rust-crate
+ci-sdk-rust: lint-sdk-rust test-sdk-rust _doc-rust-crate (_doc-rust-crate IMAGE_REF_MANIFEST)
 
 # Run the CI suite for the Python SDK (only runs for your native os/arch!)
 ci-sdk-python: lint-sdk-python test-sdk-python doc-python
@@ -94,6 +95,7 @@ fmt-check-cli:
 
 # Check if code formatter would make changes to the Rust SDK
 fmt-check-sdk-rust:
+    cargo fmt --manifest-path crates/container-image-ref/Cargo.toml --check
     cargo fmt --manifest-path {{ SDK_RUST_DIR / 'Cargo.toml' }} --check
 
 # Check if code formatter would make changes to the Python SDK
@@ -114,6 +116,7 @@ fmt-cli:
 # Format the Rust SDK code
 fmt-sdk-rust:
     cargo fmt --manifest-path {{ SDK_RUST_MANIFEST }}
+    cargo fmt --manifest-path {{ IMAGE_REF_MANIFEST }}
 
 # Format the Python SDK code
 fmt-sdk-python: _python-setup
@@ -130,7 +133,7 @@ lint: lint-sdk-rust lint-sdk-python lint-sdk-javascript lint-cli
 lint-cli: spell-check fmt-check-cli (_lint-rust-crate CLI_MANIFEST '--no-default-features')
 
 # Run all lint checks against the Rust SDK
-lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust-crate (_lint-rust-crate SDK_RUST_MANIFEST '--features unstable') (_lint-rust-crate SDK_RUST_MANIFEST '--no-default-features')
+lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust-crate (_lint-rust-crate SDK_RUST_MANIFEST '--features unstable') (_lint-rust-crate SDK_RUST_MANIFEST '--no-default-features') (_lint-rust-crate IMAGE_REF_MANIFEST)
 
 # Run all lint checks against the Python SDK
 lint-sdk-python: spell-check fmt-check-sdk-python
@@ -148,7 +151,7 @@ test-rust: test-sdk-rust (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate C
 test-cli: (_doc-rust-crate CLI_MANIFEST) (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST) test-ui
 
 # Run basic integration and unit tests for the Rust SDK
-test-sdk-rust: _test-rust-crate _test-rust-api-crate
+test-sdk-rust: _test-rust-crate (_test-rust-crate IMAGE_REF_MANIFEST) _test-rust-api-crate
 
 # Run basic integration and unit tests for the Python SDK
 test-sdk-python: _python-setup

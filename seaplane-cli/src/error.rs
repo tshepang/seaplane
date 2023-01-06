@@ -6,8 +6,7 @@ use std::{
 };
 
 use seaplane::{
-    api::{compute::v1::ImageReferenceError, ApiErrorKind},
-    error::SeaplaneError,
+    api::ApiErrorKind, error::SeaplaneError, rexports::container_image_ref::ImageReferenceError,
 };
 
 use crate::{
@@ -180,7 +179,7 @@ impl_err!(serde_json::Error, SerdeJson);
 impl_err!(toml::de::Error, TomlDe);
 impl_err!(toml::ser::Error, TomlSer);
 impl_err!(seaplane::error::SeaplaneError, Seaplane);
-impl_err!(seaplane::api::compute::v1::ImageReferenceError, ImageReference);
+impl_err!(seaplane::rexports::container_image_ref::ImageReferenceError, ImageReference);
 impl_err!(std::string::FromUtf8Error, InvalidUtf8);
 impl_err!(hex::FromHexError, HexDecode);
 impl_err!(std::num::ParseIntError, ParseInt);

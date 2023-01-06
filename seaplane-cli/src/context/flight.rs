@@ -1,4 +1,7 @@
-use seaplane::api::compute::v1::{Architecture, Flight as FlightModel, ImageReference};
+use seaplane::{
+    api::compute::v1::{Architecture, Flight as FlightModel},
+    rexports::container_image_ref::ImageReference,
+};
 
 use crate::{
     cli::{

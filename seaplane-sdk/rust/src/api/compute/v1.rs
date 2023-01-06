@@ -3,9 +3,10 @@
 
 mod error;
 mod models;
-pub use models::*;
+
 use uuid::Uuid;
 
+pub use crate::api::compute::v1::models::*;
 use crate::{
     api::{
         compute::{v1::error::map_api_error, COMPUTE_API_URL},
