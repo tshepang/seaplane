@@ -1,0 +1,16 @@
+[package]
+name = "container-image-ref"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+readme = "README.md"
+authors = ["Seaplane IO, Inc."]
+description = "Container Image References"
+documentation = "https://docs.rs/container-image-ref"
+repository = "https://github.com/seaplane-io/seaplane/tree/main/crates/container-image-ref"
+homepage = "https://seaplane.io"
+
+[dependencies]
+nom = "7.1.2"
+serde = { version = "1.0.152", features = ["derive"] }
+thiserror = "1.0.38"

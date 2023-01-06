@@ -8,7 +8,7 @@ mod plan;
 mod template;
 
 use clap::{ArgMatches, Command};
-use seaplane::api::compute::v1::{ImageReference, ImageReferenceError};
+use seaplane::rexports::container_image_ref::{ImageReference, ImageReferenceError};
 
 #[cfg(feature = "unstable")]
 pub use self::template::SeaplaneFlightTemplate;
