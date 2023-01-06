@@ -26,7 +26,7 @@ Instances and their configurations as well.";
 pub struct SeaplaneFormationList;
 
 impl SeaplaneFormationList {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("list")
             .visible_alias("ls")
             .long_about(LONG_ABOUT)
@@ -74,7 +74,7 @@ impl CliCommand for SeaplaneFormationList {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
-        ctx.args.fetch = matches.contains_id("fetch");
+        ctx.args.fetch = matches.get_flag("fetch");
         Ok(())
     }
 }

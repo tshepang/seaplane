@@ -1,32 +1,29 @@
 ```console
 $ seaplane formation launch -h
-seaplane[EXE]-formation-launch [..]
 Start a local Formation Plan creating a remote Formation Instance
 
-USAGE:
-    seaplane[EXE] formation launch [OPTIONS] <NAME|ID>
+Usage: seaplane[EXE] formation launch [OPTIONS] <NAME|ID>
 
-ARGS:
-    <NAME|ID>    The name or ID of the Formation Plan to launch and create an Instance of
+Arguments:
+  <NAME|ID>  The name or ID of the Formation Plan to launch and create an Instance of
 
-OPTIONS:
-    -a, --all                 Launch all matching local Formation Plans even when the name or ID is ambiguous
-    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -F, --fetch               Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to launch [aliases: sync, synchronize]
-        --grounded            Upload the configuration(s) defined in this local Formation Plan to Seaplane but *DO NOT* set them to active
-    -h, --help                Print help information
-        --no-color            Do not color output (alias for --color=never)
-    -q, --quiet               Suppress output at a specific level and below
-    -S, --stateless           Ignore local state files, do not read from or write to them
-    -v, --verbose             Display more verbose output
-    -V, --version             Print version information
+Options:
+  -a, --all               Launch all matching local Formation Plans even when the name or ID is ambiguous
+  -v, --verbose...        Display more verbose output
+  -F, --fetch             Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to launch [aliases: sync, synchronize]
+  -q, --quiet...          Suppress output at a specific level and below
+      --color <COLOR>     Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+      --grounded          Upload the configuration(s) defined in this local Formation Plan to Seaplane but *DO NOT* set them to active
+      --no-color          Do not color output (alias for --color=never)
+  -A, --api-key <STRING>  The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+  -S, --stateless         Ignore local state files, do not read from or write to them
+  -h, --help              Print help information (use `--help` for more detail)
+  -V, --version           Print version information
 
 ```
 
 ```console
 $ seaplane formation launch --help
-seaplane[EXE]-formation-launch [..]
 Start a local Formation Plan creating a remote Formation Instance
 
 In many cases, or at least initially a local Formation Plan may only have a single
@@ -63,65 +60,64 @@ These configurations will be made active. If the Seaplane Cloud already has acti
 configurations for the given Formation, these newly activated configurations will be appended,
 and traffic will be balanced between any *all* configurations.
 
-USAGE:
-    seaplane[EXE] formation launch [OPTIONS] <NAME|ID>
+Usage: seaplane[EXE] formation launch [OPTIONS] <NAME|ID>
 
-ARGS:
-    <NAME|ID>
-            The name or ID of the Formation Plan to launch and create an Instance of
+Arguments:
+  <NAME|ID>
+          The name or ID of the Formation Plan to launch and create an Instance of
 
-OPTIONS:
-    -a, --all
-            Launch all matching local Formation Plans even when the name or ID is ambiguous
+Options:
+  -a, --all
+          Launch all matching local Formation Plans even when the name or ID is ambiguous
 
-    -A, --api-key <STRING>
-            The API key associated with a Seaplane account used to access Seaplane API endpoints
-            
-            The value provided here will override any provided in any configuration files.
-            A CLI provided value also overrides any environment variables.
-            One can use a special value of '-' to signal the value should be read from STDIN.
-            
-            [env: SEAPLANE_API_KEY]
+  -v, --verbose...
+          Display more verbose output
+          
+          More uses displays more verbose output
+              -v:  Display debug info
+              -vv: Display trace info
 
-        --color <COLOR>
-            Should the output include color?
-            
-            [default: auto]
-            [possible values: always, ansi, auto, never]
+  -F, --fetch
+          Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to launch
+          
+          [aliases: sync, synchronize]
 
-    -F, --fetch
-            Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to launch
-            
-            [aliases: sync, synchronize]
+  -q, --quiet...
+          Suppress output at a specific level and below
+          
+          More uses suppresses higher levels of output
+              -q:   Only display WARN messages and above
+              -qq:  Only display ERROR messages
+              -qqq: Suppress all output
 
-        --grounded
-            Upload the configuration(s) defined in this local Formation Plan to Seaplane but *DO NOT* set them to active
+      --color <COLOR>
+          Should the output include color?
+          
+          [default: auto]
+          [possible values: always, ansi, auto, never]
 
-    -h, --help
-            Print help information
+      --grounded
+          Upload the configuration(s) defined in this local Formation Plan to Seaplane but *DO NOT* set them to active
 
-        --no-color
-            Do not color output (alias for --color=never)
+      --no-color
+          Do not color output (alias for --color=never)
 
-    -q, --quiet
-            Suppress output at a specific level and below
-            
-            More uses suppresses higher levels of output
-                -q:   Only display WARN messages and above
-                -qq:  Only display ERROR messages
-                -qqq: Suppress all output
+  -A, --api-key <STRING>
+          The API key associated with a Seaplane account used to access Seaplane API endpoints
+          
+          The value provided here will override any provided in any configuration files.
+          A CLI provided value also overrides any environment variables.
+          One can use a special value of '-' to signal the value should be read from STDIN.
+          
+          [env: SEAPLANE_API_KEY]
 
-    -S, --stateless
-            Ignore local state files, do not read from or write to them
+  -S, --stateless
+          Ignore local state files, do not read from or write to them
 
-    -v, --verbose
-            Display more verbose output
-            
-            More uses displays more verbose output
-                -v:  Display debug info
-                -vv: Display trace info
+  -h, --help
+          Print help information (use `-h` for a summary)
 
-    -V, --version
-            Print version information
+  -V, --version
+          Print version information
 
 ```

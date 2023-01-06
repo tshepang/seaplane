@@ -281,7 +281,7 @@ macro_rules! cli_traceln {
 /// - Setting multiple values can be done with `...` Note that this sets multiple
 /// values/occurrences in a consistent manner for this application. If you need arguments with
 /// different semantics you'll have to set those manually. `...` is equivalent to setting
-/// `Arg::new("foo").action(ArgAction::Append).multiple_values(true).number_of_values(1).
+/// `Arg::new("foo").action(ArgAction::Append).number_of_values(1).
 /// value_delimiter(',')`
 /// - Setting any boolean value to `true` can be done by just the function name i.e. `required`
 /// - Setting any boolean value to `false` can be done by prefixing the function with `!` i.e.
@@ -301,7 +301,6 @@ macro_rules! cli_traceln {
 ///   .value_name("NUM")           // =["NUM"]
 ///   .default_value("2")          // =[..=>"2"]
 ///   .action(ArgAction::Append)   // ...
-///   .multiple_values(true)       // ...
 ///   .value_delimiter(',')        // ...
 ///   .number_of_values(1)         // ...
 ///   .global(true)                // global
@@ -311,10 +310,10 @@ macro_rules! cli_traceln {
 macro_rules! arg {
     (@arg ($arg:expr) ) => { $arg };
     (@arg ($arg:expr) --$long:ident $($tail:tt)*) => {
-        arg!(@arg ($arg.long(stringify!($long))) $($tail)* )
+        arg!(@arg ($arg.long(stringify!($long)).action(::clap::ArgAction::SetTrue)) $($tail)* )
     };
     (@arg ($arg:expr) -($short:expr) $($tail:tt)*) => {
-        arg!(@arg ($arg.short($short)) $($tail)* )
+        arg!(@arg ($arg.short($short).action(::clap::ArgAction::SetTrue)) $($tail)* )
     };
     (@arg ($arg:expr) | ($alias:expr) $($tail:tt)*) => {
         arg!(@arg ($arg.visible_alias($alias)) $($tail)* )
@@ -330,12 +329,12 @@ macro_rules! arg {
             } else {
                 arg
             }
-        }) multiple_values $($tail)* )
+        }) $($tail)* )
     };
     (@arg ($arg:expr) =[$var:expr$(=>$default:expr)?] $($tail:tt)*) => {
         arg!(@arg ({
             #[allow(unused_mut)]
-            let mut a = $arg.value_name($var);
+            let mut a = $arg.value_name($var).action(::clap::ArgAction::Set);
             $(
                 a = a.default_value($default);
             )?
@@ -354,10 +353,18 @@ macro_rules! arg {
         arg!(@arg (::clap::Arg::new(stringify!($name))) $($tail)* )
     };
     (--($name:expr) $($tail:tt)*) => {
-        arg!(@arg (::clap::Arg::new($name).long($name)) $($tail)* )
+        arg!(@arg (::clap::Arg::new($name)
+                .long($name)
+                .action(::clap::ArgAction::SetTrue))
+            $($tail)*
+        )
     };
     (--$name:ident $($tail:tt)*) => {
-        arg!(@arg (::clap::Arg::new(stringify!($name)).long(stringify!($name))) $($tail)* )
+        arg!(@arg (::clap::Arg::new(stringify!($name))
+                .long(stringify!($name))
+                .action(::clap::ArgAction::SetTrue))
+            $($tail)*
+        )
     };
 }
 
@@ -366,11 +373,15 @@ macro_rules! arg {
 macro_rules! maybe_base64_arg {
     ($m:expr, $arg:expr, $is_base64:expr) => {
         if let Some(raw_key) = $m.get_one::<String>($arg) {
+            let engine = ::base64::engine::fast_portable::FastPortable::from(
+                &::base64::alphabet::URL_SAFE,
+                ::base64::engine::fast_portable::NO_PAD,
+            );
             if $is_base64 {
-                let _ = ::base64::decode_config(raw_key, ::base64::URL_SAFE_NO_PAD)?;
+                let _ = ::base64::decode_engine(raw_key, &engine)?;
                 Some(raw_key.to_string())
             } else {
-                Some(::base64::encode_config(raw_key, ::base64::URL_SAFE_NO_PAD))
+                Some(::base64::encode_engine(raw_key, &engine))
             }
         } else {
             None

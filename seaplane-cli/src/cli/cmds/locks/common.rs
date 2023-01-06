@@ -11,7 +11,7 @@ things to your terminal)";
 #[allow(missing_debug_implementations)]
 pub struct SeaplaneLocksCommonArgMatches<'a>(pub &'a ArgMatches);
 
-pub fn display_args() -> Vec<Arg<'static>> {
+pub fn display_args() -> Vec<Arg> {
     vec![
         arg!(--decode - ('D'))
             .help("Decode the lockname before printing it (WARNING! See --help)")
@@ -25,22 +25,20 @@ pub fn display_args() -> Vec<Arg<'static>> {
     ]
 }
 
-pub fn base64() -> Arg<'static> {
+pub fn base64() -> Arg {
     arg!(--base64 - ('B')).help("The lockname is already encoded in URL safe Base64")
 }
 
-pub fn ttl() -> Arg<'static> {
+pub fn ttl() -> Arg {
     arg!(--ttl - ('T') =["SECS"] required)
         .value_parser(value_parser!(u32))
         .help("The TTL (Time To Live) in seconds, i.e. a positive integer")
 }
 
-pub fn lock_id() -> Arg<'static> {
+pub fn lock_id() -> Arg {
     arg!(--("lock-id") - ('L') =["STRING"] required).help(
         "A valid lock-id can be obtained from a successful acquisition, or listing of the locks",
     )
 }
 
-pub fn lock_name() -> Arg<'static> {
-    arg!(lock_name =["LOCK_NAME"] required ).help("The name of the lock")
-}
+pub fn lock_name() -> Arg { arg!(lock_name =["LOCK_NAME"] required ).help("The name of the lock") }

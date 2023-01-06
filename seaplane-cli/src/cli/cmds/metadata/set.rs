@@ -19,10 +19,9 @@ pub struct SeaplaneMetadataSetArgMatches<'a>(pub &'a ArgMatches);
 pub struct SeaplaneMetadataSet;
 
 impl SeaplaneMetadataSet {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("set")
             .visible_alias("put")
-            .override_usage("seaplane metadata set <KEY> <VALUE> [OPTIONS]")
             .about("Set a metadata key-value pair")
             .arg(common::base64())
             .arg(arg!(key =["KEY"] required ).help("The key to set"))

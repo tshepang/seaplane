@@ -36,7 +36,7 @@ use crate::{cli::CliCommand, error::Result, Ctx};
 pub struct SeaplaneFormation;
 
 impl SeaplaneFormation {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         #[cfg_attr(not(feature = "unstable"), allow(unused_mut))]
         let mut app = Command::new("formation")
             .about(

@@ -14,10 +14,9 @@ use crate::{
 pub struct SeaplaneRestrictDelete;
 
 impl SeaplaneRestrictDelete {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("delete")
             .visible_aliases(&["del", "remove", "rm"])
-            .override_usage("seaplane restrict delete <API> <DIRECTORY> [OPTIONS]")
             .about("Delete a restriction on directory")
             .arg(common::api())
             .arg(common::directory())
@@ -54,7 +53,7 @@ impl CliCommand for SeaplaneRestrictDelete {
             .init(RestrictCtx::from_restrict_common(&SeaplaneRestrictCommonArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut restrict_ctx = ctx.restrict_ctx.get_mut_or_init();
-        restrict_ctx.decode = matches.contains_id("decode");
+        restrict_ctx.decode = matches.get_flag("decode");
         Ok(())
     }
 }

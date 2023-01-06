@@ -46,14 +46,18 @@ impl MetadataCtx {
     /// Builds a MetadataCtx from ArgMatches
     pub fn from_md_common(matches: &SeaplaneMetadataCommonArgMatches) -> Result<MetadataCtx> {
         let matches = matches.0;
-        let base64 = matches.contains_id("base64");
+        let base64 = matches.get_flag("base64");
         let raw_keys: Vec<_> = matches.get_many::<String>("key").unwrap().collect();
 
         let mut kvs = KeyValues::default();
         for key in raw_keys {
             if base64 {
                 // Check that what the user passed really is valid base64
-                let _ = base64::decode_config(key, base64::URL_SAFE_NO_PAD)?;
+                let engine = ::base64::engine::fast_portable::FastPortable::from(
+                    &::base64::alphabet::URL_SAFE,
+                    ::base64::engine::fast_portable::NO_PAD,
+                );
+                let _ = base64::decode_engine(key, &engine)?;
                 kvs.push(KeyValue::from_key(key));
             } else {
                 kvs.push(KeyValue::from_key_unencoded(key));
@@ -70,7 +74,7 @@ impl MetadataCtx {
     /// Builds a MetadataCtx from ArgMatches
     pub fn from_md_set(matches: &SeaplaneMetadataSetArgMatches) -> Result<MetadataCtx> {
         let matches = matches.0;
-        let base64 = matches.contains_id("base64");
+        let base64 = matches.get_flag("base64");
         let raw_key = matches.get_one::<String>("key").unwrap();
         let raw_value = matches.get_one::<String>("value").unwrap();
         let value = if let Some(val) = raw_value.strip_prefix('@') {
@@ -96,17 +100,21 @@ impl MetadataCtx {
             raw_value.as_bytes().to_vec()
         };
 
+        let engine = ::base64::engine::fast_portable::FastPortable::from(
+            &::base64::alphabet::URL_SAFE,
+            ::base64::engine::fast_portable::NO_PAD,
+        );
         let kv = if base64 {
             // make sure it's valid base64
-            let _ = base64::decode_config(raw_key, base64::URL_SAFE_NO_PAD)?;
-            let _ = base64::decode_config(&value, base64::URL_SAFE_NO_PAD)?;
+            let _ = base64::decode_engine(raw_key, &engine)?;
+            let _ = base64::decode_engine(&value, &engine)?;
             // The user used `--base64` and it is valid base64 so there is no reason the from_utf8
             // should fail
             KeyValue::new(raw_key, &String::from_utf8(value)?)
         } else {
             KeyValue::new(
-                base64::encode_config(raw_key, base64::URL_SAFE_NO_PAD),
-                base64::encode_config(value, base64::URL_SAFE_NO_PAD),
+                base64::encode_engine(raw_key, &engine),
+                base64::encode_engine(value, &engine),
             )
         };
 

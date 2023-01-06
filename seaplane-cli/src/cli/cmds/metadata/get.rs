@@ -17,11 +17,10 @@ arbitrary binary data. Use --decode to output the decoded values instead.";
 pub struct SeaplaneMetadataGet;
 
 impl SeaplaneMetadataGet {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         // TODO: add a way to elide long keys or values with ... after a certain char count
         Command::new("get")
             .visible_alias("show")
-            .override_usage("seaplane metadata get <KEY> [OPTIONS]")
             .about("Retrieve a metadata key-value pair")
             .long_about(LONG_ABOUT)
             .arg(common::single_key())
@@ -62,7 +61,7 @@ impl CliCommand for SeaplaneMetadataGet {
             .init(MetadataCtx::from_md_common(&common::SeaplaneMetadataCommonArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut mdctx = ctx.md_ctx.get_mut_or_init();
-        mdctx.decode = matches.contains_id("decode");
+        mdctx.decode = matches.get_flag("decode");
         mdctx.no_header = true;
         mdctx.no_keys = true;
         mdctx.no_values = false;

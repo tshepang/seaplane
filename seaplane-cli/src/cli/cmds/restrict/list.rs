@@ -24,10 +24,9 @@ pub struct SeaplaneRestrictListArgMatches<'a>(pub &'a ArgMatches);
 pub struct SeaplaneRestrictList;
 
 impl SeaplaneRestrictList {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("list")
             .visible_alias("ls")
-            .override_usage("seaplane restrict list [API] [OPTIONS]")
             .about("List restrictions in an API, or across all APIs")
             .long_about(LONG_ABOUT)
             .arg(arg!(api = ["API"]).help("The API to list the restrictions from"))
@@ -58,8 +57,8 @@ impl CliCommand for SeaplaneRestrictList {
             .init(RestrictCtx::from_restrict_list(&SeaplaneRestrictListArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut restrict_ctx = ctx.restrict_ctx.get_mut_or_init();
-        restrict_ctx.decode = matches.contains_id("decode");
-        restrict_ctx.no_header = matches.contains_id("no-header");
+        restrict_ctx.decode = matches.get_flag("decode");
+        restrict_ctx.no_header = matches.get_flag("no-header");
         Ok(())
     }
 

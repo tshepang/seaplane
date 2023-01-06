@@ -3,28 +3,26 @@ With no args:
 ```console
 $ seaplane restrict
 ? 2
-seaplane[EXE]-restrict [..]
 Restrict the placement of data for Global Data Coordination API
 
-USAGE:
-    seaplane[EXE] restrict [OPTIONS] <SUBCOMMAND>
+Usage: seaplane[EXE] restrict [OPTIONS] <COMMAND>
 
-OPTIONS:
-    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -h, --help                Print help information
-        --no-color            Do not color output (alias for --color=never)
-    -q, --quiet               Suppress output at a specific level and below
-    -S, --stateless           Ignore local state files, do not read from or write to them
-    -v, --verbose             Display more verbose output
-    -V, --version             Print version information
+Commands:
+  get     Retrieve information about a directory restriction [aliases: show]
+  list    List restrictions in an API, or across all APIs [aliases: ls]
+  set     Set a restriction [aliases: put]
+  delete  Delete a restriction on directory [aliases: del, remove, rm]
+  help    Print this message or the help of the given subcommand(s)
 
-SUBCOMMANDS:
-    delete    Delete a restriction on directory [aliases: del, remove, rm]
-    get       Retrieve information about a directory restriction [aliases: show]
-    help      Print this message or the help of the given subcommand(s)
-    list      List restrictions in an API, or across all APIs [aliases: ls]
-    set       Set a restriction [aliases: put]
+Options:
+  -v, --verbose...        Display more verbose output
+  -q, --quiet...          Suppress output at a specific level and below
+      --color <COLOR>     Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+      --no-color          Do not color output (alias for --color=never)
+  -A, --api-key <STRING>  The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+  -S, --stateless         Ignore local state files, do not read from or write to them
+  -h, --help              Print help information (use `--help` for more detail)
+  -V, --version           Print version information
 
 ```
 
@@ -32,28 +30,26 @@ The short help:
 
 ```console
 $ seaplane restrict -h
-seaplane[EXE]-restrict [..]
 Restrict the placement of data for Global Data Coordination API
 
-USAGE:
-    seaplane[EXE] restrict [OPTIONS] <SUBCOMMAND>
+Usage: seaplane[EXE] restrict [OPTIONS] <COMMAND>
 
-OPTIONS:
-    -A, --api-key <STRING>    The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
-        --color <COLOR>       Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
-    -h, --help                Print help information
-        --no-color            Do not color output (alias for --color=never)
-    -q, --quiet               Suppress output at a specific level and below
-    -S, --stateless           Ignore local state files, do not read from or write to them
-    -v, --verbose             Display more verbose output
-    -V, --version             Print version information
+Commands:
+  get     Retrieve information about a directory restriction [aliases: show]
+  list    List restrictions in an API, or across all APIs [aliases: ls]
+  set     Set a restriction [aliases: put]
+  delete  Delete a restriction on directory [aliases: del, remove, rm]
+  help    Print this message or the help of the given subcommand(s)
 
-SUBCOMMANDS:
-    delete    Delete a restriction on directory [aliases: del, remove, rm]
-    get       Retrieve information about a directory restriction [aliases: show]
-    help      Print this message or the help of the given subcommand(s)
-    list      List restrictions in an API, or across all APIs [aliases: ls]
-    set       Set a restriction [aliases: put]
+Options:
+  -v, --verbose...        Display more verbose output
+  -q, --quiet...          Suppress output at a specific level and below
+      --color <COLOR>     Should the output include color? [default: auto] [possible values: always, ansi, auto, never]
+      --no-color          Do not color output (alias for --color=never)
+  -A, --api-key <STRING>  The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
+  -S, --stateless         Ignore local state files, do not read from or write to them
+  -h, --help              Print help information (use `--help` for more detail)
+  -V, --version           Print version information
 
 ```
 
@@ -61,65 +57,63 @@ The long help:
 
 ```console
 $ seaplane restrict --help
-seaplane[EXE]-restrict [..]
 Restrict the placement of data for Global Data Coordination API
 
-USAGE:
-    seaplane[EXE] restrict [OPTIONS] <SUBCOMMAND>
+Usage: seaplane[EXE] restrict [OPTIONS] <COMMAND>
 
-OPTIONS:
-    -A, --api-key <STRING>
-            The API key associated with a Seaplane account used to access Seaplane API endpoints
-            
-            The value provided here will override any provided in any configuration files.
-            A CLI provided value also overrides any environment variables.
-            One can use a special value of '-' to signal the value should be read from STDIN.
-            
-            [env: SEAPLANE_API_KEY]
+Commands:
+  get
+          Retrieve information about a directory restriction [aliases: show]
+  list
+          List restrictions in an API, or across all APIs [aliases: ls]
+  set
+          Set a restriction [aliases: put]
+  delete
+          Delete a restriction on directory [aliases: del, remove, rm]
+  help
+          Print this message or the help of the given subcommand(s)
 
-        --color <COLOR>
-            Should the output include color?
-            
-            [default: auto]
-            [possible values: always, ansi, auto, never]
+Options:
+  -v, --verbose...
+          Display more verbose output
+          
+          More uses displays more verbose output
+              -v:  Display debug info
+              -vv: Display trace info
 
-    -h, --help
-            Print help information
+  -q, --quiet...
+          Suppress output at a specific level and below
+          
+          More uses suppresses higher levels of output
+              -q:   Only display WARN messages and above
+              -qq:  Only display ERROR messages
+              -qqq: Suppress all output
 
-        --no-color
-            Do not color output (alias for --color=never)
+      --color <COLOR>
+          Should the output include color?
+          
+          [default: auto]
+          [possible values: always, ansi, auto, never]
 
-    -q, --quiet
-            Suppress output at a specific level and below
-            
-            More uses suppresses higher levels of output
-                -q:   Only display WARN messages and above
-                -qq:  Only display ERROR messages
-                -qqq: Suppress all output
+      --no-color
+          Do not color output (alias for --color=never)
 
-    -S, --stateless
-            Ignore local state files, do not read from or write to them
+  -A, --api-key <STRING>
+          The API key associated with a Seaplane account used to access Seaplane API endpoints
+          
+          The value provided here will override any provided in any configuration files.
+          A CLI provided value also overrides any environment variables.
+          One can use a special value of '-' to signal the value should be read from STDIN.
+          
+          [env: SEAPLANE_API_KEY]
 
-    -v, --verbose
-            Display more verbose output
-            
-            More uses displays more verbose output
-                -v:  Display debug info
-                -vv: Display trace info
+  -S, --stateless
+          Ignore local state files, do not read from or write to them
 
-    -V, --version
-            Print version information
+  -h, --help
+          Print help information (use `-h` for a summary)
 
-SUBCOMMANDS:
-    delete
-            Delete a restriction on directory [aliases: del, remove, rm]
-    get
-            Retrieve information about a directory restriction [aliases: show]
-    help
-            Print this message or the help of the given subcommand(s)
-    list
-            List restrictions in an API, or across all APIs [aliases: ls]
-    set
-            Set a restriction [aliases: put]
+  -V, --version
+          Print version information
 
 ```

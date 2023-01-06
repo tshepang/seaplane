@@ -13,10 +13,9 @@ use crate::{
 pub struct SeaplaneMetadataDelete;
 
 impl SeaplaneMetadataDelete {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("delete")
             .visible_aliases(&["del", "remove", "rm"])
-            .override_usage("seaplane metadata delete <KEY>... [OPTIONS]")
             .about("Delete one or more metadata key-value pairs")
             .args(common::args())
     }

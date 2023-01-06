@@ -18,17 +18,17 @@ use crate::{
 pub struct SeaplaneFormationDelete;
 
 impl SeaplaneFormationDelete {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         let validator = |s: &str| validate_name_id(validate_formation_name, s);
         // TODO: add --recursive to handle configurations too
         Command::new("delete")
             .visible_aliases(&["del", "remove", "rm"])
             .about("Deletes local Formation Plans and/or remote Formation Instances")
-            .override_usage(
-                "seaplane formation delete <NAME|ID> [OPTIONS]
-    seaplane formation delete <NAME|ID> --no-remote [OPTIONS]")
+            .override_usage("
+    seaplane formation delete [OPTIONS] <NAME|ID>
+    seaplane formation delete [OPTIONS] <NAME|ID> --no-remote")
             .arg(arg!(formation =["NAME|ID"] required)
-                .validator(validator)
+                .value_parser(validator)
                 .help("The name or ID of the Formation to remove, must be unambiguous"))
             .arg(arg!(--recursive -('r'))
                 .help("Recursively delete all local definitions associated with this Formation"))
@@ -197,14 +197,14 @@ impl CliCommand for SeaplaneFormationDelete {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.force = matches.contains_id("force");
-        ctx.args.all = matches.contains_id("all");
-        ctx.args.fetch = matches.contains_id("fetch");
+        ctx.args.force = matches.get_flag("force");
+        ctx.args.all = matches.get_flag("all");
+        ctx.args.fetch = matches.get_flag("fetch");
         let mut fctx = ctx.formation_ctx.get_mut_or_init();
         fctx.name_id = matches.get_one::<String>("formation").unwrap().to_string();
-        fctx.remote = !matches.contains_id("no-remote");
-        fctx.local = !matches.contains_id("no-local");
-        fctx.recursive = matches.contains_id("recursive");
+        fctx.remote = !matches.get_flag("no-remote");
+        fctx.local = !matches.get_flag("no-local");
+        fctx.recursive = matches.get_flag("recursive");
 
         Ok(())
     }

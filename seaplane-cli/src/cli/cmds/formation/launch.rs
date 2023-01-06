@@ -60,7 +60,7 @@ and traffic will be balanced between any *all* configurations. ";
 pub struct SeaplaneFormationLaunch;
 
 impl SeaplaneFormationLaunch {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         let validator = |s: &str| validate_name_id(validate_formation_name, s);
 
         // TODO: make it possible to selectively start only *some* configs
@@ -70,7 +70,7 @@ impl SeaplaneFormationLaunch {
             .long_about(LONG_ABOUT)
             .arg(
                 arg!(formation =["NAME|ID"] required)
-                    .validator(validator)
+                    .value_parser(validator)
                     .help("The name or ID of the Formation Plan to launch and create an Instance of"),
             )
             .arg(
@@ -267,9 +267,9 @@ impl CliCommand for SeaplaneFormationLaunch {
         ctx.args.name_id = matches
             .get_one::<String>("formation")
             .map(ToOwned::to_owned);
-        ctx.args.fetch = matches.contains_id("fetch");
+        ctx.args.fetch = matches.get_flag("fetch");
         let fctx = ctx.formation_ctx.get_mut_or_init();
-        fctx.grounded = matches.contains_id("grounded");
+        fctx.grounded = matches.get_flag("grounded");
         Ok(())
     }
 }

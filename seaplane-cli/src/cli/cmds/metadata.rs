@@ -19,7 +19,7 @@ use crate::{cli::CliCommand, printer::OutputFormat};
 pub struct SeaplaneMetadata;
 
 impl SeaplaneMetadata {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("metadata")
             .about("Operate on metadata key-value pairs using the Global Data Coordination API")
             .subcommand_required(true)

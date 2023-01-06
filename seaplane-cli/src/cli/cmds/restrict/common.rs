@@ -1,4 +1,4 @@
-use clap::{value_parser, Arg, ArgMatches, PossibleValue};
+use clap::{builder::PossibleValue, value_parser, Arg, ArgMatches};
 use seaplane::api::shared::v1::{Provider as ProviderModel, Region as RegionModel};
 
 use crate::OutputFormat;
@@ -54,7 +54,7 @@ impl clap::ValueEnum for Provider {
         &[Aws, Azure, DigitalOcean, Equinix, Gcp, All]
     }
 
-    fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
+    fn to_possible_value<'a>(&self) -> Option<PossibleValue> {
         use Provider::*;
         match self {
             Aws => Some(PossibleValue::new("aws")),
@@ -152,7 +152,7 @@ impl clap::ValueEnum for Region {
         ]
     }
 
-    fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
+    fn to_possible_value<'a>(&self) -> Option<PossibleValue> {
         use Region::*;
         match self {
             XA => Some(PossibleValue::new("xa").alias("asia")),
@@ -251,7 +251,7 @@ impl<'a> Into<RegionModel> for &'a Region {
 #[derive(Debug)]
 pub struct SeaplaneRestrictCommonArgMatches<'a>(pub &'a ArgMatches);
 
-pub fn display_args() -> Vec<Arg<'static>> {
+pub fn display_args() -> Vec<Arg> {
     vec![
         arg!(--format =["FORMAT"=>"table"] global)
             .help("Change the output format")
@@ -268,7 +268,7 @@ pub fn display_args() -> Vec<Arg<'static>> {
     ]
 }
 
-pub fn restriction_details() -> Vec<Arg<'static>> {
+pub fn restriction_details() -> Vec<Arg> {
     vec![
     arg!(--provider|providers =["PROVIDER"=>"all"]... ignore_case)
     .display_order(1)
@@ -297,14 +297,12 @@ pub fn restriction_details() -> Vec<Arg<'static>> {
     ]
 }
 
-pub fn base64() -> Arg<'static> {
+pub fn base64() -> Arg {
     arg!(--base64 - ('B')).help("The directory is already encoded in URL safe Base64")
 }
 
-pub fn api() -> Arg<'static> {
-    arg!(api =["API"] required ).help("The API of the restricted directory")
-}
+pub fn api() -> Arg { arg!(api =["API"] required ).help("The API of the restricted directory") }
 
-pub fn directory() -> Arg<'static> {
+pub fn directory() -> Arg {
     arg!(directory =["DIRECTORY"] required ).help("The restricted directory")
 }

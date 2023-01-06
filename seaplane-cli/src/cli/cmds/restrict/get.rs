@@ -17,10 +17,9 @@ arbitrary binary data. Use --decode to output the decoded values instead.";
 pub struct SeaplaneRestrictGet;
 
 impl SeaplaneRestrictGet {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("get")
             .visible_alias("show")
-            .override_usage("seaplane restrict get <API> <DIRECTORY> [OPTIONS]")
             .about("Retrieve information about a directory restriction")
             .long_about(LONG_ABOUT)
             .arg(common::api())
@@ -52,8 +51,8 @@ impl CliCommand for SeaplaneRestrictGet {
         )?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut restrict_ctx = ctx.restrict_ctx.get_mut_or_init();
-        restrict_ctx.decode = matches.contains_id("decode");
-        restrict_ctx.no_header = matches.contains_id("no-header");
+        restrict_ctx.decode = matches.get_flag("decode");
+        restrict_ctx.no_header = matches.get_flag("no-header");
         Ok(())
     }
 

@@ -36,11 +36,10 @@ pub struct SeaplaneFormationPlanArgMatches<'a>(pub &'a ArgMatches);
 pub struct SeaplaneFormationPlan;
 
 impl SeaplaneFormationPlan {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("plan")
             .after_help(concatcp!(FLIGHT_SPEC, "\n\n", REGION_SPEC))
             .visible_aliases(&["create", "add"])
-            .override_usage("seaplane formation plan --include-flight-plan=SPEC... [OPTIONS]")
             .about("Create a Seaplane Formation")
             .long_about(LONG_ABOUT)
             .args(common::args())
@@ -127,8 +126,8 @@ impl CliCommand for SeaplaneFormationPlan {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.fetch = matches.contains_id("fetch");
-        ctx.args.force = matches.contains_id("force");
+        ctx.args.fetch = matches.get_flag("fetch");
+        ctx.args.force = matches.get_flag("force");
 
         // Create any flights required
         let mut flights: Vec<_> = matches

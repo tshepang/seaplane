@@ -16,7 +16,7 @@ use crate::{
 pub struct SeaplaneFormationLand;
 
 impl SeaplaneFormationLand {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         let validator = |s: &str| validate_name_id(validate_formation_name, s);
         Command::new("land")
             .visible_alias("stop")
@@ -24,7 +24,7 @@ impl SeaplaneFormationLand {
             .arg(
                 arg!(name_id =["NAME|ID"] required)
                     .help("The name or ID of the Formation Instance to land")
-                    .validator(validator),
+                    .value_parser(validator),
             )
             .arg(
                 arg!(--all - ('a'))
@@ -89,9 +89,9 @@ impl CliCommand for SeaplaneFormationLand {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
-        ctx.args.all = matches.contains_id("all");
+        ctx.args.all = matches.get_flag("all");
         ctx.args.name_id = matches.get_one::<String>("name_id").map(ToOwned::to_owned);
-        ctx.args.fetch = matches.contains_id("fetch");
+        ctx.args.fetch = matches.get_flag("fetch");
         Ok(())
     }
 }

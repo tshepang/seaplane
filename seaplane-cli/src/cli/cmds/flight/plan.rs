@@ -22,12 +22,11 @@ use crate::{
 pub struct SeaplaneFlightPlan;
 
 impl SeaplaneFlightPlan {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         // TODO: add --from
         Command::new("plan")
             .visible_aliases(&["create", "add"])
             .after_help(IMAGE_SPEC)
-            .override_usage("seaplane flight plan --image=<SPEC> [OPTIONS]")
             .about("Make a new local Flight Plan that Formations can include and reference")
             .arg(arg!(--force - ('f')).help("Override any existing Flights Plans with the same NAME"))
             .arg(arg!(--fetch|sync|synchronize - ('F')).help("Fetch and synchronize remote Formation Instances (which reference Flight Plans) prior to creating this plan to check for conflicts (by default only local plans are checked)"))
@@ -104,8 +103,8 @@ impl CliCommand for SeaplaneFlightPlan {
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.flight_ctx
             .init(FlightCtx::from_flight_common(&SeaplaneFlightCommonArgMatches(matches), ctx)?);
-        ctx.args.force = matches.contains_id("force");
-        ctx.args.fetch = matches.contains_id("fetch");
+        ctx.args.force = matches.get_flag("force");
+        ctx.args.fetch = matches.get_flag("fetch");
         Ok(())
     }
 }

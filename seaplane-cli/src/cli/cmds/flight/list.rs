@@ -11,7 +11,7 @@ use crate::{
 pub struct SeaplaneFlightList;
 
 impl SeaplaneFlightList {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         // TODO: add sorting
         // TODO: add filtering
         Command::new("list")
@@ -58,7 +58,7 @@ impl CliCommand for SeaplaneFlightList {
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
-        ctx.args.fetch = matches.contains_id("fetch");
+        ctx.args.fetch = matches.get_flag("fetch");
         Ok(())
     }
 }

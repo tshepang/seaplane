@@ -23,10 +23,9 @@ values.";
 pub struct SeaplaneMetadataList;
 
 impl SeaplaneMetadataList {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("list")
             .visible_alias("ls")
-            .override_usage("seaplane metadata list <DIR> [OPTIONS]")
             .about("List one or more metadata key-value pairs")
             .long_about(LONG_ABOUT)
             .arg(
@@ -73,13 +72,13 @@ impl CliCommand for SeaplaneMetadataList {
         ctx.md_ctx.init(MetadataCtx::default());
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut mdctx = ctx.md_ctx.get_mut().unwrap();
-        mdctx.base64 = matches.contains_id("base64");
-        mdctx.decode = matches.contains_id("decode");
-        mdctx.decode_safe = matches.contains_id("decode-safe");
-        mdctx.no_decode = matches.contains_id("no-decode");
-        mdctx.no_keys = matches.contains_id("only-values");
-        mdctx.no_values = matches.contains_id("only-keys");
-        mdctx.no_header = matches.contains_id("no-header");
+        mdctx.base64 = matches.get_flag("base64");
+        mdctx.decode = matches.get_flag("decode");
+        mdctx.decode_safe = matches.get_flag("decode-safe");
+        mdctx.no_decode = matches.get_flag("no-decode");
+        mdctx.no_keys = matches.get_flag("only-values");
+        mdctx.no_values = matches.get_flag("only-keys");
+        mdctx.no_header = matches.get_flag("no-header");
         mdctx.keys_width_limit = matches
             .get_one::<usize>("keys-width-limit")
             .copied()
@@ -88,15 +87,15 @@ impl CliCommand for SeaplaneMetadataList {
             .get_one::<usize>("values-width-limit")
             .copied()
             .unwrap_or_default();
-        mdctx.from = maybe_base64_arg!(matches, "from", matches.contains_id("base64"))
-            .map(Key::from_encoded);
-        mdctx.directory = maybe_base64_arg!(matches, "dir", matches.contains_id("base64"))
+        mdctx.from =
+            maybe_base64_arg!(matches, "from", matches.get_flag("base64")).map(Key::from_encoded);
+        mdctx.directory = maybe_base64_arg!(matches, "dir", matches.get_flag("base64"))
             .map(Directory::from_encoded);
 
         // We set the decode_safe flag if there's no `decode` or `no-decode`
         // flags set, because there's no built-in clap method to turn a flag on
         // with default_value_if()
-        if matches.contains_id("human-readable") && !(mdctx.decode || mdctx.no_decode) {
+        if matches.get_flag("human-readable") && !(mdctx.decode || mdctx.no_decode) {
             mdctx.decode_safe = true
         };
 

@@ -93,8 +93,8 @@ impl FormationCtx {
             .map(ToOwned::to_owned)
             .unwrap_or_else(generate_formation_name);
 
-        self.grounded = matches.contains_id("grounded");
-        self.launch = matches.contains_id("launch");
+        self.grounded = matches.get_flag("grounded");
+        self.launch = matches.get_flag("launch");
         self.cfg_ctx
             .flights
             .extend(flight_names.iter().map(|s| s.to_string()));
@@ -131,19 +131,19 @@ impl FormationCtx {
             .filter_map(Region::into_model)
             .collect();
         self.cfg_ctx.public_endpoints = matches
-            .get_many::<String>("public-endpoint")
+            .get_many::<Endpoint>("public-endpoint")
             .unwrap_or_default()
-            .filter_map(|val| val.parse::<Endpoint>().ok())
+            .cloned()
             .collect();
         self.cfg_ctx.formation_endpoints = matches
-            .get_many::<String>("formation-endpoint")
+            .get_many::<Endpoint>("formation-endpoint")
             .unwrap_or_default()
-            .filter_map(|val| val.parse::<Endpoint>().ok())
+            .cloned()
             .collect();
         self.cfg_ctx.flight_endpoints = matches
-            .get_many::<String>("flight-endpoint")
+            .get_many::<Endpoint>("flight-endpoint")
             .unwrap_or_default()
-            .filter_map(|val| val.parse::<Endpoint>().ok())
+            .cloned()
             .collect();
         Ok(())
     }

@@ -6,7 +6,7 @@ use crate::{cli::CliCommand, context::Ctx, error::Result};
 pub struct SeaplaneConfig;
 
 impl SeaplaneConfig {
-    pub fn command() -> Command<'static> { Command::new("config").visible_alias("cfg") }
+    pub fn command() -> Command { Command::new("config").visible_alias("cfg") }
 }
 
 impl CliCommand for SeaplaneConfig {

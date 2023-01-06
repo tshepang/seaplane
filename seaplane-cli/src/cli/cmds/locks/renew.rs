@@ -14,7 +14,7 @@ use crate::{
 pub struct SeaplaneLocksRenew;
 
 impl SeaplaneLocksRenew {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("renew")
             .about("Attempt to renew the lock for N seconds")
             .arg(common::lock_name())
@@ -52,7 +52,7 @@ impl CliCommand for SeaplaneLocksRenew {
 
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();
         let mut locksctx = ctx.locks_ctx.get_mut().unwrap();
-        locksctx.base64 = matches.contains_id("base64");
+        locksctx.base64 = matches.get_flag("base64");
         let raw_lock_id = matches.get_one::<String>("lock-id").unwrap();
         locksctx.lock_id = Some(LockId::from_encoded(raw_lock_id));
         locksctx.ttl = matches.get_one::<u32>("ttl").copied();

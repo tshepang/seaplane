@@ -1,4 +1,4 @@
-use clap::{Arg, ArgGroup, ArgMatches};
+use clap::{builder::ArgPredicate, Arg, ArgGroup, ArgMatches};
 
 const LONG_DECODE: &str = "Decode the keys and values before printing them
 
@@ -16,9 +16,9 @@ Implies --decode-safe --values-width-limit 256";
 #[derive(Debug)]
 pub struct SeaplaneMetadataCommonArgMatches<'a>(pub &'a ArgMatches);
 
-pub fn args() -> Vec<Arg<'static>> { vec![keys(), base64()] }
+pub fn args() -> Vec<Arg> { vec![keys(), base64()] }
 
-pub fn display_args() -> Vec<Arg<'static>> {
+pub fn display_args() -> Vec<Arg> {
     vec![
         arg!(--("human-readable") - ('H'))
             .help("Safely decode and truncate output for human readability")
@@ -39,29 +39,27 @@ pub fn display_args() -> Vec<Arg<'static>> {
         arg!(--("only-keys") | ("only-key")).help("Only print the key"),
         arg!(--("keys-width-limit") = ["LIMIT"])
             .help("Limit the width of the keys when using `--format=table` (0 means unlimited)")
-            .takes_value(true)
             .value_parser(clap::value_parser!(usize)),
         arg!(--("values-width-limit") = ["LIMIT"])
-            .default_value_if("human-readable", None, Some("256"))
+            .default_value_if("human-readable", ArgPredicate::IsPresent, Some("256"))
             .help("Limit the width of the values when using `--format=table` (0 means unlimited)")
-            .takes_value(true)
             .value_parser(clap::value_parser!(usize)),
     ]
 }
 
-pub fn base64() -> Arg<'static> {
+pub fn base64() -> Arg {
     arg!(--base64 - ('B')).help("The keys/values are already encoded in URL safe Base64")
 }
 
-pub fn single_key() -> Arg<'static> {
+pub fn single_key() -> Arg {
     arg!(key =["KEY"] required ).help("The key of the metadata key-value pair")
 }
 
-pub fn keys() -> Arg<'static> {
+pub fn keys() -> Arg {
     arg!(key =["KEY"]... required ).help("The key(s) of the metadata key-value pair")
 }
 
-pub fn keys_or_values() -> ArgGroup<'static> {
+pub fn keys_or_values() -> ArgGroup {
     ArgGroup::new("keys_or_values")
         .args(&["only-keys", "only-values"])
         .multiple(false)

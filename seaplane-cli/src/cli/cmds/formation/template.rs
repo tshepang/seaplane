@@ -6,7 +6,7 @@ use crate::{cli::CliCommand, error::Result, Ctx};
 pub struct SeaplaneFormationTemplate;
 
 impl SeaplaneFormationTemplate {
-    pub fn command() -> Command<'static> {
+    pub fn command() -> Command {
         Command::new("template").about("Generate a template skeleton of a Formation")
     }
 }
