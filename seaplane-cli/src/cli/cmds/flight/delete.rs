@@ -19,7 +19,7 @@ impl SeaplaneFlightDelete {
         // TODO: add a --local[-only] flag or similar that combines with --force to only remove
         // local
         Command::new("delete")
-            .visible_aliases(&["del", "remove", "rm"])
+            .visible_aliases(["del", "remove", "rm"])
             .about("Delete a local Flight Plan")
             .arg(arg!(flight required =["NAME|ID"])
                 .value_parser(validator)

@@ -87,13 +87,13 @@ impl std::fmt::Display for EndpointKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             EndpointKey::Http { path } => {
-                write!(f, "http:{}", path)
+                write!(f, "http:{path}")
             }
             EndpointKey::Tcp { port } => {
-                write!(f, "tcp:{}", port)
+                write!(f, "tcp:{port}")
             }
             EndpointKey::Udp { port } => {
-                write!(f, "udp:{}", port)
+                write!(f, "udp:{port}")
             }
         }
     }

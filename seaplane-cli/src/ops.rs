@@ -55,5 +55,5 @@ impl fmt::Display for Id {
 }
 
 impl fmt::Debug for Id {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "Id [ {} ]", self) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "Id [ {self} ]") }
 }

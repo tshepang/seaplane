@@ -24,7 +24,7 @@ impl SeaplaneMetadata {
             .about("Operate on metadata key-value pairs using the Global Data Coordination API")
             .subcommand_required(true)
             .arg_required_else_help(true)
-            .visible_aliases(&["meta", "md"])
+            .visible_aliases(["meta", "md"])
             .arg(
                 arg!(--format =["FORMAT"=>"table"] global)
                     .help("Change the output format")

@@ -15,7 +15,7 @@ pub struct SeaplaneMetadataDelete;
 impl SeaplaneMetadataDelete {
     pub fn command() -> Command {
         Command::new("delete")
-            .visible_aliases(&["del", "remove", "rm"])
+            .visible_aliases(["del", "remove", "rm"])
             .about("Delete one or more metadata key-value pairs")
             .args(common::args())
     }

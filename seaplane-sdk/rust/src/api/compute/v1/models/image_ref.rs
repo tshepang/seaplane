@@ -103,11 +103,11 @@ impl Display for ImageReference {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}/{}", self.domain, self.path)?;
         if let Some(tag) = self.tag.as_ref() {
-            write!(f, ":{}", tag)?;
+            write!(f, ":{tag}")?;
         }
 
         if let Some(digest) = self.digest.as_ref() {
-            write!(f, "@{}", digest)?;
+            write!(f, "@{digest}")?;
         }
 
         Ok(())

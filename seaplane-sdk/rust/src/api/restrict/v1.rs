@@ -151,7 +151,7 @@ impl RestrictRequest {
                 let api = Api::from_str(api)
                     .map_err(|_| SeaplaneError::IncorrectRestrictRequestTarget)?;
 
-                let mut url = self.request.endpoint_url.join(&format!("{}/", api))?;
+                let mut url = self.request.endpoint_url.join(&format!("{api}/"))?;
 
                 match context.from() {
                     None => Ok(url),
