@@ -1,44 +1,61 @@
-import {afterEach, beforeAll, describe, expect, test} from '@jest/globals';
-
+import {afterEach, beforeAll, describe, expect, test, jest} from '@jest/globals';
 import { Configuration, Locks } from '../../src'
-import MockAdapter from "axios-mock-adapter";
+import seaFetch from '../../src/api/seaFetch';
 
-const axios = require('axios');
+jest.mock("../../src/api/seaFetch", () => jest.fn());
 
-const mockIdentify = (mock: MockAdapter, configuration: Configuration) => {
-  mock.onPost(`${configuration.identifyEndpoint}/identity/token`).reply(200, {token: "test_token"})
+const mockIdentify = (configuration: Configuration) => {
+  seaFetch.mockImplementation((token: string) => ({
+    post: (url: string, body: string) => Promise.resolve({ 
+      ok: () => true,
+      json: () => Promise.resolve({token: "test_token"}) 
+    })
+  }))
 }
+
+const postTokenMock = {
+  post: (url: string, body: string) => Promise.resolve({ 
+    ok: () => true,
+    json: () => Promise.resolve({token: "test_token"}) 
+  })
+}
+
+const textBody = (body: Object) => Promise.resolve({ 
+  ok: () => true,
+  text: () => Promise.resolve(body) 
+})
 
 describe('Given Locks API', () => {
 
   const config = new Configuration({ 
     apiKey: "test_apikey"
-  })
+  })  
   const locks = new Locks(config)
-  let mockServer;
 
   beforeAll(() => {
-    mockServer = new MockAdapter(axios)
-    mockIdentify(mockServer, config)
+    mockIdentify(config)
   })
 
   afterEach(() => {
-    mockServer.reset()
+    seaFetch.mockClear()
   })
 
   test('get page returns one element', async () => {  
-    mockServer.onGet(`${config.coordinationEndpoint}/locks`).reply(200, {
-      "infos": [
-          {
-              "name": "bG9jay10ZXN0",
-              "id": "BiqhSv0tuAk",
-              "info": {"ttl": 1000, "client-id": "test", "ip": ""},
-          }
-      ],
-      "next": null,
-    })
+    seaFetch.mockImplementation((token: string) => ({
+      ...postTokenMock,
+      get: (url: string) => textBody({
+        "infos": [
+            {
+                "name": "bG9jay10ZXN0",
+                "id": "BiqhSv0tuAk",
+                "info": {"ttl": 1000, "client-id": "test", "ip": ""},
+            }
+        ],
+        "next": null,
+      })
+    }))
 
-      expect(await locks.getPage()).toStrictEqual({
+    expect(await locks.getPage()).toStrictEqual({
         locks: [
           {
             id: "BiqhSv0tuAk",
@@ -53,11 +70,14 @@ describe('Given Locks API', () => {
   });
   
   test('get a lock', async () => {
-    mockServer.onGet(`${config.coordinationEndpoint}/locks/base64:Zm9vL2Jhcg`).reply(200, {
-      "name": "Zm9vL2Jhcg",
-      "id": "BiqhSv0tuAk",
-      "info": {"ttl": 1000, "client-id": "test", "ip": ""},
-  })
+    seaFetch.mockImplementation((token: string) => ({
+      ...postTokenMock,
+      get: (url: string) => textBody({
+        "name": "Zm9vL2Jhcg",
+        "id": "BiqhSv0tuAk",
+        "info": {"ttl": 1000, "client-id": "test", "ip": ""},
+      })
+    }))
 
     expect(await locks.get({name: "foo/bar"})).toStrictEqual({
       name: {
@@ -70,7 +90,14 @@ describe('Given Locks API', () => {
   })
 
   test('acquire a lock', async () => {    
-    mockServer.onPost(`${config.coordinationEndpoint}/locks/base64:Zm9vL2Jhcg`).reply(200, {"id": "AOEHFRa4Ayg", "sequencer": 3})
+    seaFetch
+      .mockReturnValue(postTokenMock)
+      .mockReturnValueOnce({
+        post: (url: string, body: string) => Promise.resolve({ 
+          ok: () => true,
+          text: () => Promise.resolve({"id": "AOEHFRa4Ayg", "sequencer": 3}) 
+        })
+      })
 
     expect(await locks.acquire({name: "foo/bar"}, "client-id", 60)).toStrictEqual({
       id: "AOEHFRa4Ayg", 
@@ -78,24 +105,28 @@ describe('Given Locks API', () => {
     })
   });
 
-  test('release a lock', async () => {
-    mockServer.onDelete(`${config.coordinationEndpoint}/locks/base64:Zm9vL2Jhcg`).reply(200, "OK")
+  test('release a lock', async () => {    
+    seaFetch.mockImplementation((token: string) => ({
+      ...postTokenMock,
+      delete: (url: string) => textBody("OK")
+    }))
 
     expect(await locks.release({name: "foo/bar"}, "id")).toBe(true)
   });
 
 
   test('get page of directory ', async () => {
-    mockServer.onGet(`${config.coordinationEndpoint}/locks/base64:Zm9vL2Jhcg/`).reply(200, {
-      infos: [
-          {
-              name: "Zm9vL2Jhcg",
-              id: "BiqhSv0tuAk",
-              info: {"ttl": 1000, "client-id": "test", "ip": ""},
-          }
-      ],
-      next: null,
-  })
+    seaFetch.mockImplementation((token: string) => ({
+      ...postTokenMock,
+      get: (url: string) => textBody({
+        infos: [{
+                name: "Zm9vL2Jhcg",
+                id: "BiqhSv0tuAk",
+                info: {"ttl": 1000, "client-id": "test", "ip": ""},
+        }],
+        next: null,
+      })
+    }))  
 
     expect(await locks.getPage({directory: {name: "foo/bar"}})).toStrictEqual({
       locks: [
@@ -117,16 +148,19 @@ describe('Given Locks API', () => {
 
   
   test('get next page ', async () => {
-    mockServer.onGet(`${config.coordinationEndpoint}/locks`, {params: { from: 'base64:Zm9v' }}).reply(200, {
-      infos: [
-          {
-              name: "Zm9vL2Jhcg",
-              id: "BiqhSv0tuAk",
-              info: {"ttl": 1000, "client-id": "test", "ip": ""},
-          }
-      ],
-      next: null,
-  })
+    seaFetch.mockImplementation((token: string) => ({
+      ...postTokenMock,
+      get: (url: string) => textBody({
+        infos: [
+            {
+                name: "Zm9vL2Jhcg",
+                id: "BiqhSv0tuAk",
+                info: {"ttl": 1000, "client-id": "test", "ip": ""},
+            }
+        ],
+        next: null,
+      })
+    }))      
 
     expect(await locks.getPage({fromLock: {name: "foo"}})).toStrictEqual({
       locks: [
@@ -147,21 +181,24 @@ describe('Given Locks API', () => {
   });
 
   test('get all pages ', async () => {
-    mockServer.onGet(`${config.coordinationEndpoint}/locks`).reply(200, {
-      infos: [
-          {
-              name: "Zm9vL2Jhcg",
-              id: "BiqhSv0tuAk",
-              info: {"ttl": 1000, "client-id": "test", "ip": ""},
-          },
-          {
-            name: "Zm9v",
-            id: "ASDF",
-            info: {"ttl": 1000, "client-id": "test-id", "ip": ""},
-        }
-      ],
-      next: null,
-  })
+    seaFetch.mockImplementation((token: string) => ({
+      ...postTokenMock,
+      get: (url: string) => textBody({
+        infos: [
+            {
+                name: "Zm9vL2Jhcg",
+                id: "BiqhSv0tuAk",
+                info: {"ttl": 1000, "client-id": "test", "ip": ""},
+            },
+            {
+              name: "Zm9v",
+              id: "ASDF",
+              info: {"ttl": 1000, "client-id": "test-id", "ip": ""},
+          }
+        ],
+        next: null,
+      })
+    }))      
 
     expect(await locks.getAllPages()).toStrictEqual([
       {

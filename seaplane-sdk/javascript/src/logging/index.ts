@@ -36,6 +36,10 @@ export class SeaLogger {
     this.logger.error(message);
   }
 
+  warn(message: string) {
+    this.logger.warn(message);
+  }
+
   level(level: string) {
     this.transportConsole.level = level;
   }

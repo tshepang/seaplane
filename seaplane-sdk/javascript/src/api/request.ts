@@ -3,12 +3,6 @@ import Identify from './identify';
 import { log } from '../logging';
 import { HTTPError } from '../model/errors';
 
-export const headers = (apiKey: string) => ({
-  Accept: 'application/json',
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${apiKey}`,
-});
-
 export default class Request {
   private identify: Identify;
 
@@ -16,10 +10,11 @@ export default class Request {
     this.identify = identify;
   }
 
-  private async renewIfFails(error: any, request: (token: string) => Promise<any>): Promise<any> { // eslint-disable-line
-    const httpError = new HTTPError(error.response.status, JSON.stringify(error.response.data));
+  private async renewIfFails(error: any, bodyError: string, request: (token: string) => Promise<any>): Promise<any> {
+    // eslint-disable-line
+    const httpError = new HTTPError(error.status, bodyError);
 
-    if (error.response.status != 401 || !this.identify.autoRenew) {
+    if (error.status != 401 || !this.identify.autoRenew) {
       throw httpError;
     }
 
@@ -28,18 +23,26 @@ export default class Request {
     return await request(token);
   }
 
-  async send(request: (token: string) => Promise<any>): Promise<any> { // eslint-disable-line
+  async send(request: (token: string) => Promise<any>): Promise<any> {
+    // eslint-disable-line
     const accessToken: string = this.identify.accessToken || (await this.identify.getToken());
 
-    try {
-      const result = await request(accessToken);
+    const response = await request(accessToken);
+    const bodyText = await response.text();
 
-      return result.data;
-    } catch (err: any) { // eslint-disable-line
-      const title = err?.response?.data?.title || 'No title';
-      const detail = err?.response?.data?.detail || 'No detail';
-      log.error(`Request error: ${title} ${detail}`);
-      return await this.renewIfFails(err, request);
+    if (response.ok) {
+      return this.parse(bodyText) ?? bodyText;
+    } else {
+      log.error(`Request error: ${bodyText}`);
+      return await this.renewIfFails(response, bodyText, request);
+    }
+  }
+
+  private parse(body: string): any | undefined {
+    try {
+      return JSON.parse(body);
+    } catch (e) {
+      return undefined;
     }
   }
 }

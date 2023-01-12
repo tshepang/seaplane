@@ -22,12 +22,14 @@ const mapNextKey = (nextKey?: string) => {
   return { key: decode(nextKey) };
 };
 
-export const mapToKeyValue = (json: any) => ({ // eslint-disable-line
+export const mapToKeyValue = (json: any) => ({
+  // eslint-disable-line
   key: decode(json.key),
   value: decode(json.value),
 });
 
-export const mapToKeyValuePage = (json: any) => ({  // eslint-disable-line
+export const mapToKeyValuePage = (json: any) => ({
+  // eslint-disable-line
   keyValuePairs: json.kvs.map((kv: any) => mapToKeyValue(kv)), // eslint-disable-line
   nextKey: mapNextKey(json.next_key),
 });
