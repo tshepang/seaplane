@@ -1,31 +1,36 @@
 import {afterEach, beforeAll, describe, expect, jest, test} from '@jest/globals';
 
 import { Configuration, Identify } from '../../src'
-import MockAdapter from "axios-mock-adapter";
+import seaFetch from '../../src/api/seaFetch';
 
-const axios = require('axios');
+jest.mock("../../src/api/seaFetch", () => jest.fn());
 
 describe('Given Identify', () => {
 
   const config = new Configuration({ 
     apiKey: "test_apikey"
   })
-  let mockServer;
+
 
   beforeAll(() => {
-    mockServer = new MockAdapter(axios)  
+    
   })
 
   afterEach(() => {
-    mockServer.reset()
+    seaFetch.mockClear()
   })
 
-  test('returns the token and save it locally', async() => {  
+  test('returns the token and save it locally', async() => {    
+    seaFetch.mockImplementation((token: string) => ({
+      post: (url: string, body: string) => Promise.resolve({ 
+        ok: () => true,
+        json: () => Promise.resolve({token: "test_token"}) 
+      })
+    }))
+
     const identify = new Identify(config)
-
-    mockServer.onPost(`${config.identifyEndpoint}/identity/token`).reply(200, {token: "test_token"})
-
-    await identify.getToken()
+    
+    await identify.getToken()    
 
     expect(identify.accessToken).toBe("test_token")
   })
@@ -61,13 +66,18 @@ describe('Given Identify', () => {
   })
 
   test('accessToken should be the same as the set token', async() => {        
-    const identify = new Identify(config)
-    mockServer.onPost(`${config.identifyEndpoint}/identity/token`).reply(200, {token: "renewed_token"})    
+    seaFetch.mockImplementation((token: string) => ({
+      post: (url: string, body: string) => Promise.resolve({ 
+        ok: () => true,
+        json: () => Promise.resolve({token: "renewed_token"}) 
+      })
+    }))
 
+    const identify = new Identify(config)
+        
     identify.setToken("this_is_a_token")    
     await identify.renewToken()
-
+  
     expect(identify.accessToken).toBe("renewed_token")
   })
-
 });

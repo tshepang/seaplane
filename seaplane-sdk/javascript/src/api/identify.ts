@@ -1,7 +1,5 @@
-const axios = require('axios'); // eslint-disable-line
-
 import Configuration from '../configuration';
-import { headers } from './request';
+import seaFetch from './seaFetch';
 import { log } from '../logging';
 import { HTTPError } from '../model/errors';
 
@@ -28,23 +26,25 @@ export default class Identify {
   }
 
   async getToken(): Promise<string> {
-    try {
-      log.info('Requestiong access token...');
-      const json = {};
-      const result = await axios.post(this.url, json, {
-        headers: headers(this.apiKey || ''),
-      });
+    log.info('Requestiong access token...');
+    const json = {};
+    const token = this.apiKey || '';
+    const response = await seaFetch(token).post(this.url, JSON.stringify(json));
 
-      this.accessToken = result.data.token;
-      return result.data.token;
-    } catch (err: any) { // eslint-disable-line
+    if (response.ok) {
+      const body = await response.json();
+      this.accessToken = body.token;
+      return body.token;
+    } else {
+      const errorBody = await response.text();
+
       if (!this.apiKey) {
         log.error('API KEY not set, use sea.config.setApiKey');
       } else {
         this.accessToken = undefined;
-        log.error(`Request access token exception with code ${err.response.status}, error ${err.data}`);
+        log.error(`Request access token exception with code ${response.status}, error ${errorBody}`);
       }
-      throw new HTTPError(err.response.status, err.data);
+      throw new HTTPError(response.status, errorBody);
     }
   }
 

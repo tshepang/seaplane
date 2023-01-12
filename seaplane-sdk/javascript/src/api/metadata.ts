@@ -1,10 +1,9 @@
 import Configuration from '../configuration';
-import Request, { headers } from './request';
+import Request from './request';
+import seaFetch from './seaFetch';
 import { Key, KeyValue, KeyValuePage, mapToKeyValue, mapToKeyValuePage } from '../model/metadata';
 
 import { encode } from '../utils/base64';
-
-const axios = require('axios'); // eslint-disable-line
 
 export default class Metadata {
   url: string;
@@ -19,13 +18,7 @@ export default class Metadata {
     const url = `${this.url}/base64:${encode(keyValue.key)}`;
     const data = encode(keyValue.value);
 
-    const result = await this.request.send((token) =>
-      axios.put(url, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).put(url, data));
 
     return result === 'Ok';
   }
@@ -33,11 +26,7 @@ export default class Metadata {
   async get(key: Key): Promise<KeyValue> {
     const url = `${this.url}/base64:${encode(key.key)}`;
 
-    const result = await this.request.send((token) =>
-      axios.get(url, {
-        headers: headers(token),
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).get(url));
 
     return mapToKeyValue(result);
   }
@@ -45,11 +34,7 @@ export default class Metadata {
   async delete(key: Key): Promise<boolean> {
     const url = `${this.url}/base64:${encode(key.key)}`;
 
-    const result = await this.request.send((token) =>
-      axios.delete(url, {
-        headers: headers(token),
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).delete(url));
 
     return result === 'Ok';
   }
@@ -68,12 +53,7 @@ export default class Metadata {
       };
     }
 
-    const result = await this.request.send((token) =>
-      axios.get(url, {
-        headers: headers(token),
-        params: params,
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).get(`${url}?` + new URLSearchParams(params)));
 
     return mapToKeyValuePage(result);
   }

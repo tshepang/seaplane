@@ -1,10 +1,9 @@
 import Configuration from '../configuration';
-import Request, { headers } from './request';
+import Request from './request';
+import seaFetch from './seaFetch';
 import { Lock, Name, HeldLock, toLock, toHeldLock, LockPage, toLockPage } from '../model/locks';
 
 import { encode } from '../utils/base64';
-
-const axios = require('axios'); // eslint-disable-line
 
 export default class Locks {
   url: string;
@@ -18,11 +17,7 @@ export default class Locks {
   async get(name: Name): Promise<Lock> {
     const url = `${this.url}/base64:${encode(name.name)}`;
 
-    const result = await this.request.send((token) =>
-      axios.get(url, {
-        headers: headers(token),
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).get(url));
 
     return toLock(result);
   }
@@ -32,14 +27,11 @@ export default class Locks {
 
     const params = {
       'client-id': clientId,
-      ttl,
+      ttl: String(ttl),
     };
-    const data = {};
+
     const result = await this.request.send((token) =>
-      axios.post(url, data, {
-        headers: headers(token),
-        params,
-      }),
+      seaFetch(token).post(`${url}?` + new URLSearchParams(params), '{}'),
     );
 
     return toHeldLock(result);
@@ -52,12 +44,7 @@ export default class Locks {
       id: id,
     };
 
-    const result = await this.request.send((token) =>
-      axios.delete(url, {
-        headers: headers(token),
-        params,
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).delete(`${url}?` + new URLSearchParams(params)));
 
     return result === 'OK';
   }
@@ -67,14 +54,11 @@ export default class Locks {
 
     const params = {
       id,
-      ttl,
+      ttl: String(ttl),
     };
 
     const result = await this.request.send((token) =>
-      axios.patch(url, {
-        headers: headers(token),
-        params,
-      }),
+      seaFetch(token).post(`${url}?` + new URLSearchParams(params), '{}'),
     );
 
     return result === 'OK';
@@ -94,12 +78,7 @@ export default class Locks {
       };
     }
 
-    const result = await this.request.send((token) =>
-      axios.get(url, {
-        headers: headers(token),
-        params: params,
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).get(`${url}?` + new URLSearchParams(params)));
 
     return toLockPage(result);
   }

@@ -26,7 +26,8 @@ export type HeldLock = {
   sequencer: number;
 };
 
-export const toLockInfo = (lockInfo: any): LockInfo => ({  // eslint-disable-line
+export const toLockInfo = (lockInfo: any): LockInfo => ({
+  // eslint-disable-line
   ttl: lockInfo['ttl'],
   clientId: lockInfo['client-id'],
   ip: lockInfo['ip'],
@@ -40,7 +41,8 @@ const toName = (name?: string): Name | null => {
   };
 };
 
-export const toLock = (lock: any): Lock => { // eslint-disable-line
+export const toLock = (lock: any): Lock => {
+  // eslint-disable-line
   const lockName = toName(lock['name']);
   let name = { name: '' };
   if (lockName) {
@@ -53,14 +55,16 @@ export const toLock = (lock: any): Lock => { // eslint-disable-line
   };
 };
 
-export const toLockPage = (lockPage: any): LockPage => { // eslint-disable-line
+export const toLockPage = (lockPage: any): LockPage => {
+  // eslint-disable-line
   return {
     locks: lockPage['infos'].map((lock: any) => toLock(lock)), // eslint-disable-line
     nextLock: toName(lockPage['next']),
   };
 };
 
-export const toHeldLock = (lock: any): HeldLock => ({ // eslint-disable-line
+export const toHeldLock = (lock: any): HeldLock => ({
+  // eslint-disable-line
   id: lock['id'],
   sequencer: lock['sequencer'],
 });
