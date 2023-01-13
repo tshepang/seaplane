@@ -7,7 +7,7 @@ on:
     paths:
       - 'seaplane-sdk/javascript/**/*.ts'
       - 'seaplane-sdk/javascript/**/*.js'
-      - 'seaplane-sdk/javascript/**/*.json'      
+      - 'seaplane-sdk/javascript/**/*.json'
   workflow_dispatch:
 
 concurrency:

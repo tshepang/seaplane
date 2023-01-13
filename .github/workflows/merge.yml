@@ -7,9 +7,8 @@ on:
   push:
     branches: [main]
     paths:
-    - 'seaplane-cli/**/*.rs'
-    - 'seaplane-sdk/rust/**/*.rs'
-    - 'seaplane-sdk/python/**/*.py'
+    - '**/*.rs'
+    - '**/*.py'
     - .github/workflows/merge.yml
   workflow_dispatch:
 
