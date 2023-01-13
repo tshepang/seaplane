@@ -20,13 +20,13 @@ jobs:
   build-linux-x64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
-      runner: "['self-hosted', 'linux', 'x64']"
+      runner: 'buildjet-4vcpu-ubuntu-2204'
       use-tag-version: true
 
   build-linux-aarch64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
-      runner: "['self-hosted', 'linux', 'arm64']"
+      runner: 'buildjet-8vcpu-ubuntu-2204-arm'
       use-tag-version: true
 
   # Currently we build by hand to sign and notarize the builds
@@ -38,7 +38,7 @@ jobs:
 
   release:
     name: Release
-    runs-on: [self-hosted, linux, x64]
+    runs-on: 'buildjet-4vcpu-ubuntu-2204'
     container: ubuntu:focal
     needs:
       - build-win-x64
