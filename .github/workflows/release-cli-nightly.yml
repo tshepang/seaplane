@@ -25,13 +25,13 @@ jobs:
   build-linux-x64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
-      runner: 'buildjet-4vcpu-ubuntu-2204'
+      runner: "['buildjet-4vcpu-ubuntu-2204']"
       use-short-sha: true
 
   build-linux-aarch64-gnu:
     uses: ./.github/workflows/workflow-build-release.yml
     with:
-      runner: 'buildjet-8vcpu-ubuntu-2204-arm'
+      runner: "['buildjet-8vcpu-ubuntu-2204-arm']"
       use-short-sha: true
 
   # Currently we build by hand to sign and notarize the builds
