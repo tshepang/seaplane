@@ -52,6 +52,8 @@ impl CliCommand for SeaplaneMetadataSet {
     }
 
     fn update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        // NOTE: MetadataCtx::from_md_set is impure and tries to read from STDIN if the value is
+        // `@-`
         ctx.md_ctx
             .init(MetadataCtx::from_md_set(&SeaplaneMetadataSetArgMatches(matches))?);
         ctx.args.out_format = matches.get_one("format").copied().unwrap_or_default();

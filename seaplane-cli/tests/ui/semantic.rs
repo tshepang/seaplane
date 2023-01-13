@@ -9,7 +9,10 @@
 
 macro_rules! cli {
     ($argv:expr) => {{
-        seaplane_cli::test_run(const_format::concatcp!("seaplane ", $argv).split(" "))
+        match seaplane_cli::test_cli(const_format::concatcp!("seaplane ", $argv).split(" ")) {
+            Ok(m) => seaplane_cli::test_main_update_ctx(&m),
+            Err(e) => Err(e),
+        }
     }};
 }
 
@@ -75,7 +78,8 @@ fn seaplane_init() {
 #[test]
 fn seaplane_account() {
     // help displayed
-    assert!(cli!("account").is_err());
+    let res = cli!("account");
+    assert!(res.is_err(), "{res:?}");
 }
 
 #[test]
@@ -187,15 +191,16 @@ fn seaplane_flight_copy() {
 #[test]
 fn seaplane_flight_create() {
     // provide an --image
-    assert!(cli!("flight create --image ahab/alpine:latest").is_ok());
+    assert!(cli!("flight create --image ahab.com/alpine:latest").is_ok());
+    assert!(cli!("flight create --image docker.io/library/nginx:latest --name foo").is_ok());
     // invalid name
     assert!(cli!(
-        "flight --image ahab/alpine:latest --name create way-too-many-hyphens-to-pass-validation"
+        "flight --image ahab.com/alpine:latest --name create way-too-many-hyphens-to-pass-validation"
     )
     .is_err());
 
     // add is an alias
-    assert!(cli!("flight add --image ahab/alpine:latest").is_ok());
+    assert!(cli!("flight add --image ahab.com/alpine:latest").is_ok());
 }
 
 #[test]
@@ -264,7 +269,7 @@ fn seaplane_formation_common() {
     // flight
     // valid (@path requires a valid file...so we're not testing that and relying on the unit
     // tests for that functionality)
-    assert!(cli!("formation plan --include-flight-plan foo").is_ok());
+    assert!(cli!("formation plan --include-flight-plan @foo").is_ok());
     assert!(cli!("formation plan --include-flight-plan @-").is_ok());
     // invalid
     assert!(
@@ -283,15 +288,18 @@ fn seaplane_formation_common() {
         cli!("formation plan --include-flight-plan foo;bar --include-flight-plan baz;qux").is_ok()
     );
     assert!(cli!("formation plan --include-flight-plan foo --include-flight-plan baz;qux").is_ok());
-    assert!(cli!("formation plan --include-flight-plan name=foo,image=demos/nginx:latest").is_ok());
     assert!(
-        cli!("formation plan --include-flight-plan foo;name=foo,image=demos/nginx:latest").is_ok()
+        cli!("formation plan --include-flight-plan name=foo,image=demos.com/nginx:latest").is_ok()
     );
-    assert!(cli!("formation plan --include-flight-plan foo;name=bar,image=demos/nginx:latest;baz")
+    assert!(cli!("formation plan --include-flight-plan foo;name=foo,image=demos.com/nginx:latest")
         .is_ok());
-    assert!(cli!("formation plan --include-flight-plan foo --include-flight-plan name=bar,image=demos/nginx:latest;baz").is_ok());
-    assert!(cli!("formation plan --include-flight-plan foo;name=bar,image=demos/nginx:latest --include-flight-plan baz;qux").is_ok());
-    assert!(cli!("formation plan --include-flight-plan name=bar,image=demos/nginx:latest;name=foo,image=demos/nginx:latest").is_ok());
+    assert!(cli!(
+        "formation plan --include-flight-plan foo;name=bar,image=demos.com/nginx:latest;baz"
+    )
+    .is_ok());
+    assert!(cli!("formation plan --include-flight-plan foo --include-flight-plan name=bar,image=demos.com/nginx:latest;baz").is_ok());
+    assert!(cli!("formation plan --include-flight-plan foo;name=bar,image=demos.com/nginx:latest --include-flight-plan baz;qux").is_ok());
+    assert!(cli!("formation plan --include-flight-plan name=bar,image=demos.com/nginx:latest;name=foo,image=demos.com/nginx:latest").is_ok());
 
     // affinity
     // valid

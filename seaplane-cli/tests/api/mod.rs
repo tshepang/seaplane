@@ -1,23 +1,27 @@
 // We have to go through this little bit of indirection because of how integration directory
 // structure works.
 
-use clap::ArgMatches;
 use httpmock::{prelude::*, Method, Then, When};
 use once_cell::sync::Lazy;
 use reqwest::Url;
-use seaplane_cli::{
-    cli::{CliCommand, Seaplane},
-    context::Ctx,
-    error::CliError,
-};
+use seaplane_cli::context::Ctx;
 use serde_json::json;
 
-macro_rules! cli {
+macro_rules! argv {
     ($argv:expr) => {{
-        seaplane_cli::test_run(
+        seaplane_cli::test_cli(
             const_format::concatcp!("seaplane --stateless --api-key abc123 ", $argv).split(" "),
         )
         .unwrap()
+    }};
+}
+
+macro_rules! run {
+    ($argv:expr) => {{
+        seaplane_cli::test_main_exec_with_ctx(
+            &argv!($argv),
+            $crate::api::ctx_from_url(MOCK_SERVER.base_url()),
+        )
     }};
 }
 
@@ -27,20 +31,14 @@ mod locks;
 mod metadata;
 mod restrict;
 
-fn test_main(matches: &ArgMatches, url: String) -> Result<(), CliError> {
+fn ctx_from_url(url: String) -> Ctx {
     let mut ctx = Ctx::default();
     let url: Url = url.parse().unwrap();
     ctx.compute_url = Some(url.clone());
     ctx.identity_url = Some(url.clone());
     ctx.metadata_url = Some(url.clone());
     ctx.locks_url = Some(url.clone());
-    test_main_with_ctx(matches, ctx)
-}
-
-fn test_main_with_ctx(matches: &ArgMatches, mut ctx: Ctx) -> Result<(), CliError> {
-    let s: Box<dyn CliCommand> = Box::new(Seaplane);
-    s.traverse_exec(&matches, &mut ctx)?;
-    Ok(())
+    ctx
 }
 
 // To be used with httpmock standalone server for dev testing

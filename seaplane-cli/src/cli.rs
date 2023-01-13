@@ -3,10 +3,9 @@ pub mod errors;
 pub mod specs;
 pub mod validator;
 
-use std::{
-    env,
-    io::{self, BufRead},
-};
+use std::env;
+#[cfg(not(any(feature = "api_tests", feature = "semantic_ui_tests", feature = "ui_tests")))]
+use std::io::{self, BufRead};
 
 use clap::{crate_authors, value_parser, ArgAction, ArgMatches, Command};
 use const_format::concatcp;
@@ -40,6 +39,9 @@ A CLI provided value also overrides any environment variables.
 One can use a special value of '-' to signal the value should be read from STDIN.";
 
 pub trait CliCommand {
+    /// Care should be taken to keep CliCommand::update_ctx pure with no external effects such as
+    /// I/O. This allows the CLI to be fully tested without any assumptions of the testing
+    /// environment
     fn update_ctx(&self, _matches: &ArgMatches, _ctx: &mut Ctx) -> Result<()> { Ok(()) }
     fn run(&self, _ctx: &mut Ctx) -> Result<()> { Ok(()) }
     fn next_subcmd<'a>(
@@ -65,6 +67,16 @@ impl dyn CliCommand + 'static {
         self.run(ctx)?;
         if let Some((c, m)) = self.next_subcmd(matches) {
             return c.traverse_exec(m, ctx);
+        }
+        Ok(())
+    }
+
+    // Used testing the CLI to cause the CliCommand::update_ctx to be called, but not
+    // CliCommand::run
+    pub fn traverse_update_ctx(&self, matches: &ArgMatches, ctx: &mut Ctx) -> Result<()> {
+        self.update_ctx(matches, ctx)?;
+        if let Some((c, m)) = self.next_subcmd(matches) {
+            return c.traverse_update_ctx(m, ctx);
         }
         Ok(())
     }
@@ -162,7 +174,11 @@ impl CliCommand for Seaplane {
         ctx.args.stateless = matches.get_flag("stateless");
 
         // API tests sometimes write their own DB to test, so we don't want to overwrite that
-        #[cfg(not(feature = "api_tests"))]
+        #[cfg(not(any(
+            feature = "api_tests",
+            feature = "semantic_ui_tests",
+            feature = "ui_tests"
+        )))]
         {
             ctx.db = crate::context::Db::load_if(
                 ctx.flights_file(),
@@ -173,10 +189,18 @@ impl CliCommand for Seaplane {
 
         if let Some(key) = &matches.get_one::<String>("api-key") {
             if key == &"-" {
-                let stdin = io::stdin();
-                let mut lines = stdin.lock().lines();
-                if let Some(line) = lines.next() {
-                    ctx.args.api_key = Some(line?);
+                // We don't want to read from STDIN during tests
+                #[cfg(not(any(
+                    feature = "api_tests",
+                    feature = "semantic_ui_tests",
+                    feature = "ui_tests"
+                )))]
+                {
+                    let stdin = io::stdin();
+                    let mut lines = stdin.lock().lines();
+                    if let Some(line) = lines.next() {
+                        ctx.args.api_key = Some(line?);
+                    }
                 }
             } else {
                 ctx.args.api_key = Some(key.to_string());

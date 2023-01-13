@@ -184,6 +184,7 @@ impl_err!(std::string::FromUtf8Error, InvalidUtf8);
 impl_err!(hex::FromHexError, HexDecode);
 impl_err!(std::num::ParseIntError, ParseInt);
 impl_err!(strum::ParseError, StrumParse);
+impl_err!(clap::Error, Clap);
 
 impl From<io::Error> for CliError {
     fn from(e: io::Error) -> Self {
@@ -252,6 +253,7 @@ pub enum CliErrorKind {
     FlightsInUse(Vec<String>),
     EndpointInvalidFlight(String),
     OneOff(String),
+    Clap(clap::Error),
 }
 
 impl CliErrorKind {
@@ -409,6 +411,9 @@ impl CliErrorKind {
             InlineFlightMissingValue(key) => {
                 cli_eprintln!("INLINE-FLIGHT-SPEC missing a value for the key {key}");
             }
+            Clap(e) => {
+                cli_eprintln!("{e}")
+            }
         }
     }
 
@@ -458,6 +463,7 @@ impl PartialEq<Self> for CliErrorKind {
             InlineFlightMissingValue(_) => matches!(rhs, InlineFlightMissingValue(_)),
             ParseInt(_) => matches!(rhs, ParseInt(_)),
             FlightsInUse(_) => matches!(rhs, FlightsInUse(_)),
+            Clap(_) => matches!(rhs, Clap(_)),
         }
     }
 }

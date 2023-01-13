@@ -143,6 +143,7 @@ impl Flights {
             return Err(CliErrorKind::MultipleAtStdin.into_err());
         }
         let mut ret = Vec::new();
+
         for flight in flights {
             let new_flight = Flight::from_at_str(flight.as_ref())?;
             ret.push(new_flight.model.name().to_owned());
