@@ -2,7 +2,7 @@ use httpmock::{prelude::*, Method};
 use seaplane_cli::printer::printer;
 use serde_json::json;
 
-use super::{test_main, then, when_json, MOCK_SERVER};
+use super::{then, when_json, MOCK_SERVER};
 
 #[test]
 fn locks_acquire() {
@@ -16,17 +16,13 @@ fn locks_acquire() {
         then(t, &resp_json);
     });
 
-    let res =
-        test_main(&cli!("locks acquire foo --client-id bar --ttl 30"), MOCK_SERVER.base_url());
+    let res = run!("locks acquire foo --client-id bar --ttl 30");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "LOCK-ID: D4lbVpdBE_U\nSEQUENCER: 3");
     printer().clear();
 
-    let res = test_main(
-        &cli!("locks acquire Zm9v --client-id bar --ttl 60 --base64"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = run!("locks acquire Zm9v --client-id bar --ttl 60 --base64");
 
     assert!(res.is_ok());
     mock.assert_hits(2);
@@ -169,7 +165,7 @@ fn locks_list_output_pages() {
         then(t, &server_page);
     });
 
-    let res = test_main(&cli!("locks list"), MOCK_SERVER.base_url());
+    let res = run!("locks list");
     assert!(res.is_ok());
     mock.assert_hits(1);
 
@@ -249,7 +245,7 @@ fn locks_list_server_pages() {
         then(t, &p1);
     });
 
-    let res = test_main(&cli!("locks list"), MOCK_SERVER.base_url());
+    let res = run!("locks list");
     assert!(res.is_ok());
     mock1.assert_hits(1);
     mock2.assert_hits(1);
@@ -322,7 +318,7 @@ fn locks_list_dir() {
         then(t, &p1);
     });
 
-    let res = test_main(&cli!("locks list dir/"), MOCK_SERVER.base_url());
+    let res = run!("locks list dir/");
     assert!(res.is_ok());
     mock1.assert_hits(1);
     mock2.assert_hits(1);
@@ -358,7 +354,7 @@ fn locks_list() {
         then(t, &resp);
     });
 
-    let res = test_main(&cli!("locks list Zm9v --base64"), MOCK_SERVER.base_url());
+    let res = run!("locks list Zm9v --base64");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -368,13 +364,13 @@ fn locks_list() {
     );
     printer().clear();
 
-    let res = test_main(&cli!("locks list foo --decode --no-header"), MOCK_SERVER.base_url());
+    let res = run!("locks list foo --decode --no-header");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), "foo  D4lbVpdBE_U  test-client  192.0.2.137  5");
     printer().clear();
 
-    let res = test_main(&cli!("locks list foo --format json"), MOCK_SERVER.base_url());
+    let res = run!("locks list foo --format json");
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(printer().as_string().trim(),
@@ -401,7 +397,7 @@ fn locks_list_json() {
         then(t, &resp);
     });
 
-    let res = test_main(&cli!("locks list foo --format json"), MOCK_SERVER.base_url());
+    let res = run!("locks list foo --format json");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -410,7 +406,7 @@ fn locks_list_json() {
     );
     printer().clear();
 
-    let res = test_main(&cli!("locks list foo -D --format json"), MOCK_SERVER.base_url());
+    let res = run!("locks list foo -D --format json");
     assert!(!res.is_ok());
     printer().clear();
 
@@ -426,18 +422,14 @@ fn locks_renew() {
         then(t, &resp_json);
     });
 
-    let res =
-        test_main(&cli!("locks renew foo --lock-id ATlcuG7mmF4 --ttl 20"), MOCK_SERVER.base_url());
+    let res = run!("locks renew foo --lock-id ATlcuG7mmF4 --ttl 20");
 
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "Successfully renewed the lock");
     printer().clear();
 
-    let res = test_main(
-        &cli!("locks renew Zm9v --lock-id ATlcuG7mmF4 --ttl 20 --base64"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = run!("locks renew Zm9v --lock-id ATlcuG7mmF4 --ttl 20 --base64");
 
     assert!(res.is_ok());
     mock.assert_hits(2);
@@ -454,7 +446,7 @@ fn locks_release() {
         then(t, &resp_json);
     });
 
-    let res = test_main(&cli!("locks release foo --lock-id bar"), MOCK_SERVER.base_url());
+    let res = run!("locks release foo --lock-id bar");
 
     assert!(res.is_ok());
     mock.assert_hits(1);

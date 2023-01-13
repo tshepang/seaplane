@@ -35,16 +35,41 @@ pub use crate::{
 mod tests {
     use std::ffi::OsString;
 
-    use clap::{error::Error as ClapError, ArgMatches};
+    use clap::ArgMatches;
 
-    use super::Seaplane;
-    pub fn test_run<I, T>(argv: I) -> Result<ArgMatches, ClapError>
+    use crate::{
+        cli::{CliCommand, Seaplane},
+        context::Ctx,
+        error::Result,
+    };
+
+    pub fn test_cli<I, T>(argv: I) -> Result<ArgMatches>
     where
         I: IntoIterator<Item = T>,
         T: Into<OsString> + Clone,
     {
-        Seaplane::command().try_get_matches_from(argv)
+        let matches = Seaplane::command().try_get_matches_from(argv)?;
+
+        // Ensure we can grab the same args we do in normal main
+        _ = matches.get_one::<u8>("verbose").copied();
+        _ = matches.get_one::<u8>("quiet").copied();
+        _ = matches.get_flag("stateless");
+        Ok(matches)
+    }
+
+    pub fn test_main_update_ctx(matches: &ArgMatches) -> Result<()> {
+        let mut ctx = Ctx::default();
+        let s: Box<dyn CliCommand> = Box::new(Seaplane);
+        s.traverse_update_ctx(&matches, &mut ctx)?;
+        Ok(())
+    }
+
+    pub fn test_main_exec_with_ctx(matches: &ArgMatches, mut ctx: Ctx) -> Result<()> {
+        let s: Box<dyn CliCommand> = Box::new(Seaplane);
+        s.traverse_exec(&matches, &mut ctx)?;
+        Ok(())
     }
 }
+
 #[cfg(any(feature = "ui_tests", feature = "semantic_ui_tests", feature = "api_tests"))]
-pub use tests::test_run;
+pub use tests::{test_cli, test_main_exec_with_ctx, test_main_update_ctx};

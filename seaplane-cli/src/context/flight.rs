@@ -1,11 +1,14 @@
 use seaplane::{
-    api::compute::v1::{Architecture, Flight as FlightModel},
+    api::compute::v1::{Architecture as ArchitectureModel, Flight as FlightModel},
     rexports::container_image_ref::ImageReference,
 };
 
 use crate::{
     cli::{
-        cmds::flight::{str_to_image_ref, SeaplaneFlightCommonArgMatches, FLIGHT_MINIMUM_DEFAULT},
+        cmds::flight::{
+            common::Architecture, str_to_image_ref, SeaplaneFlightCommonArgMatches,
+            FLIGHT_MINIMUM_DEFAULT,
+        },
         validator::validate_flight_name,
     },
     context::Ctx,
@@ -23,7 +26,7 @@ pub struct FlightCtx {
     pub name_id: String,
     pub minimum: u64,
     pub maximum: Option<u64>,
-    pub architecture: Vec<Architecture>,
+    pub architecture: Vec<ArchitectureModel>,
     pub api_permission: bool,
     pub reset_maximum: bool,
     // True if we randomly generated the name. False if the user provided it
@@ -167,19 +170,17 @@ impl FlightCtx {
         Ok(FlightCtx {
             image,
             name_id: name,
-            minimum: matches
-                .get_one::<String>("minimum")
+            minimum: *matches
+                .get_one::<u64>("minimum")
                 // clap validates valid u64 prior to this
-                .map(|min| min.parse::<u64>().expect("failed to parse valid u64"))
-                .unwrap_or(FLIGHT_MINIMUM_DEFAULT),
-            maximum: matches
-                .get_one::<String>("maximum")
-                // clap validates valid u64 prior to this
-                .map(|max| max.parse().expect("failed to parse valid u64")),
+                .unwrap_or(&FLIGHT_MINIMUM_DEFAULT),
+            maximum: matches.get_one::<u64>("maximum").copied(),
+            // clap validates valid u64 prior to this
+            //.expect("failed to parse valid u64"),
             architecture: matches
                 .get_many::<Architecture>("architecture")
                 .unwrap_or_default()
-                .copied()
+                .map(|a| a.into())
                 .collect(),
             // because of clap overrides we only have to check api_permissions
             api_permission: matches.get_flag("api-permission"),

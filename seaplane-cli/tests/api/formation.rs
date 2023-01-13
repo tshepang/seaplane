@@ -7,11 +7,12 @@ use seaplane_cli::{
     context::Ctx,
     ops::formation::{Formation, FormationConfiguration},
     printer::printer,
+    test_main_exec_with_ctx,
 };
 use serde_json::json;
 use wildmatch::WildMatch;
 
-use super::{test_main_with_ctx, then, when, when_json, MOCK_SERVER};
+use super::{then, when, when_json, MOCK_SERVER};
 
 // The ARGV must use the name `stubb` as these are just tests, no need to spend brainpower trying to
 // figure out how to make it perfectly generic.
@@ -176,7 +177,7 @@ macro_rules! test_fn_land {
             ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
             ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
             ctx.db.formations.formations.push(Formation::new("stubb"));
-            let res = test_main_with_ctx(&cli!($argv), ctx);
+            let res = test_main_exec_with_ctx(&argv!($argv), ctx);
             assert!(res.is_ok(), "{res:?}");
 
             assert_eq!(land_formation.hits(), 1, "land_formation");
@@ -236,7 +237,7 @@ macro_rules! test_fn_delete {
             ctx.compute_url = Some(MOCK_SERVER.base_url().parse().unwrap());
             ctx.identity_url = Some(MOCK_SERVER.base_url().parse().unwrap());
             ctx.db.formations.formations.push(Formation::new("stubb"));
-            let res = test_main_with_ctx(&cli!($argv), ctx);
+            let res = test_main_exec_with_ctx(&argv!($argv), ctx);
             assert!(res.is_ok(), "{res:?}");
 
             assert_eq!(delete_formation.hits(), 1, "delete_formation");
@@ -378,7 +379,7 @@ macro_rules! mock_launch {
             then.status(200);
         });
 
-        let res = test_main_with_ctx(&cli!($argv), $ctx);
+        let res = test_main_exec_with_ctx(&argv!($argv), $ctx);
         assert!(res.is_ok(), "{} {res:?}", $argv);
 
         // Figuring out endpoints that should have been hit is somewhat tough. It depends on if we
@@ -769,7 +770,7 @@ macro_rules! test_fn_fetch {
             ) = mock_fetch!();
 
             let ctx = build_ctx_with_default_formation(false);
-            let res = test_main_with_ctx(&cli!($argv), ctx);
+            let res = test_main_exec_with_ctx(&argv!($argv), ctx);
             assert!(res.is_ok(), "{res:?}");
             assert_eq!(list_names[0].hits(), if is_all {1} else {0}, "list_names");
             assert_eq!(list_cfg_uuids[0].hits(), 1, "list_cfg_uuids");
@@ -871,7 +872,7 @@ macro_rules! test_fn_status {
             then.status(200).json_body_obj(&get_containers_resp_body);
         });
 
-        let res = test_main_with_ctx(&cli!($argv), $ctx);
+        let res = test_main_exec_with_ctx(&argv!($argv), $ctx);
         assert!(res.is_ok(), "{res:?}");
 
         assert_eq!(list_names[0].hits(), if is_all || fetch { 1 } else { 0 }, "list_names");

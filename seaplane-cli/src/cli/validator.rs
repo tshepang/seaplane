@@ -152,6 +152,7 @@ pub fn validate_formation_name(name: &str) -> StdResult<String, &'static str> {
 pub fn validate_at_path(s: &str) -> StdResult<String, String> {
     if let Some(path) = s.strip_prefix('@') {
         if !Path::exists(path.as_ref()) {
+            #[cfg(not(any(feature = "semantic_ui_tests", feature = "ui_tests")))]
             return Err(format!("path '{path}' does not exist"));
         }
     } else {

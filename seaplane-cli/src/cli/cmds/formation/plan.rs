@@ -1,12 +1,11 @@
 use clap::{ArgMatches, Command};
 use const_format::concatcp;
 
+#[cfg(not(any(feature = "ui_tests", feature = "semantic_ui_tests")))]
+use crate::cli::cmds::flight::SeaplaneFlightPlan;
 use crate::{
     cli::{
-        cmds::{
-            flight::SeaplaneFlightPlan,
-            formation::{common, SeaplaneFormationFetch, SeaplaneFormationLaunch},
-        },
+        cmds::formation::{common, SeaplaneFormationFetch, SeaplaneFormationLaunch},
         specs::{FLIGHT_SPEC, REGION_SPEC},
         CliCommand,
     },
@@ -147,11 +146,15 @@ impl CliCommand for SeaplaneFormationPlan {
                 .flight_ctx
                 .init(FlightCtx::from_inline_flight(flight, &ctx.registry)?);
 
-            let flight_plan: Box<dyn CliCommand> = Box::new(SeaplaneFlightPlan);
-            flight_plan.run(&mut cloned_ctx)?;
+            #[cfg(not(any(feature = "ui_tests", feature = "semantic_ui_tests")))]
+            {
+                let flight_plan: Box<dyn CliCommand> = Box::new(SeaplaneFlightPlan);
+                flight_plan.run(&mut cloned_ctx)?;
+            }
 
             let name = cloned_ctx.flight_ctx.get_or_init().name_id.clone();
             // copy the newly created flight out of the cloned context into the "real" one
+            #[cfg(not(any(feature = "ui_tests", feature = "semantic_ui_tests")))]
             ctx.db
                 .flights
                 .add_flight(cloned_ctx.db.flights.remove_flight(&name, true).unwrap());
@@ -168,6 +171,7 @@ impl CliCommand for SeaplaneFormationPlan {
         }
 
         // Flights using @path or @-
+        #[cfg(not(any(feature = "ui_tests", feature = "semantic_ui_tests")))]
         for name in ctx
             .db
             .flights

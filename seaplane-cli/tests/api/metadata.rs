@@ -2,7 +2,7 @@ use httpmock::prelude::*;
 use seaplane_cli::printer::printer;
 use serde_json::json;
 
-use super::{test_main, then, when, when_json, MOCK_SERVER};
+use super::{then, when, when_json, MOCK_SERVER};
 
 fn multi_kv_resp() -> serde_json::Value {
     json!({
@@ -23,19 +23,19 @@ fn metadata_get() {
         then(t, &resp);
     });
 
-    let res = test_main(&cli!("metadata get Zm9v --base64"), MOCK_SERVER.base_url());
+    let res = run!("metadata get Zm9v --base64");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "YmFy");
     printer().clear();
 
-    let res = test_main(&cli!("metadata get foo"), MOCK_SERVER.base_url());
+    let res = run!("metadata get foo");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), "YmFy");
     printer().clear();
 
-    let res = test_main(&cli!("metadata get foo --decode"), MOCK_SERVER.base_url());
+    let res = run!("metadata get foo --decode");
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(printer().as_string().trim(), "bar");
@@ -55,13 +55,13 @@ fn metadata_put() {
         then(t, &resp_json);
     });
 
-    let res = test_main(&cli!("metadata set foo bar"), MOCK_SERVER.base_url());
+    let res = run!("metadata set foo bar");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "Success");
     printer().clear();
 
-    let res = test_main(&cli!("metadata set Zm9v YmFy --base64"), MOCK_SERVER.base_url());
+    let res = run!("metadata set Zm9v YmFy --base64");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), "Success");
@@ -76,13 +76,13 @@ fn metadata_list_root() {
         then(t, &multi_kv_resp());
     });
 
-    let res = test_main(&cli!("metadata list"), MOCK_SERVER.base_url());
+    let res = run!("metadata list");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
 
-    let res = test_main(&cli!("metadata list -D"), MOCK_SERVER.base_url());
+    let res = run!("metadata list -D");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), "KEY  VALUE\nfoo  bar\nbaz  buz");
@@ -97,13 +97,13 @@ fn metadata_list_dir() {
         then(t, &multi_kv_resp());
     });
 
-    let res = test_main(&cli!("metadata list Pequod!"), MOCK_SERVER.base_url());
+    let res = run!("metadata list Pequod!");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
 
-    let res = test_main(&cli!("metadata list UGVxdW9kIQ --base64 -D"), MOCK_SERVER.base_url());
+    let res = run!("metadata list UGVxdW9kIQ --base64 -D");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), "KEY  VALUE\nfoo  bar\nbaz  buz");
@@ -118,7 +118,7 @@ fn metadata_list_dir_json() {
         then(t, &multi_kv_resp());
     });
 
-    let res = test_main(&cli!("metadata list --format json Pequod!"), MOCK_SERVER.base_url());
+    let res = run!("metadata list --format json Pequod!");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -128,7 +128,7 @@ fn metadata_list_dir_json() {
 
     printer().clear();
 
-    let res = test_main(&cli!("metadata list -D --format json Pequod!"), MOCK_SERVER.base_url());
+    let res = run!("metadata list -D --format json Pequod!");
     assert!(!res.is_ok());
     printer().clear();
     mock.delete();
@@ -141,13 +141,13 @@ fn metadata_list_root_from() {
         then(t, &multi_kv_resp());
     });
 
-    let res = test_main(&cli!("metadata list --from Pequod!"), MOCK_SERVER.base_url());
+    let res = run!("metadata list --from Pequod!");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
 
-    let res = test_main(&cli!("metadata list -f UGVxdW9kIQ --base64"), MOCK_SERVER.base_url());
+    let res = run!("metadata list -f UGVxdW9kIQ --base64");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
@@ -163,16 +163,13 @@ fn metadata_list_dir_from() {
         then(t, &multi_kv_resp());
     });
 
-    let res = test_main(&cli!("metadata list Queequeg --from Pequod!"), MOCK_SERVER.base_url());
+    let res = run!("metadata list Queequeg --from Pequod!");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
     printer().clear();
 
-    let res = test_main(
-        &cli!("metadata list UXVlZXF1ZWc -f UGVxdW9kIQ --base64"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = run!("metadata list UXVlZXF1ZWc -f UGVxdW9kIQ --base64");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), "KEY   VALUE\nZm9v  YmFy\nYmF6  YnV6");
@@ -189,7 +186,7 @@ fn metadata_delete() {
         then(t, &resp_json);
     });
 
-    let res = test_main(&cli!("metadata delete foo"), MOCK_SERVER.base_url());
+    let res = run!("metadata delete foo");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), "Removed Zm9v\n\nSuccessfully removed 1 item");

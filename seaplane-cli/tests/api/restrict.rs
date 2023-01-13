@@ -2,7 +2,7 @@ use httpmock::prelude::*;
 use seaplane_cli::printer::printer;
 use serde_json::json;
 
-use super::{test_main, then, when_json, MOCK_SERVER};
+use super::{then, when_json, MOCK_SERVER};
 
 #[test]
 fn restrict_get() {
@@ -31,26 +31,26 @@ Config  foo/bar    Enforced  [XE,XN]          []              []                
         then(t, &resp);
     });
 
-    let res = test_main(&cli!("restrict get config Zm9vL2Jhcg --base64"), MOCK_SERVER.base_url());
+    let res = run!("restrict get config Zm9vL2Jhcg --base64");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), ENCODED);
 
     printer().clear();
 
-    let res = test_main(&cli!("restrict get config foo/bar"), MOCK_SERVER.base_url());
+    let res = run!("restrict get config foo/bar");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), ENCODED);
     printer().clear();
 
-    let res = test_main(&cli!("restrict get config foo/bar --decode"), MOCK_SERVER.base_url());
+    let res = run!("restrict get config foo/bar --decode");
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(printer().as_string().trim(), DECODED);
     printer().clear();
 
-    let res = test_main(&cli!("restrict get config foo/bar --format json"), MOCK_SERVER.base_url());
+    let res = run!("restrict get config foo/bar --format json");
     assert!(res.is_ok());
     mock.assert_hits(4);
     assert_eq!(printer().as_string().trim(), resp.to_string());
@@ -102,20 +102,20 @@ Config  foo/baz    Enforced  [XN]             []              []                
         then(t, &api_resp);
     });
 
-    let res = test_main(&cli!("restrict list config"), MOCK_SERVER.base_url());
+    let res = run!("restrict list config");
     println!("{:?}", res);
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), ENCODED);
     printer().clear();
 
-    let res = test_main(&cli!("restrict list config --decode"), MOCK_SERVER.base_url());
+    let res = run!("restrict list config --decode");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(printer().as_string().trim(), DECODED);
     printer().clear();
 
-    let res = test_main(&cli!("restrict list config --format json"), MOCK_SERVER.base_url());
+    let res = run!("restrict list config --format json");
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(printer().as_string().trim(), resp.to_string());
@@ -127,7 +127,7 @@ Config  foo/baz    Enforced  [XN]             []              []                
         when_json(w, GET, "/v1/restrict/");
         then(t, &api_resp);
     });
-    let res = test_main(&cli!("restrict list"), MOCK_SERVER.base_url());
+    let res = run!("restrict list");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), ENCODED);
@@ -153,7 +153,7 @@ fn restrict_set() {
         then(t, &resp_json);
     });
 
-    let res = test_main(&cli!("restrict set config foo/bar --region xe"), MOCK_SERVER.base_url());
+    let res = run!("restrict set config foo/bar --region xe");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -162,10 +162,7 @@ fn restrict_set() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict set config Zm9vL2Jhcg --region xe --base64"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = run!("restrict set config Zm9vL2Jhcg --region xe --base64");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(
@@ -174,10 +171,7 @@ fn restrict_set() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict set config foo/bar --region xe --decode"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = run!("restrict set config foo/bar --region xe --decode");
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(
@@ -186,10 +180,7 @@ fn restrict_set() {
     );
     printer().clear();
 
-    let res = test_main(
-        &cli!("restrict set config foo/bar --region xe --format json"),
-        MOCK_SERVER.base_url(),
-    );
+    let res = run!("restrict set config foo/bar --region xe --format json");
     assert!(res.is_ok());
     mock.assert_hits(4);
     assert_eq!(
@@ -210,7 +201,7 @@ fn restrict_delete() {
         then(t, &resp_json);
     });
 
-    let res = test_main(&cli!("restrict delete config foo/bar"), MOCK_SERVER.base_url());
+    let res = run!("restrict delete config foo/bar");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(
@@ -219,8 +210,7 @@ fn restrict_delete() {
     );
     printer().clear();
 
-    let res =
-        test_main(&cli!("restrict delete config Zm9vL2Jhcg --base64"), MOCK_SERVER.base_url());
+    let res = run!("restrict delete config Zm9vL2Jhcg --base64");
     assert!(res.is_ok());
     mock.assert_hits(2);
     assert_eq!(
@@ -229,7 +219,7 @@ fn restrict_delete() {
     );
     printer().clear();
 
-    let res = test_main(&cli!("restrict delete config foo/bar --decode"), MOCK_SERVER.base_url());
+    let res = run!("restrict delete config foo/bar --decode");
     assert!(res.is_ok());
     mock.assert_hits(3);
     assert_eq!(
@@ -238,8 +228,7 @@ fn restrict_delete() {
     );
     printer().clear();
 
-    let res =
-        test_main(&cli!("restrict delete config foo/bar --format json"), MOCK_SERVER.base_url());
+    let res = run!("restrict delete config foo/bar --format json");
     assert!(res.is_ok());
     mock.assert_hits(4);
     assert_eq!(
