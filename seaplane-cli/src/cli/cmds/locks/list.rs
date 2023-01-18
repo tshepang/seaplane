@@ -72,7 +72,7 @@ fn run_dir_info(ctx: &mut Ctx, dir_name: Option<LockName>) -> Result<()> {
         // We use the regular paging interface rather than
         // get_all_pages so that we don't have to store
         // all of the locks in memory at once.
-        for info in page.infos {
+        for info in page.locks {
             let out = ListedLock::from(info);
             match ctx.args.out_format {
                 OutputFormat::Json => cli_println!("{}", serde_json::to_string(&out)?),
