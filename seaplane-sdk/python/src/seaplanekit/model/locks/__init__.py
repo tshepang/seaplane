@@ -110,7 +110,7 @@ class HeldLock(NamedTuple):
 
 def to_lock_page(lock_range: Dict[str, Any]) -> LockPage:
     return LockPage(
-        locks=[to_lock(lock) for lock in lock_range["infos"]],
+        locks=[to_lock(lock) for lock in lock_range["locks"]],
         next_lock=_to_name(lock_range["next"]),
     )
 

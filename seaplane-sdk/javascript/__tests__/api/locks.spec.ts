@@ -44,7 +44,7 @@ describe('Given Locks API', () => {
     seaFetch.mockImplementation((token: string) => ({
       ...postTokenMock,
       get: (url: string) => textBody({
-        "infos": [
+        "locks": [
             {
                 "name": "bG9jay10ZXN0",
                 "id": "BiqhSv0tuAk",
@@ -119,7 +119,7 @@ describe('Given Locks API', () => {
     seaFetch.mockImplementation((token: string) => ({
       ...postTokenMock,
       get: (url: string) => textBody({
-        infos: [{
+        locks: [{
                 name: "Zm9vL2Jhcg",
                 id: "BiqhSv0tuAk",
                 info: {"ttl": 1000, "client-id": "test", "ip": ""},
@@ -151,7 +151,7 @@ describe('Given Locks API', () => {
     seaFetch.mockImplementation((token: string) => ({
       ...postTokenMock,
       get: (url: string) => textBody({
-        infos: [
+        locks: [
             {
                 name: "Zm9vL2Jhcg",
                 id: "BiqhSv0tuAk",
@@ -184,7 +184,7 @@ describe('Given Locks API', () => {
     seaFetch.mockImplementation((token: string) => ({
       ...postTokenMock,
       get: (url: string) => textBody({
-        infos: [
+        locks: [
             {
                 name: "Zm9vL2Jhcg",
                 id: "BiqhSv0tuAk",

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "seaplanekit"
-version = "0.1.2"
+version = "0.2.0"
 description = "Seaplane Python SDK"
 authors = ["Seaplane IO, Inc."]
 license = "Apache License"
