@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.4.1 - 18 Jan 2023
+
+### Bug Fixes
+
+* Updated to Seaplane SDK 0.4.0 to handle Locks API naming change
+
 ## 0.4.0 - 13 Jan 2023
 
 ### Features

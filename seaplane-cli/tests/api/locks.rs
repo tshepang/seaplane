@@ -36,7 +36,7 @@ fn locks_acquire() {
 fn locks_list_output_pages() {
     let server_page = json!({
         "next": null,
-        "infos": [
+        "locks": [
             {
                 "name": "long name davis, home of the long names",
                 "id": "MQo",
@@ -158,7 +158,7 @@ fn locks_list_output_pages() {
     });
 
     // The point of the test is to see us page during output
-    // so make sure that OUTPUT_PAGE_SIZE < server_page.infos.len
+    // so make sure that OUTPUT_PAGE_SIZE < server_page.locks.len
 
     let mut mock = MOCK_SERVER.mock(|w, t| {
         when_json(w, GET, "/v1/locks/");
@@ -195,7 +195,7 @@ fn locks_list_output_pages() {
 fn locks_list_server_pages() {
     let p1 = json!({
         "next": "page2",
-        "infos": [
+        "locks": [
             {
                 "name": "foo",
                 "id": "D4lbVpdBE_U",
@@ -210,12 +210,12 @@ fn locks_list_server_pages() {
 
     let p2 = json!({
         "next": "page3",
-        "infos": []
+        "locks": []
     });
 
     let p3 = json!({
         "next": null,
-        "infos": [
+        "locks": [
             {
                 "name": "bar",
                 "id": "D4lbVpdBD_U",
@@ -268,7 +268,7 @@ fn locks_list_server_pages() {
 fn locks_list_dir() {
     let p1 = json!({
         "next": "ZGlyL3BhZ2Uy",
-        "infos": [
+        "locks": [
             {
                 "name": "ZGlyL3BhZ2Ux",
                 "id": "D4lbVpdBE_U",
@@ -283,12 +283,12 @@ fn locks_list_dir() {
 
     let p2 = json!({
         "next": "ZGlyL3BhZ2Uz",
-        "infos": []
+        "locks": []
     });
 
     let p3 = json!({
         "next": null,
-        "infos": [
+        "locks": [
             {
                 "name": "ZGlyL3BhZ2Uz",
                 "id": "D4lbVpdBD_U",
