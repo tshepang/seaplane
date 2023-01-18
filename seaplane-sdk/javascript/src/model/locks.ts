@@ -58,7 +58,7 @@ export const toLock = (lock: any): Lock => {
 export const toLockPage = (lockPage: any): LockPage => {
   // eslint-disable-line
   return {
-    locks: lockPage['infos'].map((lock: any) => toLock(lock)), // eslint-disable-line
+    locks: lockPage['locks'].map((lock: any) => toLock(lock)), // eslint-disable-line
     nextLock: toName(lockPage['next']),
   };
 };

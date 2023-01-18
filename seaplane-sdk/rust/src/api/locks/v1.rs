@@ -420,7 +420,7 @@ impl LocksRequest {
         let mut pages = Vec::new();
         loop {
             let mut lir = self.get_page()?;
-            pages.append(&mut lir.infos);
+            pages.append(&mut lir.locks);
             if let Some(next_key) = lir.next {
                 // TODO: Regrettable duplication here suggests that there should be a
                 // ConfigKeyRequest and a ConfigRangeRequest

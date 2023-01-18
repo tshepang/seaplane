@@ -75,5 +75,5 @@ pub struct LockInfoRange {
     /// A lower bound of the next page of results
     pub next: Option<LockName>,
     /// The range of held lock information
-    pub infos: Vec<LockInfo>,
+    pub locks: Vec<LockInfo>,
 }

@@ -137,7 +137,7 @@ fn list_single_lock() {
 fn get_root_values() {
     let resp = LockInfoRange {
         next: None,
-        infos: vec![
+        locks: vec![
             LockInfo {
                 name: LockName::from_encoded("Zm9l"),
                 id: LockId::from_encoded("D4lbVpdBE_U"),
@@ -179,7 +179,7 @@ fn get_root_values() {
 fn get_dir() {
     let resp = LockInfoRange {
         next: None,
-        infos: vec![
+        locks: vec![
             LockInfo {
                 name: LockName::from_encoded("dGVzdC1kaXIvb25l"),
                 id: LockId::from_encoded("D4lbVpdBE_U"),

@@ -25,7 +25,7 @@ def locks_get_page_root_directory() -> Generator[None, None, None]:
             additional_matcher=match_authorization,
             status_code=200,
             json={
-                "infos": [
+                "locks": [
                     {
                         "name": "bG9jay10ZXN0",
                         "id": "BiqhSv0tuAk",
@@ -66,7 +66,7 @@ def locks_get_page_another_directory() -> Generator[None, None, None]:
             additional_matcher=match_authorization,
             status_code=200,
             json={
-                "infos": [
+                "locks": [
                     {
                         "name": "Zm9vL2Jhcg",
                         "id": "BiqhSv0tuAk",
