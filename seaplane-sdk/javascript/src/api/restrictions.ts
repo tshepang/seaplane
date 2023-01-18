@@ -1,12 +1,11 @@
 import Configuration from '../configuration';
-import Request, { headers } from './request';
+import Request from './request';
 
 import { encode } from '../utils/base64';
 import { Key } from '../model/metadata';
 import { SeaplaneApi, Restriction, mapToRestriction, RestrictionDetails, RestrictionPage, mapToRestrictionPage } from '../model/restrictions'
 import { SeaplaneError } from '../model/errors';
-
-const axios = require('axios'); // eslint-disable-line
+import seaFetch from './seaFetch';
 
 export default class Restrictions {
   url: string;
@@ -20,11 +19,7 @@ export default class Restrictions {
   async get(api: SeaplaneApi, key: Key): Promise<Restriction> {
     const url = `${this.url}/base64:${encode(key.key)}`;
 
-    const result = await this.request.send((token) =>
-      axios.get(url, {
-        headers: headers(token),
-      }),
-    );
+    const result = this.request.send((token) => seaFetch(token).get(url));
 
     return mapToRestriction(result);
   }
@@ -39,23 +34,16 @@ export default class Restrictions {
       "providers_denied": restrictionDetails.providersDenied.map(provider => String(provider))
     };
 
-    const result = await this.request.send((token) =>
-      axios.post(url, data, {
-        headers: headers(token)        
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).post(url, JSON.stringify(data)));
 
+  
     return result == "Ok";
   }
 
   async delete(api: SeaplaneApi, key: Key): Promise<boolean> {
     const url = `${this.url}/${api}/base64:${encode(key.key)}`;
 
-    const result = await this.request.send((token) =>
-      axios.delete(url, {
-        headers: headers(token)        
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).delete(url));    
 
     return result === 'Ok';
   }
@@ -83,12 +71,7 @@ export default class Restrictions {
       };
     }
 
-    const result = await this.request.send((token) =>
-      axios.get(url, {
-        headers: headers(token),
-        params: params,
-      }),
-    );
+    const result = await this.request.send((token) => seaFetch(token).get(`${url}?` + new URLSearchParams(params))); 
 
     return mapToRestrictionPage(result);
   }
