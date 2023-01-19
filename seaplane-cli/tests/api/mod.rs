@@ -37,7 +37,7 @@ fn ctx_from_url(url: String) -> Ctx {
     ctx.compute_url = Some(url.clone());
     ctx.identity_url = Some(url.clone());
     ctx.metadata_url = Some(url.clone());
-    ctx.locks_url = Some(url.clone());
+    ctx.locks_url = Some(url);
     ctx
 }
 

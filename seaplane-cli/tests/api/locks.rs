@@ -407,7 +407,7 @@ fn locks_list_json() {
     printer().clear();
 
     let res = run!("locks list foo -D --format json");
-    assert!(!res.is_ok());
+    assert!(res.is_err());
     printer().clear();
 
     mock.delete();

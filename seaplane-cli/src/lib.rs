@@ -60,13 +60,13 @@ mod tests {
     pub fn test_main_update_ctx(matches: &ArgMatches) -> Result<()> {
         let mut ctx = Ctx::default();
         let s: Box<dyn CliCommand> = Box::new(Seaplane);
-        s.traverse_update_ctx(&matches, &mut ctx)?;
+        s.traverse_update_ctx(matches, &mut ctx)?;
         Ok(())
     }
 
     pub fn test_main_exec_with_ctx(matches: &ArgMatches, mut ctx: Ctx) -> Result<()> {
         let s: Box<dyn CliCommand> = Box::new(Seaplane);
-        s.traverse_exec(&matches, &mut ctx)?;
+        s.traverse_exec(matches, &mut ctx)?;
         Ok(())
     }
 }

@@ -8,7 +8,7 @@ pub struct SeaplaneFormationContainerStatistics;
 impl SeaplaneFormationContainerStatistics {
     pub fn command() -> Command {
         Command::new("container-statistics")
-            .visible_aliases(&["container-stats", "statistics", "stats"])
+            .visible_aliases(["container-stats", "statistics", "stats"])
             .about("Display statistics about the underlying physical container instances")
     }
 }
