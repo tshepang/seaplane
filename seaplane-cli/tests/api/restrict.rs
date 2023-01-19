@@ -103,7 +103,7 @@ Config  foo/baz    Enforced  [XN]             []              []                
     });
 
     let res = run!("restrict list config");
-    println!("{:?}", res);
+    println!("{res:?}");
     assert!(res.is_ok());
     mock.assert_hits(1);
     assert_eq!(printer().as_string().trim(), ENCODED);

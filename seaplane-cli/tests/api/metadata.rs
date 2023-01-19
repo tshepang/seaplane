@@ -129,7 +129,7 @@ fn metadata_list_dir_json() {
     printer().clear();
 
     let res = run!("metadata list -D --format json Pequod!");
-    assert!(!res.is_ok());
+    assert!(res.is_err());
     printer().clear();
     mock.delete();
 }
