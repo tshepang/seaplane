@@ -194,6 +194,8 @@ _doc-rust-crate MANIFEST=SDK_RUST_MANIFEST $RUSTDOCFLAGS="-D warnings":
 
 # Lint a Rust crate
 _lint-rust-crate MANIFEST=SDK_RUST_MANIFEST RUST_FEATURES='':
+    cargo clippy --no-default-features --manifest-path {{ MANIFEST }} --all-targets -- -D warnings
+    cargo clippy --all-features --manifest-path {{ MANIFEST }} --all-targets -- -D warnings
     cargo clippy {{ RUST_FEATURES }} --manifest-path {{ MANIFEST }} --all-targets -- -D warnings
 
 # Run API tests using a mock HTTP server

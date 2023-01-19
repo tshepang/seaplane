@@ -1,12 +1,8 @@
 use httpmock::prelude::*;
-use once_cell::sync::Lazy;
 use seaplane::api::identity::v0::TokenRequest;
 use serde_json::json;
 
-// To be used with httpmock standalone server for dev testing
-// MockServer::connect("127.0.0.1:5000")
-// static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::connect("127.0.0.1:5000"));
-static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
+use super::MOCK_SERVER;
 
 fn build_req() -> TokenRequest {
     TokenRequest::builder()
@@ -24,7 +20,7 @@ fn access_token() {
             .path("/identity/token")
             .header("authorization", "Bearer abc123")
             .header("accept", "*/*")
-            .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()));
+            .header("host", format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()));
         then.status(201).body("abc.123.def");
     });
 
@@ -47,7 +43,7 @@ fn access_token_json() {
             .path("/identity/token")
             .header("authorization", "Bearer abc123")
             .header("accept", "application/json")
-            .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()));
+            .header("host", format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()));
         then.status(201).json_body(resp_json.clone());
     });
 

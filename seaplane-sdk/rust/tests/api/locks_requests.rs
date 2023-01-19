@@ -1,5 +1,4 @@
 use httpmock::{prelude::*, Method, Then, When};
-use once_cell::sync::Lazy;
 use seaplane::api::{
     locks::v1::{
         HeldLock, LockId, LockInfo, LockInfoInner, LockInfoRange, LockName, LocksRequestBuilder,
@@ -8,17 +7,14 @@ use seaplane::api::{
 };
 use serde_json::json;
 
-// To be used with httpmock standalone server for dev testing
-// MockServer::connect("127.0.0.1:5000")
-// static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::connect("127.0.0.1:5000"));
-static MOCK_SERVER: Lazy<MockServer> = Lazy::new(|| MockServer::start());
+use super::MOCK_SERVER;
 
 fn when(when: When, m: Method, p: &str) -> When {
     when.method(m)
         .path(p)
         .header("authorization", "Bearer abc123")
         .header("accept", "*/*")
-        .header("host", &format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()))
+        .header("host", format!("{}:{}", MOCK_SERVER.host(), MOCK_SERVER.port()))
 }
 
 fn then(then: Then, resp_body: serde_json::Value) -> Then {
