@@ -18,6 +18,14 @@
 )]
 #![forbid(unsafe_code)]
 
+#[cfg(any(
+    feature = "compute_api_v1",
+    feature = "locks_api_v1",
+    feature = "metadata_api_v1",
+    feature = "restrict_api_v1"
+))]
+#[macro_use]
+mod macros;
 pub mod api;
 pub mod base64;
 pub mod error;

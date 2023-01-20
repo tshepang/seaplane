@@ -94,11 +94,6 @@ jobs:
       run: |
         just test-cli
 
-    - name: Build SDK Docs
-      if: ${{ inputs.test_sdk }}
-      run: |
-        just _doc-rust-crate
-
     - name: Build CLI Docs
       if: ${{ inputs.test_cli }}
       run: |

@@ -24,8 +24,8 @@ Options:
   -S, --stateless         Ignore local state files, do not read from or write to them
       --no-remote         DO NOT delete remote Formation Instances (this is set by the default, use --remote to remove them)
   -F, --fetch             Fetch remote Formation Instances and synchronize local Plan definitions prior to attempting to delete [aliases: sync, synchronize]
-  -h, --help              Print help information (use `--help` for more detail)
-  -V, --version           Print version information
+  -h, --help              Print help (see more with '--help')
+  -V, --version           Print version
 
 ```
 
@@ -105,9 +105,9 @@ Options:
           [aliases: sync, synchronize]
 
   -h, --help
-          Print help information (use `-h` for a summary)
+          Print help (see a summary with '-h')
 
   -V, --version
-          Print version information
+          Print version
 
 ```

@@ -28,8 +28,8 @@ Options:
       --keys-width-limit <LIMIT>    Limit the width of the keys when using `--format=table` (0 means unlimited)
       --values-width-limit <LIMIT>  Limit the width of the values when using `--format=table` (0 means unlimited)
   -f, --from <KEY>                  Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
-  -h, --help                        Print help information (use `--help` for more detail)
-  -V, --version                     Print version information
+  -h, --help                        Print help (see more with '--help')
+  -V, --version                     Print version
 
 ```
 
@@ -137,9 +137,9 @@ Options:
           Only print metadata key-value pairs after this key (note: if this key has a value it will be included in the results)
 
   -h, --help
-          Print help information (use `-h` for a summary)
+          Print help (see a summary with '-h')
 
   -V, --version
-          Print version information
+          Print version
 
 ```

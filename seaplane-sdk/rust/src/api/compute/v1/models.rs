@@ -1,14 +1,10 @@
 mod containers;
 mod endpoint;
 mod formation;
-use serde::{
-    de::{self, Deserialize, Deserializer},
-    Serialize,
-};
+use serde::Serialize;
 use strum::{Display, EnumString, EnumVariantNames};
 
 pub use crate::api::compute::v1::models::{containers::*, endpoint::*, formation::*};
-use crate::api::shared::v1::impl_deser_from_str;
 
 /// The processor architecture a [`Flight`] wants to run on
 #[derive(

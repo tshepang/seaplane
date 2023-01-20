@@ -3,12 +3,12 @@ With no args:
 ```console
 $ seaplane shell-completion
 ? 2
-error: The following required arguments were not provided:
+error: the following required arguments were not provided:
   <shell>
 
 Usage: seaplane[EXE] shell-completion <shell>
 
-For more information try '--help'
+For more information, try '--help'.
 
 ```
 
@@ -30,8 +30,8 @@ Options:
       --no-color          Do not color output (alias for --color=never)
   -A, --api-key <STRING>  The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
   -S, --stateless         Ignore local state files, do not read from or write to them
-  -h, --help              Print help information (use `--help` for more detail)
-  -V, --version           Print version information
+  -h, --help              Print help (see more with '--help')
+  -V, --version           Print version
 
 DISCUSSION:
     Enabling shell completion scripts depends on the shell you're using, the
@@ -179,10 +179,10 @@ Options:
           Ignore local state files, do not read from or write to them
 
   -h, --help
-          Print help information (use `-h` for a summary)
+          Print help (see a summary with '-h')
 
   -V, --version
-          Print version information
+          Print version
 
 DISCUSSION:
     Enabling shell completion scripts depends on the shell you're using, the

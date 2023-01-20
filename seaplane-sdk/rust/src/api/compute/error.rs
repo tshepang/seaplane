@@ -2,6 +2,7 @@ use reqwest::blocking::Response;
 
 use crate::{api::error::ApiError, error::Result};
 
+#[cfg_attr(not(any(feature = "compute_api_v1", feature = "compute_api_v2")), allow(dead_code))]
 pub fn map_api_error(resp: Response) -> Result<Response> {
     if let Err(source) = resp.error_for_status_ref() {
         let kind = source.status().into();

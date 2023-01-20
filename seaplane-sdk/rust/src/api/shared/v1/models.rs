@@ -1,27 +1,8 @@
 //! This file contains models that are used across multiple APIs, like `Region`
 //! and `Provider`
 
-use serde::{
-    de::{self, Deserializer},
-    Deserialize, Serialize,
-};
+use serde::Serialize;
 use strum::{EnumString, EnumVariantNames};
-
-/// Implements Deserialize using FromStr
-macro_rules! impl_deser_from_str {
-    ($t:ty) => {
-        impl<'de> Deserialize<'de> for $t {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-            where
-                D: Deserializer<'de>,
-            {
-                let s = String::deserialize(deserializer)?;
-                s.parse().map_err(de::Error::custom)
-            }
-        }
-    };
-}
-pub(crate) use impl_deser_from_str;
 
 /// A backing cloud provider used to restrict data placement
 #[derive(

@@ -2,14 +2,16 @@
 // structure works.
 
 #[cfg(feature = "compute_api_v1")]
-mod formation_requests;
+mod compute_v1;
+#[cfg(feature = "compute_api_v2")]
+mod compute_v2;
 #[cfg(feature = "locks_api_v1")]
-mod locks_requests;
+mod locks_v1;
 #[cfg(feature = "metadata_api_v1")]
-mod metadata_requests;
+mod metadata_v1;
 #[cfg(feature = "restrict_api_v1")]
-mod restrict_requests;
-mod token_requests;
+mod restrict_v1;
+mod token_v1;
 
 use httpmock::prelude::*;
 use once_cell::sync::Lazy;

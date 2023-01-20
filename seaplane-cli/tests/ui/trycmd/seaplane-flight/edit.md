@@ -4,12 +4,12 @@ With no additional arguments, an error is displayed about a missing required arg
 ```console
 $ seaplane flight edit
 ? 2
-error: The following required arguments were not provided:
+error: the following required arguments were not provided:
   <NAME|ID>
 
 Usage: seaplane[EXE] flight edit <NAME|ID>
 
-For more information try '--help'
+For more information, try '--help'.
 
 ```
 
@@ -38,8 +38,8 @@ Options:
       --architecture <ARCH>  The architectures this flight is capable of running on. No value means it will be auto detected from the image definition (supports comma separated list, or multiple uses) [aliases: arch, arches, architectures] [possible values: amd64, arm64]
   -S, --stateless            Ignore local state files, do not read from or write to them
       --no-maximum           There is no maximum number of instances [aliases: no-max]
-  -h, --help                 Print help information (use `--help` for more detail)
-  -V, --version              Print version information
+  -h, --help                 Print help (see more with '--help')
+  -V, --version              Print version
 
 IMAGE SPEC
 
@@ -173,10 +173,10 @@ Options:
           [aliases: no-max]
 
   -h, --help
-          Print help information (use `-h` for a summary)
+          Print help (see a summary with '-h')
 
   -V, --version
-          Print version information
+          Print version
 
 IMAGE SPEC
 
