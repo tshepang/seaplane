@@ -95,7 +95,7 @@ fmt-check-cli:
 
 # Check if code formatter would make changes to the Rust SDK
 fmt-check-sdk-rust:
-    cargo fmt --manifest-path crates/container-image-ref/Cargo.toml --check
+    cargo fmt --manifest-path {{IMAGE_REF_MANIFEST }} --check
     cargo fmt --manifest-path {{ SDK_RUST_DIR / 'Cargo.toml' }} --check
 
 # Check if code formatter would make changes to the Python SDK
@@ -133,7 +133,7 @@ lint: lint-sdk-rust lint-sdk-python lint-sdk-javascript lint-cli
 lint-cli: spell-check fmt-check-cli (_lint-rust-crate CLI_MANIFEST '--no-default-features')
 
 # Run all lint checks against the Rust SDK
-lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust-crate (_lint-rust-crate SDK_RUST_MANIFEST '--features unstable') (_lint-rust-crate SDK_RUST_MANIFEST '--no-default-features') (_lint-rust-crate IMAGE_REF_MANIFEST)
+lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust-crate (_lint-rust-crate SDK_RUST_MANIFEST '--features unstable') (_lint-rust-crate IMAGE_REF_MANIFEST)
 
 # Run all lint checks against the Python SDK
 lint-sdk-python: spell-check fmt-check-sdk-python
@@ -151,7 +151,7 @@ test-rust: test-sdk-rust (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate C
 test-cli: (_doc-rust-crate CLI_MANIFEST) (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST) test-ui
 
 # Run basic integration and unit tests for the Rust SDK
-test-sdk-rust: _test-rust-crate (_test-rust-crate IMAGE_REF_MANIFEST) _test-rust-api-crate
+test-sdk-rust: _test-rust-crate (_test-rust-crate IMAGE_REF_MANIFEST) _test-rust-api-crate (_test-rust-api-crate SDK_RUST_MANIFEST ',compute_api_v2') _doc-rust-crate
 
 # Run basic integration and unit tests for the Python SDK
 test-sdk-python: _python-setup
@@ -186,6 +186,7 @@ _python-setup:
 
 # Run basic integration and unit tests for a Rust crate
 _test-rust-crate MANIFEST=SDK_RUST_MANIFEST FEATURES='' $RUSTFLAGS='-D warnings':
+    {{ TEST_RUNNER }} --no-default-features --manifest-path {{ MANIFEST }}
     {{ TEST_RUNNER }} {{ FEATURES }} --manifest-path {{ MANIFEST }}
 
 # build documentation for a Rust crate
@@ -199,9 +200,9 @@ _lint-rust-crate MANIFEST=SDK_RUST_MANIFEST RUST_FEATURES='':
     cargo clippy {{ RUST_FEATURES }} --manifest-path {{ MANIFEST }} --all-targets -- -D warnings
 
 # Run API tests using a mock HTTP server
-_test-rust-api-crate MANIFEST=SDK_RUST_MANIFEST $RUSTFLAGS='-D warnings':
-    {{ TEST_RUNNER }}  --features api_tests --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
-    {{ TEST_RUNNER }}  --features unstable,api_tests --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
+_test-rust-api-crate MANIFEST=SDK_RUST_MANIFEST EXTRA_FEATURES='' $RUSTFLAGS='-D warnings':
+    {{ TEST_RUNNER }} --features api_tests{{ EXTRA_FEATURES }} --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
+    {{ TEST_RUNNER }} --features unstable,api_tests{{ EXTRA_FEATURES }} --manifest-path {{ MANIFEST }} {{ ARG_SEP }} --test-threads=1
 
 # Run documentation tests
 _test-rust-doc-crate MANIFEST=SDK_RUST_MANIFEST:

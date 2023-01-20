@@ -22,8 +22,8 @@ Options:
   -A, --api-key <STRING>  The API key associated with a Seaplane account used to access Seaplane API endpoints [env: SEAPLANE_API_KEY]
       --no-header         Omit the header when printing with `--format=table` [aliases: no-heading, no-headers]
   -S, --stateless         Ignore local state files, do not read from or write to them
-  -h, --help              Print help information (use `--help` for more detail)
-  -V, --version           Print version information
+  -h, --help              Print help (see more with '--help')
+  -V, --version           Print version
 
 ```
 
@@ -106,9 +106,9 @@ Options:
           Ignore local state files, do not read from or write to them
 
   -h, --help
-          Print help information (use `-h` for a summary)
+          Print help (see a summary with '-h')
 
   -V, --version
-          Print version information
+          Print version
 
 ```

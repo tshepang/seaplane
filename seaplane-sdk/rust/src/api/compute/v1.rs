@@ -1,7 +1,6 @@
 //! The `/formations` endpoint APIs which allows working with [`FormationConfiguration`]s,
 //! [`Flight`]s, and the underlying containers
 
-mod error;
 mod models;
 
 use uuid::Uuid;
@@ -9,11 +8,13 @@ use uuid::Uuid;
 pub use crate::api::compute::v1::models::*;
 use crate::{
     api::{
-        compute::{v1::error::map_api_error, COMPUTE_API_URL},
+        compute::{error::map_api_error, COMPUTE_API_URL},
         ApiRequest, RequestBuilder,
     },
     error::{Result, SeaplaneError},
 };
+
+const COMPUTE_API_ROUTE: &str = "v1/formations";
 
 /// A builder struct for creating a [`FormationsRequest`] which will then be used for making a
 /// request against the `/formations` APIs
@@ -30,7 +31,7 @@ impl Default for FormationsRequestBuilder {
     fn default() -> Self { Self::new() }
 }
 impl FormationsRequestBuilder {
-    pub fn new() -> Self { RequestBuilder::new(COMPUTE_API_URL, "v1/formations").into() }
+    pub fn new() -> Self { RequestBuilder::new(COMPUTE_API_URL, COMPUTE_API_ROUTE).into() }
 
     /// Builds a FormationsRequest from the given parameters
     pub fn build(self) -> Result<FormationsRequest> { Ok(self.builder.build()?.into()) }

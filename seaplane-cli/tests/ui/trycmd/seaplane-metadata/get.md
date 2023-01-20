@@ -24,8 +24,8 @@ Options:
   -S, --stateless                   Ignore local state files, do not read from or write to them
       --keys-width-limit <LIMIT>    Limit the width of the keys when using `--format=table` (0 means unlimited)
       --values-width-limit <LIMIT>  Limit the width of the values when using `--format=table` (0 means unlimited)
-  -h, --help                        Print help information (use `--help` for more detail)
-  -V, --version                     Print version information
+  -h, --help                        Print help (see more with '--help')
+  -V, --version                     Print version
 
 ```
 
@@ -114,9 +114,9 @@ Options:
           Limit the width of the values when using `--format=table` (0 means unlimited)
 
   -h, --help
-          Print help information (use `-h` for a summary)
+          Print help (see a summary with '-h')
 
   -V, --version
-          Print version information
+          Print version
 
 ```

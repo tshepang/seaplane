@@ -25,8 +25,8 @@ Options:
       --flight-endpoint <SPEC>       An endpoint that will only be privately exposed on Instances of this Formation Plan to Flights within the same Formation Instance. In the form of 'PROTO:TARGET=FLIGHT:PORT' (supports comma separated list, or multiple uses) [aliases: flight-endpoints]
       --force                        Override any existing Formation with the same NAME
   -F, --fetch                        Fetch remote instances prior to creating this plan to check for conflicts (by default only local references are considered) [aliases: sync, synchronize]
-  -h, --help                         Print help information (use `--help` for more detail)
-  -V, --version                      Print version information
+  -h, --help                         Print help (see more with '--help')
+  -V, --version                      Print version
 
 FLIGHT SPEC
 
@@ -263,10 +263,10 @@ Options:
           [aliases: sync, synchronize]
 
   -h, --help
-          Print help information (use `-h` for a summary)
+          Print help (see a summary with '-h')
 
   -V, --version
-          Print version information
+          Print version
 
 FLIGHT SPEC
 

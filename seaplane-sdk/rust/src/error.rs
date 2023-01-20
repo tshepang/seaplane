@@ -30,6 +30,10 @@ pub enum SeaplaneError {
     ConflictingParams,
     #[error("flights cannot be empty")]
     EmptyFlights,
+    #[error("a gateway flight was not specified or could not be implied because the number of flights is > 1")]
+    NoGatewayFlight,
+    #[error("the given gateway flight either does not exist or is invalid")]
+    InvalidGatewayFlight,
     #[error("missing required Flight name")]
     MissingFlightName,
     #[error("missing required Flight image reference")]
@@ -74,6 +78,8 @@ impl PartialEq for SeaplaneError {
             MissingUuid => matches!(rhs, MissingUuid),
             ConflictingParams => matches!(rhs, ConflictingParams),
             EmptyFlights => matches!(rhs, EmptyFlights),
+            NoGatewayFlight => matches!(rhs, NoGatewayFlight),
+            InvalidGatewayFlight => matches!(rhs, InvalidGatewayFlight),
             MissingFlightName => matches!(rhs, MissingFlightName),
             MissingFlightImageReference => matches!(rhs, MissingFlightImageReference),
             ConflictingRequirements => matches!(rhs, ConflictingRequirements),

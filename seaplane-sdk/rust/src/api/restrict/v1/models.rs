@@ -1,13 +1,10 @@
 use std::{collections::BTreeSet, fmt};
 
-use serde::{
-    de::{self, Deserializer},
-    Deserialize, Serialize,
-};
+use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, EnumString, EnumVariantNames};
 
 use crate::{
-    api::shared::v1::{impl_deser_from_str, Provider, RangeQueryContext, Region},
+    api::shared::v1::{Provider, RangeQueryContext, Region},
     base64::Base64Encoded,
     error::SeaplaneError,
     impl_base64,
