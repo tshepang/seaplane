@@ -1,12 +1,11 @@
-import { decode } from '../utils/base64';
 import { Provider, mapToProvider } from './provider'
 import { Region, mapToRegions } from './region'
 import { Key, mapKey } from './metadata'
 import {SeaplaneError} from './errors'
 
 export enum SeaplaneApi {
-  Locks = "Locks",
-  Metadata = "Config"
+  Locks,
+  Metadata
 }
 
 export enum RestrictionState {
@@ -41,17 +40,20 @@ export type LockInfo = {
 };
 
 export const mapToRestriction = (restriction: object): Restriction => {
+  console.log("Restriction: ", restriction)
   const key = mapKey(restriction["directory"])
 
   if (key == null) {
     throw new SeaplaneError("Directory must not be null")
   }
+  
+  console.log("Buenos dias", RestrictionState[capitalize(restriction["state"])])
 
   return {
-    api: SeaplaneApi[restriction["api"]],
+    api: seaplaneApi(restriction["api"]),
     directory: key,
     details: mapToRestrictionDetails(restriction),
-    state: RestrictionState[restriction["state"]]
+    state: RestrictionState[capitalize(restriction["state"])]
   }
 }
 
@@ -76,4 +78,6 @@ export const mapToRestrictionPage = (restrictionPage: object): RestrictionPage =
   nextKey: mapKey(restrictionPage["next_key"])
 })
 
-const capitalize = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+const capitalize: (string: string) => string = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+
+const seaplaneApi: (api: string) => SeaplaneApi = (api) => api  == "config" ? SeaplaneApi.Metadata : SeaplaneApi.Locks

@@ -7,7 +7,7 @@ export enum Provider {
 }
 
 export const mapToProvider = (providers?: string[]): Provider[]  => {
-  if (!providers) {
+  if (!providers) {    
     return []
   }
 

@@ -1,16 +1,25 @@
 import {afterEach, beforeAll, describe, expect, jest, test} from '@jest/globals';
 import { Configuration, Restrictions } from '../../src'
+import { Key } from '../../src/model/metadata'
 import seaFetch from '../../src/api/seaFetch';
+import { RestrictionState, SeaplaneApi } from '../../src/model/restrictions';
 
 jest.mock("../../src/api/seaFetch", () => jest.fn());
 
+const textBody = (body: Object) => Promise.resolve({ 
+  ok: () => true,
+  text: () => Promise.resolve(body) 
+})
+
+const postTokenMock = {
+  post: (url: string, body: string) => Promise.resolve({ 
+    ok: () => true,
+    json: () => Promise.resolve({token: "test_token"}) 
+  })
+}
+
 const mockIdentify = (configuration: Configuration) => {
-  seaFetch.mockImplementation((token: string) => ({
-    post: (url: string, body: string) => Promise.resolve({ 
-      ok: () => true,
-      json: () => Promise.resolve({token: "test_token"}) 
-    })
-  }))
+  seaFetch.mockImplementation((token: string) => (postTokenMock))
 }
 
 describe('Given Restrictions API', () => {
@@ -29,32 +38,48 @@ describe('Given Restrictions API', () => {
   })
 
   test('get page returns one element', async () => {  
-    seaFetch.mockImplementation((token: string) => ({
+    seaFetch.mockImplementation((token: string) => ({      
       ...postTokenMock,
       get: (url: string) => textBody({
-        "infos": [
-            {
-                "name": "bG9jay10ZXN0",
-                "id": "BiqhSv0tuAk",
-                "info": {"ttl": 1000, "client-id": "test", "ip": ""},
-            }
-        ],
-        "next": null,
+        "next_api": "locks",
+        "next_key": "dGhlIG5leHQga2V5",
+        "restrictions": [{
+          "api": "config",
+          "directory": "Zm9vL2Jhcgo",
+          "details": {
+            "regions_allowed": [
+              "XE"
+            ],
+            "regions_denied": [
+              "XE"
+            ],
+            "providers_allowed": [
+              "AWS"
+            ],
+            "providers_denied": [
+              "AWS"
+            ]
+          },
+          "state": "enforced"
+        }]
       })
     }))
 
     expect(await restrictions.getPage()).toStrictEqual({
-        locks: [
-          {
-            id: "BiqhSv0tuAk",
-            name: {
-              name: "lock-test"
-            },
-            info: {ttl: 1000, clientId: "test", ip: ""},
-          }
-        ],
-        nextLock: null,
-      })
+      nextApi: SeaplaneApi.Locks,
+      nextKey: { key: "the next key"},      
+      restrictions: [{
+        api: SeaplaneApi.Metadata,
+        state: RestrictionState.Enforced,      
+        directory: { key: "foo/bar\n"},
+        details: {
+          "regions_allowed": ["XE"],
+          "regions_denied": ["XE"],
+          "providers_allowed": ["AWS"],
+          "providers_denied": ["AWS"]
+        }        
+      }]
+    })
   });
   
   
