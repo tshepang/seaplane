@@ -1,15 +1,10 @@
-mod endpoint;
 use std::{
     collections::HashSet,
     io::Write,
     path::{Path, PathBuf},
 };
 
-pub use endpoint::*;
-use seaplane::api::compute::v1::{
-    Container as ContainerModel, ContainerStatus, Flight as FlightModel,
-    FormationConfiguration as FormationConfigurationModel,
-};
+use seaplane::api::compute::v2::{Flight as FlightModel, Formation as FormationModel};
 use serde::{Deserialize, Serialize};
 use tabwriter::TabWriter;
 use uuid::Uuid;
@@ -39,22 +34,9 @@ pub struct Formations {
     /// A list of "Formation"s
     #[serde(default)]
     pub formations: Vec<Formation>,
-
-    /// A list of "Formation Configuration"s
-    ///
-    /// We keep these separate from the Formation themselves because multiple formations can
-    /// reference the same configuration.
-    #[serde(default)]
-    pub configurations: Vec<FormationConfiguration>,
 }
 
 impl Formations {
-    pub fn get_configuration_by_uuid(&self, uuid: Uuid) -> Option<&FormationConfiguration> {
-        self.configurations
-            .iter()
-            .find(|fc| fc.remote_id == Some(uuid))
-    }
-
     pub fn remote_names(&self) -> Vec<&str> {
         self.formations
             .iter()
@@ -70,13 +52,6 @@ impl Formations {
     }
 
     pub fn formations(&self) -> impl Iterator<Item = &Formation> { self.formations.iter() }
-    pub fn configurations(&self) -> impl Iterator<Item = &FormationConfiguration> {
-        self.configurations.iter()
-    }
-
-    pub fn get_configuration(&self, id: &Id) -> Option<&FormationConfiguration> {
-        self.configurations.iter().find(|fc| &fc.id == id)
-    }
 
     /// Returns the removed FormationConfiguration by ID or None if there was no match
     ///
@@ -135,45 +110,6 @@ impl Formations {
             let id = formation.id;
             self.formations.push(formation);
             Some(id)
-        }
-    }
-
-    // TODO: add success indicator
-    pub fn add_uuid(&mut self, id: &Id, uuid: Uuid) {
-        for cfg in self.configurations.iter_mut() {
-            if &cfg.id == id {
-                cfg.remote_id = Some(uuid);
-                break;
-            }
-        }
-    }
-
-    // TODO: add success indicator
-    pub fn add_in_air_by_name(&mut self, name: &str, id: Id) {
-        cli_traceln!(
-            "Adding Cfg ID {} for Formation {name} as In Air to local state",
-            &id.to_string()[..8]
-        );
-        for f in self.formations.iter_mut() {
-            if f.name.as_deref() == Some(name) {
-                f.in_air.insert(id);
-                break;
-            }
-        }
-    }
-
-    // TODO: add success indicator
-    pub fn add_grounded_by_name(&mut self, name: &str, id: Id) {
-        cli_traceln!(
-            "Adding Cfg ID {} for Formation {name} as Grounded to local state",
-            &id.to_string()[..8]
-        );
-        for f in self.formations.iter_mut() {
-            if f.name.as_deref() == Some(name) {
-                f.grounded.insert(id);
-                f.in_air.remove(&id);
-                break;
-            }
         }
     }
 
@@ -288,10 +224,7 @@ impl Output for Formations {
     fn print_table(&self, _ctx: &Ctx) -> Result<()> {
         let buf = Vec::new();
         let mut tw = TabWriter::new(buf);
-        writeln!(
-            tw,
-            "LOCAL ID\tNAME\tLOCAL\tDEPLOYED (GROUNDED)\t DEPLOYED (IN AIR)\t TOTAL CONFIGURATIONS"
-        )?;
+        writeln!(tw, "LOCAL ID\tNAME\tLOCAL\tDEPLOYED")?;
         for formation in &self.formations {
             let local = formation.local.len();
             let in_air = formation.in_air.len();
@@ -309,13 +242,11 @@ impl Output for Formations {
 
             writeln!(
                 tw,
-                "{}\t{}\t{}\t{}\t{}\t{}",
+                "{}\t{}\t{}\t{}",
                 &formation.id.to_string()[..8], // TODO: make sure length is not ambiguous
                 formation.name.as_deref().unwrap_or_default(),
                 local,
-                grounded,
                 in_air,
-                total
             )?;
         }
         tw.flush()?;
@@ -339,7 +270,6 @@ pub struct Formation {
     pub name: Option<String>,
     pub local: HashSet<Id>,
     pub in_air: HashSet<Id>,
-    pub grounded: HashSet<Id>,
 }
 
 impl Formation {
@@ -349,7 +279,6 @@ impl Formation {
             name: Some(name.into()),
             local: HashSet::new(),
             in_air: HashSet::new(),
-            grounded: HashSet::new(),
         }
     }
 
@@ -403,10 +332,9 @@ impl Formation {
 
 /// Wraps the [`FormationConfiguration`] model adding a local ID and the UUID associated
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct FormationConfiguration {
+pub struct Formation {
     pub id: Id,
-    pub remote_id: Option<Uuid>,
-    pub model: FormationConfigurationModel,
+    pub model: FormationModel,
 }
 
 impl FormationConfiguration {
@@ -460,13 +388,6 @@ pub struct FlightStatuses {
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct FlightStatus {
     name: String,
-    running: u64,
-    minimum: u64,
-    exited: u64,
-    errored: u64,
-    starting: u64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    maximum: Option<u64>,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, strum::EnumString, Serialize)]
@@ -545,31 +466,6 @@ impl FormationStatus {
         }
     }
 
-    /// Add the appropriate Flights and Configurations from a given Container Instance
-    pub fn add_container(&mut self, c: &ContainerModel, min: u64, max: Option<u64>) {
-        match c.status {
-            ContainerStatus::Running => self.configurations.add_running_flight(
-                c.configuration_id,
-                c.flight_name.clone(),
-                min,
-                max,
-            ),
-            ContainerStatus::Started => self.configurations.add_starting_flight(
-                c.configuration_id,
-                c.flight_name.clone(),
-                min,
-                max,
-            ),
-            ContainerStatus::Stopped => self.configurations.add_stopped_flight(
-                c.configuration_id,
-                c.flight_name.clone(),
-                c.exit_status.is_none() || c.exit_status == Some(0),
-                min,
-                max,
-            ),
-        }
-    }
-
     pub fn update_status(&mut self) {
         let mut status = OpStatus::Up;
         for cfg in self.configurations.inner.iter_mut() {
@@ -581,17 +477,7 @@ impl FormationStatus {
 }
 
 impl FlightStatus {
-    pub fn new<S: Into<String>>(name: S) -> Self {
-        Self {
-            name: name.into(),
-            running: 0,
-            minimum: 0,
-            exited: 0,
-            starting: 0,
-            errored: 0,
-            maximum: None,
-        }
-    }
+    pub fn new<S: Into<String>>(name: S) -> Self { Self { name: name.into() } }
 
     #[allow(unused_assignments)]
     pub fn get_status(&self) -> OpStatus {
@@ -773,15 +659,7 @@ impl FlightStatuses {
         if let Some(f) = self.inner.iter_mut().find(|f| f.name == name) {
             f.running += 1;
         } else {
-            self.inner.push(FlightStatus {
-                name,
-                running: 1,
-                exited: 0,
-                errored: 0,
-                starting: 0,
-                minimum,
-                maximum,
-            })
+            self.inner.push(FlightStatus { name })
         }
     }
 
@@ -800,15 +678,7 @@ impl FlightStatuses {
                 f.exited += 1;
             }
         } else {
-            self.inner.push(FlightStatus {
-                name,
-                running: 0,
-                starting: 0,
-                exited: if error { 0 } else { 1 },
-                errored: if error { 1 } else { 0 },
-                minimum,
-                maximum,
-            })
+            self.inner.push(FlightStatus { name })
         }
     }
 
@@ -817,15 +687,7 @@ impl FlightStatuses {
         if let Some(f) = self.inner.iter_mut().find(|f| f.name == name) {
             f.starting += 1;
         } else {
-            self.inner.push(FlightStatus {
-                name,
-                running: 0,
-                starting: 1,
-                exited: 0,
-                errored: 0,
-                minimum,
-                maximum,
-            })
+            self.inner.push(FlightStatus { name })
         }
     }
 
@@ -883,37 +745,3 @@ impl Output for Vec<FormationStatus> {
         Ok(())
     }
 }
-
-// impl From<Formations> for Vec<FormationStatus> {
-//     fn from(fs: Formations) -> Vec<FormationStatus> {
-//         let mut statuses = Vec::new();
-//         for formation in fs.formations.iter() {
-//             let mut f_status = FormationStatus::new(formation.name.as_ref().unwrap());
-
-//             // Loop through all the Formation Configurations defined in this Formation
-//             for cfg in formation.configs().iter().map(|id| {
-//                 // Map a config ID to an actual Config. We have to use these long chained calls
-// so                 // Rust can tell that `formations` itself isn't being borrowed, just it's
-// fields.                 fs.configurations.swap_remove(
-//                     // get the index of the Config where the ID matches
-//                     fs.configurations
-//                         .iter()
-//                         .enumerate()
-//                         .find_map(|(i, cfg)| if &cfg.id == id { Some(i) } else { None })
-//                         .unwrap(),
-//                 )
-//             }) {
-//                 let mut fc_status = FormationConfigStatus::default();
-//                 // Add or update all flights this configuration references
-//                 for flight in cfg.model.flights() {
-//                     fc_status.flights.push(FlightStatus::new(flight.name()));
-//                 }
-
-//                 f_status.configurations.push(fc_status);
-//             }
-//             statuses.push(f_status);
-//         }
-
-//         statuses
-//     }
-// }
