@@ -29,7 +29,7 @@ impl SeaplaneInit {
             .arg(arg!(--overwrite =["ITEM"]...)
                 .help("Overwrite select files or directories (DANGER: will overwrite existing data) (supports comma separated list, or multiple uses)")
                 .long_help(LONG_OVERWRITE)
-                .value_parser(["all", "formations", "flights", "config"]))
+                .value_parser(["all", "formations", "config"]))
     }
 }
 
@@ -53,7 +53,6 @@ impl CliCommand for SeaplaneInit {
                 "config",
             ),
             (ctx.formations_file(), "{}".to_string(), "formations"),
-            (ctx.flights_file(), "[]".to_string(), "flights"),
         ];
         // TODO: @security create the file with limited permissions
         let mut did_create = false;

@@ -22,8 +22,6 @@
 //! many commands. It also contains specialized contexts that contain values only relevant to those
 //! commands or processes that need them. These specialized contexts should be lazily derived.
 
-pub mod flight;
-pub use flight::FlightCtx;
 pub mod formation;
 pub use formation::{FormationCfgCtx, FormationCtx};
 pub mod metadata;
@@ -42,11 +40,10 @@ use crate::{
     config::RawConfig,
     error::{CliErrorKind, Context, Result},
     fs::{self, FromDisk, ToDisk},
-    ops::{flight::Flights, formation::Formations},
+    ops::formation::Formations,
     printer::{ColorChoice, OutputFormat},
 };
 
-const FLIGHTS_FILE: &str = "flights.json";
 const FORMATIONS_FILE: &str = "formations.json";
 /// The registry to use for image references when the registry is omitted by the user
 pub const DEFAULT_IMAGE_REGISTRY_URL: &str = "registry.cplane.cloud";
@@ -110,9 +107,6 @@ pub struct Ctx {
     /// The platform specific path to a data location
     data_dir: PathBuf,
 
-    /// Context relate to exclusively to Flight operations and commands
-    pub flight_ctx: LateInit<FlightCtx>,
-
     /// Context relate to exclusively to Formation operations and commands
     pub formation_ctx: LateInit<FormationCtx>,
 
@@ -159,13 +153,6 @@ impl Clone for Ctx {
     fn clone(&self) -> Self {
         Self {
             data_dir: self.data_dir.clone(),
-            flight_ctx: if self.flight_ctx.get().is_some() {
-                let li = LateInit::default();
-                li.init(self.flight_ctx.get().cloned().unwrap());
-                li
-            } else {
-                LateInit::default()
-            },
             formation_ctx: if self.formation_ctx.get().is_some() {
                 let li = LateInit::default();
                 li.init(self.formation_ctx.get().cloned().unwrap());
@@ -215,7 +202,6 @@ impl Default for Ctx {
     fn default() -> Self {
         Self {
             data_dir: fs::data_dir(),
-            flight_ctx: LateInit::default(),
             formation_ctx: LateInit::default(),
             md_ctx: LateInit::default(),
             locks_ctx: LateInit::default(),
@@ -281,8 +267,6 @@ impl Ctx {
 
     pub fn conf_files(&self) -> &[PathBuf] { &self.conf_files }
 
-    pub fn flights_file(&self) -> PathBuf { self.data_dir.join(FLIGHTS_FILE) }
-
     pub fn formations_file(&self) -> PathBuf { self.data_dir.join(FORMATIONS_FILE) }
 
     /// Write out an entirely new JSON file if `--stateless` wasn't used
@@ -292,22 +276,11 @@ impl Ctx {
             .persist_if(!self.args.stateless)
             .with_context(|| format!("Path: {:?}\n", self.formations_file()))
     }
-
-    /// Write out an entirely new JSON file if `--stateless` wasn't used
-    pub fn persist_flights(&self) -> Result<()> {
-        self.db
-            .flights
-            .persist_if(!self.args.stateless)
-            .with_context(|| format!("Path: {:?}\n", self.flights_file()))
-    }
 }
 
 /// The in memory "Databases"
 #[derive(Debug, Default, Clone)]
 pub struct Db {
-    /// The in memory Flights database
-    pub flights: Flights,
-
     /// The in memory Formations database
     pub formations: Formations,
 
@@ -316,13 +289,10 @@ pub struct Db {
 }
 
 impl Db {
-    pub fn load<P: AsRef<Path>>(flights: P, formations: P) -> Result<Self> {
-        Self::load_if(flights, formations, true)
-    }
+    pub fn load<P: AsRef<Path>>(formations: P) -> Result<Self> { Self::load_if(formations, true) }
 
-    pub fn load_if<P: AsRef<Path>>(flights: P, formations: P, yes: bool) -> Result<Self> {
+    pub fn load_if<P: AsRef<Path>>(formations: P, yes: bool) -> Result<Self> {
         Ok(Self {
-            flights: FromDisk::load_if(flights, yes).unwrap_or_else(|| Ok(Flights::default()))?,
             formations: FromDisk::load_if(formations, yes)
                 .unwrap_or_else(|| Ok(Formations::default()))?,
             needs_persist: false,
