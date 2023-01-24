@@ -65,10 +65,14 @@ mod flight_status_tests {
     fn deser() {
         let json = r#"{
             "name": "example-flight",
+            "oid": "flt-agc6amh7z527vijkv2cutplwaa",
             "health": "healthy"
         }"#;
-        let model =
-            FlightStatus { name: "example-flight".into(), health: FlightHealthStatus::Healthy };
+        let model = FlightStatus {
+            name: "example-flight".into(),
+            oid: "flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap(),
+            health: FlightHealthStatus::Healthy,
+        };
 
         assert_eq!(model, serde_json::from_str(json).unwrap());
     }
