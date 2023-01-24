@@ -44,8 +44,12 @@ mod flight_health_status_tests {
 /// The status of a Flight
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[non_exhaustive]
+#[serde(rename_all = "kebab-case")]
 pub struct FlightStatus {
+    /// The human friendly name of the Flight
     pub name: String,
+
+    /// The health status of the Flight
     pub health: FlightHealthStatus,
 }
 
@@ -78,8 +82,12 @@ mod flight_status_tests {
 /// The status of a given Formation and it's associated Flights
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[non_exhaustive]
+#[serde(rename_all = "kebab-case")]
 pub struct FormationStatus {
+    /// The human friendly name of the Formation
     pub name: String,
+
+    /// The status of each Flight that is part of this Formation
     pub flights: Vec<FlightStatus>,
 }
 
@@ -122,6 +130,7 @@ mod formation_status_tests {
 /// Response from `GET /formations/NAME` which contains metadata about the Formation itself.
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[non_exhaustive]
+#[serde(rename_all = "kebab-case")]
 pub struct FormationMetadata {
     /// The URL where the Formation is exposed at
     pub url: String,
@@ -191,8 +200,14 @@ impl FormationBuilder {
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub struct Formation {
+    /// The human friendly name of the Formation
     name: String,
+
+    /// The Flights that make up this Formation
     flights: Vec<Flight>,
+
+    /// The Flight who will receive all the public HTTP(s) traffic that arrives on the public
+    /// Formation URL
     gateway_flight: String,
 }
 
@@ -329,6 +344,7 @@ impl FlightBuilder {
 /// balances traffic between them.
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[non_exhaustive]
+#[serde(rename_all = "kebab-case")]
 pub struct Flight {
     /// Returns the human readable name of the [`Flight`], which is unique with a Formation
     pub name: String,
