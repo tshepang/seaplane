@@ -53,8 +53,10 @@ fn build_formation() -> Formation {
 fn list_formations() {
     let resp_json = r#"[{
         "name": "example-formation",
+        "oid": "frm-agc6amh7z527vijkv2cutplwaa",
         "flights": [{
             "name": "example-flight",
+            "oid": "flt-agc6amh7z527vijkv2cutplwaa",
             "image": "registry.cplane.cloud/seaplane-demo/nginxdemos/hello:latest"
         }],
         "gateway-flight": "example-flight"
@@ -75,13 +77,15 @@ fn list_formations() {
     assert_eq!(resp, resp_t);
 }
 
-// GET /formations/NAME
+// GET /formations/OID
 #[test]
 fn get_formation() {
     let resp_json = r#"{
         "name": "example-formation",
+        "oid": "frm-agc6amh7z527vijkv2cutplwaa",
         "flights": [{
             "name": "example-flight",
+            "oid": "flt-agc6amh7z527vijkv2cutplwaa",
             "image": "registry.cplane.cloud/seaplane-demo/nginxdemos/hello:latest"
         }],
         "gateway-flight": "example-flight"
@@ -107,13 +111,16 @@ fn get_formation() {
 fn get_formation_status() {
     let resp_json = json!({
         "name": "example-formation",
+        "oid": "frm-agc6amh7z527vijkv2cutplwaa",
         "flights": [{
             "name": "example-flight",
+            "oid": "flt-agc6amh7z527vijkv2cutplwaa",
             "health": "healthy".parse::<FlightHealthStatus>().unwrap()
         }],
     });
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v2beta/formations/stubb/status").header("content-type", "application/json");
+        when(w, GET, "/v2beta/formations/frm-agc6amh7z527vijkv2cutplwaa/status")
+            .header("content-type", "application/json");
         then(t, resp_json.clone());
     });
 
@@ -130,7 +137,7 @@ fn get_formation_status() {
 #[test]
 fn create_formation() {
     let mock = MOCK_SERVER.mock(|w, then| {
-        when(w, POST, "/v2beta/formations/stubb")
+        when(w, POST, "/v2beta/formations")
             .header("content-type", "application/json")
             .json_body_obj(&build_formation());
         then.status(201)
@@ -149,7 +156,8 @@ fn create_formation() {
 #[test]
 fn delete_formation() {
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, DELETE, "/v2beta/formations/stubb").header("content-type", "application/json");
+        when(w, DELETE, "/v2beta/formations/frm-agc6amh7z527vijkv2cutplwaa")
+            .header("content-type", "application/json");
         t.status(200);
     });
 
