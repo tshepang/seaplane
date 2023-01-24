@@ -1,0 +1,8 @@
+[build]
+# Until the draft RFC for IETF RFC 4122 solidifies on UUIDv7 semantics the
+# `uuid` crate requires `--cfg uuid_unstable` in order to use UUIDv7.
+# It looks like this could be lifted in March 2023 (ish) and the semantics are
+# unlikely to change between now and then.
+#
+# See https://github.com/uuid-rs/uuid/issues/523
+rustflags = ["--cfg", "uuid_unstable"]
