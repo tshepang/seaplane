@@ -1,21 +1,22 @@
-name: Rust SDK PR
+name: Lib OID PR
 
 on:
   pull_request:
     branches:
       - main
     paths:
-      - 'seaplane-sdk/rust/**/*.rs'
-      - 'seaplane-sdk/rust/Cargo.toml'
-      - .github/workflows/pr-sdk-rust.yml
+      - 'crates/oid/**/*.rs'
+      - .github/workflows/pr-libs-oid.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  run-rust-sdk-tests:
+  run-rust-crate-tests:
     uses: ./.github/workflows/workflow-rust-tests.yml
     with:
-      test_sdk: true
+      test_sdk: false
       test_cli: false
+      test_lib_container_image_ref: false
+      test_lib_oid: true

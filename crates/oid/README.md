@@ -1,0 +1,103 @@
+# Container Image Reference
+
+![Rust Version][rustc-image]
+[![crates.io][crate-image]][crate-link]
+[![Dependency Status][deps-image]][deps-link]
+
+A library for using and handling Seaplane Object IDs.
+
+<!-- vim-markdown-toc GFM -->
+
+* [About](#about)
+* [The Pitch](#the-pitch)
+* [The Anti-Pitch](#the-anti-pitch)
+* [Example](#example)
+* [License](#license)
+
+<!-- vim-markdown-toc -->
+
+## About
+
+An Object ID (OID) is a base32 (no padding) encoded UUIDv7 with a prefix
+separated by a `-`.
+
+For example `tst-agc6amh7z527vijkv2cutplwaa`, by convention the prefix is three
+ASCII lowercase characters, however that is a hard constraint of OIDs in
+general. The current implementation limits prefixes to 3 characters, but prefix
+limit could be exposed as a tunable if that need arises.
+
+## The Pitch
+
+OIDs allow a "human readable subject line" in the form of the prefix, where
+actual data (the UUID) is sortable by timestamp. This means while debugging or
+reviewing a system it's trivial to determine if an incorrect OID was passed in
+a particular location by looking at the prefix. This isn't easily achievable
+with bare UUIDs.
+
+Base32 encoding the UUID also allows compressing the data into a smaller and
+more familiar format for humans, akin to a commit hash.
+
+Finally, the actual data itself, UUIDv7 has the property of being sortable in
+the database by timestamp.
+
+## The Anti-Pitch
+
+The downside to OIDs is a layer of indirection when handling IDs and values,
+it's not immediately obvious that the OIDs are a prefixed UUIDv7. Additionally,
+the prefixes must be controlled in some manner including migrated on changes
+which adds a layer of complexity at the application layer.
+
+There is also additional processing overhead compared to a bare UUIDv7 in order
+to encode/decode as well as handling the appending and removing the prefixes.
+
+However, we believe the drawbacks to pale in comparison to the benefits derived
+from the format.
+
+## Example
+
+```rust
+use seaplane_oid::{error::*, Oid};
+
+fn main() -> Result<()> {
+    // OIDs can be created with a given prefix alone, which generates a new
+    // UUIDv7 using the current unix timestamp
+    let oid = Oid::new("exm")?;
+    println!("{oid}");
+
+    // OIDs can be parsed from strings, however the "value" must be a valid
+    // base32 encoded UUIDv7
+    let oid: Oid = "tst-agc6amh7z527vijkv2cutplwaa".parse()?;
+    println!("{oid}");
+
+    // OIDs can also be created from the raw parts
+    let oid = Oid::with_uuid_v7(
+        "exm",
+        "0185e030-ffcf-75fa-a12a-ae8549bd7600"
+            .parse::<Uuid>()
+            .unwrap(),
+    )?;
+
+    // One can retrieve the various parts of the OID if needed
+    println!("Prefix: {}", oid.prefix());
+    println!("Value: {}", oid.value());
+    println!("UUIDv7: {}", oid.uuid_v7());
+
+    Ok(())
+}
+```
+
+## License
+
+Licensed under the Apache License, Version 2.0, [LICENSE]. Copyright 2023 Seaplane IO, Inc.
+
+[//]: # (badges)
+
+[crate-image]: https://img.shields.io/crates/v/seaplane-oid.svg
+[crate-link]: https://crates.io/crates/seaplane-oid
+[deps-image]: https://deps.rs/repo/github/seaplane-io/seaplane/status.svg
+[deps-link]: https://deps.rs/crate/seaplane-oid
+[rustc-image]: https://img.shields.io/badge/rustc-1.60+-blue.svg
+
+[//]: # (Links)
+
+[LICENSE]: https://github.com/seaplane-io/seaplane/blob/main/LICENSE

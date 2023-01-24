@@ -1,0 +1,22 @@
+name: Lib Container Image Ref PR
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'crates/container-image-ref/**/*.rs'
+      - .github/workflows/pr-libs-container-image-ref.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-rust-crate-tests:
+    uses: ./.github/workflows/workflow-rust-tests.yml
+    with:
+      test_sdk: false
+      test_cli: false
+      test_lib_container_image_ref: true
+      test_lib_oid: false

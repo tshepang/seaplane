@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/container-image-ref",
+    "crates/oid",
     "seaplane-sdk/rust/",
     "seaplane-cli",
 ]

@@ -8,6 +8,7 @@ CLI_MANIFEST := CLI_DIR / 'Cargo.toml'
 SDK_RUST_DIR := 'seaplane-sdk/rust'
 SDK_RUST_MANIFEST := SDK_RUST_DIR / 'Cargo.toml'
 IMAGE_REF_MANIFEST := 'crates/container-image-ref/Cargo.toml'
+OID_MANIFEST := 'crates/oid/Cargo.toml'
 SDK_PYTHON_DIR := 'seaplane-sdk/python'
 
 SHORTSHA := `git rev-parse --short HEAD`
@@ -54,7 +55,7 @@ audit: (_cargo-install 'cargo-audit')
 ci-sdk: lint-sdk-rust lint-sdk-python lint-sdk-javascript test-sdk-rust test-sdk-python test-sdk-javascript doc
 
 # Run the CI suite for the Rust SDK (only runs for your native os/arch!)
-ci-sdk-rust: lint-sdk-rust test-sdk-rust _doc-rust-crate (_doc-rust-crate IMAGE_REF_MANIFEST)
+ci-sdk-rust: lint-sdk-rust test-sdk-rust _doc-rust-crate
 
 # Run the CI suite for the Python SDK (only runs for your native os/arch!)
 ci-sdk-python: lint-sdk-python test-sdk-python doc-python
@@ -67,13 +68,19 @@ ci-sdk-javascript: lint-sdk-javascript test-sdk-javascript doc-javascript
 ci-cli: lint-cli test-cli
 
 # Run the full CI suite (only runs for your native os/arch!)
-ci: audit ci-cli ci-sdk
+ci: audit ci-cli ci-sdk ci-libs-container-image-ref ci-libs-oid
+
+# Run the CI suite for the container-image-ref library
+ci-libs-container-image-ref: lint-libs-container-image-ref test-libs-oid (_doc-rust-crate IMAGE_REF_MANIFEST)
+
+# Run the CI suite for the OID library
+ci-libs-oid: lint-libs-oid test-libs-oid (_doc-rust-crate OID_MANIFEST)
 
 # Build all documentation
 doc: doc-rust doc-python doc-javascript
 
-# Build Rust documentation
-doc-rust: _doc-rust-crate doc-cli
+# Build All Rust documentation
+doc-rust: doc-cli _doc-rust-crate (_doc-rust-crate IMAGE_REF_MANIFEST) (_doc-rust-crate OID_MANIFEST)
 
 # Build Rust documentation for the CLI
 doc-cli: (_doc-rust-crate CLI_MANIFEST)
@@ -95,8 +102,15 @@ fmt-check-cli:
 
 # Check if code formatter would make changes to the Rust SDK
 fmt-check-sdk-rust:
-    cargo fmt --manifest-path {{IMAGE_REF_MANIFEST }} --check
     cargo fmt --manifest-path {{ SDK_RUST_DIR / 'Cargo.toml' }} --check
+
+# Check if code formatter would make changes to the container-image-ref library
+fmt-check-libs-container-image-ref:
+    cargo fmt --manifest-path {{ IMAGE_REF_MANIFEST }} --check
+
+# Check if code formatter would make changes to the OID library
+fmt-check-libs-oid:
+    cargo fmt --manifest-path {{ OID_MANIFEST }} --check
 
 # Check if code formatter would make changes to the Python SDK
 fmt-check-sdk-python: _python-setup
@@ -116,7 +130,14 @@ fmt-cli:
 # Format the Rust SDK code
 fmt-sdk-rust:
     cargo fmt --manifest-path {{ SDK_RUST_MANIFEST }}
+
+# Format the library container-image-ref code
+fmt-libs-container-image-ref:
     cargo fmt --manifest-path {{ IMAGE_REF_MANIFEST }}
+
+# Format the library OID code
+fmt-libs-oid:
+    cargo fmt --manifest-path {{ OID_MANIFEST }}
 
 # Format the Python SDK code
 fmt-sdk-python: _python-setup
@@ -127,13 +148,13 @@ fmt-sdk-javascript:
     @echo "fmt-sdk-javascript: NOT YET IMPLEMENTED"
 
 # Run all checks and lints
-lint: lint-sdk-rust lint-sdk-python lint-sdk-javascript lint-cli
+lint: lint-sdk-rust lint-sdk-python lint-sdk-javascript lint-cli lint-libs-oid lint-libs-container-image-ref
 
 # Run all lint checks against the CLI
 lint-cli: spell-check fmt-check-cli (_lint-rust-crate CLI_MANIFEST '--no-default-features')
 
 # Run all lint checks against the Rust SDK
-lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust-crate (_lint-rust-crate SDK_RUST_MANIFEST '--features unstable') (_lint-rust-crate IMAGE_REF_MANIFEST)
+lint-sdk-rust: spell-check fmt-check-sdk-rust _lint-rust-crate (_lint-rust-crate SDK_RUST_MANIFEST '--features unstable')
 
 # Run all lint checks against the Python SDK
 lint-sdk-python: spell-check fmt-check-sdk-python
@@ -144,6 +165,12 @@ lint-sdk-python: spell-check fmt-check-sdk-python
 lint-sdk-javascript: spell-check fmt-check-sdk-javascript
     cd seaplane-sdk/javascript; npm run lint
 
+# Run all lint checks against the library container-image-ref
+lint-libs-container-image-ref: fmt-check-libs-container-image-ref (_lint-rust-crate IMAGE_REF_MANIFEST)
+
+# Run all lint checks against the library OID
+lint-libs-oid: fmt-check-libs-oid (_lint-rust-crate OID_MANIFEST)
+
 # Run basic integration and unit tests for all Rust crates
 test-rust: test-sdk-rust (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST)
 
@@ -151,7 +178,13 @@ test-rust: test-sdk-rust (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate C
 test-cli: (_doc-rust-crate CLI_MANIFEST) (_test-rust-crate CLI_MANIFEST) (_test-rust-api-crate CLI_MANIFEST) test-ui
 
 # Run basic integration and unit tests for the Rust SDK
-test-sdk-rust: _test-rust-crate (_test-rust-crate IMAGE_REF_MANIFEST) _test-rust-api-crate (_test-rust-api-crate SDK_RUST_MANIFEST ',compute_api_v2') _doc-rust-crate
+test-sdk-rust: _test-rust-crate _test-rust-api-crate (_test-rust-api-crate SDK_RUST_MANIFEST ',compute_api_v2') _doc-rust-crate
+
+# Run basic integration and unit tests for the library container-image-ref
+test-libs-container-image-ref: (_test-rust-crate IMAGE_REF_MANIFEST)
+
+# Run basic integration and unit tests for the OID library
+test-libs-oid: (_test-rust-crate OID_MANIFEST '' '-D warnings --cfg uuid_unstable')
 
 # Run basic integration and unit tests for the Python SDK
 test-sdk-python: _python-setup

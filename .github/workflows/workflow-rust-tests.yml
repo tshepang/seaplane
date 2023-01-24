@@ -12,6 +12,14 @@ on:
           type: boolean
           required: false
           default: true
+      test_lib_container_image_ref:
+          type: boolean
+          required: false
+          default: false
+      test_lib_oid:
+          type: boolean
+          required: false
+          default: false
 
   workflow_dispatch:
 
@@ -56,6 +64,16 @@ jobs:
       run: |
         just lint-cli
 
+    - name: Lint the container-image-ref lib
+      if: ${{ inputs.test_lib_container_image_ref }}
+      run: |
+        just lint-libs-container-image-ref
+
+    - name: Lint the oid lib
+      if: ${{ inputs.test_lib_oid }}
+      run: |
+        just lint-libs-oid
+
   test-linux:
     name: Tests
     strategy:
@@ -89,6 +107,11 @@ jobs:
       run: |
         just test-sdk-rust
 
+    - name: Build the SDK Docs
+      if: ${{ inputs.test_sdk }}
+      run: |
+        just _doc-rust-crate
+
     - name: Test the CLI
       if: ${{ inputs.test_cli }}
       run: |
@@ -98,6 +121,26 @@ jobs:
       if: ${{ inputs.test_cli }}
       run: |
         just doc-cli
+
+    - name: Test the library container-image-ref
+      if: ${{ inputs.test_lib_container_image_ref }}
+      run: |
+        just test-libs-container-image-ref
+
+    - name: Build library container-image-ref Docs
+      if: ${{ inputs.test_lib_container_image_ref }}
+      run: |
+        just _doc-rust-crate 'crates/container-image-ref/Cargo.toml'
+
+    - name: Test the library OID
+      if: ${{ inputs.test_lib_oid }}
+      run: |
+        just test-libs-oid
+
+    - name: Build library OID Docs
+      if: ${{ inputs.test_lib_oid }}
+      run: |
+        just _doc-rust-crate 'crates/oid/Cargo.toml'
 
   test-win-macos-x64:
     name: Tests
@@ -138,3 +181,13 @@ jobs:
       if: ${{ inputs.test_cli }}
       run: |
         just test-cli
+
+    - name: Test the library container-image-ref
+      if: ${{ inputs.test_lib_container_image_ref }}
+      run: |
+        just test-libs-container-image-ref
+
+    - name: Test the library OID
+      if: ${{ inputs.test_lib_oid }}
+      run: |
+        just test-libs-oid
