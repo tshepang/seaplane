@@ -22,6 +22,8 @@ pub enum SeaplaneError {
     UrlParse(#[from] url::ParseError),
     #[error("invalid json")]
     Json(#[from] serde_json::error::Error),
+    #[error("Object ID error: {0}")]
+    Oid(#[from] seaplane_oid::error::Error),
     #[error("request did not include any active configurations while force=false")]
     MissingActiveConfiguration,
     #[error("missing a required UUID")]
@@ -74,6 +76,7 @@ impl PartialEq for SeaplaneError {
             MissingFormationName => matches!(rhs, MissingFormationName),
             UrlParse(_) => matches!(rhs, UrlParse(_)),
             Json(_) => matches!(rhs, Json(_)),
+            Oid(_) => matches!(rhs, Oid(_)),
             MissingActiveConfiguration => matches!(rhs, MissingActiveConfiguration),
             MissingUuid => matches!(rhs, MissingUuid),
             ConflictingParams => matches!(rhs, ConflictingParams),
