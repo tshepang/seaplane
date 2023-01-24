@@ -76,8 +76,11 @@ mod flight_status_tests {
     #[test]
     fn ser() {
         let json = r#"{"name":"example-flight","health":"healthy"}"#;
-        let model =
-            FlightStatus { name: "example-flight".into(), health: FlightHealthStatus::Healthy };
+        let model = FlightStatus {
+            name: "example-flight".into(),
+            oid: "flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap(),
+            health: FlightHealthStatus::Healthy,
+        };
 
         assert_eq!(json, serde_json::to_string(&model).unwrap());
     }
@@ -106,12 +109,15 @@ mod formation_status_tests {
     fn deser() {
         let json = r#"{
             "name": "example-formation",
-            "flights": [{"name":"example-flight","health":"healthy"}]
+            "oid": "frm-agc6amh7z527vijkv2cutplwaa",
+            "flights": [{"name":"example-flight","oid":"flt-agc6amh7z527vijkv2cutplwaa","health":"healthy"}]
         }"#;
         let model = FormationStatus {
             name: "example-formation".into(),
+            oid: "frm-agc6amh7z527vijkv2cutplwaa".parse().unwrap(),
             flights: vec![FlightStatus {
                 name: "example-flight".into(),
+                oid: "flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap(),
                 health: FlightHealthStatus::Healthy,
             }],
         };
@@ -121,11 +127,13 @@ mod formation_status_tests {
 
     #[test]
     fn ser() {
-        let json = r#"{"name":"example-formation","flights":[{"name":"example-flight","health":"healthy"}]}"#;
+        let json = r#"{"name":"example-formation","oid":"frm-agc6amh7z527vijkv2cutplwaa","flights":[{"name":"example-flight","oid":"flt-agc6amh7z527vijkv2cutplwaa","health":"healthy"}]}"#;
         let model = FormationStatus {
             name: "example-formation".into(),
+            oid: "frm-agc6amh7z527vijkv2cutplwaa".parse().unwrap(),
             flights: vec![FlightStatus {
                 name: "example-flight".into(),
+                oid: "flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap(),
                 health: FlightHealthStatus::Healthy,
             }],
         };
@@ -262,13 +270,20 @@ mod formation_tests {
     fn deser() {
         let json = r#"{
             "name": "example-formation",
-            "flights": [{"name":"example-flight","image":"foo.com/bar:latest"}],
+            "oid":"frm-agc6amh7z527vijkv2cutplwaa",
+            "flights": [{
+                "name":"example-flight",
+                "oid":"flt-agc6amh7z527vijkv2cutplwaa",
+                "image":"foo.com/bar:latest"
+            }],
             "gateway-flight": "example-flight"
         }"#;
         let model = Formation {
             name: "example-formation".into(),
+            oid: Some("frm-agc6amh7z527vijkv2cutplwaa".parse().unwrap()),
             flights: vec![Flight {
                 name: "example-flight".into(),
+                oid: Some("flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap()),
                 image: "foo.com/bar:latest".parse::<ImageReference>().unwrap(),
             }],
             gateway_flight: "example-flight".into(),
@@ -279,11 +294,30 @@ mod formation_tests {
 
     #[test]
     fn ser() {
+        let json = r#"{"name":"example-formation","oid":"frm-agc6amh7z527vijkv2cutplwaa","flights":[{"name":"example-flight","oid":"flt-agc6amh7z527vijkv2cutplwaa","image":"foo.com/bar:latest"}],"gateway-flight":"example-flight"}"#;
+        let model = Formation {
+            name: "example-formation".into(),
+            oid: Some("frm-agc6amh7z527vijkv2cutplwaa".parse().unwrap()),
+            flights: vec![Flight {
+                name: "example-flight".into(),
+                oid: Some("flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap()),
+                image: "foo.com/bar:latest".parse::<ImageReference>().unwrap(),
+            }],
+            gateway_flight: "example-flight".into(),
+        };
+
+        assert_eq!(json.to_string(), serde_json::to_string(&model).unwrap());
+    }
+
+    #[test]
+    fn ser_no_oid() {
         let json = r#"{"name":"example-formation","flights":[{"name":"example-flight","image":"foo.com/bar:latest"}],"gateway-flight":"example-flight"}"#;
         let model = Formation {
             name: "example-formation".into(),
+            oid: None,
             flights: vec![Flight {
                 name: "example-flight".into(),
+                oid: None,
                 image: "foo.com/bar:latest".parse::<ImageReference>().unwrap(),
             }],
             gateway_flight: "example-flight".into(),
@@ -416,15 +450,14 @@ mod flight_tests {
     #[test]
     fn deser() {
         let json = r#"{
-            "name": "example-formation",
-            "flights": [{"name":"example-flight","health":"healthy"}]
+            "name":"example-flight",
+            "oid":"flt-agc6amh7z527vijkv2cutplwaa",
+            "image":"foo.com/bar:latest"
         }"#;
-        let model = FormationStatus {
-            name: "example-formation".into(),
-            flights: vec![FlightStatus {
-                name: "example-flight".into(),
-                health: FlightHealthStatus::Healthy,
-            }],
+        let model = Flight {
+            name: "example-flight".into(),
+            oid: Some("flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap()),
+            image: "foo.com/bar:latest".parse::<ImageReference>().unwrap(),
         };
 
         assert_eq!(model, serde_json::from_str(json).unwrap());
@@ -432,13 +465,23 @@ mod flight_tests {
 
     #[test]
     fn ser() {
-        let json = r#"{"name":"example-formation","flights":[{"name":"example-flight","health":"healthy"}]}"#;
-        let model = FormationStatus {
-            name: "example-formation".into(),
-            flights: vec![FlightStatus {
-                name: "example-flight".into(),
-                health: FlightHealthStatus::Healthy,
-            }],
+        let json = r#"{"name":"example-flight","oid":"flt-agc6amh7z527vijkv2cutplwaa","image":"foo.com/bar:latest"}"#;
+        let model = Flight {
+            name: "example-flight".into(),
+            oid: Some("flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap()),
+            image: "foo.com/bar:latest".parse::<ImageReference>().unwrap(),
+        };
+
+        assert_eq!(json, serde_json::to_string(&model).unwrap());
+    }
+
+    #[test]
+    fn ser_no_oid() {
+        let json = r#"{"name":"example-flight","image":"foo.com/bar:latest"}"#;
+        let model = Flight {
+            name: "example-flight".into(),
+            oid: None,
+            image: "foo.com/bar:latest".parse::<ImageReference>().unwrap(),
         };
 
         assert_eq!(json, serde_json::to_string(&model).unwrap());
