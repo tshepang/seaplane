@@ -62,7 +62,7 @@ fn list_formations() {
     let resp_t: Vec<Formation> = serde_json::from_str(resp_json).unwrap();
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v2/formations");
+        when(w, GET, "/v2beta/formations");
         then(t, serde_json::to_value(resp_t.clone()).unwrap());
     });
 
@@ -89,7 +89,7 @@ fn get_formation() {
     let resp_t: Formation = serde_json::from_str(resp_json).unwrap();
 
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v2/formations/stubb").header("content-type", "application/json");
+        when(w, GET, "/v2beta/formations/stubb").header("content-type", "application/json");
         then(t, serde_json::to_value(resp_t.clone()).unwrap());
     });
 
@@ -113,7 +113,7 @@ fn get_formation_status() {
         }],
     });
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, GET, "/v2/formations/stubb/status").header("content-type", "application/json");
+        when(w, GET, "/v2beta/formations/stubb/status").header("content-type", "application/json");
         then(t, resp_json.clone());
     });
 
@@ -130,7 +130,7 @@ fn get_formation_status() {
 #[test]
 fn create_formation() {
     let mock = MOCK_SERVER.mock(|w, then| {
-        when(w, POST, "/v2/formations/stubb")
+        when(w, POST, "/v2beta/formations/stubb")
             .header("content-type", "application/json")
             .json_body_obj(&build_formation());
         then.status(201)
@@ -149,7 +149,7 @@ fn create_formation() {
 #[test]
 fn delete_formation() {
     let mock = MOCK_SERVER.mock(|w, t| {
-        when(w, DELETE, "/v2/formations/stubb").header("content-type", "application/json");
+        when(w, DELETE, "/v2beta/formations/stubb").header("content-type", "application/json");
         t.status(200);
     });
 
