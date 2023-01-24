@@ -1,3 +1,4 @@
+use seaplane_oid::Oid;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
@@ -49,6 +50,9 @@ pub struct FlightStatus {
     /// The human friendly name of the Flight
     pub name: String,
 
+    /// The Object ID of the Flight
+    pub oid: Oid,
+
     /// The health status of the Flight
     pub health: FlightHealthStatus,
 }
@@ -86,6 +90,9 @@ mod flight_status_tests {
 pub struct FormationStatus {
     /// The human friendly name of the Formation
     pub name: String,
+
+    /// The Object ID of the Formation
+    pub oid: Oid,
 
     /// The status of each Flight that is part of this Formation
     pub flights: Vec<FlightStatus>,
@@ -134,6 +141,9 @@ mod formation_status_tests {
 pub struct FormationMetadata {
     /// The URL where the Formation is exposed at
     pub url: String,
+
+    /// The Object ID of the Formation
+    pub oid: Oid,
 }
 
 /// A builder for creating a [`Formation`] which is the primary way to describe a
@@ -189,8 +199,9 @@ impl FormationBuilder {
         }
 
         Ok(Formation {
-            flights: self.flights,
             name: self.name,
+            oid: None,
+            flights: self.flights,
             gateway_flight: self.gateway_flight.unwrap(),
         })
     }
@@ -202,6 +213,10 @@ impl FormationBuilder {
 pub struct Formation {
     /// The human friendly name of the Formation
     name: String,
+
+    /// The Object ID of the Formation that will be assigned by the Compute API upon launch
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    oid: Option<Oid>,
 
     /// The Flights that make up this Formation
     flights: Vec<Flight>,
@@ -333,7 +348,7 @@ impl FlightBuilder {
             return Err(SeaplaneError::MissingFlightImageReference);
         }
 
-        Ok(Flight { name: self.name.unwrap(), image: self.image.unwrap() })
+        Ok(Flight { name: self.name.unwrap(), oid: None, image: self.image.unwrap() })
     }
 }
 
@@ -351,6 +366,10 @@ pub struct Flight {
 
     /// The container image reference
     pub image: ImageReference,
+
+    /// The Object ID of the Flight
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub oid: Option<Oid>,
 }
 
 impl Flight {
