@@ -474,6 +474,28 @@ impl<P: OidPrefix> FromStr for TypedOid<P> {
     }
 }
 
+#[cfg(feature = "serde")]
+impl<P: OidPrefix> ::serde::Serialize for TypedOid<P> {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: ::serde::ser::Serializer,
+    {
+        serializer.collect_str(self)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, P: OidPrefix> ::serde::Deserialize<'de> for TypedOid<P> {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: ::serde::de::Deserializer<'de>,
+    {
+        String::deserialize(deserializer)?
+            .parse()
+            .map_err(::serde::de::Error::custom)
+    }
+}
+
 #[cfg(test)]
 mod typed_oid_tests {
     use wildmatch::WildMatch;
