@@ -184,7 +184,7 @@ test-sdk-rust: _test-rust-crate _test-rust-api-crate (_test-rust-api-crate SDK_R
 test-libs-container-image-ref: (_test-rust-crate IMAGE_REF_MANIFEST)
 
 # Run basic integration and unit tests for the OID library
-test-libs-oid: (_test-rust-crate OID_MANIFEST '' '-D warnings --cfg uuid_unstable')
+test-libs-oid: (_test-rust-crate OID_MANIFEST '' '-D warnings')
 
 # Run basic integration and unit tests for the Python SDK
 test-sdk-python: _python-setup

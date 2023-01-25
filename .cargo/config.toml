@@ -5,4 +5,4 @@
 # unlikely to change between now and then.
 #
 # See https://github.com/uuid-rs/uuid/issues/523
-rustflags = ["--cfg", "uuid_unstable"]
+#rustflags = ["--cfg", "uuid_unstable"]

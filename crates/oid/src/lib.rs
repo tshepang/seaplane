@@ -1,4 +1,4 @@
-//! An Object ID (OID) is a base32 (no padding) encoded UUIDv7 with a prefix
+//! An Object ID (OID) is a base32 (no padding) encoded UUID with a prefix
 //! separated by a `-`.
 //!
 //! For example `tst-agc6amh7z527vijkv2cutplwaa`, by convention the prefix is three
@@ -9,25 +9,21 @@
 //! ## The Pitch
 //!
 //! OIDs allow a "human readable subject line" in the form of the prefix, where
-//! actual data (the UUID) is sortable by timestamp. This means while debugging or
-//! reviewing a system it's trivial to determine if an incorrect OID was passed in
-//! a particular location by looking at the prefix. This isn't easily achievable
-//! with bare UUIDs.
+//! actual data is a UUID. This means while debugging or reviewing a system it's trivial to
+//! determine if an incorrect OID was passed in a particular location by looking at the prefix.
+//! This isn't easily achievable with bare UUIDs.
 //!
 //! Base32 encoding the UUID also allows compressing the data into a smaller and
 //! more familiar format for humans, akin to a commit hash.
 //!
-//! Finally, the actual data itself, UUIDv7 has the property of being sortable in
-//! the database by timestamp.
-//!
 //! ## The Anti-Pitch
 //!
 //! The downside to OIDs is a layer of indirection when handling IDs and values,
-//! it's not immediately obvious that the OIDs are a prefixed UUIDv7. Additionally,
+//! it's not immediately obvious that the OIDs are a prefixed UUID. Additionally,
 //! the prefixes must be controlled in some manner including migrated on changes
 //! which adds a layer of complexity at the application layer.
 //!
-//! There is also additional processing overhead compared to a bare UUIDv7 in order
+//! There is also additional processing overhead compared to a bare UUID in order
 //! to encode/decode as well as handling the appending and removing the prefixes.
 //!
 //! However, we believe the drawbacks to pale in comparison to the benefits derived
@@ -41,17 +37,17 @@
 //!
 //! fn main() -> Result<()> {
 //!     // OIDs can be created with a given prefix alone, which generates a new
-//!     // UUIDv7 using the current unix timestamp
+//!     // UUID
 //!     let oid = Oid::new("exm")?;
 //!     println!("{oid}");
 //!
 //!     // OIDs can be parsed from strings, however the "value" must be a valid
-//!     // base32 encoded UUIDv7
+//!     // base32 encoded UUID
 //!     let oid: Oid = "tst-agc6amh7z527vijkv2cutplwaa".parse()?;
 //!     println!("{oid}");
 //!
 //!     // OIDs can also be created from the raw parts
-//!     let oid = Oid::with_uuid_v7(
+//!     let oid = Oid::with_uuid(
 //!         "exm",
 //!         "0185e030-ffcf-75fa-a12a-ae8549bd7600"
 //!             .parse::<Uuid>()
@@ -61,7 +57,7 @@
 //!     // One can retrieve the various parts of the OID if needed
 //!     println!("Prefix: {}", oid.prefix());
 //!     println!("Value: {}", oid.value());
-//!     println!("UUIDv7: {}", oid.uuid_v7());
+//!     println!("UUID: {}", oid.uuid());
 //!
 //!     Ok(())
 //! }
@@ -227,8 +223,7 @@ pub struct Oid {
 }
 
 impl Oid {
-    /// Create a new OID with a given [`Prefix`] and generating a new UUIDv7 with the current unix
-    /// timestamp
+    /// Create a new OID with a given [`Prefix`] and generating a new UUID
     ///
     /// **NOTE:** The Prefix must be 3 ASCII characters (this restriction is arbitrary and could be
     /// lifted in the future by exposing an API to tune the [`Prefix`] length)
@@ -236,22 +231,18 @@ impl Oid {
     where
         P: TryInto<Prefix, Error = Error>,
     {
-        Self::with_uuid_v7(prefix, Uuid::now_v7())
+        Self::with_uuid(prefix, Uuid::new_v4())
     }
 
-    /// Create a new OID with a given [`Prefix`] and a given UUIDv7. If the UUID is not a version 7
+    /// Create a new OID with a given [`Prefix`] and a given UUID. If the UUID is not a version 7
     /// an error isr returned.
     ///
     /// **NOTE:** The Prefix must be 3 ASCII characters (this restriction is arbitrary and could be
     /// lifted in the future by exposing an API to tune the [`Prefix`] length)
-    pub fn with_uuid_v7<P>(prefix: P, uuid: Uuid) -> Result<Self>
+    pub fn with_uuid<P>(prefix: P, uuid: Uuid) -> Result<Self>
     where
         P: TryInto<Prefix, Error = Error>,
     {
-        if uuid.get_version_num() != 7 {
-            return Err(Error::UnsupportedUuidVersion);
-        }
-
         Ok(Self { prefix: prefix.try_into()?, uuid })
     }
 
@@ -263,7 +254,7 @@ impl Oid {
     pub fn value(&self) -> String { base32_spec!().encode(self.uuid.as_bytes()) }
 
     /// Get the UUID of the OID
-    pub fn uuid_v7(&self) -> &Uuid { &self.uuid }
+    pub fn uuid(&self) -> &Uuid { &self.uuid }
 }
 
 impl FromStr for Oid {
@@ -279,9 +270,6 @@ impl FromStr for Oid {
             }
 
             let uuid = Uuid::from_slice(&base32_spec!().decode(val.as_bytes())?)?;
-            if uuid.get_version_num() != 7 {
-                return Err(Error::UnsupportedUuidVersion);
-            }
 
             return Ok(Self { prefix: pfx.parse()?, uuid });
         }
@@ -380,22 +368,10 @@ mod oid_tests {
     }
 
     #[test]
-    fn str_to_oid_err_wrong_uuid_ver() {
-        let res = Oid::with_uuid_v7(
-            "tst",
-            "3dedbec5-dbc3-43f1-9407-2389aac1fd81"
-                .parse::<Uuid>()
-                .unwrap(),
-        );
-        assert!(res.is_err());
-        assert_eq!(res.unwrap_err(), Error::UnsupportedUuidVersion);
-    }
-
-    #[test]
     fn oid_to_uuid() {
         let oid: Oid = "tst-agc6amh7z527vijkv2cutplwaa".parse().unwrap();
         assert_eq!(
-            oid.uuid_v7(),
+            oid.uuid(),
             &"0185e030-ffcf-75fa-a12a-ae8549bd7600"
                 .parse::<Uuid>()
                 .unwrap()

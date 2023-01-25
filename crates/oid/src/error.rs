@@ -12,8 +12,6 @@ pub enum Error {
     PrefixByteLength,
     #[error("Prefix characters may only be ASCII values of 2-7,a-z")]
     InvalidPrefixChar,
-    #[error("Only UUIDv7 is supported, but another UUID version was given")]
-    UnsupportedUuidVersion,
     #[error("Attempted to deserialize OID without a prefix")]
     MissingPrefix,
     #[error("deserialize OID without a separator")]

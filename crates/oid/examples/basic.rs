@@ -13,7 +13,7 @@ fn main() -> Result<()> {
     println!("{oid}");
 
     // OIDs can also be created from the raw parts
-    let oid = Oid::with_uuid_v7(
+    let oid = Oid::with_uuid(
         "exm",
         "0185e030-ffcf-75fa-a12a-ae8549bd7600"
             .parse::<Uuid>()
@@ -23,7 +23,7 @@ fn main() -> Result<()> {
     // One can retrieve the various parts of the OID if needed
     println!("Prefix: {}", oid.prefix());
     println!("Value: {}", oid.value());
-    println!("UUIDv7: {}", oid.uuid_v7());
+    println!("UUID: {}", oid.uuid());
 
     Ok(())
 }
