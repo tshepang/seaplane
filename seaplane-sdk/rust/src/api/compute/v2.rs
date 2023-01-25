@@ -102,7 +102,7 @@ impl FormationsRequest {
     /// let resp = req.create(&formation).unwrap();
     /// dbg!(resp);
     /// ```
-    pub fn create(&self, formation: &Formation) -> Result<()> {
+    pub fn create(&self, formation: &Formation) -> Result<CreateFormationResponse> {
         if self.request.target.is_none() {
             return Err(SeaplaneError::MissingFormationName);
         }
@@ -118,8 +118,9 @@ impl FormationsRequest {
             .bearer_auth(&self.request.token)
             .json(formation);
         let resp = req.send()?;
-        map_api_error(resp)?;
-        Ok(())
+        map_api_error(resp)?
+            .json::<CreateFormationResponse>()
+            .map_err(Into::into)
     }
 
     /// Deletes a formation

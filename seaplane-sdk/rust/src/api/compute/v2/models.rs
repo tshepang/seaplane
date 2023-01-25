@@ -42,6 +42,15 @@ mod flight_health_status_tests {
     }
 }
 
+/// The success response when creating a Formation
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
+#[serde(rename_all = "kebab-case")]
+pub struct CreateFormationResponse {
+    /// The Object ID of the created Formation
+    pub oid: Oid,
+}
+
 /// The status of a Flight
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[non_exhaustive]
