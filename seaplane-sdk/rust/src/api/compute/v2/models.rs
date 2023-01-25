@@ -88,7 +88,7 @@ mod flight_status_tests {
 
     #[test]
     fn ser() {
-        let json = r#"{"name":"example-flight","health":"healthy"}"#;
+        let json = r#"{"name":"example-flight","oid":"flt-agc6amh7z527vijkv2cutplwaa","health":"healthy"}"#;
         let model = FlightStatus {
             name: "example-flight".into(),
             oid: "flt-agc6amh7z527vijkv2cutplwaa".parse().unwrap(),
@@ -411,12 +411,12 @@ pub struct Flight {
     /// Returns the human readable name of the [`Flight`], which is unique with a Formation
     pub name: String,
 
-    /// The container image reference
-    pub image: ImageReference,
-
     /// The Object ID of the Flight
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub oid: Option<Oid>,
+
+    /// The container image reference
+    pub image: ImageReference,
 }
 
 impl Flight {
