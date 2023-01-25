@@ -12,7 +12,7 @@ use crate::{
     error::{Result, SeaplaneError},
 };
 
-const COMPUTE_API_ROUTE: &str = "v2/formations";
+const COMPUTE_API_ROUTE: &str = "v2beta/formations";
 
 /// A builder struct for creating a [`FormationsRequest`] which will then be used for making a
 /// request against the `/formations` APIs
