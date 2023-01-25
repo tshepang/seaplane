@@ -68,7 +68,7 @@
 //! Licensed under the Apache License, Version 2.0, Copyright 2023 Seaplane IO, Inc.
 pub mod error;
 
-use std::{fmt, str::FromStr};
+use std::{any::type_name, fmt, marker::PhantomData, str::FromStr};
 
 use uuid::Uuid;
 
@@ -84,6 +84,13 @@ macro_rules! base32_spec {
             spec.encoding().unwrap()
         })
     }};
+}
+
+fn uuid_from_str(s: &str) -> Result<Uuid> {
+    if s.is_empty() {
+        return Err(Error::MissingValue);
+    }
+    Ok(Uuid::from_slice(&base32_spec!().decode(s.as_bytes())?)?)
 }
 
 /// An OID Prefix designed to be similar to a human readable "subject line" for the ID
@@ -265,13 +272,8 @@ impl FromStr for Oid {
             if pfx.is_empty() {
                 return Err(Error::MissingPrefix);
             }
-            if val.is_empty() {
-                return Err(Error::MissingValue);
-            }
 
-            let uuid = Uuid::from_slice(&base32_spec!().decode(val.as_bytes())?)?;
-
-            return Ok(Self { prefix: pfx.parse()?, uuid });
+            return Ok(Self { prefix: pfx.parse()?, uuid: uuid_from_str(val)? });
         }
 
         Err(Error::MissingSeparator)
@@ -315,7 +317,6 @@ mod oid_tests {
     #[test]
     fn oid_to_str() -> Result<()> {
         let oid = Oid::new("tst")?;
-        dbg!(oid.to_string());
         assert!(WildMatch::new("tst-??????????????????????????").matches(&oid.to_string()));
         Ok(())
     }
@@ -376,5 +377,133 @@ mod oid_tests {
                 .parse::<Uuid>()
                 .unwrap()
         );
+    }
+}
+
+pub trait OidPrefix {
+    fn string_prefix() -> String {
+        type_name::<Self>()
+            .split(':')
+            .last()
+            .map(|s| s.to_ascii_lowercase())
+            .unwrap()
+    }
+}
+
+/// A Typed Object ID where the Prefix is part of the type
+///
+/// # Examples
+///
+/// A nice property of this two different prefix are two different types, and thus the following
+/// fails to compile:
+///
+/// ```compile_fail
+/// struct A;
+/// impl OidPrefix for A {}
+///
+/// struct B;
+/// impl OidPrefix for B {}
+///
+/// // The same UUID for both
+/// let uuid = Uuid::new_v4();
+/// let oid_a: TypedOid<A> = TypedOid::with_uuid(uuid.clone());
+/// let oid_b: TypedOid<B> = TypedOid::with_uuid(uuid);
+///
+/// // This fails to compile because `TypedOid<A>` is a different type than `TypedOid<B>` and no
+/// // PartialEq or Eq is implemented between these two types. The same would hold as function
+/// // parameters, etc.
+/// oid_a == oid_b
+/// ```
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct TypedOid<P: OidPrefix> {
+    uuid: Uuid,
+    _prefix: PhantomData<P>,
+}
+
+impl<P: OidPrefix> TypedOid<P> {
+    /// Create a new TypedOid with a random UUID
+    pub fn new() -> Self { Self::with_uuid(Uuid::new_v4()) }
+
+    /// Create a new TypedOid with a given UUID
+    pub fn with_uuid(uuid: Uuid) -> Self { Self { uuid, _prefix: PhantomData } }
+
+    /// Get the [`Prefix`] of the OID
+    ///
+    /// # Panics
+    ///
+    /// If the Type `P` translates to an invalid prefix
+    pub fn prefix(&self) -> Prefix {
+        Prefix::from_str(&P::string_prefix()).expect("Invalid Prefix")
+    }
+
+    /// Get the value portion of the  of the OID, which is the base32 encoded string following the
+    /// `-` separator
+    pub fn value(&self) -> String { base32_spec!().encode(self.uuid.as_bytes()) }
+
+    /// Get the UUID of the OID
+    pub fn uuid(&self) -> &Uuid { &self.uuid }
+}
+
+impl<P: OidPrefix> Default for TypedOid<P> {
+    fn default() -> Self { Self::new() }
+}
+
+impl<P: OidPrefix> fmt::Display for TypedOid<P> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}-{}", P::string_prefix(), self.value())
+    }
+}
+
+impl<P: OidPrefix> FromStr for TypedOid<P> {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        if let Some((pfx, val)) = s.split_once('-') {
+            if pfx.is_empty() {
+                return Err(Error::MissingPrefix);
+            }
+
+            if pfx != P::string_prefix() {
+                return Err(Error::InvalidPrefixChar);
+            }
+
+            return Ok(Self { uuid: uuid_from_str(val)?, _prefix: PhantomData });
+        }
+
+        Err(Error::MissingSeparator)
+    }
+}
+
+#[cfg(test)]
+mod typed_oid_tests {
+    use wildmatch::WildMatch;
+
+    use super::*;
+
+    #[test]
+    fn typed_oid() {
+        #[derive(Debug)]
+        struct Tst;
+        impl OidPrefix for Tst {}
+
+        let oid: TypedOid<Tst> = TypedOid::new();
+        assert!(
+            WildMatch::new("tst-??????????????????????????").matches(&oid.to_string()),
+            "{oid}"
+        );
+
+        let res = "tst-5wacbutjwbdexonddvdb2lnyxu".parse::<TypedOid<Tst>>();
+        assert!(res.is_ok());
+        let oid: TypedOid<Tst> = res.unwrap();
+        assert_eq!(
+            oid.uuid(),
+            &"ed8020d2-69b0-464b-b9a3-1d461d2db8bd"
+                .parse::<Uuid>()
+                .unwrap()
+        );
+
+        let res = "frm-5wacbutjwbdexonddvdb2lnyxu".parse::<TypedOid<Tst>>();
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err(), Error::InvalidPrefixChar);
     }
 }
