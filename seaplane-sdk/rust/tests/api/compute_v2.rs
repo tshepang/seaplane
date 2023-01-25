@@ -136,13 +136,15 @@ fn get_formation_status() {
 // POST /formations/NAME
 #[test]
 fn create_formation() {
+    let resp_body = json!({"oid":"frm-agc6amh7z527vijkv2cutplwaa"});
     let mock = MOCK_SERVER.mock(|w, then| {
         when(w, POST, "/v2beta/formations")
             .header("content-type", "application/json")
             .json_body_obj(&build_formation());
         then.status(201)
             .header("content-type", "application/json")
-            .header("Location", "https://stubb.tenant.on.cplane.cloud");
+            .header("Location", "https://stubb.tenant.on.cplane.cloud")
+            .json_body(resp_body);
     });
 
     let req = build_req();
